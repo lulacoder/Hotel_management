@@ -1,45 +1,57 @@
 import { Link } from '@tanstack/react-router'
+import { useAuth } from '@clerk/clerk-react'
 
-import ClerkHeader from './src/integrations/clerk/header-user.tsx'
+import ClerkHeader from '../integrations/clerk/header-user'
 
 import { useState } from 'react'
 import {
-  ChevronDown,
-  ChevronRight,
-  Globe,
+  Building2,
+  CalendarCheck,
   Home,
   Menu,
-  Network,
-  SquareFunction,
-  StickyNote,
+  Settings,
   X,
 } from 'lucide-react'
 
 export default function Header() {
   const [isOpen, setIsOpen] = useState(false)
-  const [groupedExpanded, setGroupedExpanded] = useState<
-    Record<string, boolean>
-  >({})
+  const { isSignedIn } = useAuth()
 
   return (
     <>
-      <header className="p-4 flex items-center bg-gray-800 text-white shadow-lg">
-        <button
-          onClick={() => setIsOpen(true)}
-          className="p-2 hover:bg-gray-700 rounded-lg transition-colors"
-          aria-label="Open menu"
-        >
-          <Menu size={24} />
-        </button>
-        <h1 className="ml-4 text-xl font-semibold">
-          <Link to="/">
-            <img
-              src="/tanstack-word-logo-white.svg"
-              alt="TanStack Logo"
-              className="h-10"
-            />
+      <header className="p-4 flex items-center justify-between bg-indigo-600 text-white shadow-lg">
+        <div className="flex items-center">
+          <button
+            onClick={() => setIsOpen(true)}
+            className="p-2 hover:bg-indigo-700 rounded-lg transition-colors"
+            aria-label="Open menu"
+          >
+            <Menu size={24} />
+          </button>
+          <Link to="/" className="ml-4 flex items-center gap-2">
+            <Building2 size={28} />
+            <span className="text-xl font-bold">Hotel Management</span>
           </Link>
-        </h1>
+        </div>
+        {!isSignedIn && (
+          <div className="flex items-center gap-2">
+            <Link
+              to="/sign-in"
+              className="px-4 py-2 text-sm font-medium hover:bg-indigo-700 rounded-lg transition-colors"
+            >
+              Sign In
+            </Link>
+            <Link
+              to="/sign-up"
+              className="px-4 py-2 text-sm font-medium bg-white text-indigo-600 hover:bg-gray-100 rounded-lg transition-colors"
+            >
+              Sign Up
+            </Link>
+          </div>
+        )}
+        {isSignedIn && (
+          <ClerkHeader />
+        )}
       </header>
 
       <aside
@@ -48,7 +60,10 @@ export default function Header() {
         }`}
       >
         <div className="flex items-center justify-between p-4 border-b border-gray-700">
-          <h2 className="text-xl font-bold">Navigation</h2>
+          <div className="flex items-center gap-2">
+            <Building2 size={24} />
+            <h2 className="text-xl font-bold">Menu</h2>
+          </div>
           <button
             onClick={() => setIsOpen(false)}
             className="p-2 hover:bg-gray-800 rounded-lg transition-colors"
@@ -65,146 +80,78 @@ export default function Header() {
             className="flex items-center gap-3 p-3 rounded-lg hover:bg-gray-800 transition-colors mb-2"
             activeProps={{
               className:
-                'flex items-center gap-3 p-3 rounded-lg bg-cyan-600 hover:bg-cyan-700 transition-colors mb-2',
+                'flex items-center gap-3 p-3 rounded-lg bg-indigo-600 hover:bg-indigo-700 transition-colors mb-2',
             }}
           >
             <Home size={20} />
             <span className="font-medium">Home</span>
           </Link>
 
-          {/* Demo Links Start */}
-
-          <Link
-            to="/demo/start/server-funcs"
-            onClick={() => setIsOpen(false)}
-            className="flex items-center gap-3 p-3 rounded-lg hover:bg-gray-800 transition-colors mb-2"
-            activeProps={{
-              className:
-                'flex items-center gap-3 p-3 rounded-lg bg-cyan-600 hover:bg-cyan-700 transition-colors mb-2',
-            }}
-          >
-            <SquareFunction size={20} />
-            <span className="font-medium">Start - Server Functions</span>
-          </Link>
-
-          <Link
-            to="/demo/start/api-request"
-            onClick={() => setIsOpen(false)}
-            className="flex items-center gap-3 p-3 rounded-lg hover:bg-gray-800 transition-colors mb-2"
-            activeProps={{
-              className:
-                'flex items-center gap-3 p-3 rounded-lg bg-cyan-600 hover:bg-cyan-700 transition-colors mb-2',
-            }}
-          >
-            <Network size={20} />
-            <span className="font-medium">Start - API Request</span>
-          </Link>
-
-          <div className="flex flex-row justify-between">
-            <Link
-              to="/demo/start/ssr"
-              onClick={() => setIsOpen(false)}
-              className="flex-1 flex items-center gap-3 p-3 rounded-lg hover:bg-gray-800 transition-colors mb-2"
-              activeProps={{
-                className:
-                  'flex-1 flex items-center gap-3 p-3 rounded-lg bg-cyan-600 hover:bg-cyan-700 transition-colors mb-2',
-              }}
-            >
-              <StickyNote size={20} />
-              <span className="font-medium">Start - SSR Demos</span>
-            </Link>
-            <button
-              className="p-2 hover:bg-gray-800 rounded-lg transition-colors"
-              onClick={() =>
-                setGroupedExpanded((prev) => ({
-                  ...prev,
-                  StartSSRDemo: !prev.StartSSRDemo,
-                }))
-              }
-            >
-              {groupedExpanded.StartSSRDemo ? (
-                <ChevronDown size={20} />
-              ) : (
-                <ChevronRight size={20} />
-              )}
-            </button>
-          </div>
-          {groupedExpanded.StartSSRDemo && (
-            <div className="flex flex-col ml-4">
+          {isSignedIn && (
+            <>
               <Link
-                to="/demo/start/ssr/spa-mode"
+                to="/bookings"
                 onClick={() => setIsOpen(false)}
                 className="flex items-center gap-3 p-3 rounded-lg hover:bg-gray-800 transition-colors mb-2"
                 activeProps={{
                   className:
-                    'flex items-center gap-3 p-3 rounded-lg bg-cyan-600 hover:bg-cyan-700 transition-colors mb-2',
+                    'flex items-center gap-3 p-3 rounded-lg bg-indigo-600 hover:bg-indigo-700 transition-colors mb-2',
                 }}
               >
-                <StickyNote size={20} />
-                <span className="font-medium">SPA Mode</span>
+                <CalendarCheck size={20} />
+                <span className="font-medium">My Bookings</span>
               </Link>
 
               <Link
-                to="/demo/start/ssr/full-ssr"
+                to="/admin"
                 onClick={() => setIsOpen(false)}
                 className="flex items-center gap-3 p-3 rounded-lg hover:bg-gray-800 transition-colors mb-2"
                 activeProps={{
                   className:
-                    'flex items-center gap-3 p-3 rounded-lg bg-cyan-600 hover:bg-cyan-700 transition-colors mb-2',
+                    'flex items-center gap-3 p-3 rounded-lg bg-indigo-600 hover:bg-indigo-700 transition-colors mb-2',
                 }}
               >
-                <StickyNote size={20} />
-                <span className="font-medium">Full SSR</span>
+                <Settings size={20} />
+                <span className="font-medium">Admin Dashboard</span>
               </Link>
-
-              <Link
-                to="/demo/start/ssr/data-only"
-                onClick={() => setIsOpen(false)}
-                className="flex items-center gap-3 p-3 rounded-lg hover:bg-gray-800 transition-colors mb-2"
-                activeProps={{
-                  className:
-                    'flex items-center gap-3 p-3 rounded-lg bg-cyan-600 hover:bg-cyan-700 transition-colors mb-2',
-                }}
-              >
-                <StickyNote size={20} />
-                <span className="font-medium">Data Only</span>
-              </Link>
-            </div>
+            </>
           )}
 
-          <Link
-            to="/demo/clerk"
-            onClick={() => setIsOpen(false)}
-            className="flex items-center gap-3 p-3 rounded-lg hover:bg-gray-800 transition-colors mb-2"
-            activeProps={{
-              className:
-                'flex items-center gap-3 p-3 rounded-lg bg-cyan-600 hover:bg-cyan-700 transition-colors mb-2',
-            }}
-          >
-            <Globe size={20} />
-            <span className="font-medium">Clerk</span>
-          </Link>
-
-          <Link
-            to="/demo/convex"
-            onClick={() => setIsOpen(false)}
-            className="flex items-center gap-3 p-3 rounded-lg hover:bg-gray-800 transition-colors mb-2"
-            activeProps={{
-              className:
-                'flex items-center gap-3 p-3 rounded-lg bg-cyan-600 hover:bg-cyan-700 transition-colors mb-2',
-            }}
-          >
-            <Globe size={20} />
-            <span className="font-medium">Convex</span>
-          </Link>
-
-          {/* Demo Links End */}
+          {!isSignedIn && (
+            <>
+              <Link
+                to="/sign-in"
+                onClick={() => setIsOpen(false)}
+                className="flex items-center gap-3 p-3 rounded-lg hover:bg-gray-800 transition-colors mb-2"
+              >
+                <span className="font-medium">Sign In</span>
+              </Link>
+              <Link
+                to="/sign-up"
+                onClick={() => setIsOpen(false)}
+                className="flex items-center gap-3 p-3 rounded-lg hover:bg-gray-800 transition-colors mb-2"
+              >
+                <span className="font-medium">Create Account</span>
+              </Link>
+            </>
+          )}
         </nav>
 
-        <div className="p-4 border-t border-gray-700 bg-gray-800 flex flex-col gap-2">
-          <ClerkHeader />
-        </div>
+        {isSignedIn && (
+          <div className="p-4 border-t border-gray-700 bg-gray-800 flex flex-col gap-2">
+            <ClerkHeader />
+          </div>
+        )}
       </aside>
+
+      {/* Overlay */}
+      {isOpen && (
+        <div
+          className="fixed inset-0 bg-black bg-opacity-50 z-40"
+          onClick={() => setIsOpen(false)}
+        />
+      )}
     </>
   )
 }
+

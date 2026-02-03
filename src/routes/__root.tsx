@@ -2,12 +2,11 @@ import { HeadContent, Scripts, createRootRoute } from '@tanstack/react-router'
 import { TanStackRouterDevtoolsPanel } from '@tanstack/react-router-devtools'
 import { TanStackDevtools } from '@tanstack/react-devtools'
 
-
 import Header from '../components/Header'
 
-import ClerkProvider from './src/integrations/clerk/provider'
+import ClerkProvider from '../integrations/clerk/provider'
 
-import ConvexProvider from './src/integrations/convex/provider'
+import ConvexProvider from '../integrations/convex/provider'
 
 import appCss from '../styles.css?url'
 
@@ -22,7 +21,7 @@ export const Route = createRootRoute({
         content: 'width=device-width, initial-scale=1',
       },
       {
-        title: 'TanStack Start Starter',
+        title: 'Hotel Management System',
       },
     ],
     links: [
