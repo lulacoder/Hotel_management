@@ -8,8 +8,16 @@
  * @module
  */
 
+import type * as audit from "../audit.js";
+import type * as bookings from "../bookings.js";
+import type * as bookingsInternal from "../bookingsInternal.js";
 import type * as clerk from "../clerk.js";
+import type * as crons from "../crons.js";
+import type * as hotels from "../hotels.js";
 import type * as http from "../http.js";
+import type * as lib_auth from "../lib/auth.js";
+import type * as lib_dates from "../lib/dates.js";
+import type * as rooms from "../rooms.js";
 import type * as users from "../users.js";
 
 import type {
@@ -19,8 +27,16 @@ import type {
 } from "convex/server";
 
 declare const fullApi: ApiFromModules<{
+  audit: typeof audit;
+  bookings: typeof bookings;
+  bookingsInternal: typeof bookingsInternal;
   clerk: typeof clerk;
+  crons: typeof crons;
+  hotels: typeof hotels;
   http: typeof http;
+  "lib/auth": typeof lib_auth;
+  "lib/dates": typeof lib_dates;
+  rooms: typeof rooms;
   users: typeof users;
 }>;
 

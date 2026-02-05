@@ -1,4 +1,4 @@
-import { createFileRoute, redirect } from '@tanstack/react-router'
+import { createFileRoute } from '@tanstack/react-router'
 import { useAuth } from '@clerk/clerk-react'
 import { Link } from '@tanstack/react-router'
 import { Building2, CalendarCheck, Users, Shield } from 'lucide-react'
@@ -32,22 +32,26 @@ function LandingPage() {
     {
       icon: <Building2 className="w-10 h-10 text-indigo-600" />,
       title: 'Room Management',
-      description: 'Easily manage room availability, pricing, and amenities across multiple locations.',
+      description:
+        'Easily manage room availability, pricing, and amenities across multiple locations.',
     },
     {
       icon: <CalendarCheck className="w-10 h-10 text-indigo-600" />,
       title: 'Easy Bookings',
-      description: 'Streamlined booking process for customers with real-time availability updates.',
+      description:
+        'Streamlined booking process for customers with real-time availability updates.',
     },
     {
       icon: <Users className="w-10 h-10 text-indigo-600" />,
       title: 'Customer Portal',
-      description: 'Dedicated portal for customers to manage their reservations and preferences.',
+      description:
+        'Dedicated portal for customers to manage their reservations and preferences.',
     },
     {
       icon: <Shield className="w-10 h-10 text-indigo-600" />,
       title: 'Secure Access',
-      description: 'Role-based authentication ensures secure access for admins and customers.',
+      description:
+        'Role-based authentication ensures secure access for admins and customers.',
     },
   ]
 
@@ -63,13 +67,14 @@ function LandingPage() {
             </h1>
           </div>
           <p className="text-xl md:text-2xl text-gray-600 mb-4 max-w-2xl mx-auto">
-            Modern hotel management system for seamless room bookings and administration
+            Modern hotel management system for seamless room bookings and
+            administration
           </p>
           <p className="text-gray-500 mb-8 max-w-xl mx-auto">
-            Whether you're a guest looking to book a room or an administrator managing properties, 
-            our platform provides everything you need.
+            Whether you're a guest looking to book a room or an administrator
+            managing properties, our platform provides everything you need.
           </p>
-          
+
           <div className="flex flex-col sm:flex-row items-center justify-center gap-4">
             <Link
               to="/sign-in"
@@ -119,7 +124,8 @@ function LandingPage() {
             Ready to Get Started?
           </h2>
           <p className="text-indigo-100 mb-8">
-            Sign in to access your bookings or create a new account to get started.
+            Sign in to access your bookings or create a new account to get
+            started.
           </p>
           <Link
             to="/sign-in"
@@ -133,7 +139,8 @@ function LandingPage() {
       {/* Footer */}
       <footer className="py-8 px-6 bg-gray-900 text-center">
         <p className="text-gray-400 text-sm">
-          © {new Date().getFullYear()} Hotel Management System. All rights reserved.
+          © {new Date().getFullYear()} Hotel Management System. All rights
+          reserved.
         </p>
       </footer>
     </div>

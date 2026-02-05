@@ -15,7 +15,12 @@ const config = defineConfig({
     },
   },
   plugins: [
-    devtools(),
+    devtools({
+      eventBusConfig: {
+        // Use a dedicated, high, non-privileged port for the devtools event bus to avoid conflicts with common services.
+        port: 42070,
+      },
+    }),
     nitro(),
     // this is the plugin that enables path aliases
     viteTsConfigPaths({

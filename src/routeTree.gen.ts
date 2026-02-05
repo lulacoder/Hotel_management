@@ -21,9 +21,14 @@ import { Route as SignInSplatRouteImport } from './routes/sign-in.$'
 import { Route as DemoClerkRouteImport } from './routes/demo/clerk'
 import { Route as AuthenticatedSelectLocationRouteImport } from './routes/_authenticated/select-location'
 import { Route as AuthenticatedBookingsRouteImport } from './routes/_authenticated/bookings'
+import { Route as AdminRoomsIndexRouteImport } from './routes/admin/rooms/index'
+import { Route as AdminHotelsIndexRouteImport } from './routes/admin/hotels/index'
+import { Route as AdminBookingsIndexRouteImport } from './routes/admin/bookings/index'
 import { Route as DemoStartServerFuncsRouteImport } from './routes/demo/start.server-funcs'
 import { Route as DemoStartApiRequestRouteImport } from './routes/demo/start.api-request'
 import { Route as DemoApiNamesRouteImport } from './routes/demo/api.names'
+import { Route as AdminHotelsHotelIdRouteImport } from './routes/admin/hotels/$hotelId'
+import { Route as AuthenticatedHotelsHotelIdRouteImport } from './routes/_authenticated/hotels.$hotelId'
 import { Route as DemoStartSsrIndexRouteImport } from './routes/demo/start.ssr.index'
 import { Route as DemoStartSsrSpaModeRouteImport } from './routes/demo/start.ssr.spa-mode'
 import { Route as DemoStartSsrFullSsrRouteImport } from './routes/demo/start.ssr.full-ssr'
@@ -89,6 +94,21 @@ const AuthenticatedBookingsRoute = AuthenticatedBookingsRouteImport.update({
   path: '/bookings',
   getParentRoute: () => AuthenticatedRoute,
 } as any)
+const AdminRoomsIndexRoute = AdminRoomsIndexRouteImport.update({
+  id: '/rooms/',
+  path: '/rooms/',
+  getParentRoute: () => AdminRoute,
+} as any)
+const AdminHotelsIndexRoute = AdminHotelsIndexRouteImport.update({
+  id: '/hotels/',
+  path: '/hotels/',
+  getParentRoute: () => AdminRoute,
+} as any)
+const AdminBookingsIndexRoute = AdminBookingsIndexRouteImport.update({
+  id: '/bookings/',
+  path: '/bookings/',
+  getParentRoute: () => AdminRoute,
+} as any)
 const DemoStartServerFuncsRoute = DemoStartServerFuncsRouteImport.update({
   id: '/demo/start/server-funcs',
   path: '/demo/start/server-funcs',
@@ -104,6 +124,17 @@ const DemoApiNamesRoute = DemoApiNamesRouteImport.update({
   path: '/demo/api/names',
   getParentRoute: () => rootRouteImport,
 } as any)
+const AdminHotelsHotelIdRoute = AdminHotelsHotelIdRouteImport.update({
+  id: '/hotels/$hotelId',
+  path: '/hotels/$hotelId',
+  getParentRoute: () => AdminRoute,
+} as any)
+const AuthenticatedHotelsHotelIdRoute =
+  AuthenticatedHotelsHotelIdRouteImport.update({
+    id: '/hotels/$hotelId',
+    path: '/hotels/$hotelId',
+    getParentRoute: () => AuthenticatedRoute,
+  } as any)
 const DemoStartSsrIndexRoute = DemoStartSsrIndexRouteImport.update({
   id: '/demo/start/ssr/',
   path: '/demo/start/ssr/',
@@ -137,9 +168,14 @@ export interface FileRoutesByFullPath {
   '/sign-in/$': typeof SignInSplatRoute
   '/sign-up/$': typeof SignUpSplatRoute
   '/admin/': typeof AdminIndexRoute
+  '/hotels/$hotelId': typeof AuthenticatedHotelsHotelIdRoute
+  '/admin/hotels/$hotelId': typeof AdminHotelsHotelIdRoute
   '/demo/api/names': typeof DemoApiNamesRoute
   '/demo/start/api-request': typeof DemoStartApiRequestRoute
   '/demo/start/server-funcs': typeof DemoStartServerFuncsRoute
+  '/admin/bookings/': typeof AdminBookingsIndexRoute
+  '/admin/hotels/': typeof AdminHotelsIndexRoute
+  '/admin/rooms/': typeof AdminRoomsIndexRoute
   '/demo/start/ssr/data-only': typeof DemoStartSsrDataOnlyRoute
   '/demo/start/ssr/full-ssr': typeof DemoStartSsrFullSsrRoute
   '/demo/start/ssr/spa-mode': typeof DemoStartSsrSpaModeRoute
@@ -156,9 +192,14 @@ export interface FileRoutesByTo {
   '/sign-in/$': typeof SignInSplatRoute
   '/sign-up/$': typeof SignUpSplatRoute
   '/admin': typeof AdminIndexRoute
+  '/hotels/$hotelId': typeof AuthenticatedHotelsHotelIdRoute
+  '/admin/hotels/$hotelId': typeof AdminHotelsHotelIdRoute
   '/demo/api/names': typeof DemoApiNamesRoute
   '/demo/start/api-request': typeof DemoStartApiRequestRoute
   '/demo/start/server-funcs': typeof DemoStartServerFuncsRoute
+  '/admin/bookings': typeof AdminBookingsIndexRoute
+  '/admin/hotels': typeof AdminHotelsIndexRoute
+  '/admin/rooms': typeof AdminRoomsIndexRoute
   '/demo/start/ssr/data-only': typeof DemoStartSsrDataOnlyRoute
   '/demo/start/ssr/full-ssr': typeof DemoStartSsrFullSsrRoute
   '/demo/start/ssr/spa-mode': typeof DemoStartSsrSpaModeRoute
@@ -178,9 +219,14 @@ export interface FileRoutesById {
   '/sign-in/$': typeof SignInSplatRoute
   '/sign-up/$': typeof SignUpSplatRoute
   '/admin/': typeof AdminIndexRoute
+  '/_authenticated/hotels/$hotelId': typeof AuthenticatedHotelsHotelIdRoute
+  '/admin/hotels/$hotelId': typeof AdminHotelsHotelIdRoute
   '/demo/api/names': typeof DemoApiNamesRoute
   '/demo/start/api-request': typeof DemoStartApiRequestRoute
   '/demo/start/server-funcs': typeof DemoStartServerFuncsRoute
+  '/admin/bookings/': typeof AdminBookingsIndexRoute
+  '/admin/hotels/': typeof AdminHotelsIndexRoute
+  '/admin/rooms/': typeof AdminRoomsIndexRoute
   '/demo/start/ssr/data-only': typeof DemoStartSsrDataOnlyRoute
   '/demo/start/ssr/full-ssr': typeof DemoStartSsrFullSsrRoute
   '/demo/start/ssr/spa-mode': typeof DemoStartSsrSpaModeRoute
@@ -200,9 +246,14 @@ export interface FileRouteTypes {
     | '/sign-in/$'
     | '/sign-up/$'
     | '/admin/'
+    | '/hotels/$hotelId'
+    | '/admin/hotels/$hotelId'
     | '/demo/api/names'
     | '/demo/start/api-request'
     | '/demo/start/server-funcs'
+    | '/admin/bookings/'
+    | '/admin/hotels/'
+    | '/admin/rooms/'
     | '/demo/start/ssr/data-only'
     | '/demo/start/ssr/full-ssr'
     | '/demo/start/ssr/spa-mode'
@@ -219,9 +270,14 @@ export interface FileRouteTypes {
     | '/sign-in/$'
     | '/sign-up/$'
     | '/admin'
+    | '/hotels/$hotelId'
+    | '/admin/hotels/$hotelId'
     | '/demo/api/names'
     | '/demo/start/api-request'
     | '/demo/start/server-funcs'
+    | '/admin/bookings'
+    | '/admin/hotels'
+    | '/admin/rooms'
     | '/demo/start/ssr/data-only'
     | '/demo/start/ssr/full-ssr'
     | '/demo/start/ssr/spa-mode'
@@ -240,9 +296,14 @@ export interface FileRouteTypes {
     | '/sign-in/$'
     | '/sign-up/$'
     | '/admin/'
+    | '/_authenticated/hotels/$hotelId'
+    | '/admin/hotels/$hotelId'
     | '/demo/api/names'
     | '/demo/start/api-request'
     | '/demo/start/server-funcs'
+    | '/admin/bookings/'
+    | '/admin/hotels/'
+    | '/admin/rooms/'
     | '/demo/start/ssr/data-only'
     | '/demo/start/ssr/full-ssr'
     | '/demo/start/ssr/spa-mode'
@@ -352,6 +413,27 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedBookingsRouteImport
       parentRoute: typeof AuthenticatedRoute
     }
+    '/admin/rooms/': {
+      id: '/admin/rooms/'
+      path: '/rooms'
+      fullPath: '/admin/rooms/'
+      preLoaderRoute: typeof AdminRoomsIndexRouteImport
+      parentRoute: typeof AdminRoute
+    }
+    '/admin/hotels/': {
+      id: '/admin/hotels/'
+      path: '/hotels'
+      fullPath: '/admin/hotels/'
+      preLoaderRoute: typeof AdminHotelsIndexRouteImport
+      parentRoute: typeof AdminRoute
+    }
+    '/admin/bookings/': {
+      id: '/admin/bookings/'
+      path: '/bookings'
+      fullPath: '/admin/bookings/'
+      preLoaderRoute: typeof AdminBookingsIndexRouteImport
+      parentRoute: typeof AdminRoute
+    }
     '/demo/start/server-funcs': {
       id: '/demo/start/server-funcs'
       path: '/demo/start/server-funcs'
@@ -372,6 +454,20 @@ declare module '@tanstack/react-router' {
       fullPath: '/demo/api/names'
       preLoaderRoute: typeof DemoApiNamesRouteImport
       parentRoute: typeof rootRouteImport
+    }
+    '/admin/hotels/$hotelId': {
+      id: '/admin/hotels/$hotelId'
+      path: '/hotels/$hotelId'
+      fullPath: '/admin/hotels/$hotelId'
+      preLoaderRoute: typeof AdminHotelsHotelIdRouteImport
+      parentRoute: typeof AdminRoute
+    }
+    '/_authenticated/hotels/$hotelId': {
+      id: '/_authenticated/hotels/$hotelId'
+      path: '/hotels/$hotelId'
+      fullPath: '/hotels/$hotelId'
+      preLoaderRoute: typeof AuthenticatedHotelsHotelIdRouteImport
+      parentRoute: typeof AuthenticatedRoute
     }
     '/demo/start/ssr/': {
       id: '/demo/start/ssr/'
@@ -407,11 +503,13 @@ declare module '@tanstack/react-router' {
 interface AuthenticatedRouteChildren {
   AuthenticatedBookingsRoute: typeof AuthenticatedBookingsRoute
   AuthenticatedSelectLocationRoute: typeof AuthenticatedSelectLocationRoute
+  AuthenticatedHotelsHotelIdRoute: typeof AuthenticatedHotelsHotelIdRoute
 }
 
 const AuthenticatedRouteChildren: AuthenticatedRouteChildren = {
   AuthenticatedBookingsRoute: AuthenticatedBookingsRoute,
   AuthenticatedSelectLocationRoute: AuthenticatedSelectLocationRoute,
+  AuthenticatedHotelsHotelIdRoute: AuthenticatedHotelsHotelIdRoute,
 }
 
 const AuthenticatedRouteWithChildren = AuthenticatedRoute._addFileChildren(
@@ -420,10 +518,18 @@ const AuthenticatedRouteWithChildren = AuthenticatedRoute._addFileChildren(
 
 interface AdminRouteChildren {
   AdminIndexRoute: typeof AdminIndexRoute
+  AdminHotelsHotelIdRoute: typeof AdminHotelsHotelIdRoute
+  AdminBookingsIndexRoute: typeof AdminBookingsIndexRoute
+  AdminHotelsIndexRoute: typeof AdminHotelsIndexRoute
+  AdminRoomsIndexRoute: typeof AdminRoomsIndexRoute
 }
 
 const AdminRouteChildren: AdminRouteChildren = {
   AdminIndexRoute: AdminIndexRoute,
+  AdminHotelsHotelIdRoute: AdminHotelsHotelIdRoute,
+  AdminBookingsIndexRoute: AdminBookingsIndexRoute,
+  AdminHotelsIndexRoute: AdminHotelsIndexRoute,
+  AdminRoomsIndexRoute: AdminRoomsIndexRoute,
 }
 
 const AdminRouteWithChildren = AdminRoute._addFileChildren(AdminRouteChildren)

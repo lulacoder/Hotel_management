@@ -3,6 +3,7 @@ import {
   Outlet,
   useNavigate,
   Link,
+  useLocation,
 } from '@tanstack/react-router'
 import { useUser, UserButton } from '@clerk/clerk-react'
 import { useQuery } from 'convex/react'
@@ -10,9 +11,9 @@ import { api } from '../../convex/_generated/api'
 import { useEffect } from 'react'
 import {
   LayoutDashboard,
-  Users,
-  Building,
-  Settings,
+  Building2,
+  Hotel,
+  Calendar,
   LogOut,
 } from 'lucide-react'
 
@@ -23,6 +24,7 @@ export const Route = createFileRoute('/admin')({
 function AdminLayout() {
   const { user, isLoaded, isSignedIn } = useUser()
   const navigate = useNavigate()
+  const location = useLocation()
 
   const profile = useQuery(
     api.users.getByClerkId,
@@ -39,8 +41,11 @@ function AdminLayout() {
 
   if (!isLoaded || profile === undefined) {
     return (
-      <div className="flex min-h-screen items-center justify-center">
-        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600"></div>
+      <div className="flex min-h-screen items-center justify-center bg-slate-950">
+        <div className="relative">
+          <div className="animate-spin rounded-full h-12 w-12 border-2 border-amber-500/20 border-t-amber-500"></div>
+          <div className="absolute inset-0 animate-ping rounded-full h-12 w-12 border border-amber-500/10"></div>
+        </div>
       </div>
     )
   }
@@ -52,86 +57,110 @@ function AdminLayout() {
   // Access denied for non-admins
   if (profile?.role !== 'room_admin') {
     return (
-      <div className="flex min-h-screen items-center justify-center bg-gradient-to-br from-red-50 to-orange-100">
-        <div className="bg-white rounded-xl shadow-lg p-8 max-w-md text-center">
-          <div className="w-16 h-16 bg-red-100 rounded-full flex items-center justify-center mx-auto mb-4">
-            <LogOut className="w-8 h-8 text-red-600" />
+      <div className="flex min-h-screen items-center justify-center bg-slate-950">
+        <div className="bg-slate-900 border border-red-500/20 rounded-2xl shadow-2xl shadow-red-500/5 p-10 max-w-md text-center">
+          <div className="w-20 h-20 bg-gradient-to-br from-red-500/20 to-red-600/10 rounded-2xl flex items-center justify-center mx-auto mb-6 border border-red-500/20">
+            <LogOut className="w-10 h-10 text-red-400" />
           </div>
-          <h1 className="text-2xl font-bold text-red-600 mb-2">
+          <h1 className="text-2xl font-semibold text-red-400 mb-3 tracking-tight">
             Access Denied
           </h1>
-          <p className="text-gray-600 mb-6">
+          <p className="text-slate-400 mb-8 leading-relaxed">
             You don't have permission to access the admin area. This section is
             restricted to room administrators only.
           </p>
           <button
             onClick={() => navigate({ to: '/' })}
-            className="px-6 py-3 bg-blue-600 text-white font-medium rounded-lg hover:bg-blue-700 transition-colors"
+            className="px-8 py-3 bg-slate-800 text-slate-200 font-medium rounded-xl hover:bg-slate-700 transition-all duration-200 border border-slate-700"
           >
-            Go to Home
+            Return Home
           </button>
         </div>
       </div>
     )
   }
 
+  const navItems = [
+    { to: '/admin', label: 'Dashboard', icon: LayoutDashboard, exact: true },
+    { to: '/admin/hotels', label: 'Hotels', icon: Hotel },
+    { to: '/admin/rooms', label: 'Rooms', icon: Building2 },
+    { to: '/admin/bookings', label: 'Bookings', icon: Calendar },
+  ]
+
+  const isActive = (path: string, exact?: boolean) => {
+    if (exact) return location.pathname === path
+    return location.pathname.startsWith(path)
+  }
+
   return (
-    <div className="flex min-h-screen bg-gray-100">
+    <div className="flex min-h-screen bg-slate-950">
       {/* Sidebar */}
-      <aside className="w-64 bg-white shadow-lg">
-        <div className="p-6 border-b">
-          <h1 className="text-xl font-bold text-gray-800">Hotel Admin</h1>
-          <p className="text-sm text-gray-500">Management Portal</p>
+      <aside className="w-72 bg-slate-900/50 border-r border-slate-800/50 backdrop-blur-xl">
+        <div className="p-6 border-b border-slate-800/50">
+          <div className="flex items-center gap-3">
+            <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-amber-500 to-amber-600 flex items-center justify-center shadow-lg shadow-amber-500/20">
+              <Hotel className="w-5 h-5 text-white" />
+            </div>
+            <div>
+              <h1 className="text-lg font-semibold text-slate-100 tracking-tight">
+                Hotel Admin
+              </h1>
+              <p className="text-xs text-slate-500 font-medium">
+                Management Portal
+              </p>
+            </div>
+          </div>
         </div>
-        <nav className="p-4 space-y-2">
-          <Link
-            to="/admin"
-            className="flex items-center gap-3 px-4 py-3 rounded-lg text-gray-700 hover:bg-blue-50 hover:text-blue-600 transition-colors"
-          >
-            <LayoutDashboard className="w-5 h-5" />
-            Dashboard
-          </Link>
-          <button
-            disabled
-            className="flex items-center gap-3 px-4 py-3 rounded-lg text-gray-400 cursor-not-allowed w-full"
-          >
-            <Building className="w-5 h-5" />
-            Rooms (Coming Soon)
-          </button>
-          <button
-            disabled
-            className="flex items-center gap-3 px-4 py-3 rounded-lg text-gray-400 cursor-not-allowed w-full"
-          >
-            <Users className="w-5 h-5" />
-            Bookings (Coming Soon)
-          </button>
-          <button
-            disabled
-            className="flex items-center gap-3 px-4 py-3 rounded-lg text-gray-400 cursor-not-allowed w-full"
-          >
-            <Settings className="w-5 h-5" />
-            Settings (Coming Soon)
-          </button>
+
+        <nav className="p-4 space-y-1">
+          {navItems.map((item) => {
+            const active = isActive(item.to, item.exact)
+            return (
+              <Link
+                key={item.to}
+                to={item.to}
+                className={`flex items-center gap-3 px-4 py-3 rounded-xl font-medium transition-all duration-200 ${
+                  active
+                    ? 'bg-amber-500/10 text-amber-400 border border-amber-500/20'
+                    : 'text-slate-400 hover:bg-slate-800/50 hover:text-slate-200 border border-transparent'
+                }`}
+              >
+                <item.icon
+                  className={`w-5 h-5 ${active ? 'text-amber-400' : ''}`}
+                />
+                {item.label}
+              </Link>
+            )
+          })}
         </nav>
+
+        {/* User section at bottom */}
+        <div className="absolute bottom-0 left-0 right-0 p-4 border-t border-slate-800/50 w-72">
+          <div className="flex items-center gap-3 px-2">
+            <UserButton
+              afterSignOutUrl="/"
+              appearance={{
+                elements: {
+                  avatarBox: 'w-9 h-9',
+                },
+              }}
+            />
+            <div className="flex-1 min-w-0">
+              <p className="text-sm font-medium text-slate-200 truncate">
+                {user?.firstName || 'Admin'}
+              </p>
+              <p className="text-xs text-slate-500 truncate">
+                {user?.emailAddresses[0]?.emailAddress}
+              </p>
+            </div>
+          </div>
+        </div>
       </aside>
 
       {/* Main Content */}
-      <div className="flex-1">
-        {/* Top Bar */}
-        <header className="bg-white shadow-sm px-6 py-4 flex justify-between items-center">
-          <h2 className="text-lg font-semibold text-gray-800">
-            Welcome back, {user?.firstName || 'Admin'}
-          </h2>
-          <div className="flex items-center gap-4">
-            <span className="text-sm text-gray-500">
-              {user?.emailAddresses[0]?.emailAddress}
-            </span>
-            <UserButton afterSignOutUrl="/" />
-          </div>
-        </header>
-
+      <div className="flex-1 flex flex-col">
         {/* Page Content */}
-        <main className="p-6">
+        <main className="flex-1 p-8 overflow-auto">
           <Outlet />
         </main>
       </div>
