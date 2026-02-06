@@ -42,18 +42,41 @@ See [Authentication Flow](../auth/auth.md) for details.
 
 **What the customer sees:**
 
-- Search bar (searches hotel names)
-- City filter dropdown
-- Grid of hotel cards with:
-  - Hotel name
-  - Location (city, country)
+- **Location banner** - Shows location status (loading, enabled, or error)
+- **Search bar** - Searches hotel name, city, description, and tags
+- **City filter** - Dropdown to filter by city
+- **Category filter** - Filter by hotel type (Luxury, Boutique, Budget, etc.)
+- **Sort options** - Sort by name, rating, or distance (if location enabled)
+- **Hotel cards** with:
+  - Hotel name and rating stars
+  - Category badge (color-coded)
+  - Location (city, state, country)
+  - Distance from user (if location enabled)
+  - Parking included badge
+  - Tags list
+  - Description preview
   - "View Rooms" link
+
+**Geolocation feature:**
+
+On page load, the app requests the user's location. If granted:
+
+- Hotels display distance (e.g., "2.5 km away")
+- "Sort by Distance" option becomes available
+- Nearest hotels can be shown first
 
 **Backend query:** `api.hotels.list`
 
 ```typescript
-// Returns all non-deleted hotels
+// Returns all non-deleted hotels with extended fields
 const hotels = useQuery(api.hotels.list, {})
+
+// Hotels now include:
+// - description, category, tags
+// - parkingIncluded, rating
+// - location: { lat, lng }
+// - stateProvince, postalCode
+// - lastRenovationDate
 ```
 
 **Filtering is client-side** for simplicity. For large datasets, you'd want server-side filtering.
@@ -64,29 +87,48 @@ const hotels = useQuery(api.hotels.list, {})
 
 **What the customer sees:**
 
-1. Hotel details (name, address, description)
-2. Date picker (check-in and check-out)
-3. List of available rooms for those dates
-4. Each room shows:
-   - Room type and number
-   - Capacity
-   - Amenities
-   - Price per night
-   - "Book Now" button
+**Hotel section:**
+
+1. Hotel name with rating stars (actual rating, not hardcoded)
+2. Category badge (color-coded: Luxury=amber, Boutique=purple, etc.)
+3. Full address with state/province and postal code
+4. Hotel description
+5. Feature badges:
+   - Free Parking (if `parkingIncluded`)
+   - Renovated year (from `lastRenovationDate`)
+6. Tags list (pool, spa, gym, etc.)
+
+**Date picker:**
+
+- Check-in and check-out date selectors
+- Nights count display
+
+**Room cards:**
+
+- Room number and type (Budget, Standard, Suite, Deluxe)
+- Room description
+- Bed options (e.g., "2 Queen Beds", "1 King Bed")
+- Smoking/non-smoking indicator
+- Capacity (max guests)
+- Amenities list
+- Price per night
+- Total price (if dates selected)
+- "Book Now" button
 
 **Backend queries:**
 
 ```typescript
-// Get hotel details
+// Get hotel details (now includes extended fields)
 const hotel = useQuery(api.hotels.get, { hotelId })
+// Returns: { name, description, category, tags, rating, parkingIncluded, ... }
 
 // Get available rooms for selected dates
 const rooms = useQuery(api.rooms.getAvailableRooms, {
-  clerkUserId: user.id,
   hotelId,
   checkIn: '2024-03-15',
   checkOut: '2024-03-18',
 })
+// Returns rooms with: description, bedOptions, smokingAllowed, ...
 ```
 
 **How availability works:**

@@ -2,29 +2,140 @@ import { createFileRoute, Link } from '@tanstack/react-router'
 import { useUser, UserButton } from '@clerk/clerk-react'
 import { useQuery } from 'convex/react'
 import { api } from '../../../convex/_generated/api'
-import { MapPin, Search, Building2, Star } from 'lucide-react'
-import { useState } from 'react'
+import {
+  MapPin,
+  Search,
+  Building2,
+  Star,
+  Navigation,
+  Car,
+  Tag,
+  ArrowUpDown,
+  Loader2,
+} from 'lucide-react'
+import { useState, useEffect, useMemo } from 'react'
+import {
+  useGeolocation,
+  getGeolocationErrorMessage,
+} from '../../hooks/useGeolocation'
+import { calculateDistance, formatDistance } from '../../lib/distance'
 
 export const Route = createFileRoute('/_authenticated/select-location')({
   component: SelectLocationPage,
 })
 
+type SortOption = 'name' | 'rating' | 'distance'
+
+// Category badge colors
+const categoryColors: Record<string, string> = {
+  Boutique: 'bg-violet-500/20 text-violet-300 border-violet-500/30',
+  Budget: 'bg-emerald-500/20 text-emerald-300 border-emerald-500/30',
+  Luxury: 'bg-amber-500/20 text-amber-300 border-amber-500/30',
+  'Resort and Spa': 'bg-pink-500/20 text-pink-300 border-pink-500/30',
+  'Extended-Stay': 'bg-blue-500/20 text-blue-300 border-blue-500/30',
+  Suite: 'bg-cyan-500/20 text-cyan-300 border-cyan-500/30',
+}
+
 function SelectLocationPage() {
   const { user } = useUser()
   const [searchTerm, setSearchTerm] = useState('')
   const [selectedCity, setSelectedCity] = useState<string>('all')
+  const [selectedCategory, setSelectedCategory] = useState<string>('all')
+  const [sortBy, setSortBy] = useState<SortOption>('name')
+  const [locationRequested, setLocationRequested] = useState(false)
 
   const hotels = useQuery(api.hotels.list, {})
   const cities = useQuery(api.hotels.getCities, {})
 
-  const filteredHotels = hotels?.filter((hotel) => {
-    const matchesSearch =
-      hotel.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      hotel.city.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      hotel.country.toLowerCase().includes(searchTerm.toLowerCase())
-    const matchesCity = selectedCity === 'all' || hotel.city === selectedCity
-    return matchesSearch && matchesCity
-  })
+  // Geolocation hook
+  const {
+    latitude: userLat,
+    longitude: userLng,
+    loading: locationLoading,
+    error: locationError,
+    requestLocation,
+    supported: locationSupported,
+  } = useGeolocation()
+
+  // Request location on mount
+  useEffect(() => {
+    if (locationSupported && !locationRequested) {
+      setLocationRequested(true)
+      requestLocation()
+    }
+  }, [locationSupported, locationRequested, requestLocation])
+
+  // Compute hotels with distance
+  const hotelsWithDistance = useMemo(() => {
+    if (!hotels) return []
+
+    return hotels.map((hotel) => {
+      let distance: number | null = null
+
+      if (userLat && userLng && hotel.location) {
+        distance = calculateDistance(
+          userLat,
+          userLng,
+          hotel.location.lat,
+          hotel.location.lng,
+        )
+      }
+
+      return { ...hotel, distance }
+    })
+  }, [hotels, userLat, userLng])
+
+  // Get unique categories
+  const categories = useMemo(() => {
+    if (!hotels) return []
+    const cats = hotels
+      .map((h) => h.category)
+      .filter((c): c is string => c !== undefined)
+    return [...new Set(cats)].sort()
+  }, [hotels])
+
+  // Filter and sort hotels
+  const filteredHotels = useMemo(() => {
+    let result = hotelsWithDistance.filter((hotel) => {
+      const matchesSearch =
+        hotel.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
+        hotel.city.toLowerCase().includes(searchTerm.toLowerCase()) ||
+        hotel.country.toLowerCase().includes(searchTerm.toLowerCase()) ||
+        (hotel.description?.toLowerCase().includes(searchTerm.toLowerCase()) ??
+          false) ||
+        (hotel.tags?.some((tag) =>
+          tag.toLowerCase().includes(searchTerm.toLowerCase()),
+        ) ??
+          false)
+      const matchesCity = selectedCity === 'all' || hotel.city === selectedCity
+      const matchesCategory =
+        selectedCategory === 'all' || hotel.category === selectedCategory
+      return matchesSearch && matchesCity && matchesCategory
+    })
+
+    // Sort
+    result.sort((a, b) => {
+      switch (sortBy) {
+        case 'distance':
+          // Hotels without location go to the end
+          if (a.distance === null && b.distance === null) return 0
+          if (a.distance === null) return 1
+          if (b.distance === null) return -1
+          return a.distance - b.distance
+        case 'rating':
+          const ratingA = a.rating ?? 0
+          const ratingB = b.rating ?? 0
+          return ratingB - ratingA // Higher rating first
+        case 'name':
+        default:
+          return a.name.localeCompare(b.name)
+      }
+    })
+
+    return result
+  }, [hotelsWithDistance, searchTerm, selectedCity, selectedCategory, sortBy])
+
+  const hasUserLocation = userLat !== null && userLng !== null
 
   return (
     <div className="min-h-screen bg-gradient-to-b from-slate-950 via-slate-900 to-slate-950">
@@ -55,7 +166,7 @@ function SelectLocationPage() {
       </header>
 
       {/* Hero Section */}
-      <div className="relative py-20 px-4 overflow-hidden">
+      <div className="relative py-16 px-4 overflow-hidden">
         <div className="absolute inset-0 bg-gradient-to-r from-amber-500/5 to-violet-500/5"></div>
         <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[600px] h-[600px] bg-amber-500/10 rounded-full blur-3xl"></div>
 
@@ -67,30 +178,87 @@ function SelectLocationPage() {
             Browse our curated selection of hotels and book your next adventure.
           </p>
 
-          {/* Search Bar */}
-          <div className="flex flex-col md:flex-row gap-4 max-w-2xl mx-auto">
-            <div className="relative flex-1">
+          {/* Location Status Banner */}
+          {locationSupported && (
+            <div className="mb-6">
+              {locationLoading ? (
+                <div className="inline-flex items-center gap-2 px-4 py-2 bg-slate-800/50 rounded-lg text-slate-400 text-sm">
+                  <Loader2 className="w-4 h-4 animate-spin" />
+                  Getting your location...
+                </div>
+              ) : hasUserLocation ? (
+                <div className="inline-flex items-center gap-2 px-4 py-2 bg-emerald-500/10 border border-emerald-500/30 rounded-lg text-emerald-400 text-sm">
+                  <Navigation className="w-4 h-4" />
+                  Location enabled - showing hotels sorted by distance
+                </div>
+              ) : locationError ? (
+                <button
+                  onClick={requestLocation}
+                  className="inline-flex items-center gap-2 px-4 py-2 bg-slate-800/50 hover:bg-slate-700/50 rounded-lg text-slate-400 text-sm transition-colors"
+                >
+                  <Navigation className="w-4 h-4" />
+                  {getGeolocationErrorMessage(locationError).substring(0, 50)}
+                  ...
+                  <span className="text-amber-400 ml-1">Try again</span>
+                </button>
+              ) : null}
+            </div>
+          )}
+
+          {/* Search and Filters */}
+          <div className="flex flex-col gap-4 max-w-3xl mx-auto">
+            {/* Search Bar */}
+            <div className="relative">
               <Search className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-slate-500" />
               <input
                 type="text"
-                placeholder="Search hotels, cities..."
+                placeholder="Search hotels, cities, or amenities..."
                 value={searchTerm}
                 onChange={(e) => setSearchTerm(e.target.value)}
                 className="w-full pl-12 pr-4 py-4 bg-slate-800/50 border border-slate-700/50 rounded-xl text-slate-200 placeholder-slate-500 focus:outline-none focus:border-amber-500/50 focus:ring-2 focus:ring-amber-500/20 transition-all"
               />
             </div>
-            <select
-              value={selectedCity}
-              onChange={(e) => setSelectedCity(e.target.value)}
-              className="px-4 py-4 bg-slate-800/50 border border-slate-700/50 rounded-xl text-slate-200 focus:outline-none focus:border-amber-500/50 transition-all min-w-[150px]"
-            >
-              <option value="all">All Cities</option>
-              {cities?.map((city) => (
-                <option key={city} value={city}>
-                  {city}
-                </option>
-              ))}
-            </select>
+
+            {/* Filters Row */}
+            <div className="flex flex-col sm:flex-row gap-3">
+              <select
+                value={selectedCity}
+                onChange={(e) => setSelectedCity(e.target.value)}
+                className="flex-1 px-4 py-3 bg-slate-800/50 border border-slate-700/50 rounded-xl text-slate-200 focus:outline-none focus:border-amber-500/50 transition-all"
+              >
+                <option value="all">All Cities</option>
+                {cities?.map((city) => (
+                  <option key={city} value={city}>
+                    {city}
+                  </option>
+                ))}
+              </select>
+
+              <select
+                value={selectedCategory}
+                onChange={(e) => setSelectedCategory(e.target.value)}
+                className="flex-1 px-4 py-3 bg-slate-800/50 border border-slate-700/50 rounded-xl text-slate-200 focus:outline-none focus:border-amber-500/50 transition-all"
+              >
+                <option value="all">All Categories</option>
+                {categories.map((cat) => (
+                  <option key={cat} value={cat}>
+                    {cat}
+                  </option>
+                ))}
+              </select>
+
+              <select
+                value={sortBy}
+                onChange={(e) => setSortBy(e.target.value as SortOption)}
+                className="flex-1 px-4 py-3 bg-slate-800/50 border border-slate-700/50 rounded-xl text-slate-200 focus:outline-none focus:border-amber-500/50 transition-all"
+              >
+                <option value="name">Sort by Name</option>
+                <option value="rating">Sort by Rating</option>
+                {hasUserLocation && (
+                  <option value="distance">Sort by Distance</option>
+                )}
+              </select>
+            </div>
           </div>
         </div>
       </div>
@@ -101,29 +269,42 @@ function SelectLocationPage() {
           <div className="flex items-center justify-center py-20">
             <div className="animate-spin rounded-full h-10 w-10 border-2 border-amber-500/20 border-t-amber-500"></div>
           </div>
-        ) : filteredHotels?.length === 0 ? (
+        ) : filteredHotels.length === 0 ? (
           <div className="bg-slate-900/50 border border-slate-800/50 rounded-2xl p-16 text-center">
             <div className="w-20 h-20 rounded-2xl bg-slate-800 flex items-center justify-center mx-auto mb-6">
               <Building2 className="w-10 h-10 text-slate-600" />
             </div>
             <h3 className="text-xl font-semibold text-slate-300 mb-3">
-              {searchTerm || selectedCity !== 'all'
+              {searchTerm ||
+              selectedCity !== 'all' ||
+              selectedCategory !== 'all'
                 ? 'No hotels found'
                 : 'No hotels available'}
             </h3>
             <p className="text-slate-500">
-              {searchTerm || selectedCity !== 'all'
-                ? 'Try adjusting your search or filter.'
+              {searchTerm ||
+              selectedCity !== 'all' ||
+              selectedCategory !== 'all'
+                ? 'Try adjusting your search or filters.'
                 : 'Check back soon for new listings.'}
             </p>
           </div>
-        ) : filteredHotels ? (
+        ) : (
           <>
             <div className="flex items-center justify-between mb-6">
               <h3 className="text-xl font-semibold text-slate-200">
                 {filteredHotels.length} hotel
                 {filteredHotels.length !== 1 ? 's' : ''} available
               </h3>
+              <div className="flex items-center gap-2 text-slate-500 text-sm">
+                <ArrowUpDown className="w-4 h-4" />
+                Sorted by{' '}
+                {sortBy === 'distance'
+                  ? 'distance'
+                  : sortBy === 'rating'
+                    ? 'rating'
+                    : 'name'}
+              </div>
             </div>
 
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
@@ -140,13 +321,48 @@ function SelectLocationPage() {
                     <div className="absolute inset-0 flex items-center justify-center">
                       <Building2 className="w-16 h-16 text-slate-700" />
                     </div>
-                    {/* Rating Badge */}
-                    <div className="absolute top-4 right-4 flex items-center gap-1 bg-slate-900/80 backdrop-blur-sm px-2 py-1 rounded-lg">
-                      <Star className="w-4 h-4 text-amber-400 fill-amber-400" />
-                      <span className="text-sm text-slate-200 font-medium">
-                        4.8
-                      </span>
+
+                    {/* Top badges row */}
+                    <div className="absolute top-4 left-4 right-4 flex items-start justify-between">
+                      {/* Category Badge */}
+                      {hotel.category && (
+                        <span
+                          className={`px-2 py-1 rounded-lg text-xs font-medium border ${categoryColors[hotel.category] || 'bg-slate-500/20 text-slate-300 border-slate-500/30'}`}
+                        >
+                          {hotel.category}
+                        </span>
+                      )}
+
+                      {/* Rating Badge */}
+                      {hotel.rating && (
+                        <div className="flex items-center gap-1 bg-slate-900/80 backdrop-blur-sm px-2 py-1 rounded-lg">
+                          <Star className="w-4 h-4 text-amber-400 fill-amber-400" />
+                          <span className="text-sm text-slate-200 font-medium">
+                            {hotel.rating.toFixed(1)}
+                          </span>
+                        </div>
+                      )}
                     </div>
+
+                    {/* Distance Badge (bottom left) */}
+                    {hotel.distance !== null && (
+                      <div className="absolute bottom-4 left-4 flex items-center gap-1.5 bg-slate-900/80 backdrop-blur-sm px-2.5 py-1.5 rounded-lg">
+                        <Navigation className="w-3.5 h-3.5 text-emerald-400" />
+                        <span className="text-sm text-slate-200 font-medium">
+                          {formatDistance(hotel.distance)}
+                        </span>
+                      </div>
+                    )}
+
+                    {/* Parking Badge (bottom right) */}
+                    {hotel.parkingIncluded && (
+                      <div className="absolute bottom-4 right-4 flex items-center gap-1 bg-emerald-500/20 backdrop-blur-sm px-2 py-1 rounded-lg border border-emerald-500/30">
+                        <Car className="w-3.5 h-3.5 text-emerald-400" />
+                        <span className="text-xs text-emerald-300">
+                          Free Parking
+                        </span>
+                      </div>
+                    )}
                   </div>
 
                   {/* Content */}
@@ -157,14 +373,41 @@ function SelectLocationPage() {
                     <div className="flex items-center gap-2 text-slate-400 text-sm mb-3">
                       <MapPin className="w-4 h-4" />
                       <span>
-                        {hotel.city}, {hotel.country}
+                        {hotel.city}
+                        {hotel.stateProvince && `, ${hotel.stateProvince}`}
+                        {hotel.country && ` - ${hotel.country}`}
                       </span>
                     </div>
-                    <p className="text-sm text-slate-500 line-clamp-2 mb-4">
-                      {hotel.address}
-                    </p>
+
+                    {/* Description */}
+                    {hotel.description && (
+                      <p className="text-sm text-slate-500 line-clamp-2 mb-3">
+                        {hotel.description}
+                      </p>
+                    )}
+
+                    {/* Tags */}
+                    {hotel.tags && hotel.tags.length > 0 && (
+                      <div className="flex flex-wrap gap-1.5 mb-4">
+                        {hotel.tags.slice(0, 3).map((tag) => (
+                          <span
+                            key={tag}
+                            className="inline-flex items-center gap-1 px-2 py-0.5 bg-slate-800 rounded text-xs text-slate-400"
+                          >
+                            <Tag className="w-3 h-3" />
+                            {tag}
+                          </span>
+                        ))}
+                        {hotel.tags.length > 3 && (
+                          <span className="px-2 py-0.5 bg-slate-800 rounded text-xs text-slate-500">
+                            +{hotel.tags.length - 3} more
+                          </span>
+                        )}
+                      </div>
+                    )}
+
                     <div className="flex items-center justify-between">
-                      <span className="text-amber-400 font-semibold">
+                      <span className="text-amber-400 font-semibold group-hover:translate-x-1 transition-transform">
                         View Rooms →
                       </span>
                     </div>
@@ -173,7 +416,7 @@ function SelectLocationPage() {
               ))}
             </div>
           </>
-        ) : null}
+        )}
       </main>
     </div>
   )

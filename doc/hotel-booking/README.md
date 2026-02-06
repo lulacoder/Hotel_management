@@ -4,13 +4,14 @@ Welcome to the hotel booking system docs! This documentation will help you under
 
 ## Quick Links
 
-| Document                            | What You'll Learn                                                 |
-| ----------------------------------- | ----------------------------------------------------------------- |
-| [Overview](./overview.md)           | Big picture - what the system does, tech stack, project structure |
-| [Database Schema](./schema.md)      | All tables, fields, indexes, and data patterns                    |
-| [Customer Flow](./customer-flow.md) | How customers browse, book, and manage reservations               |
-| [Admin Flow](./admin-flow.md)       | How admins manage hotels, rooms, and bookings                     |
-| [API Reference](./api-reference.md) | Every Convex function with examples                               |
+| Document                                                  | What You'll Learn                                                 |
+| --------------------------------------------------------- | ----------------------------------------------------------------- |
+| [Overview](./overview.md)                                 | Big picture - what the system does, tech stack, project structure |
+| [Database Schema](./schema.md)                            | All tables, fields, indexes, and data patterns                    |
+| [Customer Flow](./customer-flow.md)                       | How customers browse, book, and manage reservations               |
+| [Admin Flow](./admin-flow.md)                             | How admins manage hotels, rooms, and bookings                     |
+| [API Reference](./api-reference.md)                       | Every Convex function with examples                               |
+| [Data Import & Geolocation](./data-import-geolocation.md) | Seed scripts, extended schema, distance-based features            |
 
 ## Related Documentation
 
@@ -54,21 +55,28 @@ See [Customer Flow](./customer-flow.md) - it walks through:
 | Dates as Strings | "YYYY-MM-DD" format, timezone-agnostic                           |
 | Denormalization  | `hotelId` stored in bookings for faster queries                  |
 | OCC              | Convex's Optimistic Concurrency Control prevents double-bookings |
+| Haversine        | Formula used to calculate distance between coordinates           |
+| GeoJSON          | Source data uses `[lng, lat]`, we store as `{lat, lng}`          |
 
 ## File Locations Cheat Sheet
 
-| What            | Where                        |
-| --------------- | ---------------------------- |
-| Database schema | `convex/schema.ts`           |
-| Auth helpers    | `convex/lib/auth.ts`         |
-| Date utilities  | `convex/lib/dates.ts`        |
-| Hotels API      | `convex/hotels.ts`           |
-| Rooms API       | `convex/rooms.ts`            |
-| Bookings API    | `convex/bookings.ts`         |
-| Audit logging   | `convex/audit.ts`            |
-| Cron jobs       | `convex/crons.ts`            |
-| Admin layout    | `src/routes/admin.tsx`       |
-| Customer routes | `src/routes/_authenticated/` |
+| What               | Where                         |
+| ------------------ | ----------------------------- |
+| Database schema    | `convex/schema.ts`            |
+| Auth helpers       | `convex/lib/auth.ts`          |
+| Date utilities     | `convex/lib/dates.ts`         |
+| Distance utilities | `src/lib/distance.ts`         |
+| Geolocation hook   | `src/hooks/useGeolocation.ts` |
+| Hotels API         | `convex/hotels.ts`            |
+| Rooms API          | `convex/rooms.ts`             |
+| Bookings API       | `convex/bookings.ts`          |
+| Seed mutations     | `convex/seed.ts`              |
+| Seed script        | `scripts/seed-hotels.ts`      |
+| Audit logging      | `convex/audit.ts`             |
+| Cron jobs          | `convex/crons.ts`             |
+| Admin layout       | `src/routes/admin.tsx`        |
+| Customer routes    | `src/routes/_authenticated/`  |
+| Hotel data (JSON)  | `Hotel_data/Hotel.json`       |
 
 ## Getting Help
 

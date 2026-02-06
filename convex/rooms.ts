@@ -7,8 +7,8 @@ import { datesOverlap, isHoldExpired } from './lib/dates'
 
 // Room type validator
 const roomTypeValidator = v.union(
-  v.literal('single'),
-  v.literal('double'),
+  v.literal('budget'),
+  v.literal('standard'),
   v.literal('suite'),
   v.literal('deluxe'),
 )
@@ -32,6 +32,10 @@ const roomValidator = v.object({
   maxOccupancy: v.number(),
   operationalStatus: operationalStatusValidator,
   amenities: v.optional(v.array(v.string())),
+  // New fields
+  description: v.optional(v.string()),
+  bedOptions: v.optional(v.string()),
+  smokingAllowed: v.optional(v.boolean()),
   isDeleted: v.boolean(),
   createdAt: v.number(),
   updatedAt: v.number(),
@@ -234,6 +238,10 @@ export const create = mutation({
     maxOccupancy: v.number(),
     operationalStatus: v.optional(operationalStatusValidator),
     amenities: v.optional(v.array(v.string())),
+    // New optional fields
+    description: v.optional(v.string()),
+    bedOptions: v.optional(v.string()),
+    smokingAllowed: v.optional(v.boolean()),
   },
   returns: v.id('rooms'),
   handler: async (ctx, args) => {
@@ -288,6 +296,9 @@ export const create = mutation({
       maxOccupancy: args.maxOccupancy,
       operationalStatus: args.operationalStatus ?? 'available',
       amenities: args.amenities,
+      description: args.description,
+      bedOptions: args.bedOptions,
+      smokingAllowed: args.smokingAllowed,
       isDeleted: false,
       createdAt: now,
       updatedAt: now,
@@ -321,6 +332,10 @@ export const update = mutation({
     basePrice: v.optional(v.number()),
     maxOccupancy: v.optional(v.number()),
     amenities: v.optional(v.array(v.string())),
+    // New optional fields
+    description: v.optional(v.string()),
+    bedOptions: v.optional(v.string()),
+    smokingAllowed: v.optional(v.boolean()),
   },
   returns: v.null(),
   handler: async (ctx, args) => {
@@ -382,31 +397,23 @@ export const update = mutation({
     const previousValues: Record<string, unknown> = {}
     const newValues: Record<string, unknown> = {}
 
-    if (args.roomNumber !== undefined) {
-      previousValues.roomNumber = room.roomNumber
-      newValues.roomNumber = args.roomNumber
-      updates.roomNumber = args.roomNumber
+    // Helper to track changes
+    const trackChange = (key: string, newValue: unknown, oldValue: unknown) => {
+      if (newValue !== undefined) {
+        previousValues[key] = oldValue
+        newValues[key] = newValue
+        updates[key] = newValue
+      }
     }
-    if (args.type !== undefined) {
-      previousValues.type = room.type
-      newValues.type = args.type
-      updates.type = args.type
-    }
-    if (args.basePrice !== undefined) {
-      previousValues.basePrice = room.basePrice
-      newValues.basePrice = args.basePrice
-      updates.basePrice = args.basePrice
-    }
-    if (args.maxOccupancy !== undefined) {
-      previousValues.maxOccupancy = room.maxOccupancy
-      newValues.maxOccupancy = args.maxOccupancy
-      updates.maxOccupancy = args.maxOccupancy
-    }
-    if (args.amenities !== undefined) {
-      previousValues.amenities = room.amenities
-      newValues.amenities = args.amenities
-      updates.amenities = args.amenities
-    }
+
+    trackChange('roomNumber', args.roomNumber, room.roomNumber)
+    trackChange('type', args.type, room.type)
+    trackChange('basePrice', args.basePrice, room.basePrice)
+    trackChange('maxOccupancy', args.maxOccupancy, room.maxOccupancy)
+    trackChange('amenities', args.amenities, room.amenities)
+    trackChange('description', args.description, room.description)
+    trackChange('bedOptions', args.bedOptions, room.bedOptions)
+    trackChange('smokingAllowed', args.smokingAllowed, room.smokingAllowed)
 
     await ctx.db.patch(args.roomId, updates)
 

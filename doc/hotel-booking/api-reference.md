@@ -594,6 +594,75 @@ Internal mutation called by cron job to expire held bookings.
 **Schedule:** Every 5 minutes  
 **Action:** Finds all `held` bookings where `holdExpiresAt < now` and sets them to `expired`
 
+## Seed API
+
+Located in: [convex/seed.ts](../../convex/seed.ts)
+
+These mutations are used for importing hotel data. See [Data Import & Geolocation](./data-import-geolocation.md) for full details.
+
+#### `seed.seedHotel`
+
+Create a hotel and its rooms from JSON data.
+
+```typescript
+const result = await client.mutation(api.seed.seedHotel, {
+  hotel: {
+    HotelId: '1',
+    HotelName: 'Grand Hotel',
+    Description: 'A lovely hotel...',
+    Category: 'Luxury',
+    Tags: ['pool', 'spa'],
+    ParkingIncluded: true,
+    LastRenovationDate: '2022-01-18T00:00:00Z',
+    Rating: 4.5,
+    Address: {
+      StreetAddress: '123 Main St',
+      City: 'New York',
+      StateProvince: 'NY',
+      PostalCode: '10022',
+      Country: 'USA',
+    },
+    Location: {
+      type: 'Point',
+      coordinates: [-73.975, 40.76],
+    },
+    Rooms: [
+      {
+        Description: 'Budget Room, 1 Queen Bed',
+        Type: 'Budget Room',
+        BaseRate: 96.99,
+        BedOptions: '1 Queen Bed',
+        SleepsCount: 2,
+        SmokingAllowed: false,
+        Tags: ['wifi'],
+      },
+    ],
+  },
+})
+// Returns: { hotelId: Id<"hotels">, roomCount: number }
+```
+
+**Args:** `{ hotel: JsonHotel }` (see data-import-geolocation.md for full type)  
+**Returns:** `{ hotelId: Id<"hotels">, roomCount: number }`  
+**Auth:** Public (development only)
+
+---
+
+#### `seed.clearAllHotelsAndRooms`
+
+Delete all hotels and rooms (hard delete for seeding).
+
+```typescript
+const result = await client.mutation(api.seed.clearAllHotelsAndRooms, {})
+// Returns: { hotelsDeleted: number, roomsDeleted: number }
+```
+
+**Args:** None  
+**Returns:** `{ hotelsDeleted: number, roomsDeleted: number }`  
+**Auth:** Public (development only)
+
+**Warning:** This performs a hard delete, not soft delete. Use only for development/seeding.
+
 ## Error Codes
 
 All errors thrown by Convex functions use this format:

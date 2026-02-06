@@ -18,11 +18,40 @@ const hotelValidator = v.object({
       lng: v.number(),
     }),
   ),
+  // New fields
+  externalId: v.optional(v.string()),
+  description: v.optional(v.string()),
+  category: v.optional(
+    v.union(
+      v.literal('Boutique'),
+      v.literal('Budget'),
+      v.literal('Luxury'),
+      v.literal('Resort and Spa'),
+      v.literal('Extended-Stay'),
+      v.literal('Suite'),
+    ),
+  ),
+  tags: v.optional(v.array(v.string())),
+  parkingIncluded: v.optional(v.boolean()),
+  rating: v.optional(v.number()),
+  stateProvince: v.optional(v.string()),
+  postalCode: v.optional(v.string()),
+  lastRenovationDate: v.optional(v.string()),
   metadata: v.optional(v.record(v.string(), v.any())),
   isDeleted: v.boolean(),
   createdAt: v.number(),
   updatedAt: v.number(),
 })
+
+// Category validator for reuse
+const categoryValidator = v.union(
+  v.literal('Boutique'),
+  v.literal('Budget'),
+  v.literal('Luxury'),
+  v.literal('Resort and Spa'),
+  v.literal('Extended-Stay'),
+  v.literal('Suite'),
+)
 
 // List all active hotels
 export const list = query({
@@ -110,6 +139,16 @@ export const create = mutation({
         lng: v.number(),
       }),
     ),
+    // New optional fields
+    externalId: v.optional(v.string()),
+    description: v.optional(v.string()),
+    category: v.optional(categoryValidator),
+    tags: v.optional(v.array(v.string())),
+    parkingIncluded: v.optional(v.boolean()),
+    rating: v.optional(v.number()),
+    stateProvince: v.optional(v.string()),
+    postalCode: v.optional(v.string()),
+    lastRenovationDate: v.optional(v.string()),
     metadata: v.optional(v.record(v.string(), v.any())),
   },
   returns: v.id('hotels'),
@@ -123,6 +162,15 @@ export const create = mutation({
       city: args.city,
       country: args.country,
       location: args.location,
+      externalId: args.externalId,
+      description: args.description,
+      category: args.category,
+      tags: args.tags,
+      parkingIncluded: args.parkingIncluded,
+      rating: args.rating,
+      stateProvince: args.stateProvince,
+      postalCode: args.postalCode,
+      lastRenovationDate: args.lastRenovationDate,
       metadata: args.metadata,
       isDeleted: false,
       createdAt: now,
@@ -161,6 +209,16 @@ export const update = mutation({
         lng: v.number(),
       }),
     ),
+    // New optional fields
+    externalId: v.optional(v.string()),
+    description: v.optional(v.string()),
+    category: v.optional(categoryValidator),
+    tags: v.optional(v.array(v.string())),
+    parkingIncluded: v.optional(v.boolean()),
+    rating: v.optional(v.number()),
+    stateProvince: v.optional(v.string()),
+    postalCode: v.optional(v.string()),
+    lastRenovationDate: v.optional(v.string()),
     metadata: v.optional(v.record(v.string(), v.any())),
   },
   returns: v.null(),
@@ -190,36 +248,34 @@ export const update = mutation({
     const previousValues: Record<string, unknown> = {}
     const newValues: Record<string, unknown> = {}
 
-    if (args.name !== undefined) {
-      previousValues.name = hotel.name
-      newValues.name = args.name
-      updates.name = args.name
+    // Helper to track changes
+    const trackChange = (key: string, newValue: unknown, oldValue: unknown) => {
+      if (newValue !== undefined) {
+        previousValues[key] = oldValue
+        newValues[key] = newValue
+        updates[key] = newValue
+      }
     }
-    if (args.address !== undefined) {
-      previousValues.address = hotel.address
-      newValues.address = args.address
-      updates.address = args.address
-    }
-    if (args.city !== undefined) {
-      previousValues.city = hotel.city
-      newValues.city = args.city
-      updates.city = args.city
-    }
-    if (args.country !== undefined) {
-      previousValues.country = hotel.country
-      newValues.country = args.country
-      updates.country = args.country
-    }
-    if (args.location !== undefined) {
-      previousValues.location = hotel.location
-      newValues.location = args.location
-      updates.location = args.location
-    }
-    if (args.metadata !== undefined) {
-      previousValues.metadata = hotel.metadata
-      newValues.metadata = args.metadata
-      updates.metadata = args.metadata
-    }
+
+    trackChange('name', args.name, hotel.name)
+    trackChange('address', args.address, hotel.address)
+    trackChange('city', args.city, hotel.city)
+    trackChange('country', args.country, hotel.country)
+    trackChange('location', args.location, hotel.location)
+    trackChange('externalId', args.externalId, hotel.externalId)
+    trackChange('description', args.description, hotel.description)
+    trackChange('category', args.category, hotel.category)
+    trackChange('tags', args.tags, hotel.tags)
+    trackChange('parkingIncluded', args.parkingIncluded, hotel.parkingIncluded)
+    trackChange('rating', args.rating, hotel.rating)
+    trackChange('stateProvince', args.stateProvince, hotel.stateProvince)
+    trackChange('postalCode', args.postalCode, hotel.postalCode)
+    trackChange(
+      'lastRenovationDate',
+      args.lastRenovationDate,
+      hotel.lastRenovationDate,
+    )
+    trackChange('metadata', args.metadata, hotel.metadata)
 
     await ctx.db.patch(args.hotelId, updates)
 

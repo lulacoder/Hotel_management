@@ -25,6 +25,25 @@ export default defineSchema({
         lng: v.number(),
       }),
     ),
+    // New fields for hotel data import
+    externalId: v.optional(v.string()), // Original HotelId from JSON
+    description: v.optional(v.string()), // Hotel description
+    category: v.optional(
+      v.union(
+        v.literal('Boutique'),
+        v.literal('Budget'),
+        v.literal('Luxury'),
+        v.literal('Resort and Spa'),
+        v.literal('Extended-Stay'),
+        v.literal('Suite'),
+      ),
+    ),
+    tags: v.optional(v.array(v.string())), // ["pool", "free wifi", etc.]
+    parkingIncluded: v.optional(v.boolean()),
+    rating: v.optional(v.number()), // 1.0-5.0
+    stateProvince: v.optional(v.string()), // "NY", "CA", etc.
+    postalCode: v.optional(v.string()),
+    lastRenovationDate: v.optional(v.string()), // "YYYY-MM-DD" format
     metadata: v.optional(v.record(v.string(), v.any())),
     isDeleted: v.boolean(),
     createdAt: v.number(),
@@ -33,9 +52,11 @@ export default defineSchema({
     .index('by_city', ['city'])
     .index('by_country', ['country'])
     .index('by_is_deleted', ['isDeleted'])
+    .index('by_category', ['category'])
+    .index('by_external_id', ['externalId'])
     .searchIndex('search_name', {
       searchField: 'name',
-      filterFields: ['city', 'isDeleted'],
+      filterFields: ['city', 'isDeleted', 'category'],
     }),
 
   // Rooms table
@@ -43,8 +64,8 @@ export default defineSchema({
     hotelId: v.id('hotels'),
     roomNumber: v.string(),
     type: v.union(
-      v.literal('single'),
-      v.literal('double'),
+      v.literal('budget'),
+      v.literal('standard'),
       v.literal('suite'),
       v.literal('deluxe'),
     ),
@@ -57,6 +78,10 @@ export default defineSchema({
       v.literal('out_of_order'),
     ),
     amenities: v.optional(v.array(v.string())),
+    // New fields for room data import
+    description: v.optional(v.string()), // "Suite, 2 Queen Beds (Mountain View)"
+    bedOptions: v.optional(v.string()), // "2 Queen Beds", "1 King Bed"
+    smokingAllowed: v.optional(v.boolean()),
     isDeleted: v.boolean(),
     createdAt: v.number(),
     updatedAt: v.number(),
@@ -64,7 +89,8 @@ export default defineSchema({
     .index('by_hotel', ['hotelId'])
     .index('by_hotel_and_status', ['hotelId', 'operationalStatus'])
     .index('by_hotel_and_room_number', ['hotelId', 'roomNumber'])
-    .index('by_hotel_and_is_deleted', ['hotelId', 'isDeleted']),
+    .index('by_hotel_and_is_deleted', ['hotelId', 'isDeleted'])
+    .index('by_hotel_and_type', ['hotelId', 'type']),
 
   // Bookings table
   bookings: defineTable({

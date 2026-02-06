@@ -31,26 +31,38 @@ hotel_management/
 │   ├── rooms.ts               # Room CRUD + availability
 │   ├── bookings.ts            # Booking flow (hold → confirm → cancel)
 │   ├── bookingsInternal.ts    # Internal cleanup for expired holds
+│   ├── seed.ts                # Data import mutations
 │   ├── audit.ts               # Audit logging
 │   └── crons.ts               # Scheduled jobs (hold expiration)
 │
-├── src/routes/                # Frontend routes
-│   ├── index.tsx              # Landing page
-│   ├── post-login.tsx         # Role-based routing after login
-│   ├── admin.tsx              # Admin layout (sidebar + outlet)
-│   ├── admin/
-│   │   ├── index.tsx          # Admin dashboard
-│   │   ├── hotels/
-│   │   │   ├── index.tsx      # Hotels list + create/edit
-│   │   │   └── $hotelId.tsx   # Hotel detail + room management
-│   │   ├── rooms/
-│   │   │   └── index.tsx      # Rooms overview (redirects to hotel)
-│   │   └── bookings/
-│   │       └── index.tsx      # All bookings (by hotel)
-│   └── _authenticated/
-│       ├── select-location.tsx  # Customer: browse hotels
-│       ├── hotels.$hotelId.tsx  # Customer: view hotel + book rooms
-│       └── bookings.tsx         # Customer: my bookings
+├── scripts/                   # Utility scripts
+│   └── seed-hotels.ts         # Import hotels from JSON
+│
+├── src/
+│   ├── lib/
+│   │   └── distance.ts        # Haversine distance calculation
+│   ├── hooks/
+│   │   └── useGeolocation.ts  # Browser geolocation hook
+│   └── routes/                # Frontend routes
+│       ├── index.tsx              # Landing page
+│       ├── post-login.tsx         # Role-based routing after login
+│       ├── admin.tsx              # Admin layout (sidebar + outlet)
+│       ├── admin/
+│       │   ├── index.tsx          # Admin dashboard
+│       │   ├── hotels/
+│       │   │   ├── index.tsx      # Hotels list + create/edit
+│       │   │   └── $hotelId.tsx   # Hotel detail + room management
+│       │   ├── rooms/
+│       │   │   └── index.tsx      # Rooms overview (redirects to hotel)
+│       │   └── bookings/
+│       │       └── index.tsx      # All bookings (by hotel)
+│       └── _authenticated/
+│           ├── select-location.tsx  # Customer: browse hotels (with geolocation)
+│           ├── hotels.$hotelId.tsx  # Customer: view hotel + book rooms
+│           └── bookings.tsx         # Customer: my bookings
+│
+├── Hotel_data/                # Source data for import
+│   └── Hotel.json             # 50 hotels, 757 rooms
 │
 └── doc/                       # Documentation (you are here!)
     ├── auth/                  # Authentication docs
@@ -114,6 +126,7 @@ This creates an audit trail for compliance and debugging.
 - [Customer Flow](./customer-flow.md) - Booking journey walkthrough
 - [Admin Flow](./admin-flow.md) - Hotel & room management
 - [API Reference](./api-reference.md) - All Convex functions
+- [Data Import & Geolocation](./data-import-geolocation.md) - Seed scripts and distance features
 
 ## Quick Start for Developers
 
@@ -123,17 +136,28 @@ This creates an audit trail for compliance and debugging.
    npm run dev
    ```
 
-2. **Create a test admin:**
+2. **Seed the database with sample data:**
+
+   ```bash
+   # Generate Convex types first
+   npx convex dev --once
+
+   # Import 50 hotels with 757 rooms
+   npx tsx scripts/seed-hotels.ts --clear
+   ```
+
+3. **Create a test admin:**
    - Sign up with a new account
    - In Convex dashboard, change the user's `role` to `room_admin`
 
-3. **Create some test data:**
-   - Log in as admin → Create a hotel → Add rooms
-   - Log in as customer → Browse → Book a room
+4. **Explore the app:**
+   - Log in as customer → Browse hotels with geolocation → Book a room
+   - Log in as admin → Manage hotels and rooms
 
-4. **Explore the code:**
+5. **Explore the code:**
    - Start with `convex/schema.ts` to understand the data model
    - Look at `convex/bookings.ts` for the core booking logic
-   - Check `src/routes/admin/hotels/$hotelId.tsx` for a full CRUD example
+   - Check `src/routes/_authenticated/select-location.tsx` for geolocation features
+   - See `src/lib/distance.ts` for the Haversine formula
 
 Happy coding!

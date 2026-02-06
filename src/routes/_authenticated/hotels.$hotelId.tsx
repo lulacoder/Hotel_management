@@ -14,6 +14,12 @@ import {
   Tv,
   Wind,
   Coffee,
+  Car,
+  Tag,
+  Calendar,
+  Cigarette,
+  CigaretteOff,
+  Bed,
 } from 'lucide-react'
 import { useState } from 'react'
 
@@ -61,9 +67,9 @@ function HotelDetailPage() {
     user?.id ? { clerkUserId: user.id } : 'skip',
   )
 
-  const roomTypeLabels = {
-    single: 'Single Room',
-    double: 'Double Room',
+  const roomTypeLabels: Record<string, string> = {
+    budget: 'Budget Room',
+    standard: 'Standard Room',
     suite: 'Suite',
     deluxe: 'Deluxe Room',
   }
@@ -144,25 +150,87 @@ function HotelDetailPage() {
         {/* Hotel Header */}
         <div className="bg-slate-900/50 border border-slate-800/50 rounded-2xl p-6 mb-8">
           <div className="flex flex-col md:flex-row md:items-start justify-between gap-4">
-            <div>
-              <div className="flex items-center gap-3 mb-2">
+            <div className="flex-1">
+              <div className="flex items-center gap-3 mb-2 flex-wrap">
                 <h1 className="text-3xl font-bold text-slate-100">
                   {hotel.name}
                 </h1>
-                <div className="flex items-center gap-1 bg-slate-800 px-2 py-1 rounded-lg">
-                  <Star className="w-4 h-4 text-amber-400 fill-amber-400" />
-                  <span className="text-sm text-slate-200 font-medium">
-                    4.8
+                {hotel.rating && (
+                  <div className="flex items-center gap-1 bg-slate-800 px-2 py-1 rounded-lg">
+                    <Star className="w-4 h-4 text-amber-400 fill-amber-400" />
+                    <span className="text-sm text-slate-200 font-medium">
+                      {hotel.rating.toFixed(1)}
+                    </span>
+                  </div>
+                )}
+                {hotel.category && (
+                  <span
+                    className={`px-2 py-1 rounded-lg text-xs font-medium ${
+                      hotel.category === 'Luxury'
+                        ? 'bg-amber-500/20 text-amber-400'
+                        : hotel.category === 'Boutique'
+                          ? 'bg-purple-500/20 text-purple-400'
+                          : hotel.category === 'Resort and Spa'
+                            ? 'bg-emerald-500/20 text-emerald-400'
+                            : hotel.category === 'Suite'
+                              ? 'bg-blue-500/20 text-blue-400'
+                              : hotel.category === 'Extended-Stay'
+                                ? 'bg-cyan-500/20 text-cyan-400'
+                                : 'bg-slate-700 text-slate-300'
+                    }`}
+                  >
+                    {hotel.category}
                   </span>
-                </div>
+                )}
               </div>
               <div className="flex items-center gap-2 text-slate-400 mb-2">
                 <MapPin className="w-4 h-4" />
                 <span>{hotel.address}</span>
               </div>
-              <p className="text-slate-500">
-                {hotel.city}, {hotel.country}
+              <p className="text-slate-500 mb-3">
+                {hotel.city}
+                {hotel.stateProvince ? `, ${hotel.stateProvince}` : ''}
+                {hotel.postalCode ? ` ${hotel.postalCode}` : ''},{' '}
+                {hotel.country}
               </p>
+
+              {/* Hotel Description */}
+              {hotel.description && (
+                <p className="text-slate-400 text-sm mb-4 max-w-2xl">
+                  {hotel.description}
+                </p>
+              )}
+
+              {/* Hotel Features */}
+              <div className="flex flex-wrap gap-2 mb-4">
+                {hotel.parkingIncluded && (
+                  <div className="flex items-center gap-1 px-2 py-1 bg-emerald-500/10 border border-emerald-500/20 rounded-lg text-emerald-400 text-xs">
+                    <Car className="w-3 h-3" />
+                    Free Parking
+                  </div>
+                )}
+                {hotel.lastRenovationDate && (
+                  <div className="flex items-center gap-1 px-2 py-1 bg-slate-800 rounded-lg text-slate-400 text-xs">
+                    <Calendar className="w-3 h-3" />
+                    Renovated {hotel.lastRenovationDate.split('-')[0]}
+                  </div>
+                )}
+              </div>
+
+              {/* Tags */}
+              {hotel.tags && hotel.tags.length > 0 && (
+                <div className="flex flex-wrap gap-2">
+                  {hotel.tags.map((tag) => (
+                    <span
+                      key={tag}
+                      className="flex items-center gap-1 px-2 py-1 bg-slate-800 rounded text-xs text-slate-400"
+                    >
+                      <Tag className="w-3 h-3" />
+                      {tag}
+                    </span>
+                  ))}
+                </div>
+              )}
             </div>
           </div>
         </div>
@@ -268,6 +336,12 @@ function HotelDetailPage() {
                       <p className="text-slate-400">
                         {roomTypeLabels[room.type]}
                       </p>
+                      {/* Room Description */}
+                      {room.description && (
+                        <p className="text-slate-500 text-sm mt-1">
+                          {room.description}
+                        </p>
+                      )}
                     </div>
                     <div className="text-right">
                       <p className="text-2xl font-bold text-amber-400">
@@ -278,11 +352,34 @@ function HotelDetailPage() {
                   </div>
 
                   {/* Room Details */}
-                  <div className="flex items-center gap-4 text-sm text-slate-400 mb-4">
+                  <div className="flex items-center gap-4 text-sm text-slate-400 mb-4 flex-wrap">
                     <div className="flex items-center gap-1">
                       <Users className="w-4 h-4" />
                       <span>Up to {room.maxOccupancy}</span>
                     </div>
+                    {room.bedOptions && (
+                      <div className="flex items-center gap-1">
+                        <Bed className="w-4 h-4" />
+                        <span>{room.bedOptions}</span>
+                      </div>
+                    )}
+                    {room.smokingAllowed !== undefined && (
+                      <div className="flex items-center gap-1">
+                        {room.smokingAllowed ? (
+                          <>
+                            <Cigarette className="w-4 h-4 text-amber-500" />
+                            <span className="text-amber-500">Smoking</span>
+                          </>
+                        ) : (
+                          <>
+                            <CigaretteOff className="w-4 h-4 text-emerald-500" />
+                            <span className="text-emerald-500">
+                              Non-smoking
+                            </span>
+                          </>
+                        )}
+                      </div>
+                    )}
                   </div>
 
                   {/* Amenities */}

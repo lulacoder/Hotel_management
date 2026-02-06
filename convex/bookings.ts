@@ -428,8 +428,8 @@ export const getEnriched = query({
         _id: v.id('rooms'),
         roomNumber: v.string(),
         type: v.union(
-          v.literal('single'),
-          v.literal('double'),
+          v.literal('budget'),
+          v.literal('standard'),
           v.literal('suite'),
           v.literal('deluxe'),
         ),
@@ -496,8 +496,8 @@ export const getMyBookingsEnriched = query({
         _id: v.id('rooms'),
         roomNumber: v.string(),
         type: v.union(
-          v.literal('single'),
-          v.literal('double'),
+          v.literal('budget'),
+          v.literal('standard'),
           v.literal('suite'),
           v.literal('deluxe'),
         ),

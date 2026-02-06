@@ -98,9 +98,9 @@ function HotelDetailPage() {
     },
   }
 
-  const roomTypeLabels = {
-    single: 'Single',
-    double: 'Double',
+  const roomTypeLabels: Record<string, string> = {
+    budget: 'Budget',
+    standard: 'Standard',
     suite: 'Suite',
     deluxe: 'Deluxe',
   }
@@ -388,7 +388,7 @@ function RoomModal({
 
   const [formData, setFormData] = useState({
     roomNumber: '',
-    type: 'single' as 'single' | 'double' | 'suite' | 'deluxe',
+    type: 'budget' as 'budget' | 'standard' | 'suite' | 'deluxe',
     basePrice: '',
     maxOccupancy: '',
     amenities: '',
@@ -412,7 +412,7 @@ function RoomModal({
     if (!roomId) {
       setFormData({
         roomNumber: '',
-        type: 'single',
+        type: 'budget',
         basePrice: '',
         maxOccupancy: '',
         amenities: '',
@@ -508,16 +508,16 @@ function RoomModal({
                   setFormData({
                     ...formData,
                     type: e.target.value as
-                      | 'single'
-                      | 'double'
+                      | 'budget'
+                      | 'standard'
                       | 'suite'
                       | 'deluxe',
                   })
                 }
                 className="w-full px-4 py-3 bg-slate-800/50 border border-slate-700 rounded-xl text-slate-200 focus:outline-none focus:border-amber-500/50 transition-all"
               >
-                <option value="single">Single</option>
-                <option value="double">Double</option>
+                <option value="budget">Budget</option>
+                <option value="standard">Standard</option>
                 <option value="suite">Suite</option>
                 <option value="deluxe">Deluxe</option>
               </select>

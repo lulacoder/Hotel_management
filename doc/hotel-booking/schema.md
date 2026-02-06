@@ -52,17 +52,52 @@ hotels: defineTable({
   updatedAt: v.number(),
   createdBy: v.id('users'), // Admin who created it
   updatedBy: v.optional(v.id('users')),
+
+  // Extended fields (all optional)
+  externalId: v.optional(v.string()), // Original ID from imported data
+  description: v.optional(v.string()), // Hotel description
+  category: v.optional(
+    v.union(
+      // Hotel type
+      v.literal('Boutique'),
+      v.literal('Budget'),
+      v.literal('Luxury'),
+      v.literal('Resort and Spa'),
+      v.literal('Extended-Stay'),
+      v.literal('Suite'),
+    ),
+  ),
+  tags: v.optional(v.array(v.string())), // ["pool", "wifi", "gym", etc.]
+  parkingIncluded: v.optional(v.boolean()), // Free parking available
+  rating: v.optional(v.number()), // 1.0 - 5.0
+  stateProvince: v.optional(v.string()), // "NY", "CA", etc.
+  postalCode: v.optional(v.string()), // "10022"
+  lastRenovationDate: v.optional(v.string()), // "YYYY-MM-DD" format
+  location: v.optional(
+    v.object({
+      // Geo coordinates for distance calc
+      lat: v.number(),
+      lng: v.number(),
+    }),
+  ),
 })
   .index('by_city', ['city'])
   .index('by_country', ['country'])
-  .searchIndex('search_name', { searchField: 'name' }) // Full-text search
+  .index('by_category', ['category']) // Filter by hotel type
+  .index('by_external_id', ['externalId']) // Lookup by source ID
+  .searchIndex('search_name', {
+    searchField: 'name',
+    filterFields: ['category', 'city', 'isDeleted'],
+  })
 ```
 
 **Key points:**
 
 - `isDeleted` enables soft delete (preserves booking history)
-- Search index allows fuzzy name matching
-- City/country indexes support filtering
+- Search index allows fuzzy name matching with filters
+- City/country/category indexes support filtering
+- `location` enables distance-based sorting
+- `externalId` prevents duplicate imports
 
 ### rooms
 
@@ -73,14 +108,14 @@ rooms: defineTable({
   hotelId: v.id('hotels'), // Parent hotel
   roomNumber: v.string(), // "101", "202A", etc.
   type: v.union(
-    v.literal('single'),
-    v.literal('double'),
+    v.literal('budget'), // Economy rooms
+    v.literal('standard'), // Standard rooms
     v.literal('suite'),
     v.literal('deluxe'),
   ),
-  capacity: v.number(), // Max guests
+  maxOccupancy: v.number(), // Max guests
   basePrice: v.number(), // Price per night in CENTS
-  amenities: v.array(v.string()), // ["wifi", "tv", "ac", etc.]
+  amenities: v.optional(v.array(v.string())), // ["WiFi", "TV", "Air Conditioning", etc.]
   operationalStatus: v.union(
     v.literal('available'), // Can be booked
     v.literal('maintenance'), // Temporarily unavailable
@@ -91,10 +126,16 @@ rooms: defineTable({
   updatedAt: v.number(),
   createdBy: v.id('users'),
   updatedBy: v.optional(v.id('users')),
+
+  // Extended fields (all optional)
+  description: v.optional(v.string()), // "Budget Room, 1 Queen Bed (Cityside)"
+  bedOptions: v.optional(v.string()), // "1 King Bed", "2 Queen Beds"
+  smokingAllowed: v.optional(v.boolean()), // Smoking policy
 })
   .index('by_hotel', ['hotelId'])
   .index('by_type', ['type'])
   .index('by_status', ['operationalStatus'])
+  .index('by_hotel_and_type', ['hotelId', 'type']) // Filter rooms by type within hotel
 ```
 
 **Key points:**
@@ -102,6 +143,9 @@ rooms: defineTable({
 - Prices are in CENTS (not dollars) to avoid floating-point issues
 - `operationalStatus` controls whether room can be booked
 - Amenities are stored as string array for flexibility
+- Room types: `budget`, `standard`, `suite`, `deluxe`
+- `description` provides detailed room info
+- `bedOptions` specifies bed configuration
 
 ### bookings
 
@@ -158,7 +202,7 @@ bookings: defineTable({
 4. **Hold expiration** - The `holdExpiresAt` field enables the "hold for 15 minutes" feature.
 
 ### auditEvents
-
+ 
 Tracks all significant actions for debugging and compliance.
 
 ```typescript
@@ -187,17 +231,20 @@ auditEvents: defineTable({
 
 Indexes are critical for performance. Here's why each one exists:
 
-| Index                        | Purpose                      |
-| ---------------------------- | ---------------------------- |
-| `users.by_clerk_id`          | Auth lookup on every request |
-| `hotels.by_city/country`     | Location-based filtering     |
-| `hotels.search_name`         | Fuzzy search in customer UI  |
-| `rooms.by_hotel`             | List rooms for a hotel       |
-| `rooms.by_status`            | Filter available rooms       |
-| `bookings.by_user`           | "My bookings" query          |
-| `bookings.by_room`           | Availability checking        |
-| `bookings.by_hotel`          | Admin: bookings per hotel    |
-| `bookings.by_room_and_dates` | Overlap detection            |
+| Index                        | Purpose                                 |
+| ---------------------------- | --------------------------------------- |
+| `users.by_clerk_id`          | Auth lookup on every request            |
+| `hotels.by_city/country`     | Location-based filtering                |
+| `hotels.by_category`         | Filter by hotel type                    |
+| `hotels.by_external_id`      | Lookup imported hotels by source ID     |
+| `hotels.search_name`         | Fuzzy search with category/city filters |
+| `rooms.by_hotel`             | List rooms for a hotel                  |
+| `rooms.by_status`            | Filter available rooms                  |
+| `rooms.by_hotel_and_type`    | Filter rooms by type within hotel       |
+| `bookings.by_user`           | "My bookings" query                     |
+| `bookings.by_room`           | Availability checking                   |
+| `bookings.by_hotel`          | Admin: bookings per hotel               |
+| `bookings.by_room_and_dates` | Overlap detection                       |
 
 ## Common Patterns
 
