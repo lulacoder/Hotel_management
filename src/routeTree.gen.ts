@@ -11,6 +11,7 @@
 import { Route as rootRouteImport } from './routes/__root'
 import { Route as SignUpRouteImport } from './routes/sign-up'
 import { Route as SignInRouteImport } from './routes/sign-in'
+import { Route as SelectLocationRouteImport } from './routes/select-location'
 import { Route as PostLoginRouteImport } from './routes/post-login'
 import { Route as AdminRouteImport } from './routes/admin'
 import { Route as AuthenticatedRouteImport } from './routes/_authenticated'
@@ -18,8 +19,8 @@ import { Route as IndexRouteImport } from './routes/index'
 import { Route as AdminIndexRouteImport } from './routes/admin/index'
 import { Route as SignUpSplatRouteImport } from './routes/sign-up.$'
 import { Route as SignInSplatRouteImport } from './routes/sign-in.$'
+import { Route as HotelsHotelIdRouteImport } from './routes/hotels.$hotelId'
 import { Route as DemoClerkRouteImport } from './routes/demo/clerk'
-import { Route as AuthenticatedSelectLocationRouteImport } from './routes/_authenticated/select-location'
 import { Route as AuthenticatedBookingsRouteImport } from './routes/_authenticated/bookings'
 import { Route as AdminRoomsIndexRouteImport } from './routes/admin/rooms/index'
 import { Route as AdminHotelsIndexRouteImport } from './routes/admin/hotels/index'
@@ -28,7 +29,6 @@ import { Route as DemoStartServerFuncsRouteImport } from './routes/demo/start.se
 import { Route as DemoStartApiRequestRouteImport } from './routes/demo/start.api-request'
 import { Route as DemoApiNamesRouteImport } from './routes/demo/api.names'
 import { Route as AdminHotelsHotelIdRouteImport } from './routes/admin/hotels/$hotelId'
-import { Route as AuthenticatedHotelsHotelIdRouteImport } from './routes/_authenticated/hotels.$hotelId'
 import { Route as DemoStartSsrIndexRouteImport } from './routes/demo/start.ssr.index'
 import { Route as DemoStartSsrSpaModeRouteImport } from './routes/demo/start.ssr.spa-mode'
 import { Route as DemoStartSsrFullSsrRouteImport } from './routes/demo/start.ssr.full-ssr'
@@ -42,6 +42,11 @@ const SignUpRoute = SignUpRouteImport.update({
 const SignInRoute = SignInRouteImport.update({
   id: '/sign-in',
   path: '/sign-in',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const SelectLocationRoute = SelectLocationRouteImport.update({
+  id: '/select-location',
+  path: '/select-location',
   getParentRoute: () => rootRouteImport,
 } as any)
 const PostLoginRoute = PostLoginRouteImport.update({
@@ -78,17 +83,16 @@ const SignInSplatRoute = SignInSplatRouteImport.update({
   path: '/$',
   getParentRoute: () => SignInRoute,
 } as any)
+const HotelsHotelIdRoute = HotelsHotelIdRouteImport.update({
+  id: '/hotels/$hotelId',
+  path: '/hotels/$hotelId',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const DemoClerkRoute = DemoClerkRouteImport.update({
   id: '/demo/clerk',
   path: '/demo/clerk',
   getParentRoute: () => rootRouteImport,
 } as any)
-const AuthenticatedSelectLocationRoute =
-  AuthenticatedSelectLocationRouteImport.update({
-    id: '/select-location',
-    path: '/select-location',
-    getParentRoute: () => AuthenticatedRoute,
-  } as any)
 const AuthenticatedBookingsRoute = AuthenticatedBookingsRouteImport.update({
   id: '/bookings',
   path: '/bookings',
@@ -129,12 +133,6 @@ const AdminHotelsHotelIdRoute = AdminHotelsHotelIdRouteImport.update({
   path: '/hotels/$hotelId',
   getParentRoute: () => AdminRoute,
 } as any)
-const AuthenticatedHotelsHotelIdRoute =
-  AuthenticatedHotelsHotelIdRouteImport.update({
-    id: '/hotels/$hotelId',
-    path: '/hotels/$hotelId',
-    getParentRoute: () => AuthenticatedRoute,
-  } as any)
 const DemoStartSsrIndexRoute = DemoStartSsrIndexRouteImport.update({
   id: '/demo/start/ssr/',
   path: '/demo/start/ssr/',
@@ -160,15 +158,15 @@ export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
   '/admin': typeof AdminRouteWithChildren
   '/post-login': typeof PostLoginRoute
+  '/select-location': typeof SelectLocationRoute
   '/sign-in': typeof SignInRouteWithChildren
   '/sign-up': typeof SignUpRouteWithChildren
   '/bookings': typeof AuthenticatedBookingsRoute
-  '/select-location': typeof AuthenticatedSelectLocationRoute
   '/demo/clerk': typeof DemoClerkRoute
+  '/hotels/$hotelId': typeof HotelsHotelIdRoute
   '/sign-in/$': typeof SignInSplatRoute
   '/sign-up/$': typeof SignUpSplatRoute
   '/admin/': typeof AdminIndexRoute
-  '/hotels/$hotelId': typeof AuthenticatedHotelsHotelIdRoute
   '/admin/hotels/$hotelId': typeof AdminHotelsHotelIdRoute
   '/demo/api/names': typeof DemoApiNamesRoute
   '/demo/start/api-request': typeof DemoStartApiRequestRoute
@@ -184,15 +182,15 @@ export interface FileRoutesByFullPath {
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
   '/post-login': typeof PostLoginRoute
+  '/select-location': typeof SelectLocationRoute
   '/sign-in': typeof SignInRouteWithChildren
   '/sign-up': typeof SignUpRouteWithChildren
   '/bookings': typeof AuthenticatedBookingsRoute
-  '/select-location': typeof AuthenticatedSelectLocationRoute
   '/demo/clerk': typeof DemoClerkRoute
+  '/hotels/$hotelId': typeof HotelsHotelIdRoute
   '/sign-in/$': typeof SignInSplatRoute
   '/sign-up/$': typeof SignUpSplatRoute
   '/admin': typeof AdminIndexRoute
-  '/hotels/$hotelId': typeof AuthenticatedHotelsHotelIdRoute
   '/admin/hotels/$hotelId': typeof AdminHotelsHotelIdRoute
   '/demo/api/names': typeof DemoApiNamesRoute
   '/demo/start/api-request': typeof DemoStartApiRequestRoute
@@ -211,15 +209,15 @@ export interface FileRoutesById {
   '/_authenticated': typeof AuthenticatedRouteWithChildren
   '/admin': typeof AdminRouteWithChildren
   '/post-login': typeof PostLoginRoute
+  '/select-location': typeof SelectLocationRoute
   '/sign-in': typeof SignInRouteWithChildren
   '/sign-up': typeof SignUpRouteWithChildren
   '/_authenticated/bookings': typeof AuthenticatedBookingsRoute
-  '/_authenticated/select-location': typeof AuthenticatedSelectLocationRoute
   '/demo/clerk': typeof DemoClerkRoute
+  '/hotels/$hotelId': typeof HotelsHotelIdRoute
   '/sign-in/$': typeof SignInSplatRoute
   '/sign-up/$': typeof SignUpSplatRoute
   '/admin/': typeof AdminIndexRoute
-  '/_authenticated/hotels/$hotelId': typeof AuthenticatedHotelsHotelIdRoute
   '/admin/hotels/$hotelId': typeof AdminHotelsHotelIdRoute
   '/demo/api/names': typeof DemoApiNamesRoute
   '/demo/start/api-request': typeof DemoStartApiRequestRoute
@@ -238,15 +236,15 @@ export interface FileRouteTypes {
     | '/'
     | '/admin'
     | '/post-login'
+    | '/select-location'
     | '/sign-in'
     | '/sign-up'
     | '/bookings'
-    | '/select-location'
     | '/demo/clerk'
+    | '/hotels/$hotelId'
     | '/sign-in/$'
     | '/sign-up/$'
     | '/admin/'
-    | '/hotels/$hotelId'
     | '/admin/hotels/$hotelId'
     | '/demo/api/names'
     | '/demo/start/api-request'
@@ -262,15 +260,15 @@ export interface FileRouteTypes {
   to:
     | '/'
     | '/post-login'
+    | '/select-location'
     | '/sign-in'
     | '/sign-up'
     | '/bookings'
-    | '/select-location'
     | '/demo/clerk'
+    | '/hotels/$hotelId'
     | '/sign-in/$'
     | '/sign-up/$'
     | '/admin'
-    | '/hotels/$hotelId'
     | '/admin/hotels/$hotelId'
     | '/demo/api/names'
     | '/demo/start/api-request'
@@ -288,15 +286,15 @@ export interface FileRouteTypes {
     | '/_authenticated'
     | '/admin'
     | '/post-login'
+    | '/select-location'
     | '/sign-in'
     | '/sign-up'
     | '/_authenticated/bookings'
-    | '/_authenticated/select-location'
     | '/demo/clerk'
+    | '/hotels/$hotelId'
     | '/sign-in/$'
     | '/sign-up/$'
     | '/admin/'
-    | '/_authenticated/hotels/$hotelId'
     | '/admin/hotels/$hotelId'
     | '/demo/api/names'
     | '/demo/start/api-request'
@@ -315,9 +313,11 @@ export interface RootRouteChildren {
   AuthenticatedRoute: typeof AuthenticatedRouteWithChildren
   AdminRoute: typeof AdminRouteWithChildren
   PostLoginRoute: typeof PostLoginRoute
+  SelectLocationRoute: typeof SelectLocationRoute
   SignInRoute: typeof SignInRouteWithChildren
   SignUpRoute: typeof SignUpRouteWithChildren
   DemoClerkRoute: typeof DemoClerkRoute
+  HotelsHotelIdRoute: typeof HotelsHotelIdRoute
   DemoApiNamesRoute: typeof DemoApiNamesRoute
   DemoStartApiRequestRoute: typeof DemoStartApiRequestRoute
   DemoStartServerFuncsRoute: typeof DemoStartServerFuncsRoute
@@ -341,6 +341,13 @@ declare module '@tanstack/react-router' {
       path: '/sign-in'
       fullPath: '/sign-in'
       preLoaderRoute: typeof SignInRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/select-location': {
+      id: '/select-location'
+      path: '/select-location'
+      fullPath: '/select-location'
+      preLoaderRoute: typeof SelectLocationRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/post-login': {
@@ -392,19 +399,19 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof SignInSplatRouteImport
       parentRoute: typeof SignInRoute
     }
+    '/hotels/$hotelId': {
+      id: '/hotels/$hotelId'
+      path: '/hotels/$hotelId'
+      fullPath: '/hotels/$hotelId'
+      preLoaderRoute: typeof HotelsHotelIdRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/demo/clerk': {
       id: '/demo/clerk'
       path: '/demo/clerk'
       fullPath: '/demo/clerk'
       preLoaderRoute: typeof DemoClerkRouteImport
       parentRoute: typeof rootRouteImport
-    }
-    '/_authenticated/select-location': {
-      id: '/_authenticated/select-location'
-      path: '/select-location'
-      fullPath: '/select-location'
-      preLoaderRoute: typeof AuthenticatedSelectLocationRouteImport
-      parentRoute: typeof AuthenticatedRoute
     }
     '/_authenticated/bookings': {
       id: '/_authenticated/bookings'
@@ -462,13 +469,6 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AdminHotelsHotelIdRouteImport
       parentRoute: typeof AdminRoute
     }
-    '/_authenticated/hotels/$hotelId': {
-      id: '/_authenticated/hotels/$hotelId'
-      path: '/hotels/$hotelId'
-      fullPath: '/hotels/$hotelId'
-      preLoaderRoute: typeof AuthenticatedHotelsHotelIdRouteImport
-      parentRoute: typeof AuthenticatedRoute
-    }
     '/demo/start/ssr/': {
       id: '/demo/start/ssr/'
       path: '/demo/start/ssr'
@@ -502,14 +502,10 @@ declare module '@tanstack/react-router' {
 
 interface AuthenticatedRouteChildren {
   AuthenticatedBookingsRoute: typeof AuthenticatedBookingsRoute
-  AuthenticatedSelectLocationRoute: typeof AuthenticatedSelectLocationRoute
-  AuthenticatedHotelsHotelIdRoute: typeof AuthenticatedHotelsHotelIdRoute
 }
 
 const AuthenticatedRouteChildren: AuthenticatedRouteChildren = {
   AuthenticatedBookingsRoute: AuthenticatedBookingsRoute,
-  AuthenticatedSelectLocationRoute: AuthenticatedSelectLocationRoute,
-  AuthenticatedHotelsHotelIdRoute: AuthenticatedHotelsHotelIdRoute,
 }
 
 const AuthenticatedRouteWithChildren = AuthenticatedRoute._addFileChildren(
@@ -561,9 +557,11 @@ const rootRouteChildren: RootRouteChildren = {
   AuthenticatedRoute: AuthenticatedRouteWithChildren,
   AdminRoute: AdminRouteWithChildren,
   PostLoginRoute: PostLoginRoute,
+  SelectLocationRoute: SelectLocationRoute,
   SignInRoute: SignInRouteWithChildren,
   SignUpRoute: SignUpRouteWithChildren,
   DemoClerkRoute: DemoClerkRoute,
+  HotelsHotelIdRoute: HotelsHotelIdRoute,
   DemoApiNamesRoute: DemoApiNamesRoute,
   DemoStartApiRequestRoute: DemoStartApiRequestRoute,
   DemoStartServerFuncsRoute: DemoStartServerFuncsRoute,

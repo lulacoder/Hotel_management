@@ -1,4 +1,4 @@
-import { createFileRoute, useNavigate } from '@tanstack/react-router'
+import { createFileRoute, useLocation, useNavigate } from '@tanstack/react-router'
 import { useUser } from '@clerk/clerk-react'
 import { useQuery } from 'convex/react'
 import { useEffect } from 'react'
@@ -13,6 +13,14 @@ export const Route = createFileRoute('/post-login')({
 function PostLoginPage() {
   const { user, isLoaded: isClerkLoaded } = useUser()
   const navigate = useNavigate()
+  const location = useLocation()
+
+  const params = new URLSearchParams(location.search)
+  const redirectParam = params.get('redirect')
+  const redirectTarget =
+    redirectParam && redirectParam.startsWith('/') && !redirectParam.startsWith('//')
+      ? redirectParam
+      : null
 
   const profile = useQuery(
     api.users.getByClerkId,
@@ -34,14 +42,14 @@ function PostLoginPage() {
       if (profile.role === 'room_admin') {
         navigate({ to: '/admin' })
       } else {
-        navigate({ to: '/select-location' })
+        navigate({ to: redirectTarget || '/select-location' })
       }
     } else {
       // Profile not found yet - webhook might still be processing
       // Wait a bit and check again (handled by Convex reactivity)
       console.log('Waiting for user profile to be created...')
     }
-  }, [isClerkLoaded, user, profile, navigate])
+  }, [isClerkLoaded, user, profile, navigate, redirectTarget])
 
   return (
     <div className="flex min-h-screen items-center justify-center bg-gradient-to-br from-blue-50 to-indigo-100">

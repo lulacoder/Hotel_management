@@ -1,8 +1,8 @@
 import { createFileRoute, Link, useNavigate } from '@tanstack/react-router'
 import { useUser, UserButton } from '@clerk/clerk-react'
 import { useQuery, useMutation } from 'convex/react'
-import { api } from '../../../convex/_generated/api'
-import { Id } from '../../../convex/_generated/dataModel'
+import { api } from '../../convex/_generated/api'
+import { Id } from '../../convex/_generated/dataModel'
 import {
   ArrowLeft,
   MapPin,
@@ -23,13 +23,13 @@ import {
 } from 'lucide-react'
 import { useState } from 'react'
 
-export const Route = createFileRoute('/_authenticated/hotels/$hotelId')({
+export const Route = createFileRoute('/hotels/$hotelId')({
   component: HotelDetailPage,
 })
 
 function HotelDetailPage() {
   const { hotelId } = Route.useParams()
-  const { user } = useUser()
+  const { user, isSignedIn } = useUser()
   const navigate = useNavigate()
   const [selectedDates, setSelectedDates] = useState({
     checkIn: '',
@@ -91,6 +91,7 @@ function HotelDetailPage() {
   }
 
   const nights = calculateNights()
+  const redirectTarget = `/hotels/${hotelId}`
 
   if (hotel === undefined) {
     return (
@@ -135,13 +136,32 @@ function HotelDetailPage() {
             Back to Hotels
           </Link>
           <div className="flex items-center gap-4">
-            <Link
-              to="/bookings"
-              className="text-slate-400 hover:text-amber-400 transition-colors font-medium"
-            >
-              My Bookings
-            </Link>
-            <UserButton afterSignOutUrl="/" />
+            {isSignedIn ? (
+              <>
+                <Link
+                  to="/bookings"
+                  className="text-slate-400 hover:text-amber-400 transition-colors font-medium"
+                >
+                  My Bookings
+                </Link>
+                <UserButton afterSignOutUrl="/" />
+              </>
+            ) : (
+              <>
+                <Link
+                  to="/sign-in"
+                  className="text-slate-400 hover:text-amber-400 transition-colors font-medium"
+                >
+                  Sign In
+                </Link>
+                <Link
+                  to="/sign-up"
+                  className="px-3 py-1.5 bg-amber-500 text-slate-900 font-semibold rounded-lg hover:bg-amber-400 transition-colors"
+                >
+                  Sign Up
+                </Link>
+              </>
+            )}
           </div>
         </div>
       </header>
@@ -423,13 +443,22 @@ function HotelDetailPage() {
                         )
                         return
                       }
+                      if (!isSignedIn) {
+                        navigate({
+                          to: '/sign-in',
+                          search: { redirect: redirectTarget },
+                        })
+                        return
+                      }
                       setShowBookingModal(room._id)
                     }}
                     disabled={!selectedDates.checkIn || !selectedDates.checkOut}
                     className="w-full py-3 bg-gradient-to-r from-amber-500 to-amber-600 text-white font-semibold rounded-xl hover:from-amber-600 hover:to-amber-700 transition-all disabled:opacity-50 disabled:cursor-not-allowed"
                   >
                     {selectedDates.checkIn && selectedDates.checkOut
-                      ? 'Book Now'
+                      ? isSignedIn
+                        ? 'Book Now'
+                        : 'Sign In to Book'
                       : 'Select Dates to Book'}
                   </button>
                 </div>
@@ -440,7 +469,7 @@ function HotelDetailPage() {
       </main>
 
       {/* Booking Modal */}
-      {showBookingModal && profile && (
+      {showBookingModal && isSignedIn && profile && (
         <BookingModal
           roomId={showBookingModal}
           hotelId={hotelId as Id<'hotels'>}

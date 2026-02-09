@@ -1,7 +1,7 @@
 import { createFileRoute, Link } from '@tanstack/react-router'
 import { useUser, UserButton } from '@clerk/clerk-react'
 import { useQuery } from 'convex/react'
-import { api } from '../../../convex/_generated/api'
+import { api } from '../../convex/_generated/api'
 import {
   MapPin,
   Search,
@@ -17,10 +17,10 @@ import { useState, useEffect, useMemo } from 'react'
 import {
   useGeolocation,
   getGeolocationErrorMessage,
-} from '../../hooks/useGeolocation'
-import { calculateDistance, formatDistance } from '../../lib/distance'
+} from '../hooks/useGeolocation'
+import { calculateDistance, formatDistance } from '../lib/distance'
 
-export const Route = createFileRoute('/_authenticated/select-location')({
+export const Route = createFileRoute('/select-location')({
   component: SelectLocationPage,
 })
 
@@ -37,7 +37,7 @@ const categoryColors: Record<string, string> = {
 }
 
 function SelectLocationPage() {
-  const { user } = useUser()
+  const { user, isSignedIn } = useUser()
   const [searchTerm, setSearchTerm] = useState('')
   const [selectedCity, setSelectedCity] = useState<string>('all')
   const [selectedCategory, setSelectedCategory] = useState<string>('all')
@@ -151,16 +151,35 @@ function SelectLocationPage() {
             </h1>
           </div>
           <div className="flex items-center gap-4">
-            <Link
-              to="/bookings"
-              className="text-slate-400 hover:text-amber-400 transition-colors font-medium"
-            >
-              My Bookings
-            </Link>
-            <span className="text-sm text-slate-500">
-              {user?.firstName || user?.emailAddresses[0]?.emailAddress}
-            </span>
-            <UserButton afterSignOutUrl="/" />
+            {isSignedIn ? (
+              <>
+                <Link
+                  to="/bookings"
+                  className="text-slate-400 hover:text-amber-400 transition-colors font-medium"
+                >
+                  My Bookings
+                </Link>
+                <span className="text-sm text-slate-500">
+                  {user?.firstName || user?.emailAddresses[0]?.emailAddress}
+                </span>
+                <UserButton afterSignOutUrl="/" />
+              </>
+            ) : (
+              <>
+                <Link
+                  to="/sign-in"
+                  className="text-slate-400 hover:text-amber-400 transition-colors font-medium"
+                >
+                  Sign In
+                </Link>
+                <Link
+                  to="/sign-up"
+                  className="px-3 py-1.5 bg-amber-500 text-slate-900 font-semibold rounded-lg hover:bg-amber-400 transition-colors"
+                >
+                  Sign Up
+                </Link>
+              </>
+            )}
           </div>
         </div>
       </header>
