@@ -17,6 +17,7 @@ import type * as hotels from "../hotels.js";
 import type * as http from "../http.js";
 import type * as lib_auth from "../lib/auth.js";
 import type * as lib_dates from "../lib/dates.js";
+import type * as ratings from "../ratings.js";
 import type * as rooms from "../rooms.js";
 import type * as seed from "../seed.js";
 import type * as users from "../users.js";
@@ -37,6 +38,7 @@ declare const fullApi: ApiFromModules<{
   http: typeof http;
   "lib/auth": typeof lib_auth;
   "lib/dates": typeof lib_dates;
+  ratings: typeof ratings;
   rooms: typeof rooms;
   seed: typeof seed;
   users: typeof users;

@@ -133,6 +133,21 @@ export default defineSchema({
     .index('by_room_and_dates', ['roomId', 'checkIn', 'checkOut'])
     .index('by_hold_expires', ['holdExpiresAt']),
 
+  // Hotel ratings table
+  hotelRatings: defineTable({
+    hotelId: v.id('hotels'),
+    userId: v.id('users'),
+    rating: v.number(), // 1-5
+    review: v.optional(v.string()),
+    isDeleted: v.boolean(),
+    createdAt: v.number(),
+    updatedAt: v.number(),
+  })
+    .index('by_hotel', ['hotelId'])
+    .index('by_user', ['userId'])
+    .index('by_user_and_hotel', ['userId', 'hotelId'])
+    .index('by_hotel_and_is_deleted', ['hotelId', 'isDeleted']),
+
   // Audit events table for tracking changes
   auditEvents: defineTable({
     actorId: v.id('users'),
@@ -141,6 +156,7 @@ export default defineSchema({
       v.literal('hotel'),
       v.literal('room'),
       v.literal('booking'),
+      v.literal('rating'),
     ),
     targetId: v.string(), // Generic ID stored as string
     previousValue: v.optional(v.string()), // JSON stringified

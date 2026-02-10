@@ -5,7 +5,7 @@ import { MutationCtx } from './_generated/server'
 import { requireAdmin } from './lib/auth'
 
 // Type for target types
-export type AuditTargetType = 'hotel' | 'room' | 'booking'
+export type AuditTargetType = 'hotel' | 'room' | 'booking' | 'rating'
 
 // Internal mutation for logging audit events (called from other mutations)
 export const logEvent = internalMutation({
@@ -16,6 +16,7 @@ export const logEvent = internalMutation({
       v.literal('hotel'),
       v.literal('room'),
       v.literal('booking'),
+      v.literal('rating'),
     ),
     targetId: v.string(),
     previousValue: v.optional(v.string()),
@@ -73,6 +74,7 @@ export const getByTarget = query({
       v.literal('hotel'),
       v.literal('room'),
       v.literal('booking'),
+      v.literal('rating'),
     ),
     targetId: v.string(),
     limit: v.optional(v.number()),
@@ -87,6 +89,7 @@ export const getByTarget = query({
         v.literal('hotel'),
         v.literal('room'),
         v.literal('booking'),
+        v.literal('rating'),
       ),
       targetId: v.string(),
       previousValue: v.optional(v.string()),
@@ -127,6 +130,7 @@ export const getRecent = query({
         v.literal('hotel'),
         v.literal('room'),
         v.literal('booking'),
+        v.literal('rating'),
       ),
       targetId: v.string(),
       previousValue: v.optional(v.string()),

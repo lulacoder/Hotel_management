@@ -1,7 +1,11 @@
-import { createFileRoute, Link } from '@tanstack/react-router'
+import {
+  createFileRoute,
+  Link,
+  useLocation,
+  useNavigate,
+} from '@tanstack/react-router'
 import { useUser, UserButton } from '@clerk/clerk-react'
-import { useQuery } from 'convex/react'
-import { api } from '../../convex/_generated/api'
+import { useQuery, useMutation } from 'convex/react'
 import {
   MapPin,
   Search,
@@ -12,8 +16,12 @@ import {
   Tag,
   ArrowUpDown,
   Loader2,
+  X,
 } from 'lucide-react'
 import { useState, useEffect, useMemo } from 'react'
+
+import { api } from '../../convex/_generated/api'
+import { Id } from '../../convex/_generated/dataModel'
 import {
   useGeolocation,
   getGeolocationErrorMessage,
@@ -38,14 +46,38 @@ const categoryColors: Record<string, string> = {
 
 function SelectLocationPage() {
   const { user, isSignedIn } = useUser()
+  const navigate = useNavigate()
+  const location = useLocation()
   const [searchTerm, setSearchTerm] = useState('')
   const [selectedCity, setSelectedCity] = useState<string>('all')
   const [selectedCategory, setSelectedCategory] = useState<string>('all')
   const [sortBy, setSortBy] = useState<SortOption>('name')
   const [locationRequested, setLocationRequested] = useState(false)
+  const [activeRatingHotelId, setActiveRatingHotelId] =
+    useState<Id<'hotels'> | null>(null)
+  const [ratingValue, setRatingValue] = useState(0)
+  const [ratingText, setRatingText] = useState('')
+  const [ratingError, setRatingError] = useState('')
+  const [ratingSaving, setRatingSaving] = useState(false)
+  const [ratingPrefillKey, setRatingPrefillKey] = useState<string | null>(null)
+  const [autoOpenHandled, setAutoOpenHandled] = useState(false)
 
   const hotels = useQuery(api.hotels.list, {})
   const cities = useQuery(api.hotels.getCities, {})
+  const ratingSummaries = useQuery(
+    api.ratings.getSummaries,
+    hotels && hotels.length > 0
+      ? { hotelIds: hotels.map((hotel) => hotel._id) }
+      : 'skip',
+  )
+  const upsertRating = useMutation(api.ratings.upsertRating)
+
+  const myRating = useQuery(
+    api.ratings.getMyRatingForHotel,
+    user?.id && activeRatingHotelId
+      ? { clerkUserId: user.id, hotelId: activeRatingHotelId }
+      : 'skip',
+  )
 
   // Geolocation hook
   const {
@@ -65,6 +97,44 @@ function SelectLocationPage() {
     }
   }, [locationSupported, locationRequested, requestLocation])
 
+  useEffect(() => {
+    if (autoOpenHandled || !hotels) {
+      return
+    }
+
+    const params = new URLSearchParams(location.search)
+    const rateHotelId = params.get('rate')
+
+    if (!rateHotelId) {
+      return
+    }
+
+    const matchedHotel = hotels.find((hotel) => hotel._id === rateHotelId)
+    if (!matchedHotel) {
+      return
+    }
+
+    setActiveRatingHotelId(matchedHotel._id)
+    setAutoOpenHandled(true)
+    navigate({ to: '/select-location', replace: true })
+  }, [autoOpenHandled, hotels, location.search, navigate])
+
+  useEffect(() => {
+    if (!activeRatingHotelId || myRating === undefined) {
+      return
+    }
+
+    const prefillKey = `${activeRatingHotelId}:${myRating?._id ?? 'new'}`
+    if (prefillKey === ratingPrefillKey) {
+      return
+    }
+
+    setRatingValue(myRating?.rating ?? 0)
+    setRatingText(myRating?.review ?? '')
+    setRatingError('')
+    setRatingPrefillKey(prefillKey)
+  }, [activeRatingHotelId, myRating, ratingPrefillKey])
+
   // Compute hotels with distance
   const hotelsWithDistance = useMemo(() => {
     if (!hotels) return []
@@ -81,9 +151,26 @@ function SelectLocationPage() {
         )
       }
 
-      return { ...hotel, distance }
-    })
+    return { ...hotel, distance }
+  })
   }, [hotels, userLat, userLng])
+
+  const ratingSummaryByHotelId = useMemo(() => {
+    const map: Record<string, { average: number; count: number }> = {}
+
+    if (!ratingSummaries) {
+      return map
+    }
+
+    for (const summary of ratingSummaries) {
+      map[summary.hotelId] = {
+        average: summary.average,
+        count: summary.count,
+      }
+    }
+
+    return map
+  }, [ratingSummaries])
 
   // Get unique categories
   const categories = useMemo(() => {
@@ -123,8 +210,10 @@ function SelectLocationPage() {
           if (b.distance === null) return -1
           return a.distance - b.distance
         case 'rating':
-          const ratingA = a.rating ?? 0
-          const ratingB = b.rating ?? 0
+          const ratingA =
+            ratingSummaryByHotelId[a._id]?.average ?? a.rating ?? 0
+          const ratingB =
+            ratingSummaryByHotelId[b._id]?.average ?? b.rating ?? 0
           return ratingB - ratingA // Higher rating first
         case 'name':
         default:
@@ -133,9 +222,68 @@ function SelectLocationPage() {
     })
 
     return result
-  }, [hotelsWithDistance, searchTerm, selectedCity, selectedCategory, sortBy])
+  }, [
+    hotelsWithDistance,
+    searchTerm,
+    selectedCity,
+    selectedCategory,
+    sortBy,
+    ratingSummaryByHotelId,
+  ])
 
   const hasUserLocation = userLat !== null && userLng !== null
+  const activeHotel = useMemo(() => {
+    if (!activeRatingHotelId || !hotels) {
+      return null
+    }
+    return hotels.find((hotel) => hotel._id === activeRatingHotelId) ?? null
+  }, [activeRatingHotelId, hotels])
+  const hasExistingRating = Boolean(myRating)
+  const ratingRedirect = activeRatingHotelId
+    ? `/select-location?rate=${activeRatingHotelId}`
+    : '/select-location'
+
+  const openRatingModal = (hotelId: Id<'hotels'>) => {
+    setActiveRatingHotelId(hotelId)
+    setRatingError('')
+  }
+
+  const closeRatingModal = () => {
+    setActiveRatingHotelId(null)
+    setRatingValue(0)
+    setRatingText('')
+    setRatingError('')
+    setRatingPrefillKey(null)
+  }
+
+  const handleSubmitRating = async (event: React.FormEvent) => {
+    event.preventDefault()
+    if (!user?.id || !activeRatingHotelId) {
+      return
+    }
+
+    if (ratingValue < 1 || ratingValue > 5) {
+      setRatingError('Please select a rating between 1 and 5.')
+      return
+    }
+
+    setRatingSaving(true)
+    setRatingError('')
+
+    try {
+      await upsertRating({
+        clerkUserId: user.id,
+        hotelId: activeRatingHotelId,
+        rating: ratingValue,
+        review: ratingText.trim() || undefined,
+      })
+      closeRatingModal()
+    } catch (err: any) {
+      setRatingError(err.message || 'Failed to save rating.')
+    } finally {
+      setRatingSaving(false)
+    }
+  }
 
   return (
     <div className="min-h-screen bg-gradient-to-b from-slate-950 via-slate-900 to-slate-950">
@@ -327,14 +475,25 @@ function SelectLocationPage() {
             </div>
 
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-              {filteredHotels.map((hotel) => (
-                <Link
-                  key={hotel._id}
-                  to="/hotels/$hotelId"
-                  params={{ hotelId: hotel._id }}
-                  className="group bg-slate-900/50 border border-slate-800/50 rounded-2xl overflow-hidden hover:border-amber-500/30 hover:shadow-xl hover:shadow-amber-500/5 transition-all duration-300"
-                >
-                  {/* Placeholder Image */}
+              {filteredHotels.map((hotel) => {
+                const ratingSummary = ratingSummaryByHotelId[hotel._id]
+                const displayRating =
+                  ratingSummary && ratingSummary.count > 0
+                    ? ratingSummary.average
+                    : hotel.rating
+                const displayCount = ratingSummary?.count ?? 0
+
+                return (
+                  <div
+                    key={hotel._id}
+                    className="group bg-slate-900/50 border border-slate-800/50 rounded-2xl overflow-hidden hover:border-amber-500/30 hover:shadow-xl hover:shadow-amber-500/5 transition-all duration-300"
+                  >
+                    <Link
+                      to="/hotels/$hotelId"
+                      params={{ hotelId: hotel._id }}
+                      className="block"
+                    >
+                      {/* Placeholder Image */}
                   <div className="h-48 bg-gradient-to-br from-slate-800 to-slate-900 relative overflow-hidden">
                     <div className="absolute inset-0 bg-gradient-to-t from-slate-900/80 to-transparent"></div>
                     <div className="absolute inset-0 flex items-center justify-center">
@@ -353,12 +512,17 @@ function SelectLocationPage() {
                       )}
 
                       {/* Rating Badge */}
-                      {hotel.rating && (
+                      {displayRating !== undefined && (
                         <div className="flex items-center gap-1 bg-slate-900/80 backdrop-blur-sm px-2 py-1 rounded-lg">
                           <Star className="w-4 h-4 text-amber-400 fill-amber-400" />
                           <span className="text-sm text-slate-200 font-medium">
-                            {hotel.rating.toFixed(1)}
+                            {displayRating.toFixed(1)}
                           </span>
+                          {displayCount > 0 && (
+                            <span className="text-xs text-slate-400">
+                              ({displayCount})
+                            </span>
+                          )}
                         </div>
                       )}
                     </div>
@@ -385,7 +549,7 @@ function SelectLocationPage() {
                   </div>
 
                   {/* Content */}
-                  <div className="p-5">
+                  <div className="p-5 pb-4">
                     <h4 className="text-lg font-semibold text-slate-200 mb-2 group-hover:text-amber-400 transition-colors">
                       {hotel.name}
                     </h4>
@@ -407,7 +571,7 @@ function SelectLocationPage() {
 
                     {/* Tags */}
                     {hotel.tags && hotel.tags.length > 0 && (
-                      <div className="flex flex-wrap gap-1.5 mb-4">
+                      <div className="flex flex-wrap gap-1.5">
                         {hotel.tags.slice(0, 3).map((tag) => (
                           <span
                             key={tag}
@@ -425,18 +589,165 @@ function SelectLocationPage() {
                       </div>
                     )}
 
-                    <div className="flex items-center justify-between">
-                      <span className="text-amber-400 font-semibold group-hover:translate-x-1 transition-transform">
-                        View Rooms →
-                      </span>
-                    </div>
                   </div>
                 </Link>
-              ))}
+
+                <div className="flex items-center justify-between px-5 pb-5">
+                  <Link
+                    to="/hotels/$hotelId"
+                    params={{ hotelId: hotel._id }}
+                    className="text-amber-400 font-semibold group-hover:translate-x-1 transition-transform"
+                  >
+                    View Rooms →
+                  </Link>
+                  <button
+                    type="button"
+                    onClick={() => openRatingModal(hotel._id)}
+                    className="px-3 py-1.5 text-sm font-semibold text-slate-900 bg-amber-500 hover:bg-amber-400 rounded-lg transition-colors"
+                  >
+                    Rate this hotel
+                  </button>
+                </div>
+              </div>
+              )
+            })}
             </div>
           </>
         )}
       </main>
+
+      {activeRatingHotelId && (
+        <div className="fixed inset-0 bg-black/60 backdrop-blur-sm flex items-center justify-center z-50 p-4">
+          <div className="bg-slate-900 border border-slate-800 rounded-2xl shadow-2xl w-full max-w-lg">
+            <div className="p-6 border-b border-slate-800 flex items-start justify-between gap-4">
+              <div>
+                <h2 className="text-xl font-semibold text-slate-100">
+                  {hasExistingRating ? 'Update Rating' : 'Rate This Hotel'}
+                </h2>
+                <p className="text-sm text-slate-500 mt-1">
+                  {activeHotel?.name || 'Share your experience'}
+                </p>
+              </div>
+              <button
+                type="button"
+                onClick={closeRatingModal}
+                className="p-2 rounded-lg hover:bg-slate-800 transition-colors"
+                aria-label="Close rating modal"
+              >
+                <X className="w-5 h-5 text-slate-400" />
+              </button>
+            </div>
+
+            <div className="p-6">
+              {!isSignedIn ? (
+                <div className="space-y-5">
+                  <p className="text-slate-400">
+                    Sign in to leave a rating for this hotel.
+                  </p>
+                  <div className="flex flex-col sm:flex-row gap-3">
+                    <button
+                      type="button"
+                      onClick={() =>
+                        navigate({
+                          to: '/sign-in',
+                          search: { redirect: ratingRedirect },
+                        })
+                      }
+                      className="flex-1 px-4 py-3 bg-slate-800 text-slate-200 font-medium rounded-xl hover:bg-slate-700 transition-colors"
+                    >
+                      Sign In
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() =>
+                        navigate({
+                          to: '/sign-up',
+                          search: { redirect: ratingRedirect },
+                        })
+                      }
+                      className="flex-1 px-4 py-3 bg-amber-500 text-slate-900 font-semibold rounded-xl hover:bg-amber-400 transition-colors"
+                    >
+                      Sign Up
+                    </button>
+                  </div>
+                </div>
+              ) : (
+                <form onSubmit={handleSubmitRating} className="space-y-5">
+                  {ratingError && (
+                    <div className="bg-red-500/10 border border-red-500/20 rounded-xl p-4 text-red-400 text-sm">
+                      {ratingError}
+                    </div>
+                  )}
+
+                  <div>
+                    <label className="block text-sm font-medium text-slate-300 mb-2">
+                      Your Rating
+                    </label>
+                    <div className="flex items-center gap-2">
+                      {[1, 2, 3, 4, 5].map((value) => (
+                        <button
+                          key={value}
+                          type="button"
+                          onClick={() => setRatingValue(value)}
+                          className="p-1"
+                          aria-label={`Rate ${value} star`}
+                        >
+                          <Star
+                            className={`w-6 h-6 ${
+                              value <= ratingValue
+                                ? 'text-amber-400 fill-amber-400'
+                                : 'text-slate-600'
+                            }`}
+                          />
+                        </button>
+                      ))}
+                      <span className="text-sm text-slate-500 ml-2">
+                        {ratingValue > 0
+                          ? `${ratingValue}/5`
+                          : 'Select a rating'}
+                      </span>
+                    </div>
+                  </div>
+
+                  <div>
+                    <label className="block text-sm font-medium text-slate-300 mb-2">
+                      Review (optional)
+                    </label>
+                    <textarea
+                      rows={4}
+                      value={ratingText}
+                      onChange={(event) => setRatingText(event.target.value)}
+                      maxLength={500}
+                      placeholder="Share anything you liked about your stay."
+                      className="w-full px-4 py-3 bg-slate-800/50 border border-slate-700 rounded-xl text-slate-200 placeholder-slate-500 focus:outline-none focus:border-amber-500/50 transition-all resize-none"
+                    />
+                    <p className="text-xs text-slate-500 mt-2">
+                      {ratingText.length}/500
+                    </p>
+                  </div>
+
+                  <div className="flex flex-col sm:flex-row gap-3">
+                    <button
+                      type="button"
+                      onClick={closeRatingModal}
+                      className="flex-1 px-4 py-3 bg-slate-800 text-slate-200 font-medium rounded-xl hover:bg-slate-700 transition-colors"
+                    >
+                      Cancel
+                    </button>
+                    <button
+                      type="submit"
+                      disabled={ratingSaving}
+                      className="flex-1 px-4 py-3 bg-amber-500 text-slate-900 font-semibold rounded-xl hover:bg-amber-400 transition-colors disabled:opacity-60"
+                    >
+                      {ratingSaving ? 'Saving...' : 'Save Rating'}
+                    </button>
+                  </div>
+                </form>
+              )}
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   )
 }

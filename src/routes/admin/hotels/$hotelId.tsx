@@ -1,7 +1,6 @@
 import { createFileRoute, Link } from '@tanstack/react-router'
 import { useUser } from '@clerk/clerk-react'
 import { useQuery, useMutation } from 'convex/react'
-import { api } from '../../../../convex/_generated/api'
 import {
   ArrowLeft,
   Plus,
@@ -11,6 +10,7 @@ import {
   MoreVertical,
   Pencil,
   Trash2,
+  Star,
   Wrench,
   Sparkles,
   XCircle,
@@ -19,6 +19,8 @@ import {
   DollarSign,
 } from 'lucide-react'
 import { useEffect, useState } from 'react'
+
+import { api } from '../../../../convex/_generated/api'
 import { Id } from '../../../../convex/_generated/dataModel'
 
 export const Route = createFileRoute('/admin/hotels/$hotelId')({
@@ -38,9 +40,16 @@ function HotelDetailPage() {
   const rooms = useQuery(api.rooms.getByHotel, {
     hotelId: hotelId as Id<'hotels'>,
   })
+  const ratings = useQuery(
+    api.ratings.getHotelRatingsAdmin,
+    user?.id
+      ? { clerkUserId: user.id, hotelId: hotelId as Id<'hotels'> }
+      : 'skip',
+  )
 
   const deleteRoom = useMutation(api.rooms.softDelete)
   const updateRoomStatus = useMutation(api.rooms.updateStatus)
+  const deleteRating = useMutation(api.ratings.softDeleteRating)
 
   useEffect(() => {
     setIsHydrated(true)
@@ -52,6 +61,13 @@ function HotelDetailPage() {
       await deleteRoom({ clerkUserId: user.id, roomId })
     }
     setActiveMenu(null)
+  }
+
+  const handleDeleteRating = async (ratingId: Id<'hotelRatings'>) => {
+    if (!user?.id) return
+    if (confirm('Delete this rating? This will remove it from public view.')) {
+      await deleteRating({ clerkUserId: user.id, ratingId })
+    }
   }
 
   const handleStatusChange = async (
@@ -339,6 +355,80 @@ function HotelDetailPage() {
           })}
         </div>
       )}
+
+      {/* Ratings Section */}
+      <div className="mt-10">
+        <div className="flex items-center justify-between mb-4">
+          <h2 className="text-xl font-semibold text-slate-200">Ratings</h2>
+          <span className="text-sm text-slate-500">
+            {ratings?.length ?? 0} total
+          </span>
+        </div>
+
+        {ratings === undefined ? (
+          <div className="flex items-center justify-center py-8">
+            <div className="animate-spin rounded-full h-6 w-6 border-2 border-amber-500/20 border-t-amber-500"></div>
+          </div>
+        ) : ratings.length === 0 ? (
+          <div className="bg-slate-900/50 border border-slate-800/50 rounded-2xl p-8 text-center text-slate-500">
+            No ratings yet.
+          </div>
+        ) : (
+          <div className="space-y-4">
+            {ratings.map((rating) => (
+              <div
+                key={rating._id}
+                className="bg-slate-900/50 border border-slate-800/50 rounded-2xl p-5"
+              >
+                <div className="flex items-start justify-between gap-4">
+                  <div>
+                    <div className="flex items-center gap-3">
+                      <div className="flex items-center gap-1">
+                        {[1, 2, 3, 4, 5].map((value) => (
+                          <Star
+                            key={value}
+                            className={`w-4 h-4 ${
+                              value <= rating.rating
+                                ? 'text-amber-400 fill-amber-400'
+                                : 'text-slate-600'
+                            }`}
+                          />
+                        ))}
+                      </div>
+                      <span className="text-xs text-slate-500">
+                        {new Date(rating.createdAt).toLocaleDateString(
+                          'en-US',
+                          {
+                            month: 'short',
+                            day: 'numeric',
+                            year: 'numeric',
+                          },
+                        )}
+                      </span>
+                    </div>
+
+                    <p className="text-sm text-slate-400 mt-3">
+                      {rating.review || 'No review text provided.'}
+                    </p>
+                    <p className="text-xs text-slate-500 mt-2">
+                      {rating.user?.email || 'Unknown user'}
+                    </p>
+                  </div>
+
+                  <button
+                    type="button"
+                    onClick={() => handleDeleteRating(rating._id)}
+                    className="p-2 rounded-lg hover:bg-red-500/10 transition-colors text-red-400"
+                    aria-label="Delete rating"
+                  >
+                    <Trash2 className="w-4 h-4" />
+                  </button>
+                </div>
+              </div>
+            ))}
+          </div>
+        )}
+      </div>
 
       {/* Create/Edit Room Modal */}
       {(showCreateRoom || editingRoom) && (
