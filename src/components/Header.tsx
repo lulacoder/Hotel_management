@@ -75,13 +75,6 @@ export default function Header() {
 
             {/* Center: Quick Links (Desktop) */}
             <nav className="hidden md:flex items-center gap-1">
-              <Link
-                to="/select-location"
-                className="px-4 py-2 text-sm font-medium text-slate-400 hover:text-white rounded-lg hover:bg-white/5 transition-all duration-300 flex items-center gap-2"
-              >
-                <MapPin size={16} />
-                Locations
-              </Link>
               {isSignedIn && (
                 <Link
                   to="/bookings"
