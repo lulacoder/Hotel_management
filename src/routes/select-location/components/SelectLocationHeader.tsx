@@ -1,6 +1,5 @@
 import { Link } from '@tanstack/react-router'
 import { UserButton } from '@clerk/clerk-react'
-import { Building2 } from 'lucide-react'
 
 interface SelectLocationHeaderProps {
   isSignedIn: boolean
@@ -15,8 +14,12 @@ export function SelectLocationHeader({
     <header className="bg-slate-900/80 backdrop-blur-xl border-b border-slate-800/50 sticky top-0 z-50">
       <div className="max-w-7xl mx-auto px-4 py-4 flex justify-between items-center">
         <div className="flex items-center gap-3">
-          <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-amber-500 to-amber-600 flex items-center justify-center shadow-lg shadow-amber-500/20">
-            <Building2 className="w-5 h-5 text-white" />
+          <div className="w-10 h-10 rounded-xl bg-slate-950/70 border border-amber-500/30 flex items-center justify-center shadow-lg shadow-amber-500/20">
+            <img
+              src="/logo192.png"
+              alt="Luxe Hotels"
+              className="w-7 h-7 object-contain"
+            />
           </div>
           <h1 className="text-xl font-semibold text-slate-100">
             Hotel Booking

@@ -1,6 +1,6 @@
 import { createFileRoute, useLocation, Link } from '@tanstack/react-router'
 import { SignIn } from '@clerk/clerk-react'
-import { Sparkles, ArrowLeft } from 'lucide-react'
+import { ArrowLeft } from 'lucide-react'
 
 export const Route = createFileRoute('/sign-in/$')({
   component: SignInCatchAll,
@@ -44,8 +44,12 @@ function SignInCatchAll() {
         <div className="relative z-10 flex flex-col justify-between p-12 w-full">
           {/* Logo */}
           <Link to="/" className="flex items-center gap-3 group">
-            <div className="w-12 h-12 rounded-xl bg-gradient-to-br from-amber-400 via-amber-500 to-orange-500 flex items-center justify-center shadow-lg shadow-amber-500/25 group-hover:shadow-amber-500/40 transition-all duration-300">
-              <Sparkles size={24} className="text-white" />
+            <div className="w-12 h-12 rounded-xl bg-slate-950/70 border border-amber-500/30 flex items-center justify-center shadow-lg shadow-amber-500/20 group-hover:shadow-amber-500/40 transition-all duration-300">
+              <img
+                src="/logo192.png"
+                alt="Luxe Hotels"
+                className="w-8 h-8 object-contain"
+              />
             </div>
             <div>
               <span className="text-xl font-semibold text-white tracking-tight">
@@ -84,8 +88,12 @@ function SignInCatchAll() {
             <span className="text-slate-400 font-medium">Back</span>
           </Link>
           <div className="flex items-center gap-2">
-            <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-amber-400 to-orange-500 flex items-center justify-center">
-              <Sparkles size={16} className="text-white" />
+            <div className="w-8 h-8 rounded-lg bg-slate-950/70 border border-amber-500/30 flex items-center justify-center">
+              <img
+                src="/logo192.png"
+                alt="Luxe Hotels"
+                className="w-5 h-5 object-contain"
+              />
             </div>
             <span className="text-white font-semibold">Luxe Hotels</span>
           </div>

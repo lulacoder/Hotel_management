@@ -365,8 +365,12 @@ function LandingPage() {
         <div className="max-w-7xl mx-auto">
           <div className="flex flex-col md:flex-row items-center justify-between gap-6">
             <div className="flex items-center gap-3">
-              <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-amber-400 to-orange-500 flex items-center justify-center">
-                <Sparkles size={20} className="text-white" />
+              <div className="w-10 h-10 rounded-xl bg-slate-950/70 border border-amber-500/30 flex items-center justify-center">
+                <img
+                  src="/logo192.png"
+                  alt="Luxe Hotels"
+                  className="w-7 h-7 object-contain"
+                />
               </div>
               <div>
                 <span className="text-lg font-semibold text-white">

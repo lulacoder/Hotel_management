@@ -4,7 +4,7 @@ import { useAuth } from '@clerk/clerk-react'
 import ClerkHeader from '../integrations/clerk/header-user'
 
 import { useState, useEffect } from 'react'
-import { CalendarCheck, Home, Menu, X, MapPin, Sparkles } from 'lucide-react'
+import { CalendarCheck, Home, Menu, X, MapPin } from 'lucide-react'
 
 export default function Header() {
   const [isOpen, setIsOpen] = useState(false)
@@ -59,8 +59,12 @@ export default function Header() {
                 />
               </button>
               <Link to="/" className="flex items-center gap-3 group">
-                <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-amber-400 via-amber-500 to-orange-500 flex items-center justify-center shadow-lg shadow-amber-500/25 group-hover:shadow-amber-500/40 transition-all duration-300 group-hover:scale-105">
-                  <Sparkles size={20} className="text-white" />
+                <div className="w-10 h-10 rounded-xl bg-slate-950/70 border border-amber-500/30 flex items-center justify-center shadow-lg shadow-amber-500/20 group-hover:shadow-amber-500/40 transition-all duration-300 group-hover:scale-105">
+                  <img
+                    src="/logo192.png"
+                    alt="Luxe Hotels"
+                    className="w-7 h-7 object-contain"
+                  />
                 </div>
                 <div className="hidden sm:block">
                   <span className="text-lg font-semibold text-white tracking-tight group-hover:text-amber-400 transition-colors">
@@ -122,8 +126,12 @@ export default function Header() {
         {/* Menu Header */}
         <div className="flex items-center justify-between p-5 border-b border-slate-800/50">
           <div className="flex items-center gap-3">
-            <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-amber-400 via-amber-500 to-orange-500 flex items-center justify-center shadow-lg shadow-amber-500/25">
-              <Sparkles size={20} className="text-white" />
+            <div className="w-10 h-10 rounded-xl bg-slate-950/70 border border-amber-500/30 flex items-center justify-center shadow-lg shadow-amber-500/20">
+              <img
+                src="/logo192.png"
+                alt="Luxe Hotels"
+                className="w-7 h-7 object-contain"
+              />
             </div>
             <div>
               <h2 className="text-lg font-semibold text-white tracking-tight">
