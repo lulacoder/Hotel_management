@@ -11,7 +11,7 @@ import {
 } from 'lucide-react'
 
 import { Id } from '../../../../../convex/_generated/dataModel'
-import { canCancel, formatDate, formatPrice, getRoomTypeName } from './helpers'
+import { canCancel, formatDate, formatPrice, getRoomTypeName } from './-helpers'
 
 interface BookingCardProps {
   booking: {

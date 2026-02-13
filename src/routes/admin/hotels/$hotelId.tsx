@@ -22,8 +22,8 @@ import { useEffect, useState } from 'react'
 
 import { api } from '../../../../convex/_generated/api'
 import { Id } from '../../../../convex/_generated/dataModel'
-import { RoomModal } from './$hotelId/components/RoomModal'
-import { HotelEditModal } from './$hotelId/components/HotelEditModal'
+import { RoomModal } from './$hotelId/components/-RoomModal'
+import { HotelEditModal } from './$hotelId/components/-HotelEditModal'
 
 export const Route = createFileRoute('/admin/hotels/$hotelId')({
   component: HotelDetailPage,

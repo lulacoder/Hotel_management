@@ -6,9 +6,9 @@ import { Id } from '../../../convex/_generated/dataModel'
 import { Calendar, Loader2 } from 'lucide-react'
 import { useState } from 'react'
 
-import { BookingsHeader } from './bookings/components/BookingsHeader'
-import { BookingsFilters } from './bookings/components/BookingsFilters'
-import { BookingsList } from './bookings/components/BookingsList'
+import { BookingsHeader } from './bookings/components/-BookingsHeader'
+import { BookingsFilters } from './bookings/components/-BookingsFilters'
+import { BookingsList } from './bookings/components/-BookingsList'
 
 export const Route = createFileRoute('/_authenticated/bookings')({
   component: BookingsPage,

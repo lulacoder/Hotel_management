@@ -14,7 +14,7 @@ import {
 } from 'lucide-react'
 import { useState } from 'react'
 import { Id } from '../../../../convex/_generated/dataModel'
-import { HotelModal } from './index/components/HotelModal'
+import { HotelModal } from './index/components/-HotelModal'
 
 export const Route = createFileRoute('/admin/hotels/')({
   component: HotelsPage,

@@ -10,12 +10,12 @@ import { api } from '../../convex/_generated/api'
 import { Id } from '../../convex/_generated/dataModel'
 import { useGeolocation } from '../hooks/useGeolocation'
 import { calculateDistance } from '../lib/distance'
-import { SelectLocationHeader } from './select-location/components/SelectLocationHeader'
-import { HeroSection } from './select-location/components/HeroSection'
-import { SearchFilters } from './select-location/components/SearchFilters'
-import { HotelGrid } from './select-location/components/HotelGrid'
-import { RatingModal } from './select-location/components/RatingModal'
-import { SortOption } from './select-location/components/helpers'
+import { SelectLocationHeader } from './select-location/components/-SelectLocationHeader'
+import { HeroSection } from './select-location/components/-HeroSection'
+import { SearchFilters } from './select-location/components/-SearchFilters'
+import { HotelGrid } from './select-location/components/-HotelGrid'
+import { RatingModal } from './select-location/components/-RatingModal'
+import { SortOption } from './select-location/components/-helpers'
 
 export const Route = createFileRoute('/select-location')({
   component: SelectLocationPage,

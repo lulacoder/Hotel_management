@@ -1,4 +1,4 @@
-import { BookingCard } from './BookingCard'
+import { BookingCard } from './-BookingCard'
 
 import type { Id } from '../../../../../convex/_generated/dataModel'
 

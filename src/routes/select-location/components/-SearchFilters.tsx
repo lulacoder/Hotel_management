@@ -1,4 +1,4 @@
-import { SortOption } from './helpers'
+import { SortOption } from './-helpers'
 
 interface SearchFiltersProps {
   selectedCity: string

@@ -11,7 +11,7 @@ import {
 
 import type { Id } from '../../../../convex/_generated/dataModel'
 import { formatDistance } from '../../../lib/distance'
-import { categoryColors, SortOption } from './helpers'
+import { categoryColors, SortOption } from './-helpers'
 
 interface HotelGridProps {
   hotels: Array<{

@@ -23,7 +23,7 @@ import {
 } from 'lucide-react'
 import { useState } from 'react'
 
-import { BookingModal } from './hotels.$hotelId/components/BookingModal'
+import { BookingModal } from './hotels.$hotelId/components/-BookingModal'
 
 export const Route = createFileRoute('/hotels/$hotelId')({
   component: HotelDetailPage,
