@@ -262,6 +262,9 @@ function HotelDetailPage() {
           <h2 className="text-lg font-semibold text-slate-200 mb-4">
             Select Dates
           </h2>
+          <p className="text-sm text-slate-400 mb-4">
+            Pick your check-in and check-out dates to see available rooms.
+          </p>
           <div className="flex flex-col md:flex-row gap-4">
             <div className="flex-1">
               <label className="block text-sm text-slate-400 mb-2">
@@ -277,7 +280,7 @@ function HotelDetailPage() {
                     checkIn: e.target.value,
                   })
                 }
-                className="w-full px-4 py-3 bg-slate-800/50 border border-slate-700 rounded-xl text-slate-200 focus:outline-none focus:border-amber-500/50 transition-all"
+                className="hotel-date-input w-full px-4 py-3 bg-slate-800/50 border border-slate-700 rounded-xl text-slate-200 focus:outline-none focus:border-amber-500/50 transition-all"
               />
             </div>
             <div className="flex-1">
@@ -297,7 +300,7 @@ function HotelDetailPage() {
                     checkOut: e.target.value,
                   })
                 }
-                className="w-full px-4 py-3 bg-slate-800/50 border border-slate-700 rounded-xl text-slate-200 focus:outline-none focus:border-amber-500/50 transition-all"
+                className="hotel-date-input w-full px-4 py-3 bg-slate-800/50 border border-slate-700 rounded-xl text-slate-200 focus:outline-none focus:border-amber-500/50 transition-all"
               />
             </div>
             {nights > 0 && (

@@ -33,6 +33,24 @@ code {
     monospace;
 }
 
+.hotel-date-input {
+  color-scheme: dark;
+}
+
+.hotel-date-input::-webkit-calendar-picker-indicator {
+  opacity: 0.95;
+  cursor: pointer;
+  filter: brightness(0) saturate(100%) invert(73%) sepia(96%) saturate(551%)
+    hue-rotate(351deg) brightness(100%) contrast(96%);
+  transition: filter 0.2s ease, transform 0.2s ease;
+}
+
+.hotel-date-input:hover::-webkit-calendar-picker-indicator {
+  filter: brightness(0) saturate(100%) invert(85%) sepia(74%) saturate(590%)
+    hue-rotate(334deg) brightness(104%) contrast(98%);
+  transform: scale(1.08);
+}
+
 /* Custom scrollbar */
 ::-webkit-scrollbar {
   width: 8px;
