@@ -13,6 +13,17 @@ export default defineSchema({
     .index('by_email', ['email'])
     .index('by_role', ['role']),
 
+  // Hotel staff assignments (hotel-specific roles)
+  hotelStaff: defineTable({
+    userId: v.id('users'),
+    hotelId: v.id('hotels'),
+    role: v.union(v.literal('hotel_admin'), v.literal('hotel_cashier')),
+    assignedAt: v.number(),
+    assignedBy: v.id('users'),
+  })
+    .index('by_user', ['userId'])
+    .index('by_hotel', ['hotelId']),
+
   // Hotels table
   hotels: defineTable({
     name: v.string(),
@@ -157,6 +168,7 @@ export default defineSchema({
       v.literal('room'),
       v.literal('booking'),
       v.literal('rating'),
+      v.literal('user'),
     ),
     targetId: v.string(), // Generic ID stored as string
     previousValue: v.optional(v.string()), // JSON stringified

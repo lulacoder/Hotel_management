@@ -1,7 +1,7 @@
 import { query, mutation } from './_generated/server'
 import { v } from 'convex/values'
 import { ConvexError } from 'convex/values'
-import { requireAdmin } from './lib/auth'
+import { requireAdmin, requireHotelManagement } from './lib/auth'
 import { createAuditLog } from './audit'
 
 // Validator for hotel document (used in return types)
@@ -223,7 +223,7 @@ export const update = mutation({
   },
   returns: v.null(),
   handler: async (ctx, args) => {
-    const admin = await requireAdmin(ctx, args.clerkUserId)
+    const { user } = await requireHotelManagement(ctx, args.clerkUserId, args.hotelId)
 
     const hotel = await ctx.db.get(args.hotelId)
     if (!hotel) {
@@ -281,7 +281,7 @@ export const update = mutation({
 
     // Log the update
     await createAuditLog(ctx, {
-      actorId: admin._id,
+      actorId: user._id,
       action: 'hotel_updated',
       targetType: 'hotel',
       targetId: args.hotelId,
@@ -301,7 +301,7 @@ export const softDelete = mutation({
   },
   returns: v.null(),
   handler: async (ctx, args) => {
-    const admin = await requireAdmin(ctx, args.clerkUserId)
+    const { user } = await requireHotelManagement(ctx, args.clerkUserId, args.hotelId)
 
     const hotel = await ctx.db.get(args.hotelId)
     if (!hotel) {
@@ -323,7 +323,7 @@ export const softDelete = mutation({
 
     // Log the deletion
     await createAuditLog(ctx, {
-      actorId: admin._id,
+      actorId: user._id,
       action: 'hotel_deleted',
       targetType: 'hotel',
       targetId: args.hotelId,
@@ -343,7 +343,7 @@ export const restore = mutation({
   },
   returns: v.null(),
   handler: async (ctx, args) => {
-    const admin = await requireAdmin(ctx, args.clerkUserId)
+    const { user } = await requireHotelManagement(ctx, args.clerkUserId, args.hotelId)
 
     const hotel = await ctx.db.get(args.hotelId)
     if (!hotel) {
@@ -365,7 +365,7 @@ export const restore = mutation({
 
     // Log the restoration
     await createAuditLog(ctx, {
-      actorId: admin._id,
+      actorId: user._id,
       action: 'hotel_restored',
       targetType: 'hotel',
       targetId: args.hotelId,

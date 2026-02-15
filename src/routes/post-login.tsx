@@ -27,6 +27,13 @@ function PostLoginPage() {
     user?.id ? { clerkUserId: user.id } : 'skip',
   )
 
+  const hotelAssignment = useQuery(
+    api.hotelStaff.getByUserId,
+    user?.id && profile?._id
+      ? { clerkUserId: user.id, userId: profile._id }
+      : 'skip',
+  )
+
   useEffect(() => {
     if (!isClerkLoaded) return
 
@@ -41,6 +48,15 @@ function PostLoginPage() {
     if (profile) {
       if (profile.role === 'room_admin') {
         navigate({ to: '/admin' })
+        return
+      }
+
+      if (hotelAssignment === undefined) {
+        return
+      }
+
+      if (hotelAssignment) {
+        navigate({ to: '/admin' })
       } else {
         navigate({ to: redirectTarget || '/select-location' })
       }
@@ -49,7 +65,7 @@ function PostLoginPage() {
       // Wait a bit and check again (handled by Convex reactivity)
       console.log('Waiting for user profile to be created...')
     }
-  }, [isClerkLoaded, user, profile, navigate, redirectTarget])
+  }, [isClerkLoaded, user, profile, hotelAssignment, navigate, redirectTarget])
 
   return (
     <div className="flex min-h-screen items-center justify-center bg-gradient-to-br from-blue-50 to-indigo-100">

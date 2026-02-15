@@ -3,6 +3,7 @@ import { ConvexError } from 'convex/values'
 import { Doc, Id } from '../_generated/dataModel'
 
 export type UserRole = 'customer' | 'room_admin'
+export type HotelStaffRole = 'hotel_admin' | 'hotel_cashier'
 
 /**
  * Get the current user from the database by their Clerk user ID
@@ -102,4 +103,89 @@ export async function getUserById(
   userId: Id<'users'>,
 ): Promise<Doc<'users'> | null> {
   return await ctx.db.get(userId)
+}
+
+export async function getHotelAssignment(
+  ctx: QueryCtx | MutationCtx,
+  userId: Id<'users'>,
+): Promise<Doc<'hotelStaff'> | null> {
+  return await ctx.db
+    .query('hotelStaff')
+    .withIndex('by_user', (q) => q.eq('userId', userId))
+    .unique()
+}
+
+export async function canAccessHotel(
+  ctx: QueryCtx | MutationCtx,
+  clerkUserId: string,
+  hotelId: Id<'hotels'>,
+): Promise<boolean> {
+  const user = await getCurrentUser(ctx, clerkUserId)
+  if (!user) {
+    return false
+  }
+
+  if (user.role === 'room_admin') {
+    return true
+  }
+
+  const assignment = await getHotelAssignment(ctx, user._id)
+  return Boolean(assignment && assignment.hotelId === hotelId)
+}
+
+export async function requireHotelAccess(
+  ctx: QueryCtx | MutationCtx,
+  clerkUserId: string,
+  hotelId: Id<'hotels'>,
+): Promise<{ user: Doc<'users'>; assignment: Doc<'hotelStaff'> | null }> {
+  const user = await requireUser(ctx, clerkUserId)
+
+  if (user.role === 'room_admin') {
+    return { user, assignment: null }
+  }
+
+  const assignment = await getHotelAssignment(ctx, user._id)
+  if (!assignment || assignment.hotelId !== hotelId) {
+    throw new ConvexError({
+      code: 'FORBIDDEN',
+      message: 'You do not have access to this hotel.',
+    })
+  }
+
+  return { user, assignment }
+}
+
+export async function canManageHotel(
+  ctx: QueryCtx | MutationCtx,
+  clerkUserId: string,
+  hotelId: Id<'hotels'>,
+): Promise<boolean> {
+  const { user, assignment } = await requireHotelAccess(ctx, clerkUserId, hotelId)
+
+  if (user.role === 'room_admin') {
+    return true
+  }
+
+  return assignment?.role === 'hotel_admin'
+}
+
+export async function requireHotelManagement(
+  ctx: QueryCtx | MutationCtx,
+  clerkUserId: string,
+  hotelId: Id<'hotels'>,
+): Promise<{ user: Doc<'users'>; assignment: Doc<'hotelStaff'> | null }> {
+  const access = await requireHotelAccess(ctx, clerkUserId, hotelId)
+
+  if (access.user.role === 'room_admin') {
+    return access
+  }
+
+  if (access.assignment?.role !== 'hotel_admin') {
+    throw new ConvexError({
+      code: 'FORBIDDEN',
+      message: 'Only hotel administrators can perform this action.',
+    })
+  }
+
+  return access
 }

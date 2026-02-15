@@ -1,29 +1,29 @@
-import { createFileRoute, Link } from '@tanstack/react-router'
+import { Link, createFileRoute } from '@tanstack/react-router'
 import { useUser } from '@clerk/clerk-react'
-import { useQuery, useMutation } from 'convex/react'
+import { useMutation, useQuery } from 'convex/react'
 import {
   ArrowLeft,
-  Plus,
   Building2,
-  MapPin,
+  CheckCircle,
+  DollarSign,
   Edit,
+  MapPin,
   MoreVertical,
   Pencil,
-  Trash2,
-  Star,
-  Wrench,
+  Plus,
   Sparkles,
-  XCircle,
-  CheckCircle,
+  Star,
+  Trash2,
   Users,
-  DollarSign,
+  Wrench,
+  XCircle,
 } from 'lucide-react'
 import { useEffect, useState } from 'react'
 
 import { api } from '../../../../convex/_generated/api'
-import { Id } from '../../../../convex/_generated/dataModel'
 import { RoomModal } from './$hotelId/components/-RoomModal'
 import { HotelEditModal } from './$hotelId/components/-HotelEditModal'
+import type { Id } from '../../../../convex/_generated/dataModel'
 
 export const Route = createFileRoute('/admin/hotels/$hotelId')({
   component: HotelDetailPage,

@@ -1,4 +1,5 @@
 import { createFileRoute, Link } from '@tanstack/react-router'
+import { useUser } from '@clerk/clerk-react'
 import { useQuery } from 'convex/react'
 import { api } from '../../../../convex/_generated/api'
 import { Building2, Hotel, MapPin, Search, ChevronRight } from 'lucide-react'
@@ -9,15 +10,42 @@ export const Route = createFileRoute('/admin/rooms/')({
 })
 
 function RoomsPage() {
+  const { user } = useUser()
   const [searchTerm, setSearchTerm] = useState('')
 
   const hotels = useQuery(api.hotels.list, {})
+  const profile = useQuery(
+    api.users.getByClerkId,
+    user?.id ? { clerkUserId: user.id } : 'skip',
+  )
+  const hotelAssignment = useQuery(
+    api.hotelStaff.getByUserId,
+    user?.id && profile?._id
+      ? { clerkUserId: user.id, userId: profile._id }
+      : 'skip',
+  )
 
-  const filteredHotels = hotels?.filter(
+  const visibleHotels =
+    profile?.role === 'room_admin'
+      ? hotels
+      : hotels?.filter((hotel) => hotel._id === hotelAssignment?.hotelId)
+
+  const filteredHotels = visibleHotels?.filter(
     (hotel) =>
       hotel.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
       hotel.city.toLowerCase().includes(searchTerm.toLowerCase()),
   )
+
+  if (profile?.role !== 'room_admin' && hotelAssignment?.role === 'hotel_cashier') {
+    return (
+      <div className="max-w-7xl mx-auto">
+        <div className="bg-slate-900/50 border border-red-500/20 rounded-2xl p-8 text-center">
+          <h2 className="text-xl font-semibold text-red-400 mb-2">Access Denied</h2>
+          <p className="text-slate-400">Cashiers can only access bookings.</p>
+        </div>
+      </div>
+    )
+  }
 
   return (
     <div className="max-w-7xl mx-auto">
@@ -42,7 +70,7 @@ function RoomsPage() {
       </div>
 
       {/* Hotels List */}
-      {hotels === undefined ? (
+      {visibleHotels === undefined ? (
         <div className="flex items-center justify-center py-20">
           <div className="animate-spin rounded-full h-8 w-8 border-2 border-amber-500/20 border-t-amber-500"></div>
         </div>

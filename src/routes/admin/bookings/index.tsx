@@ -14,7 +14,7 @@ import {
   LogOut,
   Ban,
 } from 'lucide-react'
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
 
 export const Route = createFileRoute('/admin/bookings/')({
   component: BookingsPage,
@@ -25,7 +25,28 @@ function BookingsPage() {
   const [statusFilter, setStatusFilter] = useState<string>('all')
   const [selectedHotel, setSelectedHotel] = useState<string>('all')
 
+  const profile = useQuery(
+    api.users.getByClerkId,
+    user?.id ? { clerkUserId: user.id } : 'skip',
+  )
+  const hotelAssignment = useQuery(
+    api.hotelStaff.getByUserId,
+    user?.id && profile?._id
+      ? { clerkUserId: user.id, userId: profile._id }
+      : 'skip',
+  )
+
   const hotels = useQuery(api.hotels.list, {})
+  const visibleHotels =
+    profile?.role === 'room_admin'
+      ? hotels
+      : hotels?.filter((hotel) => hotel._id === hotelAssignment?.hotelId)
+
+  useEffect(() => {
+    if (profile?.role !== 'room_admin' && hotelAssignment?.hotelId) {
+      setSelectedHotel(hotelAssignment.hotelId)
+    }
+  }, [profile?.role, hotelAssignment?.hotelId])
 
   // Get bookings for selected hotel or all
   const bookings = useQuery(
@@ -94,6 +115,9 @@ function BookingsPage() {
     return true
   })
 
+  const canCancelBookings =
+    profile?.role === 'room_admin' || hotelAssignment?.role === 'hotel_admin'
+
   return (
     <div className="max-w-7xl mx-auto">
       {/* Header */}
@@ -115,8 +139,10 @@ function BookingsPage() {
             onChange={(e) => setSelectedHotel(e.target.value)}
             className="w-full px-4 py-3 bg-slate-900/50 border border-slate-800/50 rounded-xl text-slate-200 focus:outline-none focus:border-amber-500/50 transition-all"
           >
-            <option value="all">Select a hotel...</option>
-            {hotels?.map((hotel) => (
+            {profile?.role === 'room_admin' && (
+              <option value="all">Select a hotel...</option>
+            )}
+            {visibleHotels?.map((hotel) => (
               <option key={hotel._id} value={hotel._id}>
                 {hotel.name} - {hotel.city}
               </option>
@@ -143,7 +169,7 @@ function BookingsPage() {
       </div>
 
       {/* Content */}
-      {selectedHotel === 'all' ? (
+      {selectedHotel === 'all' && profile?.role === 'room_admin' ? (
         <div className="bg-slate-900/50 border border-slate-800/50 rounded-2xl p-12 text-center">
           <div className="w-16 h-16 rounded-2xl bg-slate-800 flex items-center justify-center mx-auto mb-4">
             <Hotel className="w-8 h-8 text-slate-600" />
@@ -230,7 +256,7 @@ function BookingsPage() {
                     </div>
                   </div>
 
-                  {['held', 'confirmed'].includes(booking.status) && (
+                  {canCancelBookings && ['held', 'confirmed'].includes(booking.status) && (
                     <button
                       onClick={() => handleCancel(booking._id)}
                       className="px-4 py-2 bg-red-500/10 text-red-400 rounded-lg hover:bg-red-500/20 transition-colors text-sm font-medium border border-red-500/20"

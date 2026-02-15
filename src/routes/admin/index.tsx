@@ -24,6 +24,18 @@ function AdminDashboard() {
     user?.id ? { clerkUserId: user.id } : 'skip',
   )
 
+  const hotelAssignment = useQuery(
+    api.hotelStaff.getByUserId,
+    user?.id && profile?._id
+      ? { clerkUserId: user.id, userId: profile._id }
+      : 'skip',
+  )
+
+  const assignedHotel = useQuery(
+    api.hotels.get,
+    hotelAssignment?.hotelId ? { hotelId: hotelAssignment.hotelId } : 'skip',
+  )
+
   // Get real data from Convex
   const hotels = useQuery(api.hotels.list, {})
 
@@ -80,7 +92,17 @@ function AdminDashboard() {
       icon: Calendar,
       to: '/admin/bookings',
     },
-  ]
+  ].filter((action) => {
+    if (profile?.role === 'room_admin') {
+      return true
+    }
+
+    if (hotelAssignment?.role === 'hotel_cashier') {
+      return action.to === '/admin/bookings'
+    }
+
+    return true
+  })
 
   return (
     <div className="max-w-7xl mx-auto">
@@ -93,6 +115,29 @@ function AdminDashboard() {
           Here's an overview of your hotel management system.
         </p>
       </div>
+
+      {hotelAssignment && assignedHotel && profile?.role !== 'room_admin' && (
+        <div className="bg-blue-500/10 border border-blue-500/20 rounded-2xl p-6 mb-8">
+          <div className="flex items-start gap-4">
+            <div className="w-10 h-10 rounded-xl bg-blue-500/10 flex items-center justify-center flex-shrink-0">
+              <Building2 className="w-5 h-5 text-blue-400" />
+            </div>
+            <div>
+              <h3 className="font-semibold text-blue-400 mb-1">
+                Hotel Assignment
+              </h3>
+              <p className="text-slate-300 text-sm">
+                You are assigned to{' '}
+                <span className="font-medium text-white">{assignedHotel.name}</span>{' '}
+                in {assignedHotel.city} as{' '}
+                <span className="text-blue-400 font-medium uppercase text-xs tracking-wider">
+                  {hotelAssignment.role.replace('hotel_', '')}
+                </span>
+              </p>
+            </div>
+          </div>
+        </div>
+      )}
 
       {/* Stats Grid */}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">

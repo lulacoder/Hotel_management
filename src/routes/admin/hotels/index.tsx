@@ -28,9 +28,26 @@ function HotelsPage() {
   const [activeMenu, setActiveMenu] = useState<Id<'hotels'> | null>(null)
 
   const hotels = useQuery(api.hotels.list, {})
+  const profile = useQuery(
+    api.users.getByClerkId,
+    user?.id ? { clerkUserId: user.id } : 'skip',
+  )
+  const hotelAssignment = useQuery(
+    api.hotelStaff.getByUserId,
+    user?.id && profile?._id
+      ? { clerkUserId: user.id, userId: profile._id }
+      : 'skip',
+  )
   const deleteHotel = useMutation(api.hotels.softDelete)
 
-  const filteredHotels = hotels?.filter(
+  const canAddHotel = profile?.role === 'room_admin'
+
+  const visibleHotels =
+    profile?.role === 'room_admin'
+      ? hotels
+      : hotels?.filter((hotel) => hotel._id === hotelAssignment?.hotelId)
+
+  const filteredHotels = visibleHotels?.filter(
     (hotel) =>
       hotel.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
       hotel.city.toLowerCase().includes(searchTerm.toLowerCase()) ||
@@ -39,10 +56,22 @@ function HotelsPage() {
 
   const handleDelete = async (hotelId: Id<'hotels'>) => {
     if (!user?.id) return
+    if (!canAddHotel) return
     if (confirm('Are you sure you want to delete this hotel?')) {
       await deleteHotel({ clerkUserId: user.id, hotelId })
     }
     setActiveMenu(null)
+  }
+
+  if (profile?.role !== 'room_admin' && hotelAssignment?.role === 'hotel_cashier') {
+    return (
+      <div className="max-w-7xl mx-auto">
+        <div className="bg-slate-900/50 border border-red-500/20 rounded-2xl p-8 text-center">
+          <h2 className="text-xl font-semibold text-red-400 mb-2">Access Denied</h2>
+          <p className="text-slate-400">Cashiers can only access bookings.</p>
+        </div>
+      </div>
+    )
   }
 
   return (
@@ -57,13 +86,15 @@ function HotelsPage() {
             Manage your hotel properties and locations.
           </p>
         </div>
-        <button
-          onClick={() => setShowCreateModal(true)}
-          className="flex items-center gap-2 px-5 py-2.5 bg-gradient-to-r from-amber-500 to-amber-600 text-white font-medium rounded-xl hover:from-amber-600 hover:to-amber-700 transition-all duration-200 shadow-lg shadow-amber-500/20"
-        >
-          <Plus className="w-5 h-5" />
-          Add Hotel
-        </button>
+        {canAddHotel && (
+          <button
+            onClick={() => setShowCreateModal(true)}
+            className="flex items-center gap-2 px-5 py-2.5 bg-gradient-to-r from-amber-500 to-amber-600 text-white font-medium rounded-xl hover:from-amber-600 hover:to-amber-700 transition-all duration-200 shadow-lg shadow-amber-500/20"
+          >
+            <Plus className="w-5 h-5" />
+            Add Hotel
+          </button>
+        )}
       </div>
 
       {/* Search */}
@@ -79,7 +110,7 @@ function HotelsPage() {
       </div>
 
       {/* Hotels Grid */}
-      {hotels === undefined ? (
+      {visibleHotels === undefined ? (
         <div className="flex items-center justify-center py-20">
           <div className="animate-spin rounded-full h-8 w-8 border-2 border-amber-500/20 border-t-amber-500"></div>
         </div>
@@ -145,13 +176,15 @@ function HotelsPage() {
                       <Pencil className="w-4 h-4" />
                       Edit Hotel
                     </button>
-                    <button
-                      onClick={() => handleDelete(hotel._id)}
-                      className="flex items-center gap-3 px-4 py-3 text-red-400 hover:bg-slate-700 transition-colors w-full"
-                    >
-                      <Trash2 className="w-4 h-4" />
-                      Delete Hotel
-                    </button>
+                    {canAddHotel && (
+                      <button
+                        onClick={() => handleDelete(hotel._id)}
+                        className="flex items-center gap-3 px-4 py-3 text-red-400 hover:bg-slate-700 transition-colors w-full"
+                      >
+                        <Trash2 className="w-4 h-4" />
+                        Delete Hotel
+                      </button>
+                    )}
                   </div>
                 )}
               </div>
@@ -187,7 +220,7 @@ function HotelsPage() {
       )}
 
       {/* Create/Edit Modal */}
-      {(showCreateModal || editingHotel) && (
+      {(showCreateModal || editingHotel) && canAddHotel && (
         <HotelModal
           hotelId={editingHotel}
           onClose={() => {

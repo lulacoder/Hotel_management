@@ -1,6 +1,11 @@
-import { query, mutation } from './_generated/server'
-import { v, ConvexError } from 'convex/values'
-import { requireAdmin, requireCustomer, requireUser } from './lib/auth'
+import { ConvexError, v } from 'convex/values'
+import { mutation, query } from './_generated/server'
+import {
+  requireCustomer,
+  requireHotelAccess,
+  requireHotelManagement,
+  requireUser,
+} from './lib/auth'
 import { createAuditLog } from './audit'
 
 const ratingValidator = v.object({
@@ -164,7 +169,6 @@ export const softDeleteRating = mutation({
   },
   returns: v.null(),
   handler: async (ctx, args) => {
-    const admin = await requireAdmin(ctx, args.clerkUserId)
     const rating = await ctx.db.get(args.ratingId)
 
     if (!rating) {
@@ -173,6 +177,12 @@ export const softDeleteRating = mutation({
         message: 'Rating not found.',
       })
     }
+
+    const { user } = await requireHotelManagement(
+      ctx,
+      args.clerkUserId,
+      rating.hotelId,
+    )
 
     if (rating.isDeleted) {
       return null
@@ -184,7 +194,7 @@ export const softDeleteRating = mutation({
     })
 
     await createAuditLog(ctx, {
-      actorId: admin._id,
+      actorId: user._id,
       action: 'rating_deleted',
       targetType: 'rating',
       targetId: rating._id,
@@ -229,7 +239,7 @@ export const getHotelRatingsAdmin = query({
     }),
   ),
   handler: async (ctx, args) => {
-    await requireAdmin(ctx, args.clerkUserId)
+    await requireHotelAccess(ctx, args.clerkUserId, args.hotelId)
     const limit = args.limit ?? 50
 
     const ratings = await ctx.db

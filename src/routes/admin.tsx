@@ -1,31 +1,39 @@
 import {
-  createFileRoute,
-  Outlet,
-  useNavigate,
   Link,
+  Outlet,
+  createFileRoute,
+  redirect,
   useLocation,
 } from '@tanstack/react-router'
-import { useUser, UserButton } from '@clerk/clerk-react'
-import { useQuery } from 'convex/react'
-import { api } from '../../convex/_generated/api'
-import { useEffect, useState } from 'react'
+import { UserButton, useUser } from '@clerk/clerk-react'
+import { useState } from 'react'
 import {
-  LayoutDashboard,
   Building2,
-  Hotel,
   Calendar,
+  Hotel,
+  LayoutDashboard,
   LogOut,
   Menu,
+  Users,
   X,
 } from 'lucide-react'
+import { useQuery } from 'convex/react'
+import { api } from '../../convex/_generated/api'
 
 export const Route = createFileRoute('/admin')({
+  beforeLoad: () => {
+    if (typeof window !== 'undefined') {
+      const clerk = (window as Window & { Clerk?: { user?: unknown } }).Clerk
+      if (!clerk?.user) {
+        throw redirect({ to: '/sign-in' })
+      }
+    }
+  },
   component: AdminLayout,
 })
 
 function AdminLayout() {
   const { user, isLoaded, isSignedIn } = useUser()
-  const navigate = useNavigate()
   const location = useLocation()
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false)
 
@@ -34,13 +42,12 @@ function AdminLayout() {
     user?.id ? { clerkUserId: user.id } : 'skip',
   )
 
-  useEffect(() => {
-    if (!isLoaded) return
-
-    if (!isSignedIn) {
-      navigate({ to: '/sign-in' })
-    }
-  }, [isLoaded, isSignedIn, navigate])
+  const hotelAssignment = useQuery(
+    api.hotelStaff.getByUserId,
+    user?.id && profile?._id
+      ? { clerkUserId: user.id, userId: profile._id }
+      : 'skip',
+  )
 
   if (!isLoaded || profile === undefined) {
     return (
@@ -57,8 +64,19 @@ function AdminLayout() {
     return null
   }
 
-  // Access denied for non-admins
-  if (profile?.role !== 'room_admin') {
+  if (profile?.role !== 'room_admin' && hotelAssignment === undefined) {
+    return (
+      <div className="flex min-h-screen items-center justify-center bg-slate-950">
+        <div className="relative">
+          <div className="animate-spin rounded-full h-12 w-12 border-2 border-amber-500/20 border-t-amber-500"></div>
+          <div className="absolute inset-0 animate-ping rounded-full h-12 w-12 border border-amber-500/10"></div>
+        </div>
+      </div>
+    )
+  }
+
+  // Access denied for users without admin role or hotel staff assignment
+  if (profile?.role !== 'room_admin' && !hotelAssignment) {
     return (
       <div className="flex min-h-screen items-center justify-center bg-slate-950">
         <div className="bg-slate-900 border border-red-500/20 rounded-2xl shadow-2xl shadow-red-500/5 p-10 max-w-md text-center">
@@ -70,10 +88,10 @@ function AdminLayout() {
           </h1>
           <p className="text-slate-400 mb-8 leading-relaxed">
             You don't have permission to access the admin area. This section is
-            restricted to room administrators only.
+            restricted to room administrators and assigned hotel staff.
           </p>
           <button
-            onClick={() => navigate({ to: '/' })}
+            onClick={() => (window.location.href = '/')}
             className="px-8 py-3 bg-slate-800 text-slate-200 font-medium rounded-xl hover:bg-slate-700 transition-all duration-200 border border-slate-700"
           >
             Return Home
@@ -88,7 +106,24 @@ function AdminLayout() {
     { to: '/admin/hotels', label: 'Hotels', icon: Hotel },
     { to: '/admin/rooms', label: 'Rooms', icon: Building2 },
     { to: '/admin/bookings', label: 'Bookings', icon: Calendar },
+    { to: '/admin/users', label: 'Users', icon: Users },
   ]
+
+  const visibleNavItems = navItems.filter((item) => {
+    if (profile?.role === 'room_admin') {
+      return true
+    }
+
+    if (hotelAssignment?.role === 'hotel_cashier') {
+      return item.to === '/admin/bookings'
+    }
+
+    if (hotelAssignment?.role === 'hotel_admin') {
+      return item.to !== '/admin/users'
+    }
+
+    return false
+  })
 
   const isActive = (path: string, exact?: boolean) => {
     if (exact) return location.pathname === path
@@ -146,7 +181,7 @@ function AdminLayout() {
         </div>
 
         <nav className="flex-1 p-4 overflow-y-auto space-y-1">
-          {navItems.map((item) => {
+          {visibleNavItems.map((item) => {
             const active = isActive(item.to, item.exact)
             return (
               <Link
@@ -180,10 +215,10 @@ function AdminLayout() {
             />
             <div className="flex-1 min-w-0">
               <p className="text-sm font-medium text-slate-200 truncate">
-                {user?.firstName || 'Admin'}
+                {user.firstName || 'Admin'}
               </p>
               <p className="text-xs text-slate-500 truncate">
-                {user?.emailAddresses[0]?.emailAddress}
+                {user.emailAddresses[0]?.emailAddress}
               </p>
             </div>
           </div>
@@ -221,7 +256,7 @@ function AdminLayout() {
         </div>
 
         <nav className="p-4 space-y-1">
-          {navItems.map((item) => {
+          {visibleNavItems.map((item) => {
             const active = isActive(item.to, item.exact)
             return (
               <Link
@@ -255,10 +290,10 @@ function AdminLayout() {
             />
             <div className="flex-1 min-w-0">
               <p className="text-sm font-medium text-slate-200 truncate">
-                {user?.firstName || 'Admin'}
+                {user.firstName || 'Admin'}
               </p>
               <p className="text-xs text-slate-500 truncate">
-                {user?.emailAddresses[0]?.emailAddress}
+                {user.emailAddresses[0]?.emailAddress}
               </p>
             </div>
           </div>

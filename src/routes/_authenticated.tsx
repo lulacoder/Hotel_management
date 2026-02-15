@@ -17,6 +17,13 @@ function AuthenticatedLayout() {
     user?.id ? { clerkUserId: user.id } : 'skip',
   )
 
+  const hotelAssignment = useQuery(
+    api.hotelStaff.getByUserId,
+    user?.id && profile?._id
+      ? { clerkUserId: user.id, userId: profile._id }
+      : 'skip',
+  )
+
   useEffect(() => {
     if (!isLoaded) return
 
@@ -25,11 +32,11 @@ function AuthenticatedLayout() {
       return
     }
 
-    // Redirect admins to admin panel
-    if (profile?.role === 'room_admin') {
+    // Redirect admins and assigned hotel staff to admin panel
+    if (profile?.role === 'room_admin' || hotelAssignment) {
       navigate({ to: '/admin' })
     }
-  }, [isLoaded, isSignedIn, profile, navigate])
+  }, [isLoaded, isSignedIn, profile, hotelAssignment, navigate])
 
   if (!isLoaded || profile === undefined) {
     return (

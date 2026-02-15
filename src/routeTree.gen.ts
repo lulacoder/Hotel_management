@@ -22,6 +22,7 @@ import { Route as SignInSplatRouteImport } from './routes/sign-in.$'
 import { Route as HotelsHotelIdRouteImport } from './routes/hotels.$hotelId'
 import { Route as DemoClerkRouteImport } from './routes/demo/clerk'
 import { Route as AuthenticatedBookingsRouteImport } from './routes/_authenticated/bookings'
+import { Route as AdminUsersIndexRouteImport } from './routes/admin/users/index'
 import { Route as AdminRoomsIndexRouteImport } from './routes/admin/rooms/index'
 import { Route as AdminHotelsIndexRouteImport } from './routes/admin/hotels/index'
 import { Route as AdminBookingsIndexRouteImport } from './routes/admin/bookings/index'
@@ -97,6 +98,11 @@ const AuthenticatedBookingsRoute = AuthenticatedBookingsRouteImport.update({
   id: '/bookings',
   path: '/bookings',
   getParentRoute: () => AuthenticatedRoute,
+} as any)
+const AdminUsersIndexRoute = AdminUsersIndexRouteImport.update({
+  id: '/users/',
+  path: '/users/',
+  getParentRoute: () => AdminRoute,
 } as any)
 const AdminRoomsIndexRoute = AdminRoomsIndexRouteImport.update({
   id: '/rooms/',
@@ -174,6 +180,7 @@ export interface FileRoutesByFullPath {
   '/admin/bookings/': typeof AdminBookingsIndexRoute
   '/admin/hotels/': typeof AdminHotelsIndexRoute
   '/admin/rooms/': typeof AdminRoomsIndexRoute
+  '/admin/users/': typeof AdminUsersIndexRoute
   '/demo/start/ssr/data-only': typeof DemoStartSsrDataOnlyRoute
   '/demo/start/ssr/full-ssr': typeof DemoStartSsrFullSsrRoute
   '/demo/start/ssr/spa-mode': typeof DemoStartSsrSpaModeRoute
@@ -198,6 +205,7 @@ export interface FileRoutesByTo {
   '/admin/bookings': typeof AdminBookingsIndexRoute
   '/admin/hotels': typeof AdminHotelsIndexRoute
   '/admin/rooms': typeof AdminRoomsIndexRoute
+  '/admin/users': typeof AdminUsersIndexRoute
   '/demo/start/ssr/data-only': typeof DemoStartSsrDataOnlyRoute
   '/demo/start/ssr/full-ssr': typeof DemoStartSsrFullSsrRoute
   '/demo/start/ssr/spa-mode': typeof DemoStartSsrSpaModeRoute
@@ -225,6 +233,7 @@ export interface FileRoutesById {
   '/admin/bookings/': typeof AdminBookingsIndexRoute
   '/admin/hotels/': typeof AdminHotelsIndexRoute
   '/admin/rooms/': typeof AdminRoomsIndexRoute
+  '/admin/users/': typeof AdminUsersIndexRoute
   '/demo/start/ssr/data-only': typeof DemoStartSsrDataOnlyRoute
   '/demo/start/ssr/full-ssr': typeof DemoStartSsrFullSsrRoute
   '/demo/start/ssr/spa-mode': typeof DemoStartSsrSpaModeRoute
@@ -252,6 +261,7 @@ export interface FileRouteTypes {
     | '/admin/bookings/'
     | '/admin/hotels/'
     | '/admin/rooms/'
+    | '/admin/users/'
     | '/demo/start/ssr/data-only'
     | '/demo/start/ssr/full-ssr'
     | '/demo/start/ssr/spa-mode'
@@ -276,6 +286,7 @@ export interface FileRouteTypes {
     | '/admin/bookings'
     | '/admin/hotels'
     | '/admin/rooms'
+    | '/admin/users'
     | '/demo/start/ssr/data-only'
     | '/demo/start/ssr/full-ssr'
     | '/demo/start/ssr/spa-mode'
@@ -302,6 +313,7 @@ export interface FileRouteTypes {
     | '/admin/bookings/'
     | '/admin/hotels/'
     | '/admin/rooms/'
+    | '/admin/users/'
     | '/demo/start/ssr/data-only'
     | '/demo/start/ssr/full-ssr'
     | '/demo/start/ssr/spa-mode'
@@ -420,6 +432,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedBookingsRouteImport
       parentRoute: typeof AuthenticatedRoute
     }
+    '/admin/users/': {
+      id: '/admin/users/'
+      path: '/users'
+      fullPath: '/admin/users/'
+      preLoaderRoute: typeof AdminUsersIndexRouteImport
+      parentRoute: typeof AdminRoute
+    }
     '/admin/rooms/': {
       id: '/admin/rooms/'
       path: '/rooms'
@@ -518,6 +537,7 @@ interface AdminRouteChildren {
   AdminBookingsIndexRoute: typeof AdminBookingsIndexRoute
   AdminHotelsIndexRoute: typeof AdminHotelsIndexRoute
   AdminRoomsIndexRoute: typeof AdminRoomsIndexRoute
+  AdminUsersIndexRoute: typeof AdminUsersIndexRoute
 }
 
 const AdminRouteChildren: AdminRouteChildren = {
@@ -526,6 +546,7 @@ const AdminRouteChildren: AdminRouteChildren = {
   AdminBookingsIndexRoute: AdminBookingsIndexRoute,
   AdminHotelsIndexRoute: AdminHotelsIndexRoute,
   AdminRoomsIndexRoute: AdminRoomsIndexRoute,
+  AdminUsersIndexRoute: AdminUsersIndexRoute,
 }
 
 const AdminRouteWithChildren = AdminRoute._addFileChildren(AdminRouteChildren)

@@ -1,7 +1,7 @@
 import { query, mutation } from './_generated/server'
 import { v } from 'convex/values'
 import { ConvexError } from 'convex/values'
-import { requireAdmin } from './lib/auth'
+import { requireHotelManagement } from './lib/auth'
 import { createAuditLog } from './audit'
 import { datesOverlap, isHoldExpired } from './lib/dates'
 
@@ -245,7 +245,7 @@ export const create = mutation({
   },
   returns: v.id('rooms'),
   handler: async (ctx, args) => {
-    const admin = await requireAdmin(ctx, args.clerkUserId)
+    const { user } = await requireHotelManagement(ctx, args.clerkUserId, args.hotelId)
 
     // Verify hotel exists
     const hotel = await ctx.db.get(args.hotelId)
@@ -306,7 +306,7 @@ export const create = mutation({
 
     // Log the creation
     await createAuditLog(ctx, {
-      actorId: admin._id,
+      actorId: user._id,
       action: 'room_created',
       targetType: 'room',
       targetId: roomId,
@@ -339,8 +339,6 @@ export const update = mutation({
   },
   returns: v.null(),
   handler: async (ctx, args) => {
-    const admin = await requireAdmin(ctx, args.clerkUserId)
-
     const room = await ctx.db.get(args.roomId)
     if (!room) {
       throw new ConvexError({
@@ -348,6 +346,8 @@ export const update = mutation({
         message: 'Room not found.',
       })
     }
+
+    const { user } = await requireHotelManagement(ctx, args.clerkUserId, room.hotelId)
 
     if (room.isDeleted) {
       throw new ConvexError({
@@ -419,7 +419,7 @@ export const update = mutation({
 
     // Log the update
     await createAuditLog(ctx, {
-      actorId: admin._id,
+      actorId: user._id,
       action: 'room_updated',
       targetType: 'room',
       targetId: args.roomId,
@@ -440,8 +440,6 @@ export const updateStatus = mutation({
   },
   returns: v.null(),
   handler: async (ctx, args) => {
-    const admin = await requireAdmin(ctx, args.clerkUserId)
-
     const room = await ctx.db.get(args.roomId)
     if (!room) {
       throw new ConvexError({
@@ -449,6 +447,8 @@ export const updateStatus = mutation({
         message: 'Room not found.',
       })
     }
+
+    const { user } = await requireHotelManagement(ctx, args.clerkUserId, room.hotelId)
 
     if (room.isDeleted) {
       throw new ConvexError({
@@ -471,7 +471,7 @@ export const updateStatus = mutation({
 
     // Always log status changes
     await createAuditLog(ctx, {
-      actorId: admin._id,
+      actorId: user._id,
       action: 'room_status_changed',
       targetType: 'room',
       targetId: args.roomId,
@@ -491,8 +491,6 @@ export const softDelete = mutation({
   },
   returns: v.null(),
   handler: async (ctx, args) => {
-    const admin = await requireAdmin(ctx, args.clerkUserId)
-
     const room = await ctx.db.get(args.roomId)
     if (!room) {
       throw new ConvexError({
@@ -500,6 +498,8 @@ export const softDelete = mutation({
         message: 'Room not found.',
       })
     }
+
+    const { user } = await requireHotelManagement(ctx, args.clerkUserId, room.hotelId)
 
     if (room.isDeleted) {
       // Already deleted, idempotent operation
@@ -532,7 +532,7 @@ export const softDelete = mutation({
 
     // Log the deletion
     await createAuditLog(ctx, {
-      actorId: admin._id,
+      actorId: user._id,
       action: 'room_deleted',
       targetType: 'room',
       targetId: args.roomId,
@@ -552,8 +552,6 @@ export const restore = mutation({
   },
   returns: v.null(),
   handler: async (ctx, args) => {
-    const admin = await requireAdmin(ctx, args.clerkUserId)
-
     const room = await ctx.db.get(args.roomId)
     if (!room) {
       throw new ConvexError({
@@ -561,6 +559,8 @@ export const restore = mutation({
         message: 'Room not found.',
       })
     }
+
+    const { user } = await requireHotelManagement(ctx, args.clerkUserId, room.hotelId)
 
     if (!room.isDeleted) {
       // Already active, idempotent operation
@@ -574,7 +574,7 @@ export const restore = mutation({
 
     // Log the restoration
     await createAuditLog(ctx, {
-      actorId: admin._id,
+      actorId: user._id,
       action: 'room_restored',
       targetType: 'room',
       targetId: args.roomId,

@@ -1,7 +1,12 @@
 import { query, mutation } from './_generated/server'
 import { v } from 'convex/values'
 import { ConvexError } from 'convex/values'
-import { requireUser, requireCustomer, requireAdmin } from './lib/auth'
+import {
+  requireUser,
+  requireCustomer,
+  requireHotelAccess,
+  getHotelAssignment,
+} from './lib/auth'
 import { createAuditLog } from './audit'
 import {
   datesOverlap,
@@ -64,12 +69,15 @@ export const get = query({
       return null
     }
 
-    // Customers can only view their own bookings
+    // Customers can only view their own bookings unless they are hotel staff for this booking's hotel
     if (user.role === 'customer' && booking.userId !== user._id) {
-      throw new ConvexError({
-        code: 'FORBIDDEN',
-        message: 'You can only view your own bookings.',
-      })
+      const assignment = await getHotelAssignment(ctx, user._id)
+      if (!assignment || assignment.hotelId !== booking.hotelId) {
+        throw new ConvexError({
+          code: 'FORBIDDEN',
+          message: 'You can only view your own bookings.',
+        })
+      }
     }
 
     return booking
@@ -124,7 +132,7 @@ export const getByHotel = query({
   },
   returns: v.array(bookingValidator),
   handler: async (ctx, args) => {
-    await requireAdmin(ctx, args.clerkUserId)
+    await requireHotelAccess(ctx, args.clerkUserId, args.hotelId)
 
     let bookings = await ctx.db
       .query('bookings')
@@ -150,7 +158,15 @@ export const getByRoom = query({
   },
   returns: v.array(bookingValidator),
   handler: async (ctx, args) => {
-    await requireAdmin(ctx, args.clerkUserId)
+    const room = await ctx.db.get(args.roomId)
+    if (!room) {
+      throw new ConvexError({
+        code: 'NOT_FOUND',
+        message: 'Room not found.',
+      })
+    }
+
+    await requireHotelAccess(ctx, args.clerkUserId, room.hotelId)
 
     let bookings = await ctx.db
       .query('bookings')
@@ -370,11 +386,17 @@ export const cancelBooking = mutation({
       })
     }
 
-    // Verify permission: customer can cancel own, admin can cancel any
-    if (user.role === 'customer' && booking.userId !== user._id) {
+    const assignment = await getHotelAssignment(ctx, user._id)
+    const canCancelAsHotelAdmin =
+      assignment?.hotelId === booking.hotelId &&
+      assignment.role === 'hotel_admin'
+    const canCancelAny = user.role === 'room_admin' || canCancelAsHotelAdmin
+    const canCancelOwn = booking.userId === user._id
+
+    if (!canCancelAny && !canCancelOwn) {
       throw new ConvexError({
         code: 'FORBIDDEN',
-        message: 'You can only cancel your own bookings.',
+        message: 'You do not have permission to cancel this booking.',
       })
     }
 
