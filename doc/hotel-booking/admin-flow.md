@@ -74,12 +74,40 @@ await deleteHotel({
 
 **Triggered by:** "Add Hotel" button or "Edit" menu option
 
+**Component:** [src/routes/admin/hotels/index/components/-HotelModal.tsx](../../src/routes/admin/hotels/index/components/-HotelModal.tsx)
+
+**Layout behavior:**
+
+- Modal is constrained to viewport height (`max-h-[90vh]`)
+- Form body is scrollable (`overflow-y-auto`) to prevent screen overflow
+- Modal width is reduced for better fit on smaller screens (`max-w-md`)
+
 **Form fields:**
 
 - Hotel Name (required)
 - Address (required)
 - City (required)
 - Country (required)
+- Latitude (optional, numeric)
+- Longitude (optional, numeric)
+- Description (optional)
+- External ID (optional)
+- Category (optional): Boutique, Budget, Luxury, Resort and Spa, Extended-Stay, Suite
+- State / Province (optional)
+- Postal Code (optional)
+- Rating (optional)
+- Last Renovation Date (optional)
+- Tags (optional, comma-separated)
+- Metadata (optional, JSON)
+- Parking Included (optional, boolean)
+
+**Form validation and mapping:**
+
+- Latitude/Longitude must be provided together if either one is entered
+- Latitude/Longitude are mapped to `location: { lat, lng }`
+- Metadata is parsed from JSON text before submit
+- Tags are split by comma and trimmed
+- Empty optional inputs are sent as `undefined`
 
 **Backend mutations:**
 
@@ -91,6 +119,10 @@ await createHotel({
   address: '123 Main St',
   city: 'New York',
   country: 'USA',
+  location: { lat: 40.7128, lng: -74.006 },
+  category: 'Luxury',
+  tags: ['pool', 'free wifi'],
+  parkingIncluded: true,
 })
 
 // Update existing hotel
@@ -98,7 +130,9 @@ await updateHotel({
   clerkUserId: user.id,
   hotelId: hotel._id,
   name: 'Grand Plaza Hotel',
-  // ... other fields
+  latitude: 40.7128,
+  longitude: -74.006,
+  // ... other optional fields
 })
 ```
 

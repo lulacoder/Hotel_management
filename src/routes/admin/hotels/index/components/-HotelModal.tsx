@@ -10,6 +10,23 @@ interface HotelModalProps {
   onClose: () => void
 }
 
+type HotelCategory =
+  | 'Boutique'
+  | 'Budget'
+  | 'Luxury'
+  | 'Resort and Spa'
+  | 'Extended-Stay'
+  | 'Suite'
+
+const categories: Array<HotelCategory> = [
+  'Boutique',
+  'Budget',
+  'Luxury',
+  'Resort and Spa',
+  'Extended-Stay',
+  'Suite',
+]
+
 export function HotelModal({ hotelId, onClose }: HotelModalProps) {
   const { user } = useUser()
   const hotel = useQuery(api.hotels.get, hotelId ? { hotelId } : 'skip')
@@ -21,6 +38,18 @@ export function HotelModal({ hotelId, onClose }: HotelModalProps) {
     address: '',
     city: '',
     country: '',
+    latitude: '',
+    longitude: '',
+    externalId: '',
+    description: '',
+    category: '' as HotelCategory | '',
+    tags: '',
+    parkingIncluded: false,
+    rating: '',
+    stateProvince: '',
+    postalCode: '',
+    lastRenovationDate: '',
+    metadata: '',
   })
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState('')
@@ -32,6 +61,18 @@ export function HotelModal({ hotelId, onClose }: HotelModalProps) {
         address: hotel.address,
         city: hotel.city,
         country: hotel.country,
+        latitude: hotel.location?.lat?.toString() ?? '',
+        longitude: hotel.location?.lng?.toString() ?? '',
+        externalId: hotel.externalId ?? '',
+        description: hotel.description ?? '',
+        category: hotel.category ?? '',
+        tags: hotel.tags?.join(', ') ?? '',
+        parkingIncluded: hotel.parkingIncluded ?? false,
+        rating: hotel.rating?.toString() ?? '',
+        stateProvince: hotel.stateProvince ?? '',
+        postalCode: hotel.postalCode ?? '',
+        lastRenovationDate: hotel.lastRenovationDate ?? '',
+        metadata: hotel.metadata ? JSON.stringify(hotel.metadata, null, 2) : '',
       })
       return
     }
@@ -42,6 +83,18 @@ export function HotelModal({ hotelId, onClose }: HotelModalProps) {
         address: '',
         city: '',
         country: '',
+        latitude: '',
+        longitude: '',
+        externalId: '',
+        description: '',
+        category: '',
+        tags: '',
+        parkingIncluded: false,
+        rating: '',
+        stateProvince: '',
+        postalCode: '',
+        lastRenovationDate: '',
+        metadata: '',
       })
     }
   }, [hotelId, hotel])
@@ -54,17 +107,69 @@ export function HotelModal({ hotelId, onClose }: HotelModalProps) {
     setError('')
 
     try {
+      const lat = formData.latitude.trim()
+      const lng = formData.longitude.trim()
+      if ((lat && !lng) || (!lat && lng)) {
+        setError('Both latitude and longitude are required when setting location.')
+        return
+      }
+
+      let location: { lat: number; lng: number } | undefined
+      if (lat && lng) {
+        const parsedLat = Number(lat)
+        const parsedLng = Number(lng)
+        if (Number.isNaN(parsedLat) || Number.isNaN(parsedLng)) {
+          setError('Latitude and longitude must be valid numbers.')
+          return
+        }
+        location = { lat: parsedLat, lng: parsedLng }
+      }
+
+      let metadata: Record<string, unknown> | undefined
+      if (formData.metadata.trim()) {
+        try {
+          metadata = JSON.parse(formData.metadata)
+        } catch {
+          setError('Metadata must be valid JSON.')
+          return
+        }
+      }
+
+      const rating = formData.rating.trim() ? Number(formData.rating.trim()) : undefined
+      if (rating !== undefined && Number.isNaN(rating)) {
+        setError('Rating must be a valid number.')
+        return
+      }
+
+      const payload = {
+        clerkUserId: user.id,
+        name: formData.name,
+        address: formData.address,
+        city: formData.city,
+        country: formData.country,
+        location,
+        externalId: formData.externalId.trim() || undefined,
+        description: formData.description.trim() || undefined,
+        category: formData.category || undefined,
+        tags: formData.tags
+          .split(',')
+          .map((tag) => tag.trim())
+          .filter(Boolean),
+        parkingIncluded: formData.parkingIncluded,
+        rating,
+        stateProvince: formData.stateProvince.trim() || undefined,
+        postalCode: formData.postalCode.trim() || undefined,
+        lastRenovationDate: formData.lastRenovationDate.trim() || undefined,
+        metadata,
+      }
+
       if (hotelId) {
         await updateHotel({
-          clerkUserId: user.id,
           hotelId,
-          ...formData,
+          ...payload,
         })
       } else {
-        await createHotel({
-          clerkUserId: user.id,
-          ...formData,
-        })
+        await createHotel(payload)
       }
       onClose()
     } catch (err: any) {
@@ -75,8 +180,8 @@ export function HotelModal({ hotelId, onClose }: HotelModalProps) {
   }
 
   return (
-    <div className="fixed inset-0 bg-black/60 backdrop-blur-sm flex items-center justify-center z-50 p-4">
-      <div className="bg-slate-900 border border-slate-800 rounded-2xl shadow-2xl w-full max-w-lg">
+    <div className="fixed inset-0 bg-black/60 backdrop-blur-sm flex items-start justify-center z-50 p-4 overflow-y-auto">
+      <div className="bg-slate-900 border border-slate-800 rounded-2xl shadow-2xl w-full max-w-md max-h-[90vh] flex flex-col my-4">
         <div className="p-6 border-b border-slate-800">
           <h2 className="text-xl font-semibold text-slate-100">
             {hotelId ? 'Edit Hotel' : 'Add New Hotel'}
@@ -88,7 +193,7 @@ export function HotelModal({ hotelId, onClose }: HotelModalProps) {
           </p>
         </div>
 
-        <form onSubmit={handleSubmit} className="p-6 space-y-4">
+        <form onSubmit={handleSubmit} className="p-6 space-y-4 overflow-y-auto flex-1">
           {error && (
             <div className="bg-red-500/10 border border-red-500/20 rounded-xl p-4 text-red-400 text-sm">
               {error}
@@ -158,6 +263,203 @@ export function HotelModal({ hotelId, onClose }: HotelModalProps) {
                 className="w-full px-4 py-3 bg-slate-800/50 border border-slate-700 rounded-xl text-slate-200 placeholder-slate-500 focus:outline-none focus:border-amber-500/50 focus:ring-1 focus:ring-amber-500/20 transition-all"
               />
             </div>
+          </div>
+
+          <div className="grid grid-cols-2 gap-4">
+            <div>
+              <label className="block text-sm font-medium text-slate-300 mb-2">
+                Latitude
+              </label>
+              <input
+                type="number"
+                step="any"
+                value={formData.latitude}
+                onChange={(e) =>
+                  setFormData({ ...formData, latitude: e.target.value })
+                }
+                placeholder="40.7128"
+                className="w-full px-4 py-3 bg-slate-800/50 border border-slate-700 rounded-xl text-slate-200 placeholder-slate-500 focus:outline-none focus:border-amber-500/50 focus:ring-1 focus:ring-amber-500/20 transition-all"
+              />
+            </div>
+            <div>
+              <label className="block text-sm font-medium text-slate-300 mb-2">
+                Longitude
+              </label>
+              <input
+                type="number"
+                step="any"
+                value={formData.longitude}
+                onChange={(e) =>
+                  setFormData({ ...formData, longitude: e.target.value })
+                }
+                placeholder="-74.0060"
+                className="w-full px-4 py-3 bg-slate-800/50 border border-slate-700 rounded-xl text-slate-200 placeholder-slate-500 focus:outline-none focus:border-amber-500/50 focus:ring-1 focus:ring-amber-500/20 transition-all"
+              />
+            </div>
+          </div>
+
+          <div>
+            <label className="block text-sm font-medium text-slate-300 mb-2">
+              Description
+            </label>
+            <textarea
+              rows={3}
+              value={formData.description}
+              onChange={(e) =>
+                setFormData({ ...formData, description: e.target.value })
+              }
+              placeholder="Describe the hotel..."
+              className="w-full px-4 py-3 bg-slate-800/50 border border-slate-700 rounded-xl text-slate-200 placeholder-slate-500 focus:outline-none focus:border-amber-500/50 focus:ring-1 focus:ring-amber-500/20 transition-all"
+            />
+          </div>
+
+          <div className="grid grid-cols-2 gap-4">
+            <div>
+              <label className="block text-sm font-medium text-slate-300 mb-2">
+                External ID
+              </label>
+              <input
+                type="text"
+                value={formData.externalId}
+                onChange={(e) =>
+                  setFormData({ ...formData, externalId: e.target.value })
+                }
+                placeholder="HOTEL-001"
+                className="w-full px-4 py-3 bg-slate-800/50 border border-slate-700 rounded-xl text-slate-200 placeholder-slate-500 focus:outline-none focus:border-amber-500/50 focus:ring-1 focus:ring-amber-500/20 transition-all"
+              />
+            </div>
+            <div>
+              <label className="block text-sm font-medium text-slate-300 mb-2">
+                Category
+              </label>
+              <select
+                value={formData.category}
+                onChange={(e) =>
+                  setFormData({
+                    ...formData,
+                    category: e.target.value as HotelCategory | '',
+                  })
+                }
+                className="w-full px-4 py-3 bg-slate-800/50 border border-slate-700 rounded-xl text-slate-200 focus:outline-none focus:border-amber-500/50 focus:ring-1 focus:ring-amber-500/20 transition-all"
+              >
+                <option value="">Select category</option>
+                {categories.map((category) => (
+                  <option key={category} value={category}>
+                    {category}
+                  </option>
+                ))}
+              </select>
+            </div>
+          </div>
+
+          <div className="grid grid-cols-2 gap-4">
+            <div>
+              <label className="block text-sm font-medium text-slate-300 mb-2">
+                State / Province
+              </label>
+              <input
+                type="text"
+                value={formData.stateProvince}
+                onChange={(e) =>
+                  setFormData({ ...formData, stateProvince: e.target.value })
+                }
+                placeholder="NY"
+                className="w-full px-4 py-3 bg-slate-800/50 border border-slate-700 rounded-xl text-slate-200 placeholder-slate-500 focus:outline-none focus:border-amber-500/50 focus:ring-1 focus:ring-amber-500/20 transition-all"
+              />
+            </div>
+            <div>
+              <label className="block text-sm font-medium text-slate-300 mb-2">
+                Postal Code
+              </label>
+              <input
+                type="text"
+                value={formData.postalCode}
+                onChange={(e) =>
+                  setFormData({ ...formData, postalCode: e.target.value })
+                }
+                placeholder="10001"
+                className="w-full px-4 py-3 bg-slate-800/50 border border-slate-700 rounded-xl text-slate-200 placeholder-slate-500 focus:outline-none focus:border-amber-500/50 focus:ring-1 focus:ring-amber-500/20 transition-all"
+              />
+            </div>
+          </div>
+
+          <div className="grid grid-cols-2 gap-4">
+            <div>
+              <label className="block text-sm font-medium text-slate-300 mb-2">
+                Rating
+              </label>
+              <input
+                type="number"
+                step="0.1"
+                min="0"
+                max="5"
+                value={formData.rating}
+                onChange={(e) =>
+                  setFormData({ ...formData, rating: e.target.value })
+                }
+                placeholder="4.5"
+                className="w-full px-4 py-3 bg-slate-800/50 border border-slate-700 rounded-xl text-slate-200 placeholder-slate-500 focus:outline-none focus:border-amber-500/50 focus:ring-1 focus:ring-amber-500/20 transition-all"
+              />
+            </div>
+            <div>
+              <label className="block text-sm font-medium text-slate-300 mb-2">
+                Last Renovation Date
+              </label>
+              <input
+                type="date"
+                value={formData.lastRenovationDate}
+                onChange={(e) =>
+                  setFormData({
+                    ...formData,
+                    lastRenovationDate: e.target.value,
+                  })
+                }
+                className="w-full px-4 py-3 bg-slate-800/50 border border-slate-700 rounded-xl text-slate-200 focus:outline-none focus:border-amber-500/50 focus:ring-1 focus:ring-amber-500/20 transition-all"
+              />
+            </div>
+          </div>
+
+          <div>
+            <label className="block text-sm font-medium text-slate-300 mb-2">
+              Tags (comma separated)
+            </label>
+            <input
+              type="text"
+              value={formData.tags}
+              onChange={(e) => setFormData({ ...formData, tags: e.target.value })}
+              placeholder="pool, free wifi, breakfast"
+              className="w-full px-4 py-3 bg-slate-800/50 border border-slate-700 rounded-xl text-slate-200 placeholder-slate-500 focus:outline-none focus:border-amber-500/50 focus:ring-1 focus:ring-amber-500/20 transition-all"
+            />
+          </div>
+
+          <div>
+            <label className="block text-sm font-medium text-slate-300 mb-2">
+              Metadata (JSON)
+            </label>
+            <textarea
+              rows={3}
+              value={formData.metadata}
+              onChange={(e) =>
+                setFormData({ ...formData, metadata: e.target.value })
+              }
+              placeholder='{"source":"manual"}'
+              className="w-full px-4 py-3 bg-slate-800/50 border border-slate-700 rounded-xl text-slate-200 placeholder-slate-500 focus:outline-none focus:border-amber-500/50 focus:ring-1 focus:ring-amber-500/20 transition-all"
+            />
+          </div>
+
+          <div className="flex items-center gap-3">
+            <input
+              id="parkingIncluded"
+              type="checkbox"
+              checked={formData.parkingIncluded}
+              onChange={(e) =>
+                setFormData({ ...formData, parkingIncluded: e.target.checked })
+              }
+              className="h-4 w-4 rounded border-slate-600 bg-slate-800 text-amber-500 focus:ring-amber-500/40"
+            />
+            <label htmlFor="parkingIncluded" className="text-sm text-slate-300">
+              Parking included
+            </label>
           </div>
 
           <div className="flex gap-3 pt-4">

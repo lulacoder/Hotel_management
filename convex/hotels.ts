@@ -53,6 +53,31 @@ const categoryValidator = v.union(
   v.literal('Suite'),
 )
 
+const normalizeLocation = (args: {
+  location?: { lat: number; lng: number }
+  latitude?: number
+  longitude?: number
+}) => {
+  if (args.location) {
+    return args.location
+  }
+
+  const hasLatitude = args.latitude !== undefined
+  const hasLongitude = args.longitude !== undefined
+  if (hasLatitude !== hasLongitude) {
+    throw new ConvexError({
+      code: 'INVALID_ARGUMENT',
+      message: 'Both latitude and longitude are required when setting location.',
+    })
+  }
+
+  if (hasLatitude && hasLongitude) {
+    return { lat: args.latitude as number, lng: args.longitude as number }
+  }
+
+  return undefined
+}
+
 // List all active hotels
 export const list = query({
   args: {
@@ -139,6 +164,8 @@ export const create = mutation({
         lng: v.number(),
       }),
     ),
+    latitude: v.optional(v.number()),
+    longitude: v.optional(v.number()),
     // New optional fields
     externalId: v.optional(v.string()),
     description: v.optional(v.string()),
@@ -154,6 +181,7 @@ export const create = mutation({
   returns: v.id('hotels'),
   handler: async (ctx, args) => {
     const admin = await requireAdmin(ctx, args.clerkUserId)
+    const normalizedLocation = normalizeLocation(args)
 
     const now = Date.now()
     const hotelId = await ctx.db.insert('hotels', {
@@ -161,7 +189,7 @@ export const create = mutation({
       address: args.address,
       city: args.city,
       country: args.country,
-      location: args.location,
+      location: normalizedLocation,
       externalId: args.externalId,
       description: args.description,
       category: args.category,
@@ -209,6 +237,8 @@ export const update = mutation({
         lng: v.number(),
       }),
     ),
+    latitude: v.optional(v.number()),
+    longitude: v.optional(v.number()),
     // New optional fields
     externalId: v.optional(v.string()),
     description: v.optional(v.string()),
@@ -240,6 +270,8 @@ export const update = mutation({
       })
     }
 
+    const normalizedLocation = normalizeLocation(args)
+
     // Build the update object with only provided fields
     const updates: Record<string, unknown> = {
       updatedAt: Date.now(),
@@ -261,7 +293,7 @@ export const update = mutation({
     trackChange('address', args.address, hotel.address)
     trackChange('city', args.city, hotel.city)
     trackChange('country', args.country, hotel.country)
-    trackChange('location', args.location, hotel.location)
+    trackChange('location', normalizedLocation, hotel.location)
     trackChange('externalId', args.externalId, hotel.externalId)
     trackChange('description', args.description, hotel.description)
     trackChange('category', args.category, hotel.category)

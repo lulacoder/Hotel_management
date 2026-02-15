@@ -118,10 +118,46 @@ const hotelId = await createHotel({
   address: '123 Main St',
   city: 'New York',
   country: 'USA',
+  location: { lat: 40.7128, lng: -74.006 },
+  category: 'Luxury',
+  tags: ['pool', 'free wifi'],
+  parkingIncluded: true,
 })
 ```
 
-**Args:** `{ clerkUserId, name, address, city, country }`  
+**Args:**
+
+```typescript
+{
+  clerkUserId: string
+  name: string
+  address: string
+  city: string
+  country: string
+  location?: { lat: number; lng: number }
+  latitude?: number
+  longitude?: number
+  externalId?: string
+  description?: string
+  category?:
+    | 'Boutique'
+    | 'Budget'
+    | 'Luxury'
+    | 'Resort and Spa'
+    | 'Extended-Stay'
+    | 'Suite'
+  tags?: string[]
+  parkingIncluded?: boolean
+  rating?: number
+  stateProvince?: string
+  postalCode?: string
+  lastRenovationDate?: string
+  metadata?: Record<string, any>
+}
+```
+
+`location` can be provided directly, or `latitude` + `longitude` can be provided together.
+
 **Returns:** `Id<"hotels">`  
 **Auth:** Admin only
 
@@ -136,11 +172,46 @@ await updateHotel({
   clerkUserId: user.id,
   hotelId: '...',
   name: 'Grand Hotel & Spa',
+  latitude: 40.7128,
+  longitude: -74.006,
   // ... other fields (all optional)
 })
 ```
 
-**Args:** `{ clerkUserId, hotelId, name?, address?, city?, country? }`  
+**Args:**
+
+```typescript
+{
+  clerkUserId: string
+  hotelId: Id<'hotels'>
+  name?: string
+  address?: string
+  city?: string
+  country?: string
+  location?: { lat: number; lng: number }
+  latitude?: number
+  longitude?: number
+  externalId?: string
+  description?: string
+  category?:
+    | 'Boutique'
+    | 'Budget'
+    | 'Luxury'
+    | 'Resort and Spa'
+    | 'Extended-Stay'
+    | 'Suite'
+  tags?: string[]
+  parkingIncluded?: boolean
+  rating?: number
+  stateProvince?: string
+  postalCode?: string
+  lastRenovationDate?: string
+  metadata?: Record<string, any>
+}
+```
+
+`location` can be provided directly, or `latitude` + `longitude` can be provided together.
+
 **Returns:** `null`  
 **Auth:** Admin only
 
