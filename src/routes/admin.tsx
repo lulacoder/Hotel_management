@@ -115,7 +115,7 @@ function AdminLayout() {
     }
 
     if (hotelAssignment?.role === 'hotel_cashier') {
-      return item.to === '/admin/bookings'
+      return item.to === '/admin/bookings' || item.to === '/admin/rooms'
     }
 
     if (hotelAssignment?.role === 'hotel_admin') {

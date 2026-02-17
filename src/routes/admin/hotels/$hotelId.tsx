@@ -146,7 +146,7 @@ function HotelDetailPage() {
             className="inline-flex items-center gap-2 px-5 py-2.5 bg-slate-800 text-slate-200 font-medium rounded-xl hover:bg-slate-700 transition-colors"
           >
             <ArrowLeft className="w-5 h-5" />
-            Back to Hotels
+            Back to My Hotel
           </Link>
         </div>
       </div>
@@ -161,7 +161,7 @@ function HotelDetailPage() {
         className="inline-flex items-center gap-2 text-slate-400 hover:text-slate-200 transition-colors mb-6"
       >
         <ArrowLeft className="w-4 h-4" />
-        Back to Hotels
+        Back to My Hotel
       </Link>
 
       {/* Hotel Header */}

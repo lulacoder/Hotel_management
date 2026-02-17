@@ -41,6 +41,8 @@ function HotelsPage() {
   const deleteHotel = useMutation(api.hotels.softDelete)
 
   const canAddHotel = profile?.role === 'room_admin'
+  const canEditHotel =
+    profile?.role === 'room_admin' || hotelAssignment?.role === 'hotel_admin'
 
   const visibleHotels =
     profile?.role === 'room_admin'
@@ -61,17 +63,6 @@ function HotelsPage() {
       await deleteHotel({ clerkUserId: user.id, hotelId })
     }
     setActiveMenu(null)
-  }
-
-  if (profile?.role !== 'room_admin' && hotelAssignment?.role === 'hotel_cashier') {
-    return (
-      <div className="max-w-7xl mx-auto">
-        <div className="bg-slate-900/50 border border-red-500/20 rounded-2xl p-8 text-center">
-          <h2 className="text-xl font-semibold text-red-400 mb-2">Access Denied</h2>
-          <p className="text-slate-400">Cashiers can only access bookings.</p>
-        </div>
-      </div>
-    )
   }
 
   return (
@@ -166,16 +157,18 @@ function HotelsPage() {
                       <Eye className="w-4 h-4" />
                       View Details
                     </Link>
-                    <button
-                      onClick={() => {
-                        setEditingHotel(hotel._id)
-                        setActiveMenu(null)
-                      }}
-                      className="flex items-center gap-3 px-4 py-3 text-slate-300 hover:bg-slate-700 transition-colors w-full"
-                    >
-                      <Pencil className="w-4 h-4" />
-                      Edit Hotel
-                    </button>
+                    {canEditHotel && (
+                      <button
+                        onClick={() => {
+                          setEditingHotel(hotel._id)
+                          setActiveMenu(null)
+                        }}
+                        className="flex items-center gap-3 px-4 py-3 text-slate-300 hover:bg-slate-700 transition-colors w-full"
+                      >
+                        <Pencil className="w-4 h-4" />
+                        Edit Hotel
+                      </button>
+                    )}
                     {canAddHotel && (
                       <button
                         onClick={() => handleDelete(hotel._id)}
@@ -220,7 +213,7 @@ function HotelsPage() {
       )}
 
       {/* Create/Edit Modal */}
-      {(showCreateModal || editingHotel) && canAddHotel && (
+      {(showCreateModal || editingHotel) && canEditHotel && (
         <HotelModal
           hotelId={editingHotel}
           onClose={() => {

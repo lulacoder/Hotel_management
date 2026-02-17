@@ -1,7 +1,7 @@
 import { query, mutation } from './_generated/server'
 import { v } from 'convex/values'
 import { ConvexError } from 'convex/values'
-import { requireHotelManagement } from './lib/auth'
+import { requireHotelAccess } from './lib/auth'
 import { createAuditLog } from './audit'
 import { datesOverlap, isHoldExpired } from './lib/dates'
 
@@ -227,7 +227,7 @@ export const getAvailableRooms = query({
   },
 })
 
-// Create a new room (admin only)
+// Create a new room (room admin or assigned hotel staff)
 export const create = mutation({
   args: {
     clerkUserId: v.string(),
@@ -245,7 +245,7 @@ export const create = mutation({
   },
   returns: v.id('rooms'),
   handler: async (ctx, args) => {
-    const { user } = await requireHotelManagement(ctx, args.clerkUserId, args.hotelId)
+    const { user } = await requireHotelAccess(ctx, args.clerkUserId, args.hotelId)
 
     // Verify hotel exists
     const hotel = await ctx.db.get(args.hotelId)
@@ -322,7 +322,7 @@ export const create = mutation({
   },
 })
 
-// Update a room (admin only)
+// Update a room (room admin or assigned hotel staff)
 export const update = mutation({
   args: {
     clerkUserId: v.string(),
@@ -347,7 +347,7 @@ export const update = mutation({
       })
     }
 
-    const { user } = await requireHotelManagement(ctx, args.clerkUserId, room.hotelId)
+    const { user } = await requireHotelAccess(ctx, args.clerkUserId, room.hotelId)
 
     if (room.isDeleted) {
       throw new ConvexError({
@@ -431,7 +431,7 @@ export const update = mutation({
   },
 })
 
-// Update room operational status (admin only) - separate function for clarity
+// Update room operational status (room admin or assigned hotel staff) - separate function for clarity
 export const updateStatus = mutation({
   args: {
     clerkUserId: v.string(),
@@ -448,7 +448,7 @@ export const updateStatus = mutation({
       })
     }
 
-    const { user } = await requireHotelManagement(ctx, args.clerkUserId, room.hotelId)
+    const { user } = await requireHotelAccess(ctx, args.clerkUserId, room.hotelId)
 
     if (room.isDeleted) {
       throw new ConvexError({
@@ -483,7 +483,7 @@ export const updateStatus = mutation({
   },
 })
 
-// Soft delete a room (admin only)
+// Soft delete a room (room admin or assigned hotel staff)
 export const softDelete = mutation({
   args: {
     clerkUserId: v.string(),
@@ -499,7 +499,7 @@ export const softDelete = mutation({
       })
     }
 
-    const { user } = await requireHotelManagement(ctx, args.clerkUserId, room.hotelId)
+    const { user } = await requireHotelAccess(ctx, args.clerkUserId, room.hotelId)
 
     if (room.isDeleted) {
       // Already deleted, idempotent operation
@@ -544,7 +544,7 @@ export const softDelete = mutation({
   },
 })
 
-// Restore a soft-deleted room (admin only)
+// Restore a soft-deleted room (room admin or assigned hotel staff)
 export const restore = mutation({
   args: {
     clerkUserId: v.string(),
@@ -560,7 +560,7 @@ export const restore = mutation({
       })
     }
 
-    const { user } = await requireHotelManagement(ctx, args.clerkUserId, room.hotelId)
+    const { user } = await requireHotelAccess(ctx, args.clerkUserId, room.hotelId)
 
     if (!room.isDeleted) {
       // Already active, idempotent operation

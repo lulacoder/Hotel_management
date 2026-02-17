@@ -30,6 +30,7 @@ import { Route as DemoStartServerFuncsRouteImport } from './routes/demo/start.se
 import { Route as DemoStartApiRequestRouteImport } from './routes/demo/start.api-request'
 import { Route as DemoApiNamesRouteImport } from './routes/demo/api.names'
 import { Route as AdminHotelsHotelIdRouteImport } from './routes/admin/hotels/$hotelId'
+import { Route as AdminBookingsBookingIdRouteImport } from './routes/admin/bookings/$bookingId'
 import { Route as DemoStartSsrIndexRouteImport } from './routes/demo/start.ssr.index'
 import { Route as DemoStartSsrSpaModeRouteImport } from './routes/demo/start.ssr.spa-mode'
 import { Route as DemoStartSsrFullSsrRouteImport } from './routes/demo/start.ssr.full-ssr'
@@ -139,6 +140,11 @@ const AdminHotelsHotelIdRoute = AdminHotelsHotelIdRouteImport.update({
   path: '/hotels/$hotelId',
   getParentRoute: () => AdminRoute,
 } as any)
+const AdminBookingsBookingIdRoute = AdminBookingsBookingIdRouteImport.update({
+  id: '/bookings/$bookingId',
+  path: '/bookings/$bookingId',
+  getParentRoute: () => AdminRoute,
+} as any)
 const DemoStartSsrIndexRoute = DemoStartSsrIndexRouteImport.update({
   id: '/demo/start/ssr/',
   path: '/demo/start/ssr/',
@@ -173,6 +179,7 @@ export interface FileRoutesByFullPath {
   '/sign-in/$': typeof SignInSplatRoute
   '/sign-up/$': typeof SignUpSplatRoute
   '/admin/': typeof AdminIndexRoute
+  '/admin/bookings/$bookingId': typeof AdminBookingsBookingIdRoute
   '/admin/hotels/$hotelId': typeof AdminHotelsHotelIdRoute
   '/demo/api/names': typeof DemoApiNamesRoute
   '/demo/start/api-request': typeof DemoStartApiRequestRoute
@@ -198,6 +205,7 @@ export interface FileRoutesByTo {
   '/sign-in/$': typeof SignInSplatRoute
   '/sign-up/$': typeof SignUpSplatRoute
   '/admin': typeof AdminIndexRoute
+  '/admin/bookings/$bookingId': typeof AdminBookingsBookingIdRoute
   '/admin/hotels/$hotelId': typeof AdminHotelsHotelIdRoute
   '/demo/api/names': typeof DemoApiNamesRoute
   '/demo/start/api-request': typeof DemoStartApiRequestRoute
@@ -226,6 +234,7 @@ export interface FileRoutesById {
   '/sign-in/$': typeof SignInSplatRoute
   '/sign-up/$': typeof SignUpSplatRoute
   '/admin/': typeof AdminIndexRoute
+  '/admin/bookings/$bookingId': typeof AdminBookingsBookingIdRoute
   '/admin/hotels/$hotelId': typeof AdminHotelsHotelIdRoute
   '/demo/api/names': typeof DemoApiNamesRoute
   '/demo/start/api-request': typeof DemoStartApiRequestRoute
@@ -254,6 +263,7 @@ export interface FileRouteTypes {
     | '/sign-in/$'
     | '/sign-up/$'
     | '/admin/'
+    | '/admin/bookings/$bookingId'
     | '/admin/hotels/$hotelId'
     | '/demo/api/names'
     | '/demo/start/api-request'
@@ -279,6 +289,7 @@ export interface FileRouteTypes {
     | '/sign-in/$'
     | '/sign-up/$'
     | '/admin'
+    | '/admin/bookings/$bookingId'
     | '/admin/hotels/$hotelId'
     | '/demo/api/names'
     | '/demo/start/api-request'
@@ -306,6 +317,7 @@ export interface FileRouteTypes {
     | '/sign-in/$'
     | '/sign-up/$'
     | '/admin/'
+    | '/admin/bookings/$bookingId'
     | '/admin/hotels/$hotelId'
     | '/demo/api/names'
     | '/demo/start/api-request'
@@ -488,6 +500,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AdminHotelsHotelIdRouteImport
       parentRoute: typeof AdminRoute
     }
+    '/admin/bookings/$bookingId': {
+      id: '/admin/bookings/$bookingId'
+      path: '/bookings/$bookingId'
+      fullPath: '/admin/bookings/$bookingId'
+      preLoaderRoute: typeof AdminBookingsBookingIdRouteImport
+      parentRoute: typeof AdminRoute
+    }
     '/demo/start/ssr/': {
       id: '/demo/start/ssr/'
       path: '/demo/start/ssr'
@@ -533,6 +552,7 @@ const AuthenticatedRouteWithChildren = AuthenticatedRoute._addFileChildren(
 
 interface AdminRouteChildren {
   AdminIndexRoute: typeof AdminIndexRoute
+  AdminBookingsBookingIdRoute: typeof AdminBookingsBookingIdRoute
   AdminHotelsHotelIdRoute: typeof AdminHotelsHotelIdRoute
   AdminBookingsIndexRoute: typeof AdminBookingsIndexRoute
   AdminHotelsIndexRoute: typeof AdminHotelsIndexRoute
@@ -542,6 +562,7 @@ interface AdminRouteChildren {
 
 const AdminRouteChildren: AdminRouteChildren = {
   AdminIndexRoute: AdminIndexRoute,
+  AdminBookingsBookingIdRoute: AdminBookingsBookingIdRoute,
   AdminHotelsHotelIdRoute: AdminHotelsHotelIdRoute,
   AdminBookingsIndexRoute: AdminBookingsIndexRoute,
   AdminHotelsIndexRoute: AdminHotelsIndexRoute,

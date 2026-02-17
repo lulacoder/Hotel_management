@@ -1,18 +1,17 @@
-import { query, mutation } from './_generated/server'
-import { v } from 'convex/values'
-import { ConvexError } from 'convex/values'
+import { ConvexError, v } from 'convex/values'
+import { mutation, query } from './_generated/server'
 import {
-  requireUser,
+  getHotelAssignment,
   requireCustomer,
   requireHotelAccess,
-  getHotelAssignment,
+  requireUser,
 } from './lib/auth'
 import { createAuditLog } from './audit'
 import {
   datesOverlap,
-  validateBookingDates,
   getHoldExpirationTime,
   isHoldExpired,
+  validateBookingDates,
 } from './lib/dates'
 
 // Status validators
@@ -387,10 +386,8 @@ export const cancelBooking = mutation({
     }
 
     const assignment = await getHotelAssignment(ctx, user._id)
-    const canCancelAsHotelAdmin =
-      assignment?.hotelId === booking.hotelId &&
-      assignment.role === 'hotel_admin'
-    const canCancelAny = user.role === 'room_admin' || canCancelAsHotelAdmin
+    const canCancelAsHotelStaff = assignment?.hotelId === booking.hotelId
+    const canCancelAny = user.role === 'room_admin' || canCancelAsHotelStaff
     const canCancelOwn = booking.userId === user._id
 
     if (!canCancelAny && !canCancelOwn) {
@@ -437,6 +434,150 @@ export const cancelBooking = mutation({
   },
 })
 
+// Update booking status (hotel staff and room admin)
+export const updateStatus = mutation({
+  args: {
+    clerkUserId: v.string(),
+    bookingId: v.id('bookings'),
+    nextStatus: bookingStatusValidator,
+  },
+  returns: v.null(),
+  handler: async (ctx, args) => {
+    const user = await requireUser(ctx, args.clerkUserId)
+
+    const booking = await ctx.db.get(args.bookingId)
+    if (!booking) {
+      throw new ConvexError({
+        code: 'NOT_FOUND',
+        message: 'Booking not found.',
+      })
+    }
+
+    const assignment = await getHotelAssignment(ctx, user._id)
+    const canManageAsHotelStaff = assignment?.hotelId === booking.hotelId
+    const canManage = user.role === 'room_admin' || canManageAsHotelStaff
+
+    if (!canManage) {
+      throw new ConvexError({
+        code: 'FORBIDDEN',
+        message: 'You do not have permission to update this booking status.',
+      })
+    }
+
+    if (booking.status === args.nextStatus) {
+      return null
+    }
+
+    const allowedTransitions: Record<string, Array<string>> = {
+      held: ['confirmed', 'cancelled'],
+      confirmed: ['checked_in', 'cancelled'],
+      checked_in: ['checked_out'],
+      checked_out: [],
+      cancelled: [],
+      expired: [],
+    }
+
+    const allowedNextStatuses = allowedTransitions[booking.status] ?? []
+    if (!allowedNextStatuses.includes(args.nextStatus)) {
+      throw new ConvexError({
+        code: 'INVALID_STATE',
+        message: `Cannot transition booking from '${booking.status}' to '${args.nextStatus}'.`,
+      })
+    }
+
+    const patchData: {
+      status: typeof args.nextStatus
+      updatedAt: number
+      updatedBy: typeof user._id
+      holdExpiresAt?: undefined
+      paymentStatus?: 'pending'
+    } = {
+      status: args.nextStatus,
+      updatedAt: Date.now(),
+      updatedBy: user._id,
+    }
+
+    if (booking.status === 'held' && args.nextStatus === 'confirmed') {
+      patchData.holdExpiresAt = undefined
+      if (!booking.paymentStatus) {
+        patchData.paymentStatus = 'pending'
+      }
+    }
+
+    await ctx.db.patch(args.bookingId, patchData)
+
+    await createAuditLog(ctx, {
+      actorId: user._id,
+      action: 'booking_status_updated',
+      targetType: 'booking',
+      targetId: args.bookingId,
+      previousValue: { status: booking.status },
+      newValue: { status: args.nextStatus },
+    })
+
+    return null
+  },
+})
+
+// Accept cash payment (hotel staff and room admin)
+export const acceptCashPayment = mutation({
+  args: {
+    clerkUserId: v.string(),
+    bookingId: v.id('bookings'),
+  },
+  returns: v.null(),
+  handler: async (ctx, args) => {
+    const user = await requireUser(ctx, args.clerkUserId)
+
+    const booking = await ctx.db.get(args.bookingId)
+    if (!booking) {
+      throw new ConvexError({
+        code: 'NOT_FOUND',
+        message: 'Booking not found.',
+      })
+    }
+
+    const assignment = await getHotelAssignment(ctx, user._id)
+    const canManageAsHotelStaff = assignment?.hotelId === booking.hotelId
+    const canManage = user.role === 'room_admin' || canManageAsHotelStaff
+
+    if (!canManage) {
+      throw new ConvexError({
+        code: 'FORBIDDEN',
+        message: 'You do not have permission to update payment status.',
+      })
+    }
+
+    if (booking.paymentStatus === 'paid') {
+      return null
+    }
+
+    if (booking.status === 'cancelled' || booking.status === 'expired') {
+      throw new ConvexError({
+        code: 'INVALID_STATE',
+        message: 'Cannot accept payment for cancelled or expired bookings.',
+      })
+    }
+
+    await ctx.db.patch(args.bookingId, {
+      paymentStatus: 'paid',
+      updatedAt: Date.now(),
+      updatedBy: user._id,
+    })
+
+    await createAuditLog(ctx, {
+      actorId: user._id,
+      action: 'booking_payment_paid_cash',
+      targetType: 'booking',
+      targetId: args.bookingId,
+      previousValue: { paymentStatus: booking.paymentStatus ?? 'pending' },
+      newValue: { paymentStatus: 'paid' },
+    })
+
+    return null
+  },
+})
+
 // Get booking with enriched data (room and hotel info)
 export const getEnriched = query({
   args: {
@@ -473,12 +614,15 @@ export const getEnriched = query({
       return null
     }
 
-    // Customers can only view their own bookings
+    // Customers can only view their own bookings unless assigned to the booking's hotel
     if (user.role === 'customer' && booking.userId !== user._id) {
-      throw new ConvexError({
-        code: 'FORBIDDEN',
-        message: 'You can only view your own bookings.',
-      })
+      const assignment = await getHotelAssignment(ctx, user._id)
+      if (!assignment || assignment.hotelId !== booking.hotelId) {
+        throw new ConvexError({
+          code: 'FORBIDDEN',
+          message: 'You can only view your own bookings.',
+        })
+      }
     }
 
     const room = await ctx.db.get(booking.roomId)

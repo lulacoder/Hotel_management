@@ -36,17 +36,6 @@ function RoomsPage() {
       hotel.city.toLowerCase().includes(searchTerm.toLowerCase()),
   )
 
-  if (profile?.role !== 'room_admin' && hotelAssignment?.role === 'hotel_cashier') {
-    return (
-      <div className="max-w-7xl mx-auto">
-        <div className="bg-slate-900/50 border border-red-500/20 rounded-2xl p-8 text-center">
-          <h2 className="text-xl font-semibold text-red-400 mb-2">Access Denied</h2>
-          <p className="text-slate-400">Cashiers can only access bookings.</p>
-        </div>
-      </div>
-    )
-  }
-
   return (
     <div className="max-w-7xl mx-auto">
       {/* Header */}
