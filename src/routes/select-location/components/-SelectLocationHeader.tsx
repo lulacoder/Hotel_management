@@ -30,7 +30,7 @@ export function SelectLocationHeader({
             <>
               <Link
                 to="/bookings"
-                className="text-slate-400 hover:text-amber-400 transition-colors font-medium"
+                className="px-3 py-1.5 text-sm font-semibold text-slate-900 bg-amber-500 hover:bg-amber-400 rounded-lg transition-colors"
               >
                 My Bookings
               </Link>

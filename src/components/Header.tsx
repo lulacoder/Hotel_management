@@ -1,10 +1,11 @@
 import { Link, useLocation } from '@tanstack/react-router'
 import { useAuth } from '@clerk/clerk-react'
 
-import ClerkHeader from '../integrations/clerk/header-user'
 
-import { useState, useEffect } from 'react'
-import { CalendarCheck, Home, Menu, X, MapPin } from 'lucide-react'
+
+import { useEffect, useState} from 'react'
+import { CalendarCheck, Home, MapPin,Menu, X} from 'lucide-react'
+import ClerkHeader from '../integrations/clerk/header-user'
 
 export default function Header() {
   const [isOpen, setIsOpen] = useState(false)
@@ -82,7 +83,7 @@ export default function Header() {
               {isSignedIn && (
                 <Link
                   to="/bookings"
-                  className="px-4 py-2 text-sm font-medium text-slate-400 hover:text-white rounded-lg hover:bg-white/5 transition-all duration-300 flex items-center gap-2"
+                  className="px-4 py-2 text-sm font-semibold text-slate-900 bg-amber-500 hover:bg-amber-400 rounded-lg transition-colors flex items-center gap-2"
                 >
                   <CalendarCheck size={16} />
                   My Bookings

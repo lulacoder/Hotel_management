@@ -4,10 +4,10 @@ import {
   useNavigate,
 } from '@tanstack/react-router'
 import { useUser } from '@clerk/clerk-react'
-import { useQuery, useMutation } from 'convex/react'
-import { useState, useEffect, useMemo } from 'react'
+import { useMutation, useQuery } from 'convex/react'
+import { useEffect, useMemo, useState } from 'react'
+
 import { api } from '../../convex/_generated/api'
-import { Id } from '../../convex/_generated/dataModel'
 import { useGeolocation } from '../hooks/useGeolocation'
 import { calculateDistance } from '../lib/distance'
 import { SelectLocationHeader } from './select-location/components/-SelectLocationHeader'
@@ -15,7 +15,8 @@ import { HeroSection } from './select-location/components/-HeroSection'
 import { SearchFilters } from './select-location/components/-SearchFilters'
 import { HotelGrid } from './select-location/components/-HotelGrid'
 import { RatingModal } from './select-location/components/-RatingModal'
-import { SortOption } from './select-location/components/-helpers'
+import type { Id } from '../../convex/_generated/dataModel'
+import type { SortOption } from './select-location/components/-helpers'
 
 export const Route = createFileRoute('/select-location')({
   component: SelectLocationPage,
@@ -150,7 +151,7 @@ function SelectLocationPage() {
   }, [ratingSummaries])
 
   // Get unique categories
-  const categories = useMemo<string[]>(() => {
+  const categories = useMemo<Array<string>>(() => {
     if (!hotels) return []
     const values = hotels.flatMap((hotel) =>
       hotel.category ? [hotel.category] : [],
@@ -160,7 +161,7 @@ function SelectLocationPage() {
 
   // Filter and sort hotels
   const filteredHotels = useMemo(() => {
-    let result = hotelsWithDistance.filter((hotel) => {
+    const result = hotelsWithDistance.filter((hotel) => {
       const matchesSearch =
         hotel.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
         hotel.city.toLowerCase().includes(searchTerm.toLowerCase()) ||
@@ -186,12 +187,13 @@ function SelectLocationPage() {
           if (a.distance === null) return 1
           if (b.distance === null) return -1
           return a.distance - b.distance
-        case 'rating':
+        case 'rating': {
           const ratingA =
             ratingSummaryByHotelId[a._id]?.average ?? a.rating ?? 0
           const ratingB =
             ratingSummaryByHotelId[b._id]?.average ?? b.rating ?? 0
           return ratingB - ratingA // Higher rating first
+        }
         case 'name':
         default:
           return a.name.localeCompare(b.name)
@@ -209,6 +211,13 @@ function SelectLocationPage() {
   ])
 
   const hasUserLocation = userLat !== null && userLng !== null
+
+  // Auto-switch to distance sort when location becomes available
+  useEffect(() => {
+    if (hasUserLocation && sortBy !== 'distance') {
+      setSortBy('distance')
+    }
+  }, [hasUserLocation, sortBy])
   const activeHotel = useMemo(() => {
     if (!activeRatingHotelId || !hotels) {
       return null
@@ -272,8 +281,8 @@ function SelectLocationPage() {
       />
 
       <HeroSection
-        locationSupported={locationSupported ?? false}
-        locationLoading={locationLoading ?? false}
+        locationSupported={locationSupported}
+        locationLoading={locationLoading}
         hasUserLocation={hasUserLocation}
         locationError={locationError}
         requestLocation={requestLocation}
