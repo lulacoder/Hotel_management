@@ -131,7 +131,7 @@ function AdminLayout() {
   }
 
   return (
-    <div className="flex min-h-screen bg-slate-950">
+    <div className="flex min-h-screen bg-slate-950 md:h-dvh md:overflow-hidden">
       {/* Mobile Menu Button - Only visible on small screens */}
       <button
         onClick={() => setMobileMenuOpen(true)}
@@ -234,7 +234,7 @@ function AdminLayout() {
       />
 
       {/* Desktop Sidebar */}
-      <aside className="hidden md:flex w-72 bg-slate-900/50 border-r border-slate-800/50 backdrop-blur-xl flex-col">
+      <aside className="hidden md:flex md:h-dvh w-72 shrink-0 bg-slate-900/50 border-r border-slate-800/50 backdrop-blur-xl flex-col">
         <div className="p-6 border-b border-slate-800/50">
           <div className="flex items-center gap-3">
             <div className="w-10 h-10 rounded-xl bg-slate-950/70 border border-amber-500/30 flex items-center justify-center shadow-lg shadow-amber-500/20">
@@ -301,9 +301,9 @@ function AdminLayout() {
       </aside>
 
       {/* Main Content */}
-      <div className="flex-1 flex flex-col">
+      <div className="flex-1 flex min-h-0 flex-col">
         {/* Page Content */}
-        <main className="flex-1 p-4 md:p-8 overflow-auto md:mt-0 mt-12">
+        <main className="flex-1 min-h-0 p-4 md:p-8 overflow-y-auto overflow-x-hidden md:mt-0 mt-12">
           <Outlet />
         </main>
       </div>
