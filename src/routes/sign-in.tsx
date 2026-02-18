@@ -74,25 +74,6 @@ function SignInPage() {
               Sign in to access your bookings, view upcoming stays, and manage
               your account settings.
             </p>
-
-            {/* Stats/Trust Indicators */}
-            <div className="mt-10 grid grid-cols-2 gap-6">
-              {[
-                { value: '500+', label: 'Premium Hotels' },
-                { value: '50K+', label: 'Happy Guests' },
-                { value: '100+', label: 'Destinations' },
-                { value: '4.9', label: 'Average Rating' },
-              ].map((stat, index) => (
-                <div key={index}>
-                  <p className="text-2xl font-bold text-amber-400">
-                    {stat.value}
-                  </p>
-                  <p className="text-slate-500 text-sm font-medium">
-                    {stat.label}
-                  </p>
-                </div>
-              ))}
-            </div>
           </div>
 
           {/* Footer */}
