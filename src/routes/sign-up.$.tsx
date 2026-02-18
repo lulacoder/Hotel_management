@@ -1,13 +1,17 @@
-import { createFileRoute } from '@tanstack/react-router'
+import { Link, createFileRoute } from '@tanstack/react-router'
 import { SignUp } from '@clerk/clerk-react'
-import { Link } from '@tanstack/react-router'
 import { ArrowLeft } from 'lucide-react'
+import { ThemeToggle } from '../components/ThemeToggle'
+import { getClerkAuthAppearance } from '../lib/clerkAppearance'
+import { useTheme } from '../lib/theme'
 
 export const Route = createFileRoute('/sign-up/$')({
   component: SignUpCatchAll,
 })
 
 function SignUpCatchAll() {
+  const { theme } = useTheme()
+
   return (
     <div className="min-h-screen bg-slate-950 flex">
       <div className="hidden lg:flex lg:w-1/2 relative overflow-hidden">
@@ -59,6 +63,7 @@ function SignUpCatchAll() {
             <span className="text-slate-400 font-medium">Back</span>
           </Link>
           <div className="flex items-center gap-2">
+            <ThemeToggle compact />
             <div className="w-8 h-8 rounded-lg bg-slate-950/70 border border-amber-500/30 flex items-center justify-center">
               <img
                 src="/logo192.png"
@@ -70,6 +75,10 @@ function SignUpCatchAll() {
           </div>
         </div>
 
+        <div className="hidden lg:flex justify-end px-6 pt-6 lg:px-12">
+          <ThemeToggle compact />
+        </div>
+
         <div className="flex-1 flex items-center justify-center p-6 lg:p-12">
           <div className="w-full max-w-md">
             <SignUp
@@ -77,29 +86,7 @@ function SignUpCatchAll() {
               path="/sign-up"
               signInUrl="/sign-in"
               forceRedirectUrl="/post-login"
-              appearance={{
-                elements: {
-                  rootBox: 'w-full',
-                  card: 'bg-slate-900/50 border border-slate-800 shadow-2xl shadow-black/50 rounded-2xl',
-                  headerTitle: 'text-white',
-                  headerSubtitle: 'text-slate-400',
-                  socialButtonsBlockButton:
-                    'bg-slate-800 border-slate-700 text-white hover:bg-slate-700',
-                  socialButtonsBlockButtonText: 'text-slate-300 font-medium',
-                  dividerLine: 'bg-slate-700',
-                  dividerText: 'text-slate-500',
-                  formFieldLabel: 'text-slate-300',
-                  formFieldInput:
-                    'bg-slate-800 border-slate-700 text-white placeholder:text-slate-500 focus:border-amber-500 focus:ring-amber-500/20',
-                  formButtonPrimary:
-                    'bg-gradient-to-r from-amber-500 to-orange-500 hover:from-amber-400 hover:to-orange-400 text-white font-semibold shadow-lg shadow-amber-500/25',
-                  footerActionLink: 'text-amber-400 hover:text-amber-300',
-                  identityPreviewText: 'text-slate-300',
-                  identityPreviewEditButton: 'text-amber-400',
-                  formFieldInputShowPasswordButton: 'text-slate-400',
-                  footer: 'hidden',
-                },
-              }}
+              appearance={getClerkAuthAppearance(theme)}
             />
           </div>
         </div>

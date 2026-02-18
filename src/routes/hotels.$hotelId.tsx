@@ -24,6 +24,7 @@ import {
 import { useState } from 'react'
 
 import { BookingModal } from './hotels.$hotelId/components/-BookingModal'
+import { ThemeToggle } from '../components/ThemeToggle'
 
 export const Route = createFileRoute('/hotels/$hotelId')({
   component: HotelDetailPage,
@@ -138,6 +139,7 @@ function HotelDetailPage() {
             Back to Hotels
           </Link>
           <div className="flex items-center gap-4">
+            <ThemeToggle compact />
             {isSignedIn ? (
               <>
                 <Link

@@ -104,7 +104,7 @@ export function HotelGrid({
           return (
             <div
               key={hotel._id}
-              className="group bg-slate-900/50 border border-slate-800/50 rounded-2xl overflow-hidden hover:border-amber-500/30 hover:shadow-xl hover:shadow-amber-500/5 transition-all duration-300"
+              className="group light-hover-surface bg-slate-900/50 border border-slate-800/50 rounded-2xl overflow-hidden hover:border-amber-500/30 hover:shadow-xl hover:shadow-amber-500/5 transition-all duration-300"
             >
               <Link
                 to="/hotels/$hotelId"
@@ -211,7 +211,7 @@ export function HotelGrid({
                 <button
                   type="button"
                   onClick={() => onOpenRating(hotel._id)}
-                  className="px-3 py-1.5 text-sm font-semibold text-slate-900 bg-amber-500 hover:bg-amber-400 rounded-lg transition-colors"
+                  className="light-hover-amber px-3 py-1.5 text-sm font-semibold text-slate-900 bg-amber-500 hover:bg-amber-400 rounded-lg transition-all border border-amber-500/30"
                 >
                   Rate this hotel
                 </button>

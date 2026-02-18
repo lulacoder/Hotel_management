@@ -171,7 +171,7 @@ function AdminDashboard() {
             <Link
               key={action.label}
               to={action.to}
-              className="group bg-slate-900/50 border border-slate-800/50 rounded-2xl p-6 hover:bg-slate-800/50 hover:border-slate-700/50 transition-all duration-200"
+              className="group light-hover-surface bg-slate-900/50 border border-slate-800/50 rounded-2xl p-6 hover:bg-slate-800/50 hover:border-slate-700/50 transition-all duration-200"
             >
               <div className="flex items-start justify-between mb-4">
                 <div className="w-12 h-12 rounded-xl bg-slate-800 flex items-center justify-center group-hover:bg-slate-700 transition-colors">

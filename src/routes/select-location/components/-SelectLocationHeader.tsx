@@ -1,5 +1,6 @@
 import { Link } from '@tanstack/react-router'
 import { UserButton } from '@clerk/clerk-react'
+import { ThemeToggle } from '../../../components/ThemeToggle'
 
 interface SelectLocationHeaderProps {
   isSignedIn: boolean
@@ -26,6 +27,7 @@ export function SelectLocationHeader({
           </h1>
         </div>
         <div className="flex items-center gap-4">
+          <ThemeToggle compact />
           {isSignedIn ? (
             <>
               <Link

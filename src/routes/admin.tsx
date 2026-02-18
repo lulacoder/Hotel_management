@@ -19,6 +19,7 @@ import {
 } from 'lucide-react'
 import { useQuery } from 'convex/react'
 import { api } from '../../convex/_generated/api'
+import { ThemeToggle } from '../components/ThemeToggle'
 
 export const Route = createFileRoute('/admin')({
   beforeLoad: () => {
@@ -180,6 +181,10 @@ function AdminLayout() {
           </button>
         </div>
 
+        <div className="px-5 py-4 border-b border-slate-800/50">
+          <ThemeToggle className="w-full justify-center" />
+        </div>
+
         <nav className="flex-1 p-4 overflow-y-auto space-y-1">
           {visibleNavItems.map((item) => {
             const active = isActive(item.to, item.exact)
@@ -253,6 +258,10 @@ function AdminLayout() {
               </p>
             </div>
           </div>
+        </div>
+
+        <div className="px-6 py-4 border-b border-slate-800/50">
+          <ThemeToggle className="w-full justify-center" />
         </div>
 
         <nav className="p-4 space-y-1">

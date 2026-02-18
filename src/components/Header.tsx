@@ -6,6 +6,7 @@ import { useAuth } from '@clerk/clerk-react'
 import { useEffect, useState} from 'react'
 import { CalendarCheck, Home, MapPin,Menu, X} from 'lucide-react'
 import ClerkHeader from '../integrations/clerk/header-user'
+import { ThemeToggle } from './ThemeToggle'
 
 export default function Header() {
   const [isOpen, setIsOpen] = useState(false)
@@ -93,6 +94,7 @@ export default function Header() {
 
             {/* Right: Auth */}
             <div className="flex items-center gap-3">
+              <ThemeToggle compact />
               {!isSignedIn && (
                 <>
                   <Link

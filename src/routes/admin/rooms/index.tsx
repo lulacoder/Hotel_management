@@ -79,7 +79,7 @@ function RoomsPage() {
           {!searchTerm && (
             <Link
               to="/admin/hotels"
-              className="inline-flex items-center gap-2 px-5 py-2.5 bg-amber-500/10 text-amber-400 font-medium rounded-xl hover:bg-amber-500/20 transition-colors border border-amber-500/20"
+              className="light-hover-amber inline-flex items-center gap-2 px-5 py-2.5 bg-amber-500/10 text-amber-400 font-medium rounded-xl hover:bg-amber-500/20 transition-all border border-amber-500/20"
             >
               Go to Hotels
             </Link>
@@ -92,7 +92,7 @@ function RoomsPage() {
               key={hotel._id}
               to="/admin/hotels/$hotelId"
               params={{ hotelId: hotel._id }}
-              className="flex items-center justify-between bg-slate-900/50 border border-slate-800/50 rounded-xl p-5 hover:border-slate-700/50 hover:bg-slate-800/30 transition-all group"
+              className="group light-hover-surface flex items-center justify-between bg-slate-900/50 border border-slate-800/50 rounded-xl p-5 hover:border-slate-700/50 hover:bg-slate-800/30 transition-all"
             >
               <div className="flex items-center gap-4">
                 <div className="w-12 h-12 rounded-xl bg-slate-800 flex items-center justify-center group-hover:bg-slate-700 transition-colors">

@@ -300,7 +300,7 @@ function BookingsPage() {
                   <div className="flex flex-wrap gap-2 md:justify-end md:w-80">
                     <button
                       onClick={() => setSelectedBookingId(booking._id)}
-                      className="px-3 py-2 bg-slate-800 text-slate-200 rounded-lg hover:bg-slate-700 transition-colors text-sm font-medium border border-slate-700 inline-flex items-center gap-2"
+                      className="light-hover-surface px-3 py-2 bg-slate-800 text-slate-200 rounded-lg hover:bg-slate-700 transition-all text-sm font-medium border border-slate-700 inline-flex items-center gap-2"
                     >
                       <Eye className="w-4 h-4" />
                       View Detail
@@ -309,7 +309,7 @@ function BookingsPage() {
                     <Link
                       to="/admin/bookings/$bookingId"
                       params={{ bookingId: booking._id }}
-                      className="px-3 py-2 bg-slate-800 text-slate-200 rounded-lg hover:bg-slate-700 transition-colors text-sm font-medium border border-slate-700"
+                      className="light-hover-surface px-3 py-2 bg-slate-800 text-slate-200 rounded-lg hover:bg-slate-700 transition-all text-sm font-medium border border-slate-700"
                     >
                       Open Page
                     </Link>
@@ -319,7 +319,7 @@ function BookingsPage() {
                       !['cancelled', 'expired'].includes(booking.status) && (
                         <button
                           onClick={() => handleAcceptCashPayment(booking._id)}
-                          className="px-3 py-2 bg-emerald-500/10 text-emerald-400 rounded-lg hover:bg-emerald-500/20 transition-colors text-sm font-medium border border-emerald-500/20 inline-flex items-center gap-2"
+                          className="light-hover-surface px-3 py-2 bg-emerald-500/10 text-emerald-400 rounded-lg hover:bg-emerald-500/20 transition-all text-sm font-medium border border-emerald-500/20 inline-flex items-center gap-2"
                         >
                           <CircleDollarSign className="w-4 h-4" />
                           Accept Cash
@@ -332,7 +332,7 @@ function BookingsPage() {
                           <button
                             key={`${booking._id}-${nextStatus}`}
                             onClick={() => handleCancel(booking._id)}
-                            className="px-3 py-2 bg-red-500/10 text-red-400 rounded-lg hover:bg-red-500/20 transition-colors text-sm font-medium border border-red-500/20"
+                            className="light-hover-surface px-3 py-2 bg-red-500/10 text-red-400 rounded-lg hover:bg-red-500/20 transition-all text-sm font-medium border border-red-500/20"
                           >
                             {transitionLabel[nextStatus]}
                           </button>
@@ -340,7 +340,7 @@ function BookingsPage() {
                           <button
                             key={`${booking._id}-${nextStatus}`}
                             onClick={() => handleStatusChange(booking._id, nextStatus)}
-                            className="px-3 py-2 bg-amber-500/10 text-amber-400 rounded-lg hover:bg-amber-500/20 transition-colors text-sm font-medium border border-amber-500/20"
+                            className="light-hover-amber px-3 py-2 bg-amber-500/10 text-amber-400 rounded-lg hover:bg-amber-500/20 transition-all text-sm font-medium border border-amber-500/20"
                           >
                             {transitionLabel[nextStatus]}
                           </button>

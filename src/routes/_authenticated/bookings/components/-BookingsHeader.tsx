@@ -1,6 +1,7 @@
 import { Link } from '@tanstack/react-router'
 import { UserButton } from '@clerk/clerk-react'
 import { ArrowLeft } from 'lucide-react'
+import { ThemeToggle } from '../../../../components/ThemeToggle'
 
 interface BookingsHeaderProps {
   userName: string
@@ -20,6 +21,7 @@ export function BookingsHeader({ userName }: BookingsHeaderProps) {
           <h1 className="text-xl font-bold text-white">My Bookings</h1>
         </div>
         <div className="flex items-center gap-4">
+          <ThemeToggle compact />
           <span className="text-sm text-slate-400">{userName}</span>
           <UserButton afterSignOutUrl="/" />
         </div>

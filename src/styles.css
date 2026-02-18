@@ -7,6 +7,86 @@
   --font-body: 'DM Sans', system-ui, sans-serif;
 }
 
+html[data-theme='light'] body {
+  background: rgb(248 250 252);
+  color: rgb(15 23 42);
+}
+
+html[data-theme='light'] .bg-slate-950 {
+  background-color: rgb(248 250 252);
+}
+
+html[data-theme='light'] .bg-slate-900 {
+  background-color: rgb(241 245 249);
+}
+
+html[data-theme='light'] .bg-slate-900\/95 {
+  background-color: rgb(241 245 249 / 0.95);
+}
+
+html[data-theme='light'] .bg-slate-900\/80,
+html[data-theme='light'] .bg-slate-900\/50 {
+  background-color: rgb(241 245 249 / 0.8);
+}
+
+html[data-theme='light'] .bg-slate-800,
+html[data-theme='light'] .bg-slate-800\/50,
+html[data-theme='light'] .bg-slate-800\/30,
+html[data-theme='light'] .bg-slate-950\/70 {
+  background-color: rgb(226 232 240 / 0.8);
+}
+
+html[data-theme='light'] .from-slate-950 {
+  --tw-gradient-from: rgb(248 250 252) var(--tw-gradient-from-position);
+  --tw-gradient-to: rgb(248 250 252 / 0) var(--tw-gradient-to-position);
+}
+
+html[data-theme='light'] .via-slate-900 {
+  --tw-gradient-via: rgb(241 245 249) var(--tw-gradient-via-position);
+  --tw-gradient-to: rgb(241 245 249 / 0) var(--tw-gradient-to-position);
+}
+
+html[data-theme='light'] .to-slate-950 {
+  --tw-gradient-to: rgb(248 250 252) var(--tw-gradient-to-position);
+}
+
+html[data-theme='light'] .text-white,
+html[data-theme='light'] .text-slate-100,
+html[data-theme='light'] .text-slate-200,
+html[data-theme='light'] .text-slate-300 {
+  color: rgb(15 23 42);
+}
+
+html[data-theme='light'] .text-slate-400 {
+  color: rgb(71 85 105);
+}
+
+html[data-theme='light'] .text-slate-500,
+html[data-theme='light'] .text-slate-600 {
+  color: rgb(100 116 139);
+}
+
+html[data-theme='light'] .border-slate-900,
+html[data-theme='light'] .border-slate-800,
+html[data-theme='light'] .border-slate-800\/50,
+html[data-theme='light'] .border-slate-700 {
+  border-color: rgb(203 213 225);
+}
+
+html[data-theme='light'] .light-hover-surface:hover {
+  border-color: rgb(245 158 11 / 0.45);
+  box-shadow:
+    0 10px 30px rgb(245 158 11 / 0.18),
+    0 2px 8px rgb(15 23 42 / 0.08);
+  transform: translateY(-1px);
+}
+
+html[data-theme='light'] .light-hover-amber:hover {
+  border-color: rgb(245 158 11 / 0.6);
+  box-shadow: 0 8px 24px rgb(245 158 11 / 0.28);
+  transform: translateY(-1px);
+}
+
 html {
   scroll-behavior: smooth;
 }
@@ -37,6 +117,10 @@ code {
   color-scheme: dark;
 }
 
+html[data-theme='light'] .hotel-date-input {
+  color-scheme: light;
+}
+
 .hotel-date-input::-webkit-calendar-picker-indicator {
   opacity: 0.95;
   cursor: pointer;
@@ -49,6 +133,17 @@ code {
   filter: brightness(0) saturate(100%) invert(85%) sepia(74%) saturate(590%)
     hue-rotate(334deg) brightness(104%) contrast(98%);
   transform: scale(1.08);
+}
+
+html[data-theme='light'] .hotel-date-input::-webkit-calendar-picker-indicator {
+  filter: brightness(0) saturate(100%) invert(36%) sepia(73%) saturate(1124%)
+    hue-rotate(350deg) brightness(97%) contrast(91%);
+}
+
+html[data-theme='light']
+  .hotel-date-input:hover::-webkit-calendar-picker-indicator {
+  filter: brightness(0) saturate(100%) invert(28%) sepia(80%) saturate(1387%)
+    hue-rotate(349deg) brightness(101%) contrast(95%);
 }
 
 /* Custom scrollbar */
@@ -70,10 +165,27 @@ code {
   background: rgb(71 85 105);
 }
 
+html[data-theme='light'] ::-webkit-scrollbar-track {
+  background: rgb(241 245 249);
+}
+
+html[data-theme='light'] ::-webkit-scrollbar-thumb {
+  background: rgb(148 163 184);
+}
+
+html[data-theme='light'] ::-webkit-scrollbar-thumb:hover {
+  background: rgb(100 116 139);
+}
+
 /* Selection */
 ::selection {
   background: rgba(251, 191, 36, 0.3);
   color: white;
+}
+
+html[data-theme='light'] ::selection {
+  background: rgba(245, 158, 11, 0.28);
+  color: rgb(15 23 42);
 }
 
 /* Focus styles */

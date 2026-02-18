@@ -12,6 +12,7 @@ import Header from '../components/Header'
 import ClerkProvider from '../integrations/clerk/provider'
 
 import ConvexProvider from '../integrations/convex/provider'
+import { ThemeProvider, themeBootstrapScript } from '../lib/theme'
 
 import appCss from '../styles.css?url'
 
@@ -89,26 +90,29 @@ function RootDocument({ children }: { children: React.ReactNode }) {
   return (
     <html lang="en">
       <head>
+        <script dangerouslySetInnerHTML={{ __html: themeBootstrapScript }} />
         <HeadContent />
       </head>
       <body>
-        <ClerkProvider>
-          <ConvexProvider>
-            <Header />
-            {children}
-            <TanStackDevtools
-              config={{
-                position: 'bottom-right',
-              }}
-              plugins={[
-                {
-                  name: 'Tanstack Router',
-                  render: <TanStackRouterDevtoolsPanel />,
-                },
-              ]}
-            />
-          </ConvexProvider>
-        </ClerkProvider>
+        <ThemeProvider>
+          <ClerkProvider>
+            <ConvexProvider>
+              <Header />
+              {children}
+              <TanStackDevtools
+                config={{
+                  position: 'bottom-right',
+                }}
+                plugins={[
+                  {
+                    name: 'Tanstack Router',
+                    render: <TanStackRouterDevtoolsPanel />,
+                  },
+                ]}
+              />
+            </ConvexProvider>
+          </ClerkProvider>
+        </ThemeProvider>
         <Scripts />
       </body>
     </html>
