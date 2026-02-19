@@ -10,8 +10,13 @@ import {
   XCircle,
 } from 'lucide-react'
 
-import { Id } from '../../../../../convex/_generated/dataModel'
+import {
+  formatPackageAddOn,
+  getPackageLabelOrDefault,
+} from '../../../../lib/packages'
 import { canCancel, formatDate, formatPrice, getRoomTypeName } from './-helpers'
+import type { Id } from '../../../../../convex/_generated/dataModel'
+import type { PackageType } from '../../../../lib/packages'
 
 interface BookingCardProps {
   booking: {
@@ -22,6 +27,8 @@ interface BookingCardProps {
     totalPrice: number
     status: string
     holdExpiresAt?: number | undefined
+    packageType?: PackageType | undefined
+    packageAddOn?: number | undefined
   }
   room: {
     roomNumber: string
@@ -116,6 +123,17 @@ export function BookingCard({
             <BedDouble className="w-4 h-4 text-amber-400" />
             <span>
               {getRoomTypeName(room.type)} - Room {room.roomNumber}
+            </span>
+          </div>
+
+          <div className="mb-4">
+            <span className="inline-flex items-center gap-2 px-2.5 py-1 rounded-full text-xs font-medium bg-slate-800 text-slate-300 border border-slate-700">
+              Package: {getPackageLabelOrDefault(booking.packageType)}
+              {booking.packageType && (
+                <span className="text-slate-400">
+                  ({formatPackageAddOn(booking.packageAddOn ?? 0)})
+                </span>
+              )}
             </span>
           </div>
 

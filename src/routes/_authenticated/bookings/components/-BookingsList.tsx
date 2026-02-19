@@ -1,6 +1,7 @@
 import { BookingCard } from './-BookingCard'
 
 import type { Id } from '../../../../../convex/_generated/dataModel'
+import type { PackageType } from '../../../../lib/packages'
 
 interface BookingsListProps {
   bookings: Array<{
@@ -12,6 +13,8 @@ interface BookingsListProps {
       totalPrice: number
       status: string
       holdExpiresAt?: number | undefined
+      packageType?: PackageType | undefined
+      packageAddOn?: number | undefined
     }
     room: {
       roomNumber: string

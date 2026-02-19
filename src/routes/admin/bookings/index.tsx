@@ -16,6 +16,10 @@ import {
 import { useEffect, useState } from 'react'
 import { useMutation, useQuery } from 'convex/react'
 import { api } from '../../../../convex/_generated/api'
+import {
+  formatPackageAddOn,
+  getPackageLabelOrDefault,
+} from '../../../lib/packages'
 import type { Id } from '../../../../convex/_generated/dataModel'
 
 export const Route = createFileRoute('/admin/bookings/')({
@@ -424,6 +428,21 @@ function BookingsPage() {
                     <p className="text-slate-400">
                       ${(selectedBookingDetail.booking.totalPrice / 100).toFixed(2)}
                     </p>
+                  </div>
+                  <div className="bg-slate-800/40 border border-slate-700 rounded-xl p-4">
+                    <p className="text-slate-500 mb-1">Package</p>
+                    <p className="text-slate-100 font-medium">
+                      {getPackageLabelOrDefault(
+                        selectedBookingDetail.booking.packageType,
+                      )}
+                    </p>
+                    {selectedBookingDetail.booking.packageType && (
+                      <p className="text-slate-400">
+                        {formatPackageAddOn(
+                          selectedBookingDetail.booking.packageAddOn ?? 0,
+                        )}
+                      </p>
+                    )}
                   </div>
                 </div>
 

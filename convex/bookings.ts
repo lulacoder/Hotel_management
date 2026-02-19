@@ -31,6 +31,18 @@ const paymentStatusValidator = v.union(
   v.literal('refunded'),
 )
 
+const packageTypeValidator = v.union(
+  v.literal('room_only'),
+  v.literal('with_breakfast'),
+  v.literal('full_package'),
+)
+
+const packageAddOnByType = {
+  room_only: 0,
+  with_breakfast: 1500,
+  full_package: 4000,
+} as const
+
 // Booking document validator for return types
 const bookingValidator = v.object({
   _id: v.id('bookings'),
@@ -45,6 +57,8 @@ const bookingValidator = v.object({
   paymentStatus: v.optional(paymentStatusValidator),
   pricePerNight: v.number(),
   totalPrice: v.number(),
+  packageType: v.optional(packageTypeValidator),
+  packageAddOn: v.optional(v.number()),
   guestName: v.optional(v.string()),
   guestEmail: v.optional(v.string()),
   specialRequests: v.optional(v.string()),
@@ -190,6 +204,8 @@ export const holdRoom = mutation({
     roomId: v.id('rooms'),
     checkIn: v.string(),
     checkOut: v.string(),
+    packageType: v.optional(packageTypeValidator),
+    packageAddOn: v.optional(v.number()),
     guestName: v.optional(v.string()),
     guestEmail: v.optional(v.string()),
     specialRequests: v.optional(v.string()),
@@ -259,9 +275,23 @@ export const holdRoom = mutation({
       }
     }
 
+    const packageType = args.packageType ?? 'room_only'
+    const expectedPackageAddOn = packageAddOnByType[packageType]
+
+    if (
+      args.packageAddOn !== undefined &&
+      args.packageAddOn !== expectedPackageAddOn
+    ) {
+      throw new ConvexError({
+        code: 'INVALID_INPUT',
+        message: 'Invalid package pricing selected. Please try again.',
+      })
+    }
+
     // Calculate pricing
     const pricePerNight = room.basePrice
-    const totalPrice = pricePerNight * nights
+    const packageAddOn = expectedPackageAddOn
+    const totalPrice = (pricePerNight + packageAddOn) * nights
 
     const now = Date.now()
     const bookingId = await ctx.db.insert('bookings', {
@@ -273,6 +303,8 @@ export const holdRoom = mutation({
       status: 'held',
       holdExpiresAt: getHoldExpirationTime(),
       pricePerNight,
+      packageType,
+      packageAddOn,
       totalPrice,
       guestName: args.guestName,
       guestEmail: args.guestEmail,
@@ -292,6 +324,8 @@ export const holdRoom = mutation({
         roomId: args.roomId,
         checkIn: args.checkIn,
         checkOut: args.checkOut,
+        packageType,
+        packageAddOn,
         totalPrice,
       },
     })

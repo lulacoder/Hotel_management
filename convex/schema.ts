@@ -129,6 +129,14 @@ export default defineSchema({
     ),
     pricePerNight: v.number(), // In cents, snapshot at booking time
     totalPrice: v.number(), // In cents
+    packageType: v.optional(
+      v.union(
+        v.literal('room_only'),
+        v.literal('with_breakfast'),
+        v.literal('full_package'),
+      ),
+    ),
+    packageAddOn: v.optional(v.number()), // In cents, snapshot per night
     guestName: v.optional(v.string()),
     guestEmail: v.optional(v.string()),
     specialRequests: v.optional(v.string()),

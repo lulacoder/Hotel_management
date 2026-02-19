@@ -12,6 +12,10 @@ import {
 } from 'lucide-react'
 
 import { api } from '../../../../convex/_generated/api'
+import {
+  formatPackageAddOn,
+  getPackageLabelOrDefault,
+} from '../../../lib/packages'
 import type { Id } from '../../../../convex/_generated/dataModel'
 
 export const Route = createFileRoute('/admin/bookings/$bookingId')({
@@ -202,6 +206,17 @@ function BookingDetailPage() {
             <p className="text-slate-100 font-medium capitalize">
               {bookingDetail.booking.paymentStatus || 'pending'}
             </p>
+          </div>
+          <div className="bg-slate-800/40 border border-slate-700 rounded-xl p-4">
+            <p className="text-slate-500 mb-1">Package</p>
+            <p className="text-slate-100 font-medium">
+              {getPackageLabelOrDefault(bookingDetail.booking.packageType)}
+            </p>
+            {bookingDetail.booking.packageType && (
+              <p className="text-slate-400">
+                {formatPackageAddOn(bookingDetail.booking.packageAddOn ?? 0)}
+              </p>
+            )}
           </div>
           {bookingDetail.booking.specialRequests && (
             <div className="bg-slate-800/40 border border-slate-700 rounded-xl p-4">

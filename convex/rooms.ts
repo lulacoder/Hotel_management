@@ -1,6 +1,5 @@
-import { query, mutation } from './_generated/server'
-import { v } from 'convex/values'
-import { ConvexError } from 'convex/values'
+import { ConvexError, v } from 'convex/values'
+import { mutation, query } from './_generated/server'
 import { requireHotelAccess } from './lib/auth'
 import { createAuditLog } from './audit'
 import { datesOverlap, isHoldExpired } from './lib/dates'
@@ -19,6 +18,15 @@ const operationalStatusValidator = v.union(
   v.literal('maintenance'),
   v.literal('cleaning'),
   v.literal('out_of_order'),
+)
+
+const roomLiveStateValidator = v.union(
+  v.literal('available'),
+  v.literal('maintenance'),
+  v.literal('cleaning'),
+  v.literal('out_of_order'),
+  v.literal('held'),
+  v.literal('booked'),
 )
 
 // Room document validator for return types
@@ -40,6 +48,38 @@ const roomValidator = v.object({
   createdAt: v.number(),
   updatedAt: v.number(),
 })
+
+const roomWithLiveStateValidator = roomValidator.extend({
+  liveState: roomLiveStateValidator,
+})
+
+function getDerivedLiveState(
+  operationalStatus: 'available' | 'maintenance' | 'cleaning' | 'out_of_order',
+  bookings: Array<{ status: string; holdExpiresAt?: number }>,
+): 'available' | 'maintenance' | 'cleaning' | 'out_of_order' | 'held' | 'booked' {
+  if (operationalStatus !== 'available') {
+    return operationalStatus
+  }
+
+  const hasBooked = bookings.some((booking) =>
+    ['confirmed', 'checked_in'].includes(booking.status),
+  )
+
+  if (hasBooked) {
+    return 'booked'
+  }
+
+  const hasHeld = bookings.some(
+    (booking) =>
+      booking.status === 'held' && !isHoldExpired(booking.holdExpiresAt),
+  )
+
+  if (hasHeld) {
+    return 'held'
+  }
+
+  return 'available'
+}
 
 // Get rooms by hotel
 export const getByHotel = query({
@@ -72,6 +112,49 @@ export const getByHotel = query({
     }
 
     return rooms
+  },
+})
+
+// Get rooms with a derived live state from active bookings (admin/staff)
+export const getByHotelWithLiveState = query({
+  args: {
+    clerkUserId: v.string(),
+    hotelId: v.id('hotels'),
+    includeDeleted: v.optional(v.boolean()),
+  },
+  returns: v.array(roomWithLiveStateValidator),
+  handler: async (ctx, args) => {
+    await requireHotelAccess(ctx, args.clerkUserId, args.hotelId)
+
+    let rooms = await ctx.db
+      .query('rooms')
+      .withIndex('by_hotel', (q) => q.eq('hotelId', args.hotelId))
+      .collect()
+
+    if (!args.includeDeleted) {
+      rooms = rooms.filter((room) => !room.isDeleted)
+    }
+
+    const roomsWithLiveState = []
+
+    for (const room of rooms) {
+      const bookings = await ctx.db
+        .query('bookings')
+        .withIndex('by_room', (q) => q.eq('roomId', room._id))
+        .collect()
+
+      const activeBookings = bookings.filter(
+        (booking) =>
+          !['cancelled', 'expired', 'checked_out'].includes(booking.status),
+      )
+
+      roomsWithLiveState.push({
+        ...room,
+        liveState: getDerivedLiveState(room.operationalStatus, activeBookings),
+      })
+    }
+
+    return roomsWithLiveState
   },
 })
 

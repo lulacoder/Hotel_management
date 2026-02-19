@@ -39,9 +39,15 @@ function HotelDetailPage() {
   const [isHydrated, setIsHydrated] = useState(false)
 
   const hotel = useQuery(api.hotels.get, { hotelId: hotelId as Id<'hotels'> })
-  const rooms = useQuery(api.rooms.getByHotel, {
-    hotelId: hotelId as Id<'hotels'>,
-  })
+  const rooms = useQuery(
+    api.rooms.getByHotelWithLiveState,
+    user?.id
+      ? {
+          clerkUserId: user.id,
+          hotelId: hotelId as Id<'hotels'>,
+        }
+      : 'skip',
+  )
   const ratings = useQuery(
     api.ratings.getHotelRatingsAdmin,
     user?.id
@@ -114,7 +120,28 @@ function HotelDetailPage() {
       bg: 'bg-red-500/10',
       border: 'border-red-500/20',
     },
+    held: {
+      label: 'Held',
+      icon: CheckCircle,
+      color: 'text-amber-400',
+      bg: 'bg-amber-500/10',
+      border: 'border-amber-500/20',
+    },
+    booked: {
+      label: 'Booked',
+      icon: CheckCircle,
+      color: 'text-blue-400',
+      bg: 'bg-blue-500/10',
+      border: 'border-blue-500/20',
+    },
   }
+
+  const operationalStatusOptions = [
+    'available',
+    'maintenance',
+    'cleaning',
+    'out_of_order',
+  ] as const
 
   const roomTypeLabels: Record<string, string> = {
     budget: 'Budget',
@@ -228,7 +255,7 @@ function HotelDetailPage() {
       ) : (
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
           {rooms.map((room) => {
-            const status = statusConfig[room.operationalStatus]
+            const status = statusConfig[room.liveState]
             const StatusIcon = status.icon
 
             return (
@@ -263,29 +290,24 @@ function HotelDetailPage() {
                       <p className="px-4 py-2 text-xs text-slate-500 font-medium">
                         Set Status
                       </p>
-                      {Object.entries(statusConfig).map(([key, config]) => (
-                        <button
-                          key={key}
-                          onClick={() =>
-                            handleStatusChange(
-                              room._id,
-                              key as
-                                | 'available'
-                                | 'maintenance'
-                                | 'cleaning'
-                                | 'out_of_order',
-                            )
-                          }
-                          className={`flex items-center gap-3 px-4 py-2 hover:bg-slate-700 transition-colors w-full text-sm ${
-                            room.operationalStatus === key
-                              ? config.color
-                              : 'text-slate-400'
-                          }`}
-                        >
-                          <config.icon className="w-4 h-4" />
-                          {config.label}
-                        </button>
-                      ))}
+                      {operationalStatusOptions.map((key) => {
+                        const config = statusConfig[key]
+
+                        return (
+                          <button
+                            key={key}
+                            onClick={() => handleStatusChange(room._id, key)}
+                            className={`flex items-center gap-3 px-4 py-2 hover:bg-slate-700 transition-colors w-full text-sm ${
+                              room.operationalStatus === key
+                                ? config.color
+                                : 'text-slate-400'
+                            }`}
+                          >
+                            <config.icon className="w-4 h-4" />
+                            {config.label}
+                          </button>
+                        )
+                      })}
                       <div className="border-t border-slate-700 my-1"></div>
                       <button
                         onClick={() => handleDeleteRoom(room._id)}

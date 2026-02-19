@@ -1,10 +1,16 @@
 import { useUser } from '@clerk/clerk-react'
-import { useQuery, useMutation } from 'convex/react'
+import { useMutation, useQuery } from 'convex/react'
 import { Building2, CheckCircle } from 'lucide-react'
 import { useEffect, useState } from 'react'
 
 import { api } from '../../../../convex/_generated/api'
-import { Id } from '../../../../convex/_generated/dataModel'
+import {
+  PACKAGES,
+  formatPackageAddOn,
+  getPackageByType,
+} from '../../../lib/packages'
+import type { Id } from '../../../../convex/_generated/dataModel'
+import type { PackageType } from '../../../lib/packages'
 
 interface BookingModalProps {
   roomId: Id<'rooms'>
@@ -31,7 +37,9 @@ export function BookingModal({
   const holdRoom = useMutation(api.bookings.holdRoom)
   const confirmBooking = useMutation(api.bookings.confirmBooking)
 
-  const [step, setStep] = useState<'details' | 'confirm'>('details')
+  const [step, setStep] = useState<'package' | 'details' | 'confirm'>('package')
+  const [selectedPackageType, setSelectedPackageType] =
+    useState<PackageType>('room_only')
   const [guestDetails, setGuestDetails] = useState({
     guestName: user?.fullName || '',
     guestEmail: user?.emailAddresses[0]?.emailAddress || '',
@@ -65,6 +73,8 @@ export function BookingModal({
         roomId,
         checkIn,
         checkOut,
+        packageType: selectedPackageType,
+        packageAddOn: getPackageByType(selectedPackageType).addOnPerNight,
         guestName: guestDetails.guestName,
         guestEmail: guestDetails.guestEmail,
         specialRequests: guestDetails.specialRequests || undefined,
@@ -91,7 +101,11 @@ export function BookingModal({
       })
       onSuccess()
     } catch (err: any) {
-      setError(err.message || 'Failed to confirm booking')
+      if (err?.data?.code === 'EXPIRED') {
+        setError('Your hold has expired. Please start a new booking.')
+      } else {
+        setError(err.message || 'Failed to confirm booking')
+      }
     } finally {
       setLoading(false)
     }
@@ -101,21 +115,28 @@ export function BookingModal({
     return null
   }
 
-  const totalPrice = (room.basePrice * nights) / 100
+  const selectedPackage = getPackageByType(selectedPackageType)
+  const roomSubtotalCents = room.basePrice * nights
+  const packageSubtotalCents = selectedPackage.addOnPerNight * nights
+  const totalPriceCents = roomSubtotalCents + packageSubtotalCents
 
   return (
     <div className="fixed inset-0 bg-black/60 backdrop-blur-sm flex items-center justify-center z-50 p-4">
       <div className="bg-slate-900 border border-slate-800 rounded-2xl shadow-2xl w-full max-w-lg max-h-[90vh] overflow-auto">
         <div className="p-6 border-b border-slate-800">
           <h2 className="text-xl font-semibold text-slate-100">
-            {step === 'details'
-              ? 'Complete Your Booking'
-              : 'Confirm Reservation'}
+            {step === 'package'
+              ? 'Choose Your Stay Package'
+              : step === 'details'
+                ? 'Complete Your Booking'
+                : 'Confirm Reservation'}
           </h2>
           <p className="text-sm text-slate-500 mt-1">
-            {step === 'details'
-              ? 'Enter your details to hold this room'
-              : 'Review and confirm your booking'}
+            {step === 'package'
+              ? 'Select what you want included in your stay'
+              : step === 'details'
+                ? 'Enter your details to hold this room'
+                : 'Review and confirm your booking'}
           </p>
         </div>
 
@@ -143,12 +164,20 @@ export function BookingModal({
               </div>
             </div>
             <div className="border-t border-slate-700 mt-4 pt-4 flex justify-between">
-              <span className="text-slate-400">
-                {nights} night{nights !== 1 ? 's' : ''} @ $
-                {(room.basePrice / 100).toFixed(0)}/night
-              </span>
+              <div className="text-slate-400 text-sm">
+                <p>
+                  Room: ${(room.basePrice / 100).toFixed(0)} × {nights} night
+                  {nights !== 1 ? 's' : ''}
+                </p>
+                {selectedPackage.addOnPerNight > 0 && (
+                  <p>
+                    Package: ${(selectedPackage.addOnPerNight / 100).toFixed(0)} ×{' '}
+                    {nights}
+                  </p>
+                )}
+              </div>
               <span className="text-xl font-bold text-amber-400">
-                ${totalPrice.toFixed(2)}
+                ${(totalPriceCents / 100).toFixed(2)}
               </span>
             </div>
           </div>
@@ -159,7 +188,65 @@ export function BookingModal({
             </div>
           )}
 
-          {step === 'details' ? (
+          {step === 'package' ? (
+            <div className="space-y-3">
+              {PACKAGES.map((pkg) => {
+                const isSelected = pkg.type === selectedPackageType
+
+                return (
+                  <button
+                    key={pkg.type}
+                    type="button"
+                    onClick={() => setSelectedPackageType(pkg.type)}
+                    className={`w-full text-left rounded-xl border p-4 transition-all ${
+                      isSelected
+                        ? 'border-amber-500/50 bg-amber-500/10'
+                        : 'border-slate-700 bg-slate-800/40 hover:border-slate-600'
+                    }`}
+                  >
+                    <div className="flex items-start justify-between gap-3 mb-2">
+                      <div>
+                        <p className="text-slate-100 font-semibold">{pkg.label}</p>
+                        <p className="text-slate-400 text-sm">{pkg.description}</p>
+                      </div>
+                      <span
+                        className={`text-xs font-medium px-2.5 py-1 rounded-full border ${
+                          isSelected
+                            ? 'text-amber-300 border-amber-500/40 bg-amber-500/10'
+                            : 'text-slate-300 border-slate-600 bg-slate-700/40'
+                        }`}
+                      >
+                        {formatPackageAddOn(pkg.addOnPerNight)}
+                      </span>
+                    </div>
+
+                    <ul className="list-disc list-inside text-sm text-slate-400 space-y-0.5">
+                      {pkg.inclusions.map((item) => (
+                        <li key={item}>{item}</li>
+                      ))}
+                    </ul>
+                  </button>
+                )
+              })}
+
+              <div className="flex gap-3 pt-2">
+                <button
+                  type="button"
+                  onClick={onClose}
+                  className="flex-1 px-4 py-3 bg-slate-800 text-slate-300 font-medium rounded-xl hover:bg-slate-700 transition-colors border border-slate-700"
+                >
+                  Cancel
+                </button>
+                <button
+                  type="button"
+                  onClick={() => setStep('details')}
+                  className="flex-1 px-4 py-3 bg-gradient-to-r from-amber-500 to-amber-600 text-white font-medium rounded-xl hover:from-amber-600 hover:to-amber-700 transition-all"
+                >
+                  Continue
+                </button>
+              </div>
+            </div>
+          ) : step === 'details' ? (
             <form onSubmit={handleHold} className="space-y-4">
               <div>
                 <label className="block text-sm font-medium text-slate-300 mb-2">
@@ -222,13 +309,33 @@ export function BookingModal({
                 </p>
               </div>
 
+              <div className="bg-slate-800/40 border border-slate-700 rounded-xl p-4 text-sm">
+                <div className="flex items-center justify-between text-slate-300">
+                  <span>Room rate ({nights} night{nights !== 1 ? 's' : ''})</span>
+                  <span>${(roomSubtotalCents / 100).toFixed(2)}</span>
+                </div>
+                {selectedPackage.addOnPerNight > 0 && (
+                  <div className="flex items-center justify-between text-slate-300 mt-2">
+                    <span>
+                      {selectedPackage.label} add-on ({nights} night
+                      {nights !== 1 ? 's' : ''})
+                    </span>
+                    <span>${(packageSubtotalCents / 100).toFixed(2)}</span>
+                  </div>
+                )}
+                <div className="border-t border-slate-700 mt-3 pt-3 flex items-center justify-between text-amber-400 font-semibold">
+                  <span>Total</span>
+                  <span>${(totalPriceCents / 100).toFixed(2)}</span>
+                </div>
+              </div>
+
               <div className="flex gap-3 pt-2">
                 <button
                   type="button"
-                  onClick={onClose}
+                  onClick={() => setStep('package')}
                   className="flex-1 px-4 py-3 bg-slate-800 text-slate-300 font-medium rounded-xl hover:bg-slate-700 transition-colors border border-slate-700"
                 >
-                  Cancel
+                  Back
                 </button>
                 <button
                   type="submit"
@@ -250,6 +357,26 @@ export function BookingModal({
                   Your room is being held. Please confirm within 15 minutes to
                   complete your reservation.
                 </p>
+              </div>
+
+              <div className="bg-slate-800/40 border border-slate-700 rounded-xl p-4 text-sm">
+                <div className="flex items-center justify-between text-slate-300">
+                  <span>Room rate ({nights} night{nights !== 1 ? 's' : ''})</span>
+                  <span>${(roomSubtotalCents / 100).toFixed(2)}</span>
+                </div>
+                {selectedPackage.addOnPerNight > 0 && (
+                  <div className="flex items-center justify-between text-slate-300 mt-2">
+                    <span>
+                      {selectedPackage.label} add-on ({nights} night
+                      {nights !== 1 ? 's' : ''})
+                    </span>
+                    <span>${(packageSubtotalCents / 100).toFixed(2)}</span>
+                  </div>
+                )}
+                <div className="border-t border-slate-700 mt-3 pt-3 flex items-center justify-between text-emerald-400 font-semibold">
+                  <span>Total</span>
+                  <span>${(totalPriceCents / 100).toFixed(2)}</span>
+                </div>
               </div>
 
               <div className="flex gap-3">
