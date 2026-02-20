@@ -47,7 +47,8 @@ const packageAddOnByType = {
 const bookingValidator = v.object({
   _id: v.id('bookings'),
   _creationTime: v.number(),
-  userId: v.id('users'),
+  userId: v.optional(v.id('users')),
+  guestProfileId: v.optional(v.id('guestProfiles')),
   roomId: v.id('rooms'),
   hotelId: v.id('hotels'),
   checkIn: v.string(),
@@ -65,6 +66,19 @@ const bookingValidator = v.object({
   createdAt: v.number(),
   updatedAt: v.number(),
   updatedBy: v.optional(v.id('users')),
+})
+
+const guestProfileSummaryValidator = v.object({
+  _id: v.id('guestProfiles'),
+  name: v.string(),
+  phone: v.optional(v.string()),
+  email: v.optional(v.string()),
+  linkedUserId: v.optional(v.id('users')),
+})
+
+const linkedUserSummaryValidator = v.object({
+  _id: v.id('users'),
+  email: v.string(),
 })
 
 // Get a single booking
@@ -140,25 +154,72 @@ export const getByUser = query({
 export const getByHotel = query({
   args: {
     clerkUserId: v.string(),
-    hotelId: v.id('hotels'),
+    hotelId: v.optional(v.id('hotels')),
     status: v.optional(bookingStatusValidator),
   },
-  returns: v.array(bookingValidator),
+  returns: v.array(
+    v.object({
+      booking: bookingValidator,
+      guestProfile: v.optional(guestProfileSummaryValidator),
+      linkedUser: v.optional(linkedUserSummaryValidator),
+    }),
+  ),
   handler: async (ctx, args) => {
-    await requireHotelAccess(ctx, args.clerkUserId, args.hotelId)
+    if (args.hotelId !== undefined) {
+      await requireHotelAccess(ctx, args.clerkUserId, args.hotelId)
+    } else {
+      const user = await requireUser(ctx, args.clerkUserId)
+      if (user.role !== 'room_admin') {
+        throw new ConvexError({
+          code: 'FORBIDDEN',
+          message: 'Only room admin can list bookings across all hotels.',
+        })
+      }
+    }
 
-    let bookings = await ctx.db
-      .query('bookings')
-      .withIndex('by_hotel', (q) => q.eq('hotelId', args.hotelId))
-      .order('desc')
-      .collect()
+    let bookings =
+      args.hotelId !== undefined
+        ? await ctx.db
+            .query('bookings')
+            .withIndex('by_hotel', (q) => q.eq('hotelId', args.hotelId!))
+            .order('desc')
+            .collect()
+        : await ctx.db.query('bookings').order('desc').collect()
 
     // Filter by status if provided
     if (args.status) {
       bookings = bookings.filter((b) => b.status === args.status)
     }
 
-    return bookings
+    const result = []
+    for (const booking of bookings) {
+      const guestProfile = booking.guestProfileId
+        ? await ctx.db.get(booking.guestProfileId)
+        : null
+
+      const linkedUser = booking.userId ? await ctx.db.get(booking.userId) : null
+
+      result.push({
+        booking,
+        guestProfile: guestProfile
+          ? {
+              _id: guestProfile._id,
+              name: guestProfile.name,
+              phone: guestProfile.phone,
+              email: guestProfile.email,
+              linkedUserId: guestProfile.linkedUserId,
+            }
+          : undefined,
+        linkedUser: linkedUser
+          ? {
+              _id: linkedUser._id,
+              email: linkedUser.email,
+            }
+          : undefined,
+      })
+    }
+
+    return result
   },
 })
 
@@ -327,6 +388,155 @@ export const holdRoom = mutation({
         packageType,
         packageAddOn,
         totalPrice,
+      },
+    })
+
+    return bookingId
+  },
+})
+
+// Create a walk-in booking (hotel cashier/hotel admin only)
+export const walkInBooking = mutation({
+  args: {
+    clerkUserId: v.string(),
+    guestProfileId: v.id('guestProfiles'),
+    roomId: v.id('rooms'),
+    checkIn: v.string(),
+    checkOut: v.string(),
+    packageType: packageTypeValidator,
+    packageAddOn: v.optional(v.number()),
+    specialRequests: v.optional(v.string()),
+  },
+  returns: v.id('bookings'),
+  handler: async (ctx, args) => {
+    const user = await requireUser(ctx, args.clerkUserId)
+
+    const assignment = await getHotelAssignment(ctx, user._id)
+    const isAllowedStaff =
+      assignment && ['hotel_admin', 'hotel_cashier'].includes(assignment.role)
+
+    if (!isAllowedStaff) {
+      throw new ConvexError({
+        code: 'FORBIDDEN',
+        message:
+          'Only hotel cashiers and hotel admins can create walk-in bookings.',
+      })
+    }
+
+    const guestProfile = await ctx.db.get(args.guestProfileId)
+    if (!guestProfile) {
+      throw new ConvexError({
+        code: 'NOT_FOUND',
+        message: 'Guest profile not found.',
+      })
+    }
+
+    const { nights } = validateBookingDates(args.checkIn, args.checkOut)
+
+    const room = await ctx.db.get(args.roomId)
+    if (!room || room.isDeleted) {
+      throw new ConvexError({
+        code: 'NOT_FOUND',
+        message: 'Room not found.',
+      })
+    }
+
+    if (assignment.hotelId !== room.hotelId) {
+      throw new ConvexError({
+        code: 'FORBIDDEN',
+        message: 'You can only create walk-in bookings for your assigned hotel.',
+      })
+    }
+
+    if (room.operationalStatus !== 'available') {
+      throw new ConvexError({
+        code: 'UNAVAILABLE',
+        message: `Room is currently ${room.operationalStatus} and cannot be booked.`,
+      })
+    }
+
+    const existingBookings = await ctx.db
+      .query('bookings')
+      .withIndex('by_room', (q) => q.eq('roomId', args.roomId))
+      .collect()
+
+    const requestedRange = { checkIn: args.checkIn, checkOut: args.checkOut }
+
+    for (const booking of existingBookings) {
+      if (['cancelled', 'expired', 'checked_out'].includes(booking.status)) {
+        continue
+      }
+
+      if (booking.status === 'held' && isHoldExpired(booking.holdExpiresAt)) {
+        continue
+      }
+
+      const bookingRange = {
+        checkIn: booking.checkIn,
+        checkOut: booking.checkOut,
+      }
+
+      if (datesOverlap(requestedRange, bookingRange)) {
+        throw new ConvexError({
+          code: 'CONFLICT',
+          message:
+            'Room is not available for the selected dates. Please choose different dates.',
+        })
+      }
+    }
+
+    const expectedPackageAddOn = packageAddOnByType[args.packageType]
+
+    if (
+      args.packageAddOn !== undefined &&
+      args.packageAddOn !== expectedPackageAddOn
+    ) {
+      throw new ConvexError({
+        code: 'INVALID_INPUT',
+        message: 'Invalid package pricing selected. Please try again.',
+      })
+    }
+
+    const pricePerNight = room.basePrice
+    const packageAddOn = expectedPackageAddOn
+    const totalPrice = (pricePerNight + packageAddOn) * nights
+    const now = Date.now()
+
+    const bookingId = await ctx.db.insert('bookings', {
+      userId: guestProfile.linkedUserId,
+      guestProfileId: guestProfile._id,
+      roomId: args.roomId,
+      hotelId: room.hotelId,
+      checkIn: args.checkIn,
+      checkOut: args.checkOut,
+      status: 'confirmed',
+      paymentStatus: 'pending',
+      pricePerNight,
+      packageType: args.packageType,
+      packageAddOn,
+      totalPrice,
+      guestName: guestProfile.name,
+      guestEmail: guestProfile.email,
+      specialRequests: args.specialRequests,
+      createdAt: now,
+      updatedAt: now,
+      updatedBy: user._id,
+    })
+
+    await createAuditLog(ctx, {
+      actorId: user._id,
+      action: 'walk_in_booking_created',
+      targetType: 'booking',
+      targetId: bookingId,
+      newValue: {
+        status: 'confirmed',
+        roomId: args.roomId,
+        checkIn: args.checkIn,
+        checkOut: args.checkOut,
+        packageType: args.packageType,
+        packageAddOn,
+        totalPrice,
+        guestProfileId: args.guestProfileId,
       },
     })
 
@@ -621,6 +831,8 @@ export const getEnriched = query({
   returns: v.union(
     v.object({
       booking: bookingValidator,
+      guestProfile: v.optional(guestProfileSummaryValidator),
+      linkedUser: v.optional(linkedUserSummaryValidator),
       room: v.object({
         _id: v.id('rooms'),
         roomNumber: v.string(),
@@ -661,6 +873,10 @@ export const getEnriched = query({
 
     const room = await ctx.db.get(booking.roomId)
     const hotel = await ctx.db.get(booking.hotelId)
+    const guestProfile = booking.guestProfileId
+      ? await ctx.db.get(booking.guestProfileId)
+      : null
+    const linkedUser = booking.userId ? await ctx.db.get(booking.userId) : null
 
     if (!room || !hotel) {
       return null
@@ -668,6 +884,21 @@ export const getEnriched = query({
 
     return {
       booking,
+      guestProfile: guestProfile
+        ? {
+            _id: guestProfile._id,
+            name: guestProfile.name,
+            phone: guestProfile.phone,
+            email: guestProfile.email,
+            linkedUserId: guestProfile.linkedUserId,
+          }
+        : undefined,
+      linkedUser: linkedUser
+        ? {
+            _id: linkedUser._id,
+            email: linkedUser.email,
+          }
+        : undefined,
       room: {
         _id: room._id,
         roomNumber: room.roomNumber,

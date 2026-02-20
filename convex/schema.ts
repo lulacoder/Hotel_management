@@ -103,9 +103,23 @@ export default defineSchema({
     .index('by_hotel_and_is_deleted', ['hotelId', 'isDeleted'])
     .index('by_hotel_and_type', ['hotelId', 'type']),
 
+  // Guest profiles for walk-in guests
+  guestProfiles: defineTable({
+    name: v.string(),
+    phone: v.optional(v.string()),
+    email: v.optional(v.string()),
+    createdBy: v.id('users'),
+    createdAt: v.number(),
+    linkedUserId: v.optional(v.id('users')),
+  })
+    .index('by_phone', ['phone'])
+    .index('by_email', ['email'])
+    .index('by_linked_user', ['linkedUserId']),
+
   // Bookings table
   bookings: defineTable({
-    userId: v.id('users'),
+    userId: v.optional(v.id('users')),
+    guestProfileId: v.optional(v.id('guestProfiles')),
     roomId: v.id('rooms'),
     hotelId: v.id('hotels'), // Denormalized for efficient queries
     checkIn: v.string(), // YYYY-MM-DD format
@@ -146,6 +160,7 @@ export default defineSchema({
   })
     .index('by_room', ['roomId'])
     .index('by_user', ['userId'])
+    .index('by_guest_profile', ['guestProfileId'])
     .index('by_status', ['status'])
     .index('by_hotel', ['hotelId'])
     .index('by_room_and_status', ['roomId', 'status'])

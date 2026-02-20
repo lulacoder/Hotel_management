@@ -1,5 +1,6 @@
-import { internalMutation } from './_generated/server'
 import { v } from 'convex/values'
+
+import { internalMutation } from './_generated/server'
 
 // Internal mutation to clean up expired holds
 // Called by the cron job every 5 minutes
@@ -24,18 +25,18 @@ export const cleanupExpiredHolds = internalMutation({
           updatedAt: now,
         })
 
-        // Log the expiration (system action, no actor)
-        // We create a simple audit entry without an actor for system actions
-        await ctx.db.insert('auditEvents', {
-          actorId: booking.userId, // Use the original user as context
-          action: 'booking_expired',
-          targetType: 'booking',
-          targetId: booking._id,
-          previousValue: JSON.stringify({ status: 'held' }),
-          newValue: JSON.stringify({ status: 'expired' }),
-          metadata: { system: true, reason: 'hold_timeout' },
-          timestamp: now,
-        })
+        if (booking.userId) {
+          await ctx.db.insert('auditEvents', {
+            actorId: booking.userId,
+            action: 'booking_expired',
+            targetType: 'booking',
+            targetId: booking._id,
+            previousValue: JSON.stringify({ status: 'held' }),
+            newValue: JSON.stringify({ status: 'expired' }),
+            metadata: { system: true, reason: 'hold_timeout' },
+            timestamp: now,
+          })
+        }
 
         expiredCount++
       }

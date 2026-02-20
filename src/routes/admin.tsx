@@ -14,6 +14,7 @@ import {
   LayoutDashboard,
   LogOut,
   Menu,
+  UserPlus,
   Users,
   X,
 } from 'lucide-react'
@@ -107,16 +108,28 @@ function AdminLayout() {
     { to: '/admin/hotels', label: 'Hotels', icon: Hotel },
     { to: '/admin/rooms', label: 'Rooms', icon: Building2 },
     { to: '/admin/bookings', label: 'Bookings', icon: Calendar },
+    { to: '/admin/walk-in', label: 'Walk-in Booking', icon: UserPlus },
     { to: '/admin/users', label: 'Users', icon: Users },
   ]
 
   const visibleNavItems = navItems.filter((item) => {
+    if (item.to === '/admin/walk-in') {
+      return (
+        hotelAssignment?.role === 'hotel_cashier' ||
+        hotelAssignment?.role === 'hotel_admin'
+      )
+    }
+
     if (profile?.role === 'room_admin') {
       return true
     }
 
     if (hotelAssignment?.role === 'hotel_cashier') {
-      return item.to === '/admin/bookings' || item.to === '/admin/rooms'
+      return (
+        item.to === '/admin/bookings' ||
+        item.to === '/admin/rooms' ||
+        item.to === '/admin/walk-in'
+      )
     }
 
     if (hotelAssignment?.role === 'hotel_admin') {

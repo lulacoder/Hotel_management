@@ -57,13 +57,32 @@ function BookingsPage() {
     }
   }, [profile?.role, hotelAssignment?.hotelId])
 
-  // Get bookings for selected hotel or all
   const bookings = useQuery(
-    api.bookings.getByHotel,
-    user?.id && selectedHotel !== 'all'
-      ? { clerkUserId: user.id, hotelId: selectedHotel as Id<'hotels'> }
+    (api as any).bookings.getByHotel,
+    user?.id
+      ? {
+          clerkUserId: user.id,
+          hotelId:
+            selectedHotel !== 'all'
+              ? (selectedHotel as Id<'hotels'>)
+              : undefined,
+        }
       : 'skip',
-  )
+  ) as
+    | Array<{
+        booking: any
+        guestProfile?: {
+          _id: Id<'guestProfiles'>
+          name: string
+          phone?: string
+          email?: string
+        }
+        linkedUser?: {
+          _id: Id<'users'>
+          email: string
+        }
+      }>
+    | undefined
 
   const cancelBooking = useMutation(api.bookings.cancelBooking)
   const updateBookingStatus = useMutation(api.bookings.updateStatus)
@@ -154,14 +173,16 @@ function BookingsPage() {
     },
   }
 
-  const filteredBookings = bookings?.filter((booking) => {
-    if (statusFilter !== 'all' && booking.status !== statusFilter) return false
+  const filteredBookings = bookings?.filter((item) => {
+    if (statusFilter !== 'all' && item.booking.status !== statusFilter) {
+      return false
+    }
     return true
   })
 
-  const canManageBookings =
+  const canManageBooking = (hotelId: Id<'hotels'>) =>
     profile?.role === 'room_admin' ||
-    (hotelAssignment?.hotelId === selectedHotel &&
+    (hotelAssignment?.hotelId === hotelId &&
       ['hotel_admin', 'hotel_cashier'].includes(hotelAssignment.role))
 
   return (
@@ -215,19 +236,7 @@ function BookingsPage() {
       </div>
 
       {/* Content */}
-      {selectedHotel === 'all' && profile?.role === 'room_admin' ? (
-        <div className="bg-slate-900/50 border border-slate-800/50 rounded-2xl p-12 text-center">
-          <div className="w-16 h-16 rounded-2xl bg-slate-800 flex items-center justify-center mx-auto mb-4">
-            <Hotel className="w-8 h-8 text-slate-600" />
-          </div>
-          <h3 className="text-lg font-semibold text-slate-300 mb-2">
-            Select a Hotel
-          </h3>
-          <p className="text-slate-500">
-            Choose a hotel from the dropdown above to view its bookings.
-          </p>
-        </div>
-      ) : bookings === undefined ? (
+      {bookings === undefined ? (
         <div className="flex items-center justify-center py-20">
           <div className="animate-spin rounded-full h-8 w-8 border-2 border-amber-500/20 border-t-amber-500"></div>
         </div>
@@ -247,9 +256,11 @@ function BookingsPage() {
         </div>
       ) : (
         <div className="space-y-4">
-          {filteredBookings?.map((booking) => {
+          {filteredBookings?.map((item) => {
+            const booking = item.booking
             const status = statusConfig[booking.status]
             const StatusIcon = status.icon
+            const canManageBookings = canManageBooking(booking.hotelId)
 
             return (
               <div
@@ -282,9 +293,16 @@ function BookingsPage() {
                       </div>
                       <div>
                         <p className="text-slate-500 mb-1">Guest</p>
-                        <p className="text-slate-200">
-                          {booking.guestName || 'N/A'}
-                        </p>
+                        <div className="flex items-center gap-2">
+                          <p className="text-slate-200">
+                            {item.guestProfile?.name || booking.guestName || 'N/A'}
+                          </p>
+                          {item.guestProfile && (
+                            <span className="px-2 py-0.5 text-[10px] rounded-full border border-amber-500/30 bg-amber-500/10 text-amber-300 uppercase tracking-wide">
+                              Walk-in
+                            </span>
+                          )}
+                        </div>
                       </div>
                       <div>
                         <p className="text-slate-500 mb-1">Total</p>
@@ -395,11 +413,23 @@ function BookingsPage() {
                   <div className="bg-slate-800/40 border border-slate-700 rounded-xl p-4">
                     <p className="text-slate-500 mb-1">Guest</p>
                     <p className="text-slate-100 font-medium">
-                      {selectedBookingDetail.booking.guestName || 'N/A'}
+                      {selectedBookingDetail.guestProfile?.name ||
+                        selectedBookingDetail.booking.guestName ||
+                        'N/A'}
                     </p>
-                    <p className="text-slate-400">
-                      {selectedBookingDetail.booking.guestEmail || 'N/A'}
-                    </p>
+                    <p className="text-slate-400">{
+                      selectedBookingDetail.guestProfile?.phone || 'No phone'
+                    }</p>
+                    <p className="text-slate-400">{
+                      selectedBookingDetail.guestProfile?.email ||
+                      selectedBookingDetail.booking.guestEmail ||
+                      'No email'
+                    }</p>
+                    {selectedBookingDetail.linkedUser && (
+                      <p className="text-xs text-slate-500 mt-1">
+                        Linked account: {selectedBookingDetail.linkedUser.email}
+                      </p>
+                    )}
                   </div>
                   <div className="bg-slate-800/40 border border-slate-700 rounded-xl p-4">
                     <p className="text-slate-500 mb-1">Room</p>

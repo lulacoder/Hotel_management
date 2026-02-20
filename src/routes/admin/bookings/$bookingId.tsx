@@ -181,8 +181,24 @@ function BookingDetailPage() {
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4 text-sm">
           <div className="bg-slate-800/40 border border-slate-700 rounded-xl p-4">
             <p className="text-slate-500 mb-1">Guest</p>
-            <p className="text-slate-100 font-medium">{bookingDetail.booking.guestName || 'N/A'}</p>
-            <p className="text-slate-400">{bookingDetail.booking.guestEmail || 'N/A'}</p>
+            <p className="text-slate-100 font-medium">
+              {bookingDetail.guestProfile?.name ||
+                bookingDetail.booking.guestName ||
+                'N/A'}
+            </p>
+            <p className="text-slate-400">
+              {bookingDetail.guestProfile?.phone || 'No phone'}
+            </p>
+            <p className="text-slate-400">
+              {bookingDetail.guestProfile?.email ||
+                bookingDetail.booking.guestEmail ||
+                'No email'}
+            </p>
+            {bookingDetail.linkedUser && (
+              <p className="text-xs text-slate-500 mt-1">
+                Linked account: {bookingDetail.linkedUser.email}
+              </p>
+            )}
           </div>
           <div className="bg-slate-800/40 border border-slate-700 rounded-xl p-4">
             <p className="text-slate-500 mb-1">Room</p>
