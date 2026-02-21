@@ -22,6 +22,7 @@ const bookingStatusValidator = v.union(
   v.literal('checked_out'),
   v.literal('cancelled'),
   v.literal('expired'),
+  v.literal('outsourced'),
 )
 
 const paymentStatusValidator = v.union(
@@ -55,6 +56,8 @@ const bookingValidator = v.object({
   checkOut: v.string(),
   status: bookingStatusValidator,
   holdExpiresAt: v.optional(v.number()),
+  outsourcedToHotelId: v.optional(v.id('hotels')),
+  outsourcedAt: v.optional(v.number()),
   paymentStatus: v.optional(paymentStatusValidator),
   pricePerNight: v.number(),
   totalPrice: v.number(),
@@ -647,8 +650,8 @@ export const cancelBooking = mutation({
       return null
     }
 
-    // Cannot cancel checked_out bookings
-    if (booking.status === 'checked_out') {
+    // Cannot cancel checked_out or outsourced bookings
+    if (booking.status === 'checked_out' || booking.status === 'outsourced') {
       throw new ConvexError({
         code: 'INVALID_STATE',
         message: 'Cannot cancel a completed booking.',
@@ -719,6 +722,7 @@ export const updateStatus = mutation({
       checked_out: [],
       cancelled: [],
       expired: [],
+      outsourced: [],
     }
 
     const allowedNextStatuses = allowedTransitions[booking.status] ?? []
@@ -796,10 +800,15 @@ export const acceptCashPayment = mutation({
       return null
     }
 
-    if (booking.status === 'cancelled' || booking.status === 'expired') {
+    if (
+      booking.status === 'cancelled' ||
+      booking.status === 'expired' ||
+      booking.status === 'outsourced'
+    ) {
       throw new ConvexError({
         code: 'INVALID_STATE',
-        message: 'Cannot accept payment for cancelled or expired bookings.',
+        message:
+          'Cannot accept payment for cancelled, expired, or outsourced bookings.',
       })
     }
 
@@ -816,6 +825,97 @@ export const acceptCashPayment = mutation({
       targetId: args.bookingId,
       previousValue: { paymentStatus: booking.paymentStatus ?? 'pending' },
       newValue: { paymentStatus: 'paid' },
+    })
+
+    return null
+  },
+})
+
+// Outsource a booking to another hotel (hotel admin/cashier only)
+export const outsourceBooking = mutation({
+  args: {
+    clerkUserId: v.string(),
+    bookingId: v.id('bookings'),
+    destinationHotelId: v.id('hotels'),
+  },
+  returns: v.null(),
+  handler: async (ctx, args) => {
+    const user = await requireUser(ctx, args.clerkUserId)
+
+    if (user.role === 'room_admin') {
+      throw new ConvexError({
+        code: 'FORBIDDEN',
+        message: 'Room admins cannot outsource bookings.',
+      })
+    }
+
+    const booking = await ctx.db.get(args.bookingId)
+    if (!booking) {
+      throw new ConvexError({
+        code: 'NOT_FOUND',
+        message: 'Booking not found.',
+      })
+    }
+
+    const access = await requireHotelAccess(ctx, args.clerkUserId, booking.hotelId)
+    const assignment = access.assignment
+    const isAllowedRole =
+      assignment && ['hotel_admin', 'hotel_cashier'].includes(assignment.role)
+
+    if (!isAllowedRole) {
+      throw new ConvexError({
+        code: 'FORBIDDEN',
+        message: 'Only hotel admins and hotel cashiers can outsource bookings.',
+      })
+    }
+
+    if (!['confirmed', 'checked_in'].includes(booking.status)) {
+      throw new ConvexError({
+        code: 'INVALID_STATE',
+        message: 'Only confirmed or checked-in bookings can be outsourced.',
+      })
+    }
+
+    if (args.destinationHotelId === booking.hotelId) {
+      throw new ConvexError({
+        code: 'INVALID_INPUT',
+        message: 'Destination hotel must be different from source hotel.',
+      })
+    }
+
+    const destinationHotel = await ctx.db.get(args.destinationHotelId)
+    if (!destinationHotel || destinationHotel.isDeleted) {
+      throw new ConvexError({
+        code: 'NOT_FOUND',
+        message: 'Destination hotel not found.',
+      })
+    }
+
+    const now = Date.now()
+    await ctx.db.patch(args.bookingId, {
+      status: 'outsourced',
+      outsourcedToHotelId: args.destinationHotelId,
+      outsourcedAt: now,
+      updatedAt: now,
+      updatedBy: user._id,
+    })
+
+    await createAuditLog(ctx, {
+      actorId: user._id,
+      action: 'booking_outsourced',
+      targetType: 'booking',
+      targetId: args.bookingId,
+      previousValue: {
+        status: booking.status,
+      },
+      newValue: {
+        status: 'outsourced',
+        outsourcedToHotelId: args.destinationHotelId,
+        outsourcedAt: now,
+      },
+      metadata: {
+        sourceHotelId: booking.hotelId,
+      },
     })
 
     return null
@@ -848,6 +948,7 @@ export const getEnriched = query({
         name: v.string(),
         address: v.string(),
         city: v.string(),
+        country: v.string(),
       }),
     }),
     v.null(),
@@ -909,6 +1010,7 @@ export const getEnriched = query({
         name: hotel.name,
         address: hotel.address,
         city: hotel.city,
+        country: hotel.country,
       },
     }
   },

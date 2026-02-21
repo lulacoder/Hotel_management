@@ -1,7 +1,6 @@
-import { query, mutation } from './_generated/server'
-import { v } from 'convex/values'
-import { ConvexError } from 'convex/values'
-import { requireAdmin, requireHotelManagement } from './lib/auth'
+import { ConvexError, v } from 'convex/values'
+import { mutation, query } from './_generated/server'
+import { requireAdmin, requireHotelManagement, requireUser } from './lib/auth'
 import { createAuditLog } from './audit'
 
 // Validator for hotel document (used in return types)
@@ -96,6 +95,40 @@ export const list = query({
   },
 })
 
+// List active hotels for outsource destination selection
+export const listForOutsource = query({
+  args: {
+    clerkUserId: v.string(),
+    excludeHotelId: v.id('hotels'),
+  },
+  returns: v.array(
+    v.object({
+      _id: v.id('hotels'),
+      name: v.string(),
+      city: v.string(),
+      country: v.string(),
+    }),
+  ),
+  handler: async (ctx, args) => {
+    await requireUser(ctx, args.clerkUserId)
+
+    const hotels = await ctx.db
+      .query('hotels')
+      .withIndex('by_is_deleted', (q) => q.eq('isDeleted', false))
+      .collect()
+
+    return hotels
+      .filter((hotel) => hotel._id !== args.excludeHotelId)
+      .map((hotel) => ({
+        _id: hotel._id,
+        name: hotel.name,
+        city: hotel.city,
+        country: hotel.country,
+      }))
+      .sort((a, b) => a.name.localeCompare(b.name))
+  },
+})
+
 // Get hotels by city
 export const getByCity = query({
   args: {
@@ -121,14 +154,14 @@ export const search = query({
   },
   returns: v.array(hotelValidator),
   handler: async (ctx, args) => {
-    let searchQuery = ctx.db
+    const searchQuery = ctx.db
       .query('hotels')
       .withSearchIndex('search_name', (q) => {
-        let search = q.search('name', args.searchTerm)
+        let searchBuilder = q.search('name', args.searchTerm)
         if (args.city) {
-          search = search.eq('city', args.city)
+          searchBuilder = searchBuilder.eq('city', args.city)
         }
-        return search.eq('isDeleted', false)
+        return searchBuilder.eq('isDeleted', false)
       })
 
     return await searchQuery.collect()

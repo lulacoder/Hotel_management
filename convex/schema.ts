@@ -131,8 +131,11 @@ export default defineSchema({
       v.literal('checked_out'),
       v.literal('cancelled'),
       v.literal('expired'),
+      v.literal('outsourced'),
     ),
     holdExpiresAt: v.optional(v.number()), // Timestamp for hold expiration
+    outsourcedToHotelId: v.optional(v.id('hotels')),
+    outsourcedAt: v.optional(v.number()),
     paymentStatus: v.optional(
       v.union(
         v.literal('pending'),

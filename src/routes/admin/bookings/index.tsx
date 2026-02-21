@@ -20,6 +20,7 @@ import {
   formatPackageAddOn,
   getPackageLabelOrDefault,
 } from '../../../lib/packages'
+import { OutsourceModal } from './components/-OutsourceModal'
 import type { Id } from '../../../../convex/_generated/dataModel'
 
 export const Route = createFileRoute('/admin/bookings/')({
@@ -31,6 +32,9 @@ function BookingsPage() {
   const [statusFilter, setStatusFilter] = useState<string>('all')
   const [selectedHotel, setSelectedHotel] = useState<string>('all')
   const [selectedBookingId, setSelectedBookingId] = useState<Id<'bookings'> | null>(
+    null,
+  )
+  const [outsourceBookingId, setOutsourceBookingId] = useState<Id<'bookings'> | null>(
     null,
   )
 
@@ -91,6 +95,12 @@ function BookingsPage() {
     api.bookings.getEnriched,
     user?.id && selectedBookingId
       ? { clerkUserId: user.id, bookingId: selectedBookingId }
+      : 'skip',
+  )
+  const outsourceBookingDetail = useQuery(
+    api.bookings.getEnriched,
+    user?.id && outsourceBookingId
+      ? { clerkUserId: user.id, bookingId: outsourceBookingId }
       : 'skip',
   )
 
@@ -171,6 +181,13 @@ function BookingsPage() {
       bg: 'bg-slate-600/10',
       border: 'border-slate-600/20',
     },
+    outsourced: {
+      label: 'Outsourced',
+      icon: Hotel,
+      color: 'text-purple-400',
+      bg: 'bg-purple-500/10',
+      border: 'border-purple-500/20',
+    },
   }
 
   const filteredBookings = bookings?.filter((item) => {
@@ -231,6 +248,7 @@ function BookingsPage() {
             <option value="checked_out">Checked Out</option>
             <option value="cancelled">Cancelled</option>
             <option value="expired">Expired</option>
+            <option value="outsourced">Outsourced</option>
           </select>
         </div>
       </div>
@@ -338,7 +356,9 @@ function BookingsPage() {
 
                     {canManageBookings &&
                       booking.paymentStatus !== 'paid' &&
-                      !['cancelled', 'expired'].includes(booking.status) && (
+                      !['cancelled', 'expired', 'outsourced'].includes(
+                        booking.status,
+                      ) && (
                         <button
                           onClick={() => handleAcceptCashPayment(booking._id)}
                           className="light-hover-surface px-3 py-2 bg-emerald-500/10 text-emerald-400 rounded-lg hover:bg-emerald-500/20 transition-all text-sm font-medium border border-emerald-500/20 inline-flex items-center gap-2"
@@ -367,6 +387,18 @@ function BookingsPage() {
                             {transitionLabel[nextStatus]}
                           </button>
                         ),
+                      )}
+
+                    {canManageBookings &&
+                      profile?.role !== 'room_admin' &&
+                      ['confirmed', 'checked_in'].includes(booking.status) && (
+                        <button
+                          onClick={() => setOutsourceBookingId(booking._id)}
+                          className="px-3 py-2 bg-purple-500/10 text-purple-400 rounded-lg hover:bg-purple-500/20 transition-all text-sm font-medium border border-purple-500/20 inline-flex items-center gap-2"
+                        >
+                          <Hotel className="w-4 h-4" />
+                          Outsource
+                        </button>
                       )}
                   </div>
                 </div>
@@ -477,6 +509,21 @@ function BookingsPage() {
                 </div>
 
                 <div className="flex flex-wrap justify-end gap-2 pt-2">
+                  {profile?.role !== 'room_admin' &&
+                    canManageBooking(selectedBookingDetail.booking.hotelId) &&
+                    ['confirmed', 'checked_in'].includes(
+                      selectedBookingDetail.booking.status,
+                    ) && (
+                      <button
+                        onClick={() =>
+                          setOutsourceBookingId(selectedBookingDetail.booking._id)
+                        }
+                        className="px-4 py-2 bg-purple-500/10 text-purple-400 rounded-lg hover:bg-purple-500/20 transition-colors text-sm font-medium border border-purple-500/20 inline-flex items-center gap-2"
+                      >
+                        <Hotel className="w-4 h-4" />
+                        Outsource
+                      </button>
+                    )}
                   <Link
                     to="/admin/bookings/$bookingId"
                     params={{ bookingId: selectedBookingId }}
@@ -489,6 +536,15 @@ function BookingsPage() {
             )}
           </div>
         </div>
+      )}
+
+      {outsourceBookingId && outsourceBookingDetail && user?.id && (
+        <OutsourceModal
+          bookingDetail={outsourceBookingDetail}
+          clerkUserId={user.id}
+          onClose={() => setOutsourceBookingId(null)}
+          onSuccess={() => setOutsourceBookingId(null)}
+        />
       )}
     </div>
   )

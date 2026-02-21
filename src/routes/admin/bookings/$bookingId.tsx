@@ -6,16 +6,19 @@ import {
   CheckCircle,
   CircleDollarSign,
   Clock,
+  Hotel,
   LogIn,
   LogOut,
   XCircle,
 } from 'lucide-react'
+import { useState } from 'react'
 
 import { api } from '../../../../convex/_generated/api'
 import {
   formatPackageAddOn,
   getPackageLabelOrDefault,
 } from '../../../lib/packages'
+import { OutsourceModal } from './components/-OutsourceModal'
 import type { Id } from '../../../../convex/_generated/dataModel'
 
 export const Route = createFileRoute('/admin/bookings/$bookingId')({
@@ -26,6 +29,7 @@ function BookingDetailPage() {
   const { bookingId } = Route.useParams()
   const typedBookingId = bookingId as Id<'bookings'>
   const { user } = useUser()
+  const [showOutsourceModal, setShowOutsourceModal] = useState(false)
 
   const profile = useQuery(
     api.users.getByClerkId,
@@ -42,6 +46,12 @@ function BookingDetailPage() {
   const bookingDetail = useQuery(
     api.bookings.getEnriched,
     user?.id ? { clerkUserId: user.id, bookingId: typedBookingId } : 'skip',
+  )
+  const outsourcedToHotel = useQuery(
+    api.hotels.get,
+    bookingDetail?.booking.outsourcedToHotelId
+      ? { hotelId: bookingDetail.booking.outsourcedToHotelId }
+      : 'skip',
   )
 
   const updateBookingStatus = useMutation(api.bookings.updateStatus)
@@ -103,6 +113,13 @@ function BookingDetailPage() {
       color: 'text-slate-500',
       bg: 'bg-slate-600/10',
       border: 'border-slate-600/20',
+    },
+    outsourced: {
+      label: 'Outsourced',
+      icon: Hotel,
+      color: 'text-purple-400',
+      bg: 'bg-purple-500/10',
+      border: 'border-purple-500/20',
     },
   }
 
@@ -210,6 +227,19 @@ function BookingDetailPage() {
             <p className="text-slate-100 font-medium">{bookingDetail.hotel.name}</p>
             <p className="text-slate-400">{bookingDetail.hotel.address}, {bookingDetail.hotel.city}</p>
           </div>
+          {bookingDetail.booking.status === 'outsourced' && (
+            <div className="bg-slate-800/40 border border-slate-700 rounded-xl p-4">
+              <p className="text-slate-500 mb-1">Outsourced To</p>
+              <p className="text-slate-100 font-medium">
+                {outsourcedToHotel?.name || 'Unknown destination'}
+              </p>
+              <p className="text-slate-400">
+                {outsourcedToHotel
+                  ? `${outsourcedToHotel.city}, ${outsourcedToHotel.country}`
+                  : 'Destination hotel not available'}
+              </p>
+            </div>
+          )}
           <div className="bg-slate-800/40 border border-slate-700 rounded-xl p-4">
             <p className="text-slate-500 mb-1">Stay</p>
             <p className="text-slate-100 font-medium">
@@ -248,13 +278,26 @@ function BookingDetailPage() {
           <h2 className="text-lg font-semibold text-slate-200 mb-4">Actions</h2>
           <div className="flex flex-wrap gap-2">
             {bookingDetail.booking.paymentStatus !== 'paid' &&
-              !['cancelled', 'expired'].includes(bookingDetail.booking.status) && (
+              !['cancelled', 'expired', 'outsourced'].includes(
+                bookingDetail.booking.status,
+              ) && (
                 <button
                   onClick={handleAcceptCashPayment}
                   className="px-3 py-2 bg-emerald-500/10 text-emerald-400 rounded-lg hover:bg-emerald-500/20 transition-colors text-sm font-medium border border-emerald-500/20 inline-flex items-center gap-2"
                 >
                   <CircleDollarSign className="w-4 h-4" />
                   Accept Cash Payment
+                </button>
+              )}
+
+            {profile?.role !== 'room_admin' &&
+              ['confirmed', 'checked_in'].includes(bookingDetail.booking.status) && (
+                <button
+                  onClick={() => setShowOutsourceModal(true)}
+                  className="px-3 py-2 bg-purple-500/10 text-purple-400 rounded-lg hover:bg-purple-500/20 transition-colors text-sm font-medium border border-purple-500/20 inline-flex items-center gap-2"
+                >
+                  <Hotel className="w-4 h-4" />
+                  Outsource
                 </button>
               )}
 
@@ -273,6 +316,15 @@ function BookingDetailPage() {
             ))}
           </div>
         </div>
+      )}
+
+      {showOutsourceModal && bookingDetail && (
+        <OutsourceModal
+          bookingDetail={bookingDetail}
+          clerkUserId={user?.id || ''}
+          onClose={() => setShowOutsourceModal(false)}
+          onSuccess={() => setShowOutsourceModal(false)}
+        />
       )}
     </div>
   )
