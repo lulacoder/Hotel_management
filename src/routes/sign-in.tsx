@@ -47,21 +47,13 @@ function SignInPage() {
         {/* Content */}
         <div className="relative z-10 flex flex-col justify-between p-12 w-full">
           {/* Logo */}
-          <Link to="/" className="flex items-center gap-3 group">
-            <div className="w-12 h-12 rounded-xl bg-slate-950/70 border border-amber-500/30 flex items-center justify-center shadow-lg shadow-amber-500/20 group-hover:shadow-amber-500/40 transition-all duration-300">
+          <Link to="/" className="inline-flex items-center group">
+            <div className="h-12 rounded-xl bg-slate-950/70 border border-amber-500/30 px-3 flex items-center justify-center shadow-lg shadow-amber-500/20 group-hover:shadow-amber-500/40 transition-all duration-300">
               <img
-                src="/logo192.png"
+                src="/logo.png"
                 alt="Luxe Hotels"
-                className="w-8 h-8 object-contain"
+                className="h-8 w-auto object-contain"
               />
-            </div>
-            <div>
-              <span className="text-xl font-semibold text-white tracking-tight">
-                Luxe Hotels
-              </span>
-              <p className="text-xs text-slate-500 font-medium">
-                Premium Stays
-              </p>
             </div>
           </Link>
 
@@ -93,14 +85,13 @@ function SignInPage() {
           </Link>
           <div className="flex items-center gap-2">
             <ThemeToggle compact />
-            <div className="w-8 h-8 rounded-lg bg-slate-950/70 border border-amber-500/30 flex items-center justify-center">
+            <div className="h-8 rounded-lg bg-slate-950/70 border border-amber-500/30 px-1.5 flex items-center justify-center">
               <img
-                src="/logo192.png"
+                src="/logo.png"
                 alt="Luxe Hotels"
-                className="w-5 h-5 object-contain"
+                className="h-5 w-auto object-contain"
               />
             </div>
-            <span className="text-white font-semibold">Luxe Hotels</span>
           </div>
         </div>
 

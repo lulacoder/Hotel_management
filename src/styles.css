@@ -87,6 +87,114 @@ html[data-theme='light'] .light-hover-amber:hover {
   transform: translateY(-1px);
 }
 
+html[data-theme='light'] .landing-page {
+  background: rgb(248 250 252);
+  color: rgb(15 23 42);
+}
+
+html[data-theme='light'] .landing-hero-bg {
+  background:
+    radial-gradient(circle at 20% 20%, rgb(251 191 36 / 0.2), transparent 42%),
+    radial-gradient(circle at 75% 30%, rgb(249 115 22 / 0.16), transparent 44%),
+    linear-gradient(180deg, rgb(248 250 252) 0%, rgb(241 245 249) 100%);
+}
+
+html[data-theme='light'] .landing-hero-grid {
+  opacity: 0.2;
+}
+
+html[data-theme='light'] .landing-badge {
+  border-color: rgb(245 158 11 / 0.4);
+  background: rgb(255 251 235);
+  color: rgb(146 64 14);
+}
+
+html[data-theme='light'] .landing-title {
+  color: rgb(15 23 42);
+}
+
+html[data-theme='light'] .landing-title span {
+  background-image: linear-gradient(
+    to right,
+    rgb(217 119 6),
+    rgb(245 158 11),
+    rgb(234 88 12)
+  );
+}
+
+html[data-theme='light'] .landing-subtitle {
+  color: rgb(51 65 85);
+}
+
+html[data-theme='light'] .landing-primary-cta {
+  color: rgb(255 255 255);
+  box-shadow: 0 14px 34px rgb(245 158 11 / 0.34);
+}
+
+html[data-theme='light'] .landing-secondary-cta {
+  border-color: rgb(203 213 225);
+  background: rgb(255 255 255);
+  color: rgb(30 41 59);
+}
+
+html[data-theme='light'] .landing-secondary-cta:hover {
+  border-color: rgb(148 163 184);
+  background: rgb(248 250 252);
+}
+
+html[data-theme='light'] .landing-pill {
+  border-color: rgb(226 232 240);
+  background: rgb(255 255 255 / 0.9);
+  color: rgb(51 65 85);
+}
+
+html[data-theme='light'] .landing-info-card {
+  border-color: rgb(251 191 36 / 0.35);
+  background: rgb(255 255 255 / 0.9);
+  box-shadow:
+    0 30px 100px -50px rgb(245 158 11 / 0.45),
+    0 12px 32px -22px rgb(15 23 42 / 0.25);
+}
+
+html[data-theme='light'] .landing-info-item {
+  border-color: rgb(226 232 240);
+  background: rgb(248 250 252);
+}
+
+html[data-theme='light'] .landing-info-item p:first-child {
+  color: rgb(30 41 59);
+}
+
+html[data-theme='light'] .landing-info-item p:last-child {
+  color: rgb(100 116 139);
+}
+
+html[data-theme='light'] .landing-signin-link {
+  color: rgb(180 83 9);
+}
+
+html[data-theme='light'] .landing-signin-link:hover {
+  color: rgb(146 64 14);
+}
+
+html[data-theme='light'] .landing-features-section {
+  border-color: rgb(226 232 240);
+  background: rgb(241 245 249 / 0.75);
+}
+
+html[data-theme='light'] .landing-feature-card {
+  border-color: rgb(226 232 240);
+  background: rgb(255 255 255);
+}
+
+html[data-theme='light'] .landing-feature-card p {
+  color: rgb(100 116 139);
+}
+
+html[data-theme='light'] .landing-copyright {
+  color: rgb(100 116 139);
+}
+
 html {
   scroll-behavior: smooth;
 }

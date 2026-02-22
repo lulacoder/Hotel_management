@@ -61,20 +61,12 @@ export default function Header() {
                 />
               </button>
               <Link to="/" className="flex items-center gap-3 group">
-                <div className="w-10 h-10 rounded-xl bg-slate-950/70 border border-amber-500/30 flex items-center justify-center shadow-lg shadow-amber-500/20 group-hover:shadow-amber-500/40 transition-all duration-300 group-hover:scale-105">
+                <div className="h-10 rounded-xl bg-slate-950/70 border border-amber-500/30 px-2 flex items-center justify-center shadow-lg shadow-amber-500/20 group-hover:shadow-amber-500/40 transition-all duration-300 group-hover:scale-105">
                   <img
-                    src="/logo192.png"
+                    src="/logo.png"
                     alt="Luxe Hotels"
-                    className="w-7 h-7 object-contain"
+                    className="h-7 w-auto object-contain"
                   />
-                </div>
-                <div className="hidden sm:block">
-                  <span className="text-lg font-semibold text-white tracking-tight group-hover:text-amber-400 transition-colors">
-                    Luxe Hotels
-                  </span>
-                  <p className="text-xs text-slate-500 font-medium -mt-0.5">
-                    Premium Stays
-                  </p>
                 </div>
               </Link>
             </div>
@@ -129,17 +121,14 @@ export default function Header() {
         {/* Menu Header */}
         <div className="flex items-center justify-between p-5 border-b border-slate-800/50">
           <div className="flex items-center gap-3">
-            <div className="w-10 h-10 rounded-xl bg-slate-950/70 border border-amber-500/30 flex items-center justify-center shadow-lg shadow-amber-500/20">
+            <div className="h-10 rounded-xl bg-slate-950/70 border border-amber-500/30 px-2 flex items-center justify-center shadow-lg shadow-amber-500/20">
               <img
-                src="/logo192.png"
+                src="/logo.png"
                 alt="Luxe Hotels"
-                className="w-7 h-7 object-contain"
+                className="h-7 w-auto object-contain"
               />
             </div>
             <div>
-              <h2 className="text-lg font-semibold text-white tracking-tight">
-                Luxe Hotels
-              </h2>
               <p className="text-xs text-slate-500 font-medium">
                 Navigation Menu
               </p>
