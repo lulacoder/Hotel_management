@@ -1,0 +1,10 @@
+{
+  "version": 1,
+  "skills": {
+    "convex-file-storage": {
+      "source": "waynesutton/convexskills",
+      "sourceType": "github",
+      "computedHash": "e16eef2a7d57532ceeb4b696b072a3638b1c9e047544a1312796abd3554c3ac0"
+    }
+  }
+}
