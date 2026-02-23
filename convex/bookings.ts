@@ -84,7 +84,9 @@ const linkedUserSummaryValidator = v.object({
   email: v.string(),
 })
 
-// Get a single booking
+// Fetches a single booking by its ID.
+// Customers can only view their own bookings unless they are hotel staff
+// assigned to the hotel where the booking was made.
 export const get = query({
   args: {
     clerkUserId: v.string(),
@@ -114,7 +116,10 @@ export const get = query({
   },
 })
 
-// Get bookings for a user
+// Fetches all bookings belonging to a specific user.
+// Regular customers can only query their own bookings.
+// Room admins can pass any userId to retrieve bookings for that user.
+// Optionally filters results by booking status.
 export const getByUser = query({
   args: {
     clerkUserId: v.string(),
@@ -153,7 +158,10 @@ export const getByUser = query({
   },
 })
 
-// Get bookings for a hotel (admin only)
+// Fetches all bookings for a hotel along with guest profile and linked user info.
+// If hotelId is provided, only hotel staff or room admins with access to that hotel
+// can call this. If hotelId is omitted, only room admins can list bookings across all hotels.
+// Optionally filters by booking status.
 export const getByHotel = query({
   args: {
     clerkUserId: v.string(),
@@ -200,7 +208,9 @@ export const getByHotel = query({
         ? await ctx.db.get(booking.guestProfileId)
         : null
 
-      const linkedUser = booking.userId ? await ctx.db.get(booking.userId) : null
+      const linkedUser = booking.userId
+        ? await ctx.db.get(booking.userId)
+        : null
 
       result.push({
         booking,
@@ -226,7 +236,9 @@ export const getByHotel = query({
   },
 })
 
-// Get bookings for a room (admin only)
+// Fetches all bookings for a specific room.
+// Requires hotel access (room admin or assigned hotel staff) for the hotel
+// that owns the room. Optionally filters by booking status.
 export const getByRoom = query({
   args: {
     clerkUserId: v.string(),
@@ -260,8 +272,11 @@ export const getByRoom = query({
   },
 })
 
-// Hold a room (customer only)
-// This creates a booking with 'held' status that expires in 15 minutes
+// Places a temporary hold on a room for a customer (customer role only).
+// Creates a booking with 'held' status that automatically expires in 15 minutes
+// if not confirmed. Validates dates, checks room availability, prevents date
+// conflicts with existing active bookings, and calculates the total price
+// based on the room's base price and selected package. Logs the creation as an audit event.
 export const holdRoom = mutation({
   args: {
     clerkUserId: v.string(),
@@ -398,7 +413,11 @@ export const holdRoom = mutation({
   },
 })
 
-// Create a walk-in booking (hotel cashier/hotel admin only)
+// Creates an immediate confirmed booking for a walk-in guest (hotel cashier or hotel admin only).
+// Unlike holdRoom, this bypasses the hold step and creates the booking directly in
+// 'confirmed' status with 'pending' payment. Requires a guest profile to be created
+// first. Validates room availability, date conflicts, and package pricing.
+// Logs the creation as an audit event.
 export const walkInBooking = mutation({
   args: {
     clerkUserId: v.string(),
@@ -447,7 +466,8 @@ export const walkInBooking = mutation({
     if (assignment.hotelId !== room.hotelId) {
       throw new ConvexError({
         code: 'FORBIDDEN',
-        message: 'You can only create walk-in bookings for your assigned hotel.',
+        message:
+          'You can only create walk-in bookings for your assigned hotel.',
       })
     }
 
@@ -547,7 +567,10 @@ export const walkInBooking = mutation({
   },
 })
 
-// Confirm a booking (customer only - their own booking)
+// Confirms a held booking, transitioning it from 'held' to 'confirmed' status.
+// Only the customer who owns the booking can confirm it. Verifies that the hold
+// has not expired before confirming. Sets paymentStatus to 'pending' as a
+// placeholder for payment integration. Logs the status change as an audit event.
 export const confirmBooking = mutation({
   args: {
     clerkUserId: v.string(),
@@ -613,7 +636,11 @@ export const confirmBooking = mutation({
   },
 })
 
-// Cancel a booking (customer can cancel own, admin can cancel any)
+// Cancels a booking by setting its status to 'cancelled'.
+// Customers can cancel their own bookings; hotel staff can cancel bookings
+// belonging to their assigned hotel; room admins can cancel any booking.
+// Bookings already in 'cancelled', 'expired', 'checked_out', or 'outsourced'
+// states cannot be cancelled. Logs the cancellation with an optional reason.
 export const cancelBooking = mutation({
   args: {
     clerkUserId: v.string(),
@@ -681,7 +708,11 @@ export const cancelBooking = mutation({
   },
 })
 
-// Update booking status (hotel staff and room admin)
+// Transitions a booking through its lifecycle statuses (hotel staff and room admin only).
+// Enforces allowed state transitions: held→confirmed/cancelled, confirmed→checked_in/cancelled,
+// checked_in→checked_out. Other terminal states (checked_out, cancelled, expired, outsourced)
+// cannot be transitioned further. Automatically sets paymentStatus to 'pending' when
+// confirming a held booking. Logs the status change as an audit event.
 export const updateStatus = mutation({
   args: {
     clerkUserId: v.string(),
@@ -767,7 +798,10 @@ export const updateStatus = mutation({
   },
 })
 
-// Accept cash payment (hotel staff and room admin)
+// Marks a booking's payment as 'paid' to record a cash payment (hotel staff and room admin only).
+// Idempotent — does nothing if the booking is already marked as paid.
+// Cannot be called on cancelled, expired, or outsourced bookings.
+// Logs the payment event as an audit record.
 export const acceptCashPayment = mutation({
   args: {
     clerkUserId: v.string(),
@@ -831,7 +865,11 @@ export const acceptCashPayment = mutation({
   },
 })
 
-// Outsource a booking to another hotel (hotel admin/cashier only)
+// Outsources a confirmed or checked-in booking to another hotel (hotel admin/cashier only).
+// Room admins are explicitly blocked from using this action. The destination hotel
+// must be different from the source hotel and must exist and not be soft-deleted.
+// Sets the booking status to 'outsourced' and records the destination hotel ID and timestamp.
+// Logs the outsource action as an audit event.
 export const outsourceBooking = mutation({
   args: {
     clerkUserId: v.string(),
@@ -857,7 +895,11 @@ export const outsourceBooking = mutation({
       })
     }
 
-    const access = await requireHotelAccess(ctx, args.clerkUserId, booking.hotelId)
+    const access = await requireHotelAccess(
+      ctx,
+      args.clerkUserId,
+      booking.hotelId,
+    )
     const assignment = access.assignment
     const isAllowedRole =
       assignment && ['hotel_admin', 'hotel_cashier'].includes(assignment.role)
@@ -922,7 +964,10 @@ export const outsourceBooking = mutation({
   },
 })
 
-// Get booking with enriched data (room and hotel info)
+// Fetches a single booking enriched with its associated room and hotel details,
+// as well as optional guest profile and linked user information.
+// Customers can only view their own bookings unless they are hotel staff
+// assigned to the booking's hotel. Returns null if the booking, room, or hotel is not found.
 export const getEnriched = query({
   args: {
     clerkUserId: v.string(),
@@ -1016,7 +1061,10 @@ export const getEnriched = query({
   },
 })
 
-// Get user's bookings with enriched data
+// Fetches all bookings for the currently authenticated user, enriched with
+// the corresponding room (number, type) and hotel (name, address, city) data.
+// Optionally filters by booking status. Rooms or hotels that no longer exist
+// are silently excluded from the result.
 export const getMyBookingsEnriched = query({
   args: {
     clerkUserId: v.string(),

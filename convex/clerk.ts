@@ -14,6 +14,12 @@ interface ClerkWebhookEvent {
   }
 }
 
+// Internal action that verifies an incoming Clerk webhook and processes the event.
+// Validates the webhook signature using the svix library and the CLERK_WEBHOOK_SECRET
+// environment variable to prevent spoofed requests. On a 'user.created' event, it
+// reads the user's email and public_metadata.role to determine their role
+// ('room_admin' or 'customer'), then calls the internal createUser mutation to
+// persist the new user in the database.
 export const verifyAndProcessWebhook = internalAction({
   args: {
     body: v.string(),

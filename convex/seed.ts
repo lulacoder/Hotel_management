@@ -63,7 +63,10 @@ interface JsonHotel {
   Rooms: JsonRoom[]
 }
 
-// Seed a single hotel with its rooms
+// Accepts a JSON object representing a hotel and its rooms, parses it, and
+// inserts the corresponding documents into the `hotels` and `rooms` tables.
+// Generates room numbers sequentially starting from 101.
+// Base rates are assumed to be in dollars and are converted to cents.
 export const seedHotel = mutation({
   args: {
     hotel: v.any(), // We'll validate inside
@@ -155,7 +158,9 @@ export const seedHotel = mutation({
   },
 })
 
-// Clear all hotels and rooms (for re-seeding)
+// Completely wipes all records from the `rooms` and `hotels` tables.
+// This is intended to be used strictly during local development to reset
+// the database state before a fresh data seed. Returns the count of deleted items.
 export const clearAllHotelsAndRooms = mutation({
   args: {},
   returns: v.object({

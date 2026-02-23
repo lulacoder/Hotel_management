@@ -4,7 +4,8 @@ import { internal } from './_generated/api'
 
 const http = httpRouter()
 
-// Clerk webhook endpoint
+// Endpoint handling the Clerk webhook callbacks (e.g. for user creation).
+// Validates Svix signatures and delegates processing to `clerk.verifyAndProcessWebhook`.
 http.route({
   path: '/clerk',
   method: 'POST',

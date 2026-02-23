@@ -1,7 +1,9 @@
 import { query, internalMutation } from './_generated/server'
 import { v } from 'convex/values'
 
-// Public query to get user by Clerk ID
+// Public query to fetch the user document matching the provided Clerk User ID.
+// Useful for clients to determine their own role and verify that their Convex
+// user record has been correctly synced after sign-in. Returns null if not found.
 export const getByClerkId = query({
   args: { clerkUserId: v.string() },
   returns: v.union(
@@ -25,7 +27,9 @@ export const getByClerkId = query({
   },
 })
 
-// Internal mutation - only callable from other Convex functions (webhook)
+// Internal mutation to safely create a new user record from a webhook event.
+// Uses an idempotency check to guarantee a user with the same Clerk User ID is
+// not inserted twice. Only callable by other Convex functions.
 export const createUser = internalMutation({
   args: {
     clerkUserId: v.string(),

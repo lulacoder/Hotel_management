@@ -72,7 +72,8 @@ const normalizeLocation = (args: {
   if (hasLatitude !== hasLongitude) {
     throw new ConvexError({
       code: 'INVALID_ARGUMENT',
-      message: 'Both latitude and longitude are required when setting location.',
+      message:
+        'Both latitude and longitude are required when setting location.',
     })
   }
 
@@ -169,7 +170,8 @@ const markUploadDeleted = async (
   })
 }
 
-// List all active hotels
+// Fetches a list of all active hotels, optionally including soft-deleted ones.
+// Each returned hotel is enriched with its image URL from storage if an imageStorageId exists.
 export const list = query({
   args: {
     includeDeleted: v.optional(v.boolean()),
@@ -186,11 +188,15 @@ export const list = query({
         .collect()
     }
 
-    return await Promise.all(hotels.map((hotel) => attachHotelImageUrl(ctx, hotel)))
+    return await Promise.all(
+      hotels.map((hotel) => attachHotelImageUrl(ctx, hotel)),
+    )
   },
 })
 
-// List active hotels for outsource destination selection
+// Returns an abbreviated list of active hotels specifically for selecting an
+// outsource destination for a booking. Requires caller to be authenticated.
+// The list excludes the current hotel from the results and sorts alphabetically by name.
 export const listForOutsource = query({
   args: {
     clerkUserId: v.string(),
@@ -224,7 +230,8 @@ export const listForOutsource = query({
   },
 })
 
-// Get hotels by city
+// Retrieves active hotels matching a specific city name.
+// Excludes soft-deleted hotels. Each hotel is enriched with its image URL.
 export const getByCity = query({
   args: {
     city: v.string(),
@@ -245,7 +252,9 @@ export const getByCity = query({
   },
 })
 
-// Search hotels by name
+// Performs a full-text search on hotel names, optionally filtered by city.
+// Results are filtered out if they are marked as soft-deleted.
+// Each matched hotel is enriched with its associated image URL.
 export const search = query({
   args: {
     searchTerm: v.string(),
@@ -264,11 +273,15 @@ export const search = query({
       })
 
     const hotels = await searchQuery.collect()
-    return await Promise.all(hotels.map((hotel) => attachHotelImageUrl(ctx, hotel)))
+    return await Promise.all(
+      hotels.map((hotel) => attachHotelImageUrl(ctx, hotel)),
+    )
   },
 })
 
-// Get a single hotel by ID
+// Retrieves a single hotel's details by its ID.
+// Soft-deleted hotels are ignored and return null.
+// If the hotel exists, its image URL from storage is attached.
 export const get = query({
   args: {
     hotelId: v.id('hotels'),
@@ -283,7 +296,10 @@ export const get = query({
   },
 })
 
-// Create a new hotel (admin only)
+// Creates a new hotel record (only callable by a room admin).
+// Validates and normalizes latitude and longitude into a structured location object.
+// If an imageStorageId is provided, it marks the uploaded file as 'assigned' to this hotel.
+// Logs an audit event for the creation.
 export const create = mutation({
   args: {
     clerkUserId: v.string(),
@@ -341,12 +357,7 @@ export const create = mutation({
     })
 
     if (args.imageStorageId) {
-      await markUploadAssigned(
-        ctx,
-        admin._id,
-        args.imageStorageId,
-        hotelId,
-      )
+      await markUploadAssigned(ctx, admin._id, args.imageStorageId, hotelId)
     }
 
     // Log the creation
@@ -366,7 +377,10 @@ export const create = mutation({
   },
 })
 
-// Update a hotel (admin only)
+// Updates specific fields of an existing hotel (requires room admin or hotel_admin role).
+// Ensures a soft-deleted hotel cannot be updated. Validates location updates and
+// tracks changes to properties for an audit log. Handles clearing or replacing
+// the hotel image and updating the associated fileUploads status.
 export const update = mutation({
   args: {
     clerkUserId: v.string(),
@@ -399,7 +413,11 @@ export const update = mutation({
   },
   returns: v.null(),
   handler: async (ctx, args) => {
-    const { user } = await requireHotelManagement(ctx, args.clerkUserId, args.hotelId)
+    const { user } = await requireHotelManagement(
+      ctx,
+      args.clerkUserId,
+      args.hotelId,
+    )
 
     const hotel = await ctx.db.get(args.hotelId)
     if (!hotel) {
@@ -462,12 +480,13 @@ export const update = mutation({
     )
     trackChange('metadata', args.metadata, hotel.metadata)
 
-    const shouldUpdateImage = args.clearImage || args.imageStorageId !== undefined
+    const shouldUpdateImage =
+      args.clearImage || args.imageStorageId !== undefined
     const nextImageStorageId = args.clearImage
       ? null
       : args.imageStorageId !== undefined
         ? args.imageStorageId
-        : hotel.imageStorageId ?? null
+        : (hotel.imageStorageId ?? null)
 
     if (shouldUpdateImage) {
       previousValues.imageStorageId = hotel.imageStorageId ?? null
@@ -479,13 +498,21 @@ export const update = mutation({
 
     if (shouldUpdateImage) {
       const previousImageStorageId = hotel.imageStorageId ?? null
-      if (previousImageStorageId && previousImageStorageId !== nextImageStorageId) {
+      if (
+        previousImageStorageId &&
+        previousImageStorageId !== nextImageStorageId
+      ) {
         await ctx.storage.delete(previousImageStorageId)
         await markUploadDeleted(ctx, user._id, previousImageStorageId)
       }
 
       if (nextImageStorageId && nextImageStorageId !== previousImageStorageId) {
-        await markUploadAssigned(ctx, user._id, nextImageStorageId, args.hotelId)
+        await markUploadAssigned(
+          ctx,
+          user._id,
+          nextImageStorageId,
+          args.hotelId,
+        )
       }
     }
 
@@ -503,7 +530,9 @@ export const update = mutation({
   },
 })
 
-// Soft delete a hotel (admin only)
+// Soft-deletes a hotel (requires room admin or hotel_admin role).
+// Ensures the hotel isn't already deleted, then sets isDeleted to true.
+// Logs an audit event recording the soft deletion.
 export const softDelete = mutation({
   args: {
     clerkUserId: v.string(),
@@ -511,7 +540,11 @@ export const softDelete = mutation({
   },
   returns: v.null(),
   handler: async (ctx, args) => {
-    const { user } = await requireHotelManagement(ctx, args.clerkUserId, args.hotelId)
+    const { user } = await requireHotelManagement(
+      ctx,
+      args.clerkUserId,
+      args.hotelId,
+    )
 
     const hotel = await ctx.db.get(args.hotelId)
     if (!hotel) {
@@ -545,7 +578,9 @@ export const softDelete = mutation({
   },
 })
 
-// Restore a soft-deleted hotel (admin only)
+// Restores a soft-deleted hotel back to an active state (requires room admin or hotel_admin role).
+// Checks if the hotel is currently deleted and, if so, sets isDeleted to false.
+// Logs an audit event recording the restoration.
 export const restore = mutation({
   args: {
     clerkUserId: v.string(),
@@ -553,7 +588,11 @@ export const restore = mutation({
   },
   returns: v.null(),
   handler: async (ctx, args) => {
-    const { user } = await requireHotelManagement(ctx, args.clerkUserId, args.hotelId)
+    const { user } = await requireHotelManagement(
+      ctx,
+      args.clerkUserId,
+      args.hotelId,
+    )
 
     const hotel = await ctx.db.get(args.hotelId)
     if (!hotel) {
@@ -587,7 +626,8 @@ export const restore = mutation({
   },
 })
 
-// Get unique cities (for filtering)
+// Retrieves a unique, sorted list of all cities where active hotels are located.
+// This is typically used for filtering dropdowns in the UI.
 export const getCities = query({
   args: {},
   returns: v.array(v.string()),
@@ -602,7 +642,8 @@ export const getCities = query({
   },
 })
 
-// Get unique countries (for filtering)
+// Retrieves a unique, sorted list of all countries where active hotels are located.
+// Used for displaying available country filters.
 export const getCountries = query({
   args: {},
   returns: v.array(v.string()),

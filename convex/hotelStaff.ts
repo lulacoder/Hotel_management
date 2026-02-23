@@ -23,6 +23,9 @@ const hotelAssignmentValidator = v.object({
   assignedBy: v.id('users'),
 })
 
+// Lists all users in the system alongside their active hotel staff assignment (if any).
+// Requires the caller to have the 'room_admin' role. The assignment details include
+// the hotel's name and city for easier administration.
 export const listAllUsers = query({
   args: {
     clerkUserId: v.string(),
@@ -91,6 +94,9 @@ export const listAllUsers = query({
   },
 })
 
+// Fetches the specific hotel staff assignment for a given user ID.
+// If the caller is not a 'room_admin', they can only view the assignment if they
+// themselves are assigned to the same hotel as the target user.
 export const getByUserId = query({
   args: {
     clerkUserId: v.string(),
@@ -124,6 +130,8 @@ export const getByUserId = query({
   },
 })
 
+// Lists all hotel staff assigned to a specific hotel, along with their user emails.
+// Requires the caller to have access to the target hotel.
 export const getByHotelId = query({
   args: {
     clerkUserId: v.string(),
@@ -156,6 +164,9 @@ export const getByHotelId = query({
   },
 })
 
+// Assigns a user to a specific hotel with a designated staff role ('hotel_admin' or 'hotel_cashier').
+// Only callable by a 'room_admin'. Verifies that the user and hotel both exist
+// and that the user does not already have a hotel assignment. Logs an audit event.
 export const assign = mutation({
   args: {
     clerkUserId: v.string(),
@@ -221,6 +232,9 @@ export const assign = mutation({
   },
 })
 
+// Unassigns a user from a hotel, removing their staff privileges for that hotel.
+// Requires the caller to be a 'room_admin'. Verifies that the user actually has
+// a hotel assignment before deleting it. Logs an audit event for the unassignment.
 export const unassign = mutation({
   args: {
     clerkUserId: v.string(),

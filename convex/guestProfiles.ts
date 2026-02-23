@@ -32,7 +32,10 @@ async function requireHotelStaffOrAdmin(ctx: any, clerkUserId: string) {
   }
 
   const assignment = await getHotelAssignment(ctx, user._id)
-  if (!assignment || !['hotel_admin', 'hotel_cashier'].includes(assignment.role)) {
+  if (
+    !assignment ||
+    !['hotel_admin', 'hotel_cashier'].includes(assignment.role)
+  ) {
     throw new ConvexError({
       code: 'FORBIDDEN',
       message: 'Hotel staff access required.',
@@ -42,6 +45,11 @@ async function requireHotelStaffOrAdmin(ctx: any, clerkUserId: string) {
   return user
 }
 
+// Retrieves or creates a guest profile for a walk-in guest based on phone or email.
+// Requires the caller to be an authorized hotel staff member (admin or cashier) or room admin.
+// Normalizes the phone number (digits only) and email address (lowercase trimmed).
+// Reuses an existing profile if there is an exact match on either phone or email;
+// otherwise, creates a new profile.
 export const findOrCreate = mutation({
   args: {
     clerkUserId: v.string(),
@@ -103,6 +111,9 @@ export const findOrCreate = mutation({
   },
 })
 
+// Searches guest profiles by a search term, matching on either phone (digits) or email (lowercase).
+// Requires hotel staff (admin or cashier) or room admin privileges.
+// Returns the top 10 matching guest profiles, along with the total count of their associated bookings.
 export const search = query({
   args: {
     clerkUserId: v.string(),
@@ -127,7 +138,9 @@ export const search = query({
 
     const profiles = await ctx.db.query('guestProfiles').collect()
     const matched = profiles.filter((profile) => {
-      const byPhone = phoneTerm ? (profile.phone ?? '').includes(phoneTerm) : false
+      const byPhone = phoneTerm
+        ? (profile.phone ?? '').includes(phoneTerm)
+        : false
       const byEmail = (profile.email ?? '').toLowerCase().includes(emailTerm)
       return byPhone || byEmail
     })
@@ -151,6 +164,9 @@ export const search = query({
   },
 })
 
+// Retrieves a single guest profile by its ID.
+// The caller must be an authorized hotel staff member or room admin.
+// Returns null if the profile is not found.
 export const get = query({
   args: {
     clerkUserId: v.string(),

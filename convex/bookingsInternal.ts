@@ -2,8 +2,11 @@ import { v } from 'convex/values'
 
 import { internalMutation } from './_generated/server'
 
-// Internal mutation to clean up expired holds
-// Called by the cron job every 5 minutes
+// Internal mutation to clean up expired holds.
+// Scans all bookings with 'held' status and checks whether their holdExpiresAt
+// timestamp has passed. For each expired hold, it updates the status to 'expired'
+// and inserts an audit event marking the expiration. Returns the total count of
+// bookings that were expired in this run. Called automatically by the cron job every 5 minutes.
 export const cleanupExpiredHolds = internalMutation({
   args: {},
   returns: v.number(),

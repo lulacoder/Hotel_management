@@ -20,6 +20,9 @@ const ratingValidator = v.object({
   updatedAt: v.number(),
 })
 
+// Computes the average rating and total review count for an array of hotel IDs.
+// Iterates through the provided hotel IDs, querying active (not soft-deleted) ratings.
+// If a hotel has no ratings, its average is 0.
 export const getSummaries = query({
   args: {
     hotelIds: v.array(v.id('hotels')),
@@ -55,6 +58,8 @@ export const getSummaries = query({
   },
 })
 
+// Retrieves up to a specified limit (default 50) of recent active ratings for a single hotel.
+// Soft-deleted ratings are excluded. Ordered descending by creation time.
 export const getHotelRatings = query({
   args: {
     hotelId: v.id('hotels'),
@@ -74,6 +79,8 @@ export const getHotelRatings = query({
   },
 })
 
+// Retrieves the currently logged-in user's active rating for a specified hotel.
+// If the user has not left a review or the review has been soft-deleted, it returns null.
 export const getMyRatingForHotel = query({
   args: {
     clerkUserId: v.string(),
@@ -97,6 +104,10 @@ export const getMyRatingForHotel = query({
   },
 })
 
+// Submits a new rating or updates an existing rating for a hotel by the current customer.
+// Only accessible to customers. Verifies the hotel exists and that the rating is
+// an integer between 1 and 5. Reviews over 500 characters are rejected.
+// Restores a soft-deleted review if the user updates it.
 export const upsertRating = mutation({
   args: {
     clerkUserId: v.string(),
@@ -162,6 +173,9 @@ export const upsertRating = mutation({
   },
 })
 
+// Soft deletes a hotel rating (only allowed by hotel administration).
+// Used by hotel admins to moderate inappropriate reviews. Sets isDeleted=true
+// and logs the deletion via an audit event.
 export const softDeleteRating = mutation({
   args: {
     clerkUserId: v.string(),
@@ -210,6 +224,10 @@ export const softDeleteRating = mutation({
   },
 })
 
+// Fetches recent ratings for an administration dashboard.
+// Includes details about the reviewer user's profile alongside their review.
+// Only room admins or hotel staff assigned to this hotel can use this query.
+// It bypasses the soft-delete check internally but ignores deleted ratings.
 export const getHotelRatingsAdmin = query({
   args: {
     clerkUserId: v.string(),

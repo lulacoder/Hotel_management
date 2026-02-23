@@ -148,7 +148,13 @@ const markUploadDeleted = async (
 function getDerivedLiveState(
   operationalStatus: 'available' | 'maintenance' | 'cleaning' | 'out_of_order',
   bookings: Array<{ status: string; holdExpiresAt?: number }>,
-): 'available' | 'maintenance' | 'cleaning' | 'out_of_order' | 'held' | 'booked' {
+):
+  | 'available'
+  | 'maintenance'
+  | 'cleaning'
+  | 'out_of_order'
+  | 'held'
+  | 'booked' {
   if (operationalStatus !== 'available') {
     return operationalStatus
   }
@@ -173,7 +179,9 @@ function getDerivedLiveState(
   return 'available'
 }
 
-// Get rooms by hotel
+// Retrieves all rooms for a specified hotel, optionally filtering by operational status.
+// Soft-deleted rooms are excluded by default unless includeDeleted is explicitly set to true.
+// Enriches each returned room with its associated image URL from storage.
 export const getByHotel = query({
   args: {
     hotelId: v.id('hotels'),
@@ -207,7 +215,10 @@ export const getByHotel = query({
   },
 })
 
-// Get rooms with a derived live state from active bookings (admin/staff)
+// Retrieves all rooms for a hotel along with a derived 'liveState' field based on
+// current operational status and active bookings. Requires room admin or hotel staff access.
+// Soft-deleted rooms are excluded by default unless includeDeleted is explicitly set to true.
+// Enriches each returned room with its associated image URL from storage.
 export const getByHotelWithLiveState = query({
   args: {
     clerkUserId: v.string(),
@@ -251,7 +262,8 @@ export const getByHotelWithLiveState = query({
   },
 })
 
-// Get a single room by ID
+// Retrieves a single room by its ID, excluding soft-deleted rooms.
+// If the room exists and is active, it attaches its image URL from storage.
 export const get = query({
   args: {
     roomId: v.id('rooms'),
@@ -266,7 +278,9 @@ export const get = query({
   },
 })
 
-// Check availability for a specific room and date range
+// Checks whether a specific room is available for booking during a given date range.
+// Requires the room to exist, not be soft-deleted, and be in 'available' operational status.
+// Uses `datesOverlap` to check for conflicting bookings (active or held, excluding expired holds).
 export const checkAvailability = query({
   args: {
     roomId: v.id('rooms'),
@@ -328,7 +342,10 @@ export const checkAvailability = query({
   },
 })
 
-// Get available rooms for a hotel within a date range
+// Finds all available rooms for a specific hotel within a specific date range.
+// Optional filters: room type and minimum occupancy limit.
+// Checks against active bookings and active holds, returning a list of available
+// rooms enriched with their image URLs.
 export const getAvailableRooms = query({
   args: {
     hotelId: v.id('hotels'),
@@ -405,7 +422,10 @@ export const getAvailableRooms = query({
   },
 })
 
-// Create a new room (room admin or assigned hotel staff)
+// Creates a new room in the specified hotel (requires room admin or assigned hotel staff).
+// Validates uniqueness of room number within the hotel, positive base price, and occupancy.
+// If an imageStorageId is provided, it assigns the uploaded file to the room.
+// Logs an audit event of the creation.
 export const create = mutation({
   args: {
     clerkUserId: v.string(),
@@ -424,7 +444,11 @@ export const create = mutation({
   },
   returns: v.id('rooms'),
   handler: async (ctx, args) => {
-    const { user } = await requireHotelAccess(ctx, args.clerkUserId, args.hotelId)
+    const { user } = await requireHotelAccess(
+      ctx,
+      args.clerkUserId,
+      args.hotelId,
+    )
 
     // Verify hotel exists
     const hotel = await ctx.db.get(args.hotelId)
@@ -506,7 +530,11 @@ export const create = mutation({
   },
 })
 
-// Update a room (room admin or assigned hotel staff)
+// Updates specific properties of a room, validating the room exists and the user
+// has appropriate access (room admin or assigned hotel staff).
+// Validates duplicate room number within the hotel, positive base price and occupancy.
+// Can clear or update the image, handling the file's 'assigned' and 'deleted' state correctly.
+// Logs an audit event with previous and new values.
 export const update = mutation({
   args: {
     clerkUserId: v.string(),
@@ -533,7 +561,11 @@ export const update = mutation({
       })
     }
 
-    const { user } = await requireHotelAccess(ctx, args.clerkUserId, room.hotelId)
+    const { user } = await requireHotelAccess(
+      ctx,
+      args.clerkUserId,
+      room.hotelId,
+    )
 
     if (room.isDeleted) {
       throw new ConvexError({
@@ -608,12 +640,13 @@ export const update = mutation({
     trackChange('bedOptions', args.bedOptions, room.bedOptions)
     trackChange('smokingAllowed', args.smokingAllowed, room.smokingAllowed)
 
-    const shouldUpdateImage = args.clearImage || args.imageStorageId !== undefined
+    const shouldUpdateImage =
+      args.clearImage || args.imageStorageId !== undefined
     const nextImageStorageId = args.clearImage
       ? null
       : args.imageStorageId !== undefined
         ? args.imageStorageId
-        : room.imageStorageId ?? null
+        : (room.imageStorageId ?? null)
 
     if (shouldUpdateImage) {
       previousValues.imageStorageId = room.imageStorageId ?? null
@@ -626,7 +659,10 @@ export const update = mutation({
     if (shouldUpdateImage) {
       const previousImageStorageId = room.imageStorageId ?? null
 
-      if (previousImageStorageId && previousImageStorageId !== nextImageStorageId) {
+      if (
+        previousImageStorageId &&
+        previousImageStorageId !== nextImageStorageId
+      ) {
         await ctx.storage.delete(previousImageStorageId)
         await markUploadDeleted(ctx, user._id, previousImageStorageId)
       }
@@ -650,7 +686,9 @@ export const update = mutation({
   },
 })
 
-// Update room operational status (room admin or assigned hotel staff) - separate function for clarity
+// Updates the operational status (available, maintenance, cleaning, out_of_order) of a room.
+// Handled separately from general updates to ensure consistent logging and easier access.
+// Idempotent: skips if the room is already in the requested status. Logs an audit event.
 export const updateStatus = mutation({
   args: {
     clerkUserId: v.string(),
@@ -667,7 +705,11 @@ export const updateStatus = mutation({
       })
     }
 
-    const { user } = await requireHotelAccess(ctx, args.clerkUserId, room.hotelId)
+    const { user } = await requireHotelAccess(
+      ctx,
+      args.clerkUserId,
+      room.hotelId,
+    )
 
     if (room.isDeleted) {
       throw new ConvexError({
@@ -702,7 +744,10 @@ export const updateStatus = mutation({
   },
 })
 
-// Soft delete a room (room admin or assigned hotel staff)
+// Soft deletes a room (room admin or assigned hotel staff).
+// Checks for active bookings (held, confirmed, checked_in) and throws an error if any exist.
+// Expired holds are ignored. Marks the room as 'isDeleted' and logs an audit event.
+// Cannot be called on a deleted room (idempotent).
 export const softDelete = mutation({
   args: {
     clerkUserId: v.string(),
@@ -718,7 +763,11 @@ export const softDelete = mutation({
       })
     }
 
-    const { user } = await requireHotelAccess(ctx, args.clerkUserId, room.hotelId)
+    const { user } = await requireHotelAccess(
+      ctx,
+      args.clerkUserId,
+      room.hotelId,
+    )
 
     if (room.isDeleted) {
       // Already deleted, idempotent operation
@@ -763,7 +812,9 @@ export const softDelete = mutation({
   },
 })
 
-// Restore a soft-deleted room (room admin or assigned hotel staff)
+// Restores a soft-deleted room back to active status (room admin or assigned hotel staff).
+// Validates that the room actually exists and is deleted before resetting isDeleted to false.
+// Logs an audit event of the restoration.
 export const restore = mutation({
   args: {
     clerkUserId: v.string(),
@@ -779,7 +830,11 @@ export const restore = mutation({
       })
     }
 
-    const { user } = await requireHotelAccess(ctx, args.clerkUserId, room.hotelId)
+    const { user } = await requireHotelAccess(
+      ctx,
+      args.clerkUserId,
+      room.hotelId,
+    )
 
     if (!room.isDeleted) {
       // Already active, idempotent operation

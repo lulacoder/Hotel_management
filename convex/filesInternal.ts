@@ -2,6 +2,12 @@ import { v } from 'convex/values'
 
 import { internalMutation } from './_generated/server'
 
+// Internal mutation to clean up orphaned file uploads that were never assigned to a resource.
+// Finds all 'pending' fileUploads older than the specified grace period (default 2 hours).
+// Before deleting the file from Convex storage, it performs a fallback check by scanning
+// all active hotels and rooms. If the file is actually in use, it corrects the status to 'assigned'.
+// Otherwise, the file is deleted from storage and the record is marked as 'deleted'.
+// Returns the count of deleted files.
 export const cleanupOrphanUploads = internalMutation({
   args: {
     olderThanMs: v.optional(v.number()),

@@ -105,6 +105,10 @@ export async function getUserById(
   return await ctx.db.get(userId)
 }
 
+/**
+ * Retrieves the hotelStaff assignment record for a specific user ID.
+ * Indicates which hotel the user has administrative or cashier privileges for.
+ */
 export async function getHotelAssignment(
   ctx: QueryCtx | MutationCtx,
   userId: Id<'users'>,
@@ -115,6 +119,10 @@ export async function getHotelAssignment(
     .unique()
 }
 
+/**
+ * Evaluates whether a user can perform an action on a specific hotel,
+ * returning a boolean instead of throwing an error. A room admin automatically has access.
+ */
 export async function canAccessHotel(
   ctx: QueryCtx | MutationCtx,
   clerkUserId: string,
@@ -133,6 +141,11 @@ export async function canAccessHotel(
   return Boolean(assignment && assignment.hotelId === hotelId)
 }
 
+/**
+ * Demands that the user possesses valid access to a specified hotel (either as an assigned hotel staff
+ * member or a global room admin). If unauthorized, throws a ConvexError.
+ * Returns the user's document along with their assigned staff privileges (if applicable).
+ */
 export async function requireHotelAccess(
   ctx: QueryCtx | MutationCtx,
   clerkUserId: string,
@@ -155,12 +168,20 @@ export async function requireHotelAccess(
   return { user, assignment }
 }
 
+/**
+ * Evaluates whether a user can perform management operations on a specific hotel,
+ * returning a boolean. A room admin or hotel admin automatically has access. Cashiers do not.
+ */
 export async function canManageHotel(
   ctx: QueryCtx | MutationCtx,
   clerkUserId: string,
   hotelId: Id<'hotels'>,
 ): Promise<boolean> {
-  const { user, assignment } = await requireHotelAccess(ctx, clerkUserId, hotelId)
+  const { user, assignment } = await requireHotelAccess(
+    ctx,
+    clerkUserId,
+    hotelId,
+  )
 
   if (user.role === 'room_admin') {
     return true
@@ -169,6 +190,11 @@ export async function canManageHotel(
   return assignment?.role === 'hotel_admin'
 }
 
+/**
+ * Validates that the specified user possesses administrative-level management rights
+ * over a hotel (i.e. 'room_admin' or a 'hotel_admin' assignment to the hotel).
+ * Throws a ConvexError if the user is unauthorized (like a cashier) or not found.
+ */
 export async function requireHotelManagement(
   ctx: QueryCtx | MutationCtx,
   clerkUserId: string,
