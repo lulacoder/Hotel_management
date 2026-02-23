@@ -4,6 +4,7 @@ import { useEffect, useState } from 'react'
 
 import { api } from '../../../../../../convex/_generated/api'
 import { Id } from '../../../../../../convex/_generated/dataModel'
+import { uploadImageToConvex, validateImageFile } from '../../../../../lib/imageUpload'
 
 interface RoomModalProps {
   hotelId: Id<'hotels'>
@@ -16,6 +17,8 @@ export function RoomModal({ hotelId, roomId, onClose }: RoomModalProps) {
   const room = useQuery(api.rooms.get, roomId ? { roomId } : 'skip')
   const createRoom = useMutation(api.rooms.create)
   const updateRoom = useMutation(api.rooms.update)
+  const generateUploadUrl = useMutation(api.files.generateUploadUrl)
+  const trackUpload = useMutation(api.files.trackUpload)
 
   const [formData, setFormData] = useState({
     roomNumber: '',
@@ -25,7 +28,13 @@ export function RoomModal({ hotelId, roomId, onClose }: RoomModalProps) {
     amenities: '',
   })
   const [loading, setLoading] = useState(false)
+  const [uploadingImage, setUploadingImage] = useState(false)
   const [error, setError] = useState('')
+  const [selectedImageFile, setSelectedImageFile] = useState<File | null>(null)
+  const [imagePreviewUrl, setImagePreviewUrl] = useState('')
+  const [imageStorageId, setImageStorageId] = useState<Id<'_storage'> | null>(null)
+  const [imageChanged, setImageChanged] = useState(false)
+  const [clearImage, setClearImage] = useState(false)
 
   useEffect(() => {
     if (roomId && room) {
@@ -36,6 +45,11 @@ export function RoomModal({ hotelId, roomId, onClose }: RoomModalProps) {
         maxOccupancy: room.maxOccupancy.toString(),
         amenities: room.amenities?.join(', ') || '',
       })
+      setSelectedImageFile(null)
+      setImagePreviewUrl(room.imageUrl ?? '')
+      setImageStorageId(room.imageStorageId ?? null)
+      setImageChanged(false)
+      setClearImage(false)
       return
     }
 
@@ -47,8 +61,31 @@ export function RoomModal({ hotelId, roomId, onClose }: RoomModalProps) {
         maxOccupancy: '',
         amenities: '',
       })
+      setSelectedImageFile(null)
+      setImagePreviewUrl('')
+      setImageStorageId(null)
+      setImageChanged(false)
+      setClearImage(false)
     }
   }, [roomId, room])
+
+  const handleImageSelection = (event: React.ChangeEvent<HTMLInputElement>) => {
+    const file = event.target.files?.[0]
+    if (!file) {
+      return
+    }
+
+    const validationError = validateImageFile(file)
+    if (validationError) {
+      setError(validationError)
+      return
+    }
+
+    setSelectedImageFile(file)
+    setImagePreviewUrl(URL.createObjectURL(file))
+    setImageChanged(true)
+    setClearImage(false)
+  }
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
@@ -58,6 +95,17 @@ export function RoomModal({ hotelId, roomId, onClose }: RoomModalProps) {
     setError('')
 
     try {
+      let nextImageStorageId = imageStorageId
+      if (selectedImageFile) {
+        setUploadingImage(true)
+        nextImageStorageId = await uploadImageToConvex({
+          file: selectedImageFile,
+          clerkUserId: user.id,
+          generateUploadUrl,
+          trackUpload,
+        })
+      }
+
       const basePriceNumber = Number(formData.basePrice)
       if (!Number.isFinite(basePriceNumber)) {
         setError('Please enter a valid base price.')
@@ -81,6 +129,19 @@ export function RoomModal({ hotelId, roomId, onClose }: RoomModalProps) {
         : undefined
 
       if (roomId) {
+        const imagePayload: {
+          imageStorageId?: Id<'_storage'>
+          clearImage?: boolean
+        } = {}
+
+        if (imageChanged) {
+          if (clearImage) {
+            imagePayload.clearImage = true
+          } else if (nextImageStorageId) {
+            imagePayload.imageStorageId = nextImageStorageId
+          }
+        }
+
         await updateRoom({
           clerkUserId: user.id,
           roomId,
@@ -89,6 +150,7 @@ export function RoomModal({ hotelId, roomId, onClose }: RoomModalProps) {
           basePrice: priceInCents,
           maxOccupancy: occupancy,
           amenities: amenitiesArray,
+          ...imagePayload,
         })
       } else {
         await createRoom({
@@ -99,12 +161,14 @@ export function RoomModal({ hotelId, roomId, onClose }: RoomModalProps) {
           basePrice: priceInCents,
           maxOccupancy: occupancy,
           amenities: amenitiesArray,
+          imageStorageId: nextImageStorageId ?? undefined,
         })
       }
       onClose()
     } catch (err: any) {
       setError(err.message || 'Something went wrong')
     } finally {
+      setUploadingImage(false)
       setLoading(false)
     }
   }
@@ -205,6 +269,41 @@ export function RoomModal({ hotelId, roomId, onClose }: RoomModalProps) {
 
           <div>
             <label className="block text-sm font-medium text-slate-300 mb-2">
+              Room Image (Optional)
+            </label>
+            <input
+              type="file"
+              accept="image/*"
+              onChange={handleImageSelection}
+              className="w-full px-4 py-2.5 bg-slate-800/50 border border-slate-700 rounded-xl text-slate-300 file:mr-3 file:px-3 file:py-1.5 file:border-0 file:rounded-lg file:bg-amber-500/20 file:text-amber-300 file:cursor-pointer"
+            />
+            <p className="text-xs text-slate-500 mt-2">Max size: 10MB</p>
+            {imagePreviewUrl && (
+              <div className="mt-3">
+                <img
+                  src={imagePreviewUrl}
+                  alt="Room preview"
+                  className="w-full h-32 object-cover rounded-xl border border-slate-700"
+                />
+                <button
+                  type="button"
+                  onClick={() => {
+                    setSelectedImageFile(null)
+                    setImagePreviewUrl('')
+                    setImageStorageId(null)
+                    setImageChanged(true)
+                    setClearImage(true)
+                  }}
+                  className="mt-2 text-xs text-red-400 hover:text-red-300"
+                >
+                  Remove image
+                </button>
+              </div>
+            )}
+          </div>
+
+          <div>
+            <label className="block text-sm font-medium text-slate-300 mb-2">
               Amenities (comma-separated)
             </label>
             <input
@@ -228,10 +327,16 @@ export function RoomModal({ hotelId, roomId, onClose }: RoomModalProps) {
             </button>
             <button
               type="submit"
-              disabled={loading}
+              disabled={loading || uploadingImage}
               className="flex-1 px-4 py-3 bg-gradient-to-r from-amber-500 to-amber-600 text-white font-medium rounded-xl hover:from-amber-600 hover:to-amber-700 transition-all disabled:opacity-50"
             >
-              {loading ? 'Saving...' : roomId ? 'Update Room' : 'Create Room'}
+              {loading || uploadingImage
+                ? uploadingImage
+                  ? 'Uploading Image...'
+                  : 'Saving...'
+                : roomId
+                  ? 'Update Room'
+                  : 'Create Room'}
             </button>
           </div>
         </form>

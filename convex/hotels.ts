@@ -1,5 +1,6 @@
 import { ConvexError, v } from 'convex/values'
-import { mutation, query } from './_generated/server'
+import { MutationCtx, QueryCtx, mutation, query } from './_generated/server'
+import { Doc, Id } from './_generated/dataModel'
 import { requireAdmin, requireHotelManagement, requireUser } from './lib/auth'
 import { createAuditLog } from './audit'
 
@@ -37,9 +38,14 @@ const hotelValidator = v.object({
   postalCode: v.optional(v.string()),
   lastRenovationDate: v.optional(v.string()),
   metadata: v.optional(v.record(v.string(), v.any())),
+  imageStorageId: v.optional(v.union(v.id('_storage'), v.null())),
   isDeleted: v.boolean(),
   createdAt: v.number(),
   updatedAt: v.number(),
+})
+
+const hotelWithImageValidator = hotelValidator.extend({
+  imageUrl: v.optional(v.string()),
 })
 
 // Category validator for reuse
@@ -77,21 +83,110 @@ const normalizeLocation = (args: {
   return undefined
 }
 
+const attachHotelImageUrl = async (
+  ctx: QueryCtx,
+  hotel: Doc<'hotels'>,
+): Promise<Doc<'hotels'> & { imageUrl?: string }> => {
+  if (!hotel.imageStorageId) {
+    return hotel
+  }
+
+  const imageUrl = await ctx.storage.getUrl(hotel.imageStorageId)
+  if (!imageUrl) {
+    return hotel
+  }
+
+  return {
+    ...hotel,
+    imageUrl,
+  }
+}
+
+const markUploadAssigned = async (
+  ctx: MutationCtx,
+  uploadedBy: Id<'users'>,
+  storageId: Id<'_storage'>,
+  resourceId: Id<'hotels'>,
+) => {
+  const existing = await ctx.db
+    .query('fileUploads')
+    .withIndex('by_storage_id', (q) => q.eq('storageId', storageId))
+    .unique()
+  const now = Date.now()
+
+  if (existing) {
+    await ctx.db.replace(existing._id, {
+      storageId,
+      uploadedBy,
+      status: 'assigned',
+      resourceType: 'hotel',
+      resourceId,
+      uploadedAt: existing.uploadedAt,
+      assignedAt: now,
+    })
+    return
+  }
+
+  await ctx.db.insert('fileUploads', {
+    storageId,
+    uploadedBy,
+    status: 'assigned',
+    resourceType: 'hotel',
+    resourceId,
+    uploadedAt: now,
+    assignedAt: now,
+  })
+}
+
+const markUploadDeleted = async (
+  ctx: MutationCtx,
+  uploadedBy: Id<'users'>,
+  storageId: Id<'_storage'>,
+) => {
+  const existing = await ctx.db
+    .query('fileUploads')
+    .withIndex('by_storage_id', (q) => q.eq('storageId', storageId))
+    .unique()
+  const now = Date.now()
+
+  if (existing) {
+    await ctx.db.replace(existing._id, {
+      storageId,
+      uploadedBy,
+      status: 'deleted',
+      uploadedAt: existing.uploadedAt,
+      deletedAt: now,
+    })
+    return
+  }
+
+  await ctx.db.insert('fileUploads', {
+    storageId,
+    uploadedBy,
+    status: 'deleted',
+    uploadedAt: now,
+    deletedAt: now,
+  })
+}
+
 // List all active hotels
 export const list = query({
   args: {
     includeDeleted: v.optional(v.boolean()),
   },
-  returns: v.array(hotelValidator),
+  returns: v.array(hotelWithImageValidator),
   handler: async (ctx, args) => {
+    let hotels
     if (args.includeDeleted) {
-      return await ctx.db.query('hotels').collect()
+      hotels = await ctx.db.query('hotels').collect()
+    } else {
+      hotels = await ctx.db
+        .query('hotels')
+        .withIndex('by_is_deleted', (q) => q.eq('isDeleted', false))
+        .collect()
     }
 
-    return await ctx.db
-      .query('hotels')
-      .withIndex('by_is_deleted', (q) => q.eq('isDeleted', false))
-      .collect()
+    return await Promise.all(hotels.map((hotel) => attachHotelImageUrl(ctx, hotel)))
   },
 })
 
@@ -134,7 +229,7 @@ export const getByCity = query({
   args: {
     city: v.string(),
   },
-  returns: v.array(hotelValidator),
+  returns: v.array(hotelWithImageValidator),
   handler: async (ctx, args) => {
     const hotels = await ctx.db
       .query('hotels')
@@ -142,7 +237,11 @@ export const getByCity = query({
       .collect()
 
     // Filter out deleted hotels
-    return hotels.filter((hotel) => !hotel.isDeleted)
+    return await Promise.all(
+      hotels
+        .filter((hotel) => !hotel.isDeleted)
+        .map((hotel) => attachHotelImageUrl(ctx, hotel)),
+    )
   },
 })
 
@@ -152,7 +251,7 @@ export const search = query({
     searchTerm: v.string(),
     city: v.optional(v.string()),
   },
-  returns: v.array(hotelValidator),
+  returns: v.array(hotelWithImageValidator),
   handler: async (ctx, args) => {
     const searchQuery = ctx.db
       .query('hotels')
@@ -164,7 +263,8 @@ export const search = query({
         return searchBuilder.eq('isDeleted', false)
       })
 
-    return await searchQuery.collect()
+    const hotels = await searchQuery.collect()
+    return await Promise.all(hotels.map((hotel) => attachHotelImageUrl(ctx, hotel)))
   },
 })
 
@@ -173,13 +273,13 @@ export const get = query({
   args: {
     hotelId: v.id('hotels'),
   },
-  returns: v.union(hotelValidator, v.null()),
+  returns: v.union(hotelWithImageValidator, v.null()),
   handler: async (ctx, args) => {
     const hotel = await ctx.db.get(args.hotelId)
     if (!hotel || hotel.isDeleted) {
       return null
     }
-    return hotel
+    return await attachHotelImageUrl(ctx, hotel)
   },
 })
 
@@ -210,6 +310,7 @@ export const create = mutation({
     postalCode: v.optional(v.string()),
     lastRenovationDate: v.optional(v.string()),
     metadata: v.optional(v.record(v.string(), v.any())),
+    imageStorageId: v.optional(v.id('_storage')),
   },
   returns: v.id('hotels'),
   handler: async (ctx, args) => {
@@ -233,10 +334,20 @@ export const create = mutation({
       postalCode: args.postalCode,
       lastRenovationDate: args.lastRenovationDate,
       metadata: args.metadata,
+      imageStorageId: args.imageStorageId ?? null,
       isDeleted: false,
       createdAt: now,
       updatedAt: now,
     })
+
+    if (args.imageStorageId) {
+      await markUploadAssigned(
+        ctx,
+        admin._id,
+        args.imageStorageId,
+        hotelId,
+      )
+    }
 
     // Log the creation
     await createAuditLog(ctx, {
@@ -283,6 +394,8 @@ export const update = mutation({
     postalCode: v.optional(v.string()),
     lastRenovationDate: v.optional(v.string()),
     metadata: v.optional(v.record(v.string(), v.any())),
+    imageStorageId: v.optional(v.id('_storage')),
+    clearImage: v.optional(v.boolean()),
   },
   returns: v.null(),
   handler: async (ctx, args) => {
@@ -300,6 +413,13 @@ export const update = mutation({
       throw new ConvexError({
         code: 'INVALID_STATE',
         message: 'Cannot update a deleted hotel.',
+      })
+    }
+
+    if (args.clearImage && args.imageStorageId) {
+      throw new ConvexError({
+        code: 'INVALID_ARGUMENT',
+        message: 'Cannot clear and replace image in the same request.',
       })
     }
 
@@ -342,7 +462,32 @@ export const update = mutation({
     )
     trackChange('metadata', args.metadata, hotel.metadata)
 
+    const shouldUpdateImage = args.clearImage || args.imageStorageId !== undefined
+    const nextImageStorageId = args.clearImage
+      ? null
+      : args.imageStorageId !== undefined
+        ? args.imageStorageId
+        : hotel.imageStorageId ?? null
+
+    if (shouldUpdateImage) {
+      previousValues.imageStorageId = hotel.imageStorageId ?? null
+      newValues.imageStorageId = nextImageStorageId
+      updates.imageStorageId = nextImageStorageId
+    }
+
     await ctx.db.patch(args.hotelId, updates)
+
+    if (shouldUpdateImage) {
+      const previousImageStorageId = hotel.imageStorageId ?? null
+      if (previousImageStorageId && previousImageStorageId !== nextImageStorageId) {
+        await ctx.storage.delete(previousImageStorageId)
+        await markUploadDeleted(ctx, user._id, previousImageStorageId)
+      }
+
+      if (nextImageStorageId && nextImageStorageId !== previousImageStorageId) {
+        await markUploadAssigned(ctx, user._id, nextImageStorageId, args.hotelId)
+      }
+    }
 
     // Log the update
     await createAuditLog(ctx, {

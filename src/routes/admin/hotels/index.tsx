@@ -118,7 +118,7 @@ function HotelsPage() {
               ? 'Try adjusting your search terms.'
               : 'Get started by adding your first hotel property.'}
           </p>
-          {!searchTerm && (
+          {!searchTerm && canAddHotel && (
             <button
               onClick={() => setShowCreateModal(true)}
               className="inline-flex items-center gap-2 px-5 py-2.5 bg-amber-500/10 text-amber-400 font-medium rounded-xl hover:bg-amber-500/20 transition-colors border border-amber-500/20"

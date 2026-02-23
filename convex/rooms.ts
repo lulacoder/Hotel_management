@@ -1,8 +1,9 @@
 import { ConvexError, v } from 'convex/values'
-import { mutation, query } from './_generated/server'
+import { MutationCtx, QueryCtx, mutation, query } from './_generated/server'
 import { requireHotelAccess } from './lib/auth'
 import { createAuditLog } from './audit'
 import { datesOverlap, isHoldExpired } from './lib/dates'
+import { Doc, Id } from './_generated/dataModel'
 
 // Room type validator
 const roomTypeValidator = v.union(
@@ -44,14 +45,105 @@ const roomValidator = v.object({
   description: v.optional(v.string()),
   bedOptions: v.optional(v.string()),
   smokingAllowed: v.optional(v.boolean()),
+  imageStorageId: v.optional(v.union(v.id('_storage'), v.null())),
   isDeleted: v.boolean(),
   createdAt: v.number(),
   updatedAt: v.number(),
 })
 
-const roomWithLiveStateValidator = roomValidator.extend({
+const roomWithImageValidator = roomValidator.extend({
+  imageUrl: v.optional(v.string()),
+})
+
+const roomWithLiveStateValidator = roomWithImageValidator.extend({
   liveState: roomLiveStateValidator,
 })
+
+const attachRoomImageUrl = async (
+  ctx: QueryCtx,
+  room: Doc<'rooms'>,
+): Promise<Doc<'rooms'> & { imageUrl?: string }> => {
+  if (!room.imageStorageId) {
+    return room
+  }
+
+  const imageUrl = await ctx.storage.getUrl(room.imageStorageId)
+  if (!imageUrl) {
+    return room
+  }
+
+  return {
+    ...room,
+    imageUrl,
+  }
+}
+
+const markUploadAssigned = async (
+  ctx: MutationCtx,
+  uploadedBy: Id<'users'>,
+  storageId: Id<'_storage'>,
+  resourceId: Id<'rooms'>,
+) => {
+  const existing = await ctx.db
+    .query('fileUploads')
+    .withIndex('by_storage_id', (q) => q.eq('storageId', storageId))
+    .unique()
+  const now = Date.now()
+
+  if (existing) {
+    await ctx.db.replace(existing._id, {
+      storageId,
+      uploadedBy,
+      status: 'assigned',
+      resourceType: 'room',
+      resourceId,
+      uploadedAt: existing.uploadedAt,
+      assignedAt: now,
+    })
+    return
+  }
+
+  await ctx.db.insert('fileUploads', {
+    storageId,
+    uploadedBy,
+    status: 'assigned',
+    resourceType: 'room',
+    resourceId,
+    uploadedAt: now,
+    assignedAt: now,
+  })
+}
+
+const markUploadDeleted = async (
+  ctx: MutationCtx,
+  uploadedBy: Id<'users'>,
+  storageId: Id<'_storage'>,
+) => {
+  const existing = await ctx.db
+    .query('fileUploads')
+    .withIndex('by_storage_id', (q) => q.eq('storageId', storageId))
+    .unique()
+  const now = Date.now()
+
+  if (existing) {
+    await ctx.db.replace(existing._id, {
+      storageId,
+      uploadedBy,
+      status: 'deleted',
+      uploadedAt: existing.uploadedAt,
+      deletedAt: now,
+    })
+    return
+  }
+
+  await ctx.db.insert('fileUploads', {
+    storageId,
+    uploadedBy,
+    status: 'deleted',
+    uploadedAt: now,
+    deletedAt: now,
+  })
+}
 
 function getDerivedLiveState(
   operationalStatus: 'available' | 'maintenance' | 'cleaning' | 'out_of_order',
@@ -88,7 +180,7 @@ export const getByHotel = query({
     status: v.optional(operationalStatusValidator),
     includeDeleted: v.optional(v.boolean()),
   },
-  returns: v.array(roomValidator),
+  returns: v.array(roomWithImageValidator),
   handler: async (ctx, args) => {
     let rooms
 
@@ -111,7 +203,7 @@ export const getByHotel = query({
       rooms = rooms.filter((room) => !room.isDeleted)
     }
 
-    return rooms
+    return await Promise.all(rooms.map((room) => attachRoomImageUrl(ctx, room)))
   },
 })
 
@@ -138,6 +230,7 @@ export const getByHotelWithLiveState = query({
     const roomsWithLiveState = []
 
     for (const room of rooms) {
+      const roomWithImage = await attachRoomImageUrl(ctx, room)
       const bookings = await ctx.db
         .query('bookings')
         .withIndex('by_room', (q) => q.eq('roomId', room._id))
@@ -149,7 +242,7 @@ export const getByHotelWithLiveState = query({
       )
 
       roomsWithLiveState.push({
-        ...room,
+        ...roomWithImage,
         liveState: getDerivedLiveState(room.operationalStatus, activeBookings),
       })
     }
@@ -163,13 +256,13 @@ export const get = query({
   args: {
     roomId: v.id('rooms'),
   },
-  returns: v.union(roomValidator, v.null()),
+  returns: v.union(roomWithImageValidator, v.null()),
   handler: async (ctx, args) => {
     const room = await ctx.db.get(args.roomId)
     if (!room || room.isDeleted) {
       return null
     }
-    return room
+    return await attachRoomImageUrl(ctx, room)
   },
 })
 
@@ -244,7 +337,7 @@ export const getAvailableRooms = query({
     roomType: v.optional(roomTypeValidator),
     minOccupancy: v.optional(v.number()),
   },
-  returns: v.array(roomValidator),
+  returns: v.array(roomWithImageValidator),
   handler: async (ctx, args) => {
     // Get all rooms for the hotel
     let rooms = await ctx.db
@@ -306,7 +399,9 @@ export const getAvailableRooms = query({
       }
     }
 
-    return availableRooms
+    return await Promise.all(
+      availableRooms.map((room) => attachRoomImageUrl(ctx, room)),
+    )
   },
 })
 
@@ -325,6 +420,7 @@ export const create = mutation({
     description: v.optional(v.string()),
     bedOptions: v.optional(v.string()),
     smokingAllowed: v.optional(v.boolean()),
+    imageStorageId: v.optional(v.id('_storage')),
   },
   returns: v.id('rooms'),
   handler: async (ctx, args) => {
@@ -382,10 +478,15 @@ export const create = mutation({
       description: args.description,
       bedOptions: args.bedOptions,
       smokingAllowed: args.smokingAllowed,
+      imageStorageId: args.imageStorageId ?? null,
       isDeleted: false,
       createdAt: now,
       updatedAt: now,
     })
+
+    if (args.imageStorageId) {
+      await markUploadAssigned(ctx, user._id, args.imageStorageId, roomId)
+    }
 
     // Log the creation
     await createAuditLog(ctx, {
@@ -419,6 +520,8 @@ export const update = mutation({
     description: v.optional(v.string()),
     bedOptions: v.optional(v.string()),
     smokingAllowed: v.optional(v.boolean()),
+    imageStorageId: v.optional(v.id('_storage')),
+    clearImage: v.optional(v.boolean()),
   },
   returns: v.null(),
   handler: async (ctx, args) => {
@@ -436,6 +539,13 @@ export const update = mutation({
       throw new ConvexError({
         code: 'INVALID_STATE',
         message: 'Cannot update a deleted room.',
+      })
+    }
+
+    if (args.clearImage && args.imageStorageId) {
+      throw new ConvexError({
+        code: 'INVALID_ARGUMENT',
+        message: 'Cannot clear and replace image in the same request.',
       })
     }
 
@@ -498,7 +608,33 @@ export const update = mutation({
     trackChange('bedOptions', args.bedOptions, room.bedOptions)
     trackChange('smokingAllowed', args.smokingAllowed, room.smokingAllowed)
 
+    const shouldUpdateImage = args.clearImage || args.imageStorageId !== undefined
+    const nextImageStorageId = args.clearImage
+      ? null
+      : args.imageStorageId !== undefined
+        ? args.imageStorageId
+        : room.imageStorageId ?? null
+
+    if (shouldUpdateImage) {
+      previousValues.imageStorageId = room.imageStorageId ?? null
+      newValues.imageStorageId = nextImageStorageId
+      updates.imageStorageId = nextImageStorageId
+    }
+
     await ctx.db.patch(args.roomId, updates)
+
+    if (shouldUpdateImage) {
+      const previousImageStorageId = room.imageStorageId ?? null
+
+      if (previousImageStorageId && previousImageStorageId !== nextImageStorageId) {
+        await ctx.storage.delete(previousImageStorageId)
+        await markUploadDeleted(ctx, user._id, previousImageStorageId)
+      }
+
+      if (nextImageStorageId && nextImageStorageId !== previousImageStorageId) {
+        await markUploadAssigned(ctx, user._id, nextImageStorageId, args.roomId)
+      }
+    }
 
     // Log the update
     await createAuditLog(ctx, {

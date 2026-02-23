@@ -25,6 +25,7 @@ interface HotelGridProps {
     category?: string | undefined
     rating?: number | undefined
     parkingIncluded?: boolean | undefined
+    imageUrl?: string | undefined
     distance: number | null
   }>
   sortBy: SortOption
@@ -112,10 +113,19 @@ export function HotelGrid({
                 className="block"
               >
                 <div className="h-48 bg-gradient-to-br from-slate-800 to-slate-900 relative overflow-hidden">
+                  {hotel.imageUrl && (
+                    <img
+                      src={hotel.imageUrl}
+                      alt={`${hotel.name} preview`}
+                      className="absolute inset-0 w-full h-full object-cover"
+                    />
+                  )}
                   <div className="absolute inset-0 bg-gradient-to-t from-slate-900/80 to-transparent"></div>
-                  <div className="absolute inset-0 flex items-center justify-center">
-                    <Building2 className="w-16 h-16 text-slate-700" />
-                  </div>
+                  {!hotel.imageUrl && (
+                    <div className="absolute inset-0 flex items-center justify-center">
+                      <Building2 className="w-16 h-16 text-slate-700" />
+                    </div>
+                  )}
 
                   <div className="absolute top-4 left-4 right-4 flex items-start justify-between">
                     {hotel.category && (

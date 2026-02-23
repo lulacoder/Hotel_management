@@ -350,8 +350,16 @@ function HotelDetailPage() {
                 className="bg-slate-900/50 border border-slate-800/50 rounded-2xl overflow-hidden hover:border-slate-700/50 transition-all"
               >
                 {/* Room Image Placeholder */}
-                <div className="h-40 bg-gradient-to-br from-slate-800 to-slate-900 flex items-center justify-center">
-                  <Building2 className="w-12 h-12 text-slate-700" />
+                <div className="h-40 bg-gradient-to-br from-slate-800 to-slate-900 flex items-center justify-center relative overflow-hidden">
+                  {room.imageUrl ? (
+                    <img
+                      src={room.imageUrl}
+                      alt={`Room ${room.roomNumber}`}
+                      className="absolute inset-0 w-full h-full object-cover"
+                    />
+                  ) : (
+                    <Building2 className="w-12 h-12 text-slate-700" />
+                  )}
                 </div>
 
                 <div className="p-5">

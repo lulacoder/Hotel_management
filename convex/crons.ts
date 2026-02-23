@@ -10,4 +10,11 @@ crons.interval(
   internal.bookingsInternal.cleanupExpiredHolds,
 )
 
+crons.interval(
+  'cleanup orphan uploads',
+  { hours: 2 },
+  internal.filesInternal.cleanupOrphanUploads,
+  {},
+)
+
 export default crons

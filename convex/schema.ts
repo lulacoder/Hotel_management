@@ -56,6 +56,7 @@ export default defineSchema({
     postalCode: v.optional(v.string()),
     lastRenovationDate: v.optional(v.string()), // "YYYY-MM-DD" format
     metadata: v.optional(v.record(v.string(), v.any())),
+    imageStorageId: v.optional(v.union(v.id('_storage'), v.null())),
     isDeleted: v.boolean(),
     createdAt: v.number(),
     updatedAt: v.number(),
@@ -93,6 +94,7 @@ export default defineSchema({
     description: v.optional(v.string()), // "Suite, 2 Queen Beds (Mountain View)"
     bedOptions: v.optional(v.string()), // "2 Queen Beds", "1 King Bed"
     smokingAllowed: v.optional(v.boolean()),
+    imageStorageId: v.optional(v.union(v.id('_storage'), v.null())),
     isDeleted: v.boolean(),
     createdAt: v.number(),
     updatedAt: v.number(),
@@ -102,6 +104,23 @@ export default defineSchema({
     .index('by_hotel_and_room_number', ['hotelId', 'roomNumber'])
     .index('by_hotel_and_is_deleted', ['hotelId', 'isDeleted'])
     .index('by_hotel_and_type', ['hotelId', 'type']),
+
+  fileUploads: defineTable({
+    storageId: v.id('_storage'),
+    uploadedBy: v.id('users'),
+    status: v.union(
+      v.literal('pending'),
+      v.literal('assigned'),
+      v.literal('deleted'),
+    ),
+    resourceType: v.optional(v.union(v.literal('hotel'), v.literal('room'))),
+    resourceId: v.optional(v.string()),
+    uploadedAt: v.number(),
+    assignedAt: v.optional(v.number()),
+    deletedAt: v.optional(v.number()),
+  })
+    .index('by_storage_id', ['storageId'])
+    .index('by_status_and_uploaded_at', ['status', 'uploadedAt']),
 
   // Guest profiles for walk-in guests
   guestProfiles: defineTable({
