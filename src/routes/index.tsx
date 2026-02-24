@@ -1,6 +1,7 @@
 import { useAuth } from '@clerk/clerk-react'
 import { Link, createFileRoute } from '@tanstack/react-router'
 import { ArrowRight, CheckCircle2, Compass, MapPin, ShieldCheck, Sparkles } from 'lucide-react'
+import { useI18n } from '../lib/i18n'
 
 export const Route = createFileRoute('/')({
   component: LandingPage,
@@ -8,6 +9,7 @@ export const Route = createFileRoute('/')({
 
 function LandingPage() {
   const { isSignedIn, isLoaded } = useAuth()
+  const { t } = useI18n()
 
   // If already signed in, redirect to post-login
   if (isLoaded && isSignedIn) {
@@ -18,12 +20,12 @@ function LandingPage() {
             <div className="animate-spin rounded-full h-12 w-12 border-2 border-amber-500/20 border-t-amber-500"></div>
             <div className="absolute inset-0 animate-ping rounded-full h-12 w-12 border border-amber-500/10"></div>
           </div>
-          <p className="text-slate-400 mb-2">Redirecting to dashboard...</p>
+          <p className="text-slate-400 mb-2">{t('landing.redirecting')}</p>
           <Link
             to="/post-login"
             className="text-amber-400 hover:text-amber-300 text-sm transition-colors"
           >
-            Click here if not redirected
+            {t('landing.clickIfNotRedirected')}
           </Link>
         </div>
       </div>
@@ -50,19 +52,18 @@ function LandingPage() {
             <div>
               <div className="landing-badge inline-flex items-center gap-2 rounded-full border border-amber-500/30 bg-amber-500/10 px-4 py-2 text-sm font-medium text-amber-300 mb-7">
                 <Sparkles size={16} />
-                Premium Hotel Booking Platform
+                {t('landing.premiumBadge')}
               </div>
 
               <h1 className="landing-title text-5xl sm:text-6xl lg:text-7xl font-bold leading-[1.02] tracking-tight mb-6">
-                Stay in places
+                {t('landing.titleLine1')}
                 <span className="block text-transparent bg-clip-text bg-gradient-to-r from-amber-300 via-amber-400 to-orange-500">
-                  worth remembering
+                  {t('landing.titleLine2')}
                 </span>
               </h1>
 
               <p className="landing-subtitle max-w-2xl text-lg sm:text-xl text-slate-300/90 leading-relaxed mb-10">
-                Browse trusted hotels, reserve in minutes, and manage every
-                booking from one polished experience.
+                {t('landing.subtitle')}
               </p>
 
               <div className="flex flex-col sm:flex-row items-start gap-4">
@@ -71,7 +72,7 @@ function LandingPage() {
                   className="landing-primary-cta group inline-flex items-center gap-3 rounded-xl bg-gradient-to-r from-amber-500 to-orange-500 px-8 py-4 font-semibold text-slate-950 shadow-lg shadow-amber-500/30 transition-all duration-300 hover:from-amber-400 hover:to-orange-400 hover:shadow-amber-500/45"
                 >
                   <MapPin size={20} />
-                  Browse Hotels
+                  {t('landing.browseHotels')}
                   <ArrowRight
                     size={20}
                     className="transition-transform group-hover:translate-x-1"
@@ -81,16 +82,13 @@ function LandingPage() {
                   to="/sign-up"
                   className="landing-secondary-cta inline-flex items-center gap-2 rounded-xl border border-slate-700 bg-slate-900/60 px-8 py-4 font-semibold text-slate-100 transition-colors hover:border-slate-500 hover:bg-slate-900"
                 >
-                  Create Free Account
+                  {t('landing.createFreeAccount')}
                 </Link>
               </div>
 
               <div className="mt-10 grid gap-3 sm:grid-cols-3">
-                {[
-                  'Book by location in seconds',
-                  'Live booking management',
-                  'Clean and secure flow',
-                ].map((value) => (
+                {[t('landing.pill1'), t('landing.pill2'), t('landing.pill3')].map(
+                  (value) => (
                   <div
                     key={value}
                     className="landing-pill flex items-center gap-2 rounded-lg border border-slate-800/80 bg-slate-900/45 px-3 py-2.5 text-sm text-slate-300"
@@ -98,7 +96,8 @@ function LandingPage() {
                     <CheckCircle2 size={16} className="text-amber-400" />
                     {value}
                   </div>
-                ))}
+                  ),
+                )}
               </div>
             </div>
 
@@ -113,26 +112,25 @@ function LandingPage() {
                 <div className="mt-8 space-y-4">
                   <div className="landing-info-item rounded-2xl border border-slate-800 bg-slate-950/70 p-4">
                     <p className="text-sm font-medium text-slate-300">
-                      Pick a destination
+                      {t('landing.pickDestination')}
                     </p>
                     <p className="mt-1 text-slate-500 text-sm">
-                      Explore hotels by city and region from a single search
-                      flow.
+                      {t('landing.pickDestinationDesc')}
                     </p>
                   </div>
                   <div className="landing-info-item rounded-2xl border border-slate-800 bg-slate-950/70 p-4">
                     <p className="text-sm font-medium text-slate-300">
-                      Reserve with confidence
+                      {t('landing.reserveConfidence')}
                     </p>
                     <p className="mt-1 text-slate-500 text-sm">
-                      Track your stays and revisit bookings any time.
+                      {t('landing.reserveConfidenceDesc')}
                     </p>
                   </div>
                   <Link
                     to="/sign-in"
                     className="landing-signin-link inline-flex items-center gap-2 text-sm font-semibold text-amber-400 hover:text-amber-300 transition-colors"
                   >
-                    Already have an account? Sign in
+                    {t('landing.alreadyHaveAccount')}
                     <ArrowRight size={16} />
                   </Link>
                 </div>
@@ -145,37 +143,34 @@ function LandingPage() {
       <section className="landing-features-section border-y border-slate-800/70 bg-slate-900/35 py-16">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <h2 className="text-2xl sm:text-3xl font-bold tracking-tight mb-8">
-            Why guests choose this platform
+            {t('landing.whyChoose')}
           </h2>
           <div className="grid gap-4 md:grid-cols-3">
             <article className="landing-feature-card rounded-2xl border border-slate-800 bg-slate-900/55 p-6">
               <Compass className="text-amber-400 mb-4" size={22} />
               <h3 className="text-lg font-semibold text-slate-100 mb-2">
-                Better discovery
+                {t('landing.featureDiscoveryTitle')}
               </h3>
               <p className="text-slate-400 text-sm leading-relaxed">
-                Find the right stay quickly with location-first browsing and a
-                focused booking path.
+                {t('landing.featureDiscoveryDesc')}
               </p>
             </article>
             <article className="landing-feature-card rounded-2xl border border-slate-800 bg-slate-900/55 p-6">
               <ShieldCheck className="text-amber-400 mb-4" size={22} />
               <h3 className="text-lg font-semibold text-slate-100 mb-2">
-                Reliable booking flow
+                {t('landing.featureReliableTitle')}
               </h3>
               <p className="text-slate-400 text-sm leading-relaxed">
-                Sign in, reserve, and review your trips with a consistent and
-                secure experience.
+                {t('landing.featureReliableDesc')}
               </p>
             </article>
             <article className="landing-feature-card rounded-2xl border border-slate-800 bg-slate-900/55 p-6">
               <MapPin className="text-amber-400 mb-4" size={22} />
               <h3 className="text-lg font-semibold text-slate-100 mb-2">
-                Designed for real travel
+                {t('landing.featureTravelTitle')}
               </h3>
               <p className="text-slate-400 text-sm leading-relaxed">
-                Clear navigation and quick access to your booking history keep
-                planning simple.
+                {t('landing.featureTravelDesc')}
               </p>
             </article>
           </div>
@@ -189,9 +184,10 @@ function LandingPage() {
             alt="Luxe Hotels"
             className="h-10 w-auto object-contain opacity-95"
           />
-          <p className="landing-copyright text-sm text-slate-500">
-            &copy; {new Date().getFullYear()} Luxe Hotels. All rights reserved.
-          </p>
+            <p className="landing-copyright text-sm text-slate-500">
+            &copy; {new Date().getFullYear()} Luxe Hotels.{' '}
+            {t('common.allRightsReserved')}
+            </p>
         </div>
       </footer>
     </div>

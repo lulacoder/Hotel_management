@@ -1,13 +1,17 @@
 import { Link } from '@tanstack/react-router'
 import { UserButton } from '@clerk/clerk-react'
 import { ArrowLeft } from 'lucide-react'
+import { LanguageSwitcher } from '../../../../components/LanguageSwitcher'
 import { ThemeToggle } from '../../../../components/ThemeToggle'
+import { useI18n } from '../../../../lib/i18n'
 
 interface BookingsHeaderProps {
   userName: string
 }
 
 export function BookingsHeader({ userName }: BookingsHeaderProps) {
+  const { t } = useI18n()
+
   return (
     <header className="bg-slate-900 border-b border-slate-800/50 sticky top-0 z-10">
       <div className="max-w-7xl mx-auto px-4 py-4 flex justify-between items-center">
@@ -18,9 +22,10 @@ export function BookingsHeader({ userName }: BookingsHeaderProps) {
           >
             <ArrowLeft className="w-5 h-5" />
           </Link>
-          <h1 className="text-xl font-bold text-white">My Bookings</h1>
+          <h1 className="text-xl font-bold text-white">{t('bookings.title')}</h1>
         </div>
         <div className="flex items-center gap-4">
+          <LanguageSwitcher compact />
           <ThemeToggle compact />
           <span className="text-sm text-slate-400">{userName}</span>
           <UserButton afterSignOutUrl="/" />

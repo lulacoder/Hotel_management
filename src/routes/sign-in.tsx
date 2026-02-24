@@ -2,6 +2,7 @@ import { Link, createFileRoute, useLocation } from '@tanstack/react-router'
 import { SignIn } from '@clerk/clerk-react'
 import { ArrowLeft } from 'lucide-react'
 import { ThemeToggle } from '../components/ThemeToggle'
+import { useI18n } from '../lib/i18n'
 import { getClerkAuthAppearance } from '../lib/clerkAppearance'
 import { useTheme } from '../lib/theme'
 
@@ -11,6 +12,7 @@ export const Route = createFileRoute('/sign-in')({
 
 function SignInPage() {
   const { theme } = useTheme()
+  const { t } = useI18n()
   const location = useLocation()
   const params = new URLSearchParams(location.search)
   const redirectParam = params.get('redirect')
@@ -59,18 +61,18 @@ function SignInPage() {
 
           {/* Main Content */}
           <div className="max-w-md">
-            <h1 className="text-4xl font-bold text-white mb-4 leading-tight">
-              Welcome back
-            </h1>
-            <p className="text-lg text-slate-400 leading-relaxed">
-              Sign in to access your bookings, view upcoming stays, and manage
-              your account settings.
-            </p>
+              <h1 className="text-4xl font-bold text-white mb-4 leading-tight">
+                {t('signIn.welcomeBack')}
+              </h1>
+              <p className="text-lg text-slate-400 leading-relaxed">
+                {t('signIn.description')}
+              </p>
           </div>
 
           {/* Footer */}
           <p className="text-slate-600 text-sm">
-            &copy; {new Date().getFullYear()} Luxe Hotels. All rights reserved.
+            &copy; {new Date().getFullYear()} Luxe Hotels.{' '}
+            {t('common.allRightsReserved')}
           </p>
         </div>
       </div>
@@ -81,7 +83,7 @@ function SignInPage() {
         <div className="lg:hidden p-4 flex items-center justify-between">
           <Link to="/" className="flex items-center gap-2">
             <ArrowLeft size={20} className="text-slate-400" />
-            <span className="text-slate-400 font-medium">Back</span>
+            <span className="text-slate-400 font-medium">{t('signIn.back')}</span>
           </Link>
           <div className="flex items-center gap-2">
             <ThemeToggle compact />
@@ -104,9 +106,9 @@ function SignInPage() {
           <div className="w-full max-w-md">
             <div className="lg:hidden text-center mb-8">
               <h1 className="text-2xl font-bold text-white mb-2">
-                Welcome back
+                {t('signIn.welcomeBack')}
               </h1>
-              <p className="text-slate-400">Sign in to continue</p>
+              <p className="text-slate-400">{t('signIn.continue')}</p>
             </div>
 
             <SignIn
@@ -118,12 +120,12 @@ function SignInPage() {
             />
 
             <p className="text-center text-slate-500 text-sm mt-6">
-              Don't have an account?{' '}
+              {t('signIn.noAccount')}{' '}
               <Link
                 to="/sign-up"
                 className="text-amber-400 hover:text-amber-300 font-medium transition-colors"
               >
-                Create one
+                {t('signIn.createOne')}
               </Link>
             </p>
           </div>

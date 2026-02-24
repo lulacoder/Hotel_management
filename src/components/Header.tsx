@@ -1,17 +1,18 @@
 import { Link, useLocation } from '@tanstack/react-router'
 import { useAuth } from '@clerk/clerk-react'
 
-
-
 import { useEffect, useState} from 'react'
 import { CalendarCheck, Home, MapPin,Menu, X} from 'lucide-react'
 import ClerkHeader from '../integrations/clerk/header-user'
+import { useI18n } from '../lib/i18n'
+import { LanguageSwitcher } from './LanguageSwitcher'
 import { ThemeToggle } from './ThemeToggle'
 
 export default function Header() {
   const [isOpen, setIsOpen] = useState(false)
   const [scrolled, setScrolled] = useState(false)
   const { isSignedIn } = useAuth()
+  const { t } = useI18n()
   const location = useLocation()
 
   // Hide header on auth pages, admin routes, and pages that provide their own header
@@ -53,7 +54,7 @@ export default function Header() {
               <button
                 onClick={() => setIsOpen(true)}
                 className="p-2.5 hover:bg-white/10 rounded-xl transition-all duration-300 group"
-                aria-label="Open menu"
+                aria-label={t('header.openMenu')}
               >
                 <Menu
                   size={22}
@@ -79,13 +80,14 @@ export default function Header() {
                   className="px-4 py-2 text-sm font-semibold text-slate-900 bg-amber-500 hover:bg-amber-400 rounded-lg transition-colors flex items-center gap-2"
                 >
                   <CalendarCheck size={16} />
-                  My Bookings
+                  {t('header.myBookings')}
                 </Link>
               )}
             </nav>
 
             {/* Right: Auth */}
             <div className="flex items-center gap-3">
+              <LanguageSwitcher compact />
               <ThemeToggle compact />
               {!isSignedIn && (
                 <>
@@ -93,13 +95,13 @@ export default function Header() {
                     to="/sign-in"
                     className="px-4 py-2 text-sm font-medium text-slate-300 hover:text-white transition-colors hidden sm:block"
                   >
-                    Sign In
+                    {t('header.signIn')}
                   </Link>
                   <Link
                     to="/sign-up"
                     className="px-5 py-2.5 text-sm font-semibold bg-gradient-to-r from-amber-500 to-orange-500 hover:from-amber-400 hover:to-orange-400 text-white rounded-xl transition-all duration-300 shadow-lg shadow-amber-500/25 hover:shadow-amber-500/40 hover:scale-105"
                   >
-                    Get Started
+                    {t('header.getStarted')}
                   </Link>
                 </>
               )}
@@ -130,14 +132,14 @@ export default function Header() {
             </div>
             <div>
               <p className="text-xs text-slate-500 font-medium">
-                Navigation Menu
+                {t('header.navigationMenu')}
               </p>
             </div>
           </div>
           <button
             onClick={() => setIsOpen(false)}
             className="p-2.5 hover:bg-white/5 rounded-xl transition-all duration-300 group"
-            aria-label="Close menu"
+            aria-label={t('header.closeMenu')}
           >
             <X
               size={22}
@@ -162,7 +164,7 @@ export default function Header() {
                 size={20}
                 className="group-hover:text-amber-400 transition-colors"
               />
-              <span className="font-medium">Home</span>
+              <span className="font-medium">{t('header.home')}</span>
             </Link>
 
             <Link
@@ -178,7 +180,7 @@ export default function Header() {
                 size={20}
                 className="group-hover:text-amber-400 transition-colors"
               />
-              <span className="font-medium">Browse Locations</span>
+              <span className="font-medium">{t('header.browseLocations')}</span>
             </Link>
 
             {isSignedIn && (
@@ -195,7 +197,7 @@ export default function Header() {
                   size={20}
                   className="group-hover:text-amber-400 transition-colors"
                 />
-                <span className="font-medium">My Bookings</span>
+                <span className="font-medium">{t('header.myBookings')}</span>
               </Link>
             )}
           </div>
@@ -203,7 +205,7 @@ export default function Header() {
           {!isSignedIn && (
             <div className="mt-6 pt-6 border-t border-slate-800/50">
               <p className="text-xs text-slate-500 font-medium uppercase tracking-wider mb-3 px-4">
-                Account
+                {t('header.account')}
               </p>
               <div className="space-y-2">
                 <Link
@@ -211,14 +213,14 @@ export default function Header() {
                   onClick={() => setIsOpen(false)}
                   className="flex items-center justify-center gap-2 px-4 py-3 rounded-xl text-slate-300 border border-slate-700 hover:border-slate-600 hover:bg-white/5 transition-all duration-300 font-medium"
                 >
-                  Sign In
+                  {t('header.signIn')}
                 </Link>
                 <Link
                   to="/sign-up"
                   onClick={() => setIsOpen(false)}
                   className="flex items-center justify-center gap-2 px-4 py-3 rounded-xl bg-gradient-to-r from-amber-500 to-orange-500 hover:from-amber-400 hover:to-orange-400 text-white font-semibold transition-all duration-300 shadow-lg shadow-amber-500/25"
                 >
-                  Create Account
+                  {t('header.createAccount')}
                 </Link>
               </div>
             </div>

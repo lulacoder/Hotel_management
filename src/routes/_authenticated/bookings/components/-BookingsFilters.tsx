@@ -1,21 +1,24 @@
+import { useI18n } from '../../../../lib/i18n'
+
 interface BookingsFiltersProps {
   statusFilter: string
   onFilterChange: (value: string) => void
 }
 
-const filters = [
-  { value: 'all', label: 'All' },
-  { value: 'held', label: 'Held' },
-  { value: 'confirmed', label: 'Confirmed' },
-  { value: 'checked_in', label: 'Checked In' },
-  { value: 'checked_out', label: 'Completed' },
-  { value: 'cancelled', label: 'Cancelled' },
-]
-
 export function BookingsFilters({
   statusFilter,
   onFilterChange,
 }: BookingsFiltersProps) {
+  const { t } = useI18n()
+  const filters = [
+    { value: 'all', label: t('bookings.filter.all') },
+    { value: 'held', label: t('bookings.filter.held') },
+    { value: 'confirmed', label: t('bookings.filter.confirmed') },
+    { value: 'checked_in', label: t('bookings.filter.checkedIn') },
+    { value: 'checked_out', label: t('bookings.filter.completed') },
+    { value: 'cancelled', label: t('bookings.filter.cancelled') },
+  ]
+
   return (
     <div className="mb-6 flex gap-2 flex-wrap">
       {filters.map((filter) => (

@@ -4,6 +4,7 @@ import { X } from 'lucide-react'
 import { useState } from 'react'
 import { api } from '../../../../../convex/_generated/api'
 import type { Id } from '../../../../../convex/_generated/dataModel'
+import { useI18n } from '../../../../lib/i18n'
 
 interface AssignModalProps {
   userId: Id<'users'>
@@ -12,6 +13,7 @@ interface AssignModalProps {
 
 export function AssignModal({ userId, onClose }: AssignModalProps) {
   const { user } = useUser()
+  const { t } = useI18n()
   const [selectedHotelId, setSelectedHotelId] = useState<Id<'hotels'> | ''>('')
   const [role, setRole] = useState<'hotel_admin' | 'hotel_cashier'>('hotel_admin')
   const [error, setError] = useState<string | null>(null)
@@ -25,7 +27,7 @@ export function AssignModal({ userId, onClose }: AssignModalProps) {
     if (!user?.id) return
 
     if (!selectedHotelId) {
-      setError('Please select a hotel before assigning the user.')
+      setError(t('admin.users.assignModal.selectHotelRequired'))
       return
     }
 
@@ -44,7 +46,7 @@ export function AssignModal({ userId, onClose }: AssignModalProps) {
       setError(
         submissionError instanceof Error
           ? submissionError.message
-          : 'Failed to assign user. Please try again.',
+          : t('admin.users.assignModal.assignFailed'),
       )
     } finally {
       setIsSubmitting(false)
@@ -56,15 +58,17 @@ export function AssignModal({ userId, onClose }: AssignModalProps) {
       <div className="w-full max-w-xl bg-slate-900 border border-slate-800 rounded-2xl shadow-2xl">
         <div className="flex items-center justify-between p-6 border-b border-slate-800">
           <div>
-            <h2 className="text-xl font-semibold text-slate-100">Assign User to Hotel</h2>
+            <h2 className="text-xl font-semibold text-slate-100">
+              {t('admin.users.assignModal.title')}
+            </h2>
             <p className="text-sm text-slate-400 mt-1">
-              Select a hotel and staff role for this user.
+              {t('admin.users.assignModal.description')}
             </p>
           </div>
           <button
             onClick={onClose}
             className="p-2 rounded-lg hover:bg-slate-800 transition-colors"
-            aria-label="Close"
+            aria-label={t('common.close')}
           >
             <X className="w-5 h-5 text-slate-400" />
           </button>
@@ -78,14 +82,16 @@ export function AssignModal({ userId, onClose }: AssignModalProps) {
           )}
 
           <div>
-            <label className="block text-sm font-medium text-slate-300 mb-2">Select Hotel</label>
+            <label className="block text-sm font-medium text-slate-300 mb-2">
+              {t('admin.users.assignModal.selectHotel')}
+            </label>
             <select
               value={selectedHotelId}
               onChange={(e) => setSelectedHotelId(e.target.value as Id<'hotels'>)}
               className="w-full px-4 py-3 bg-slate-950 border border-slate-800 rounded-xl text-slate-200 focus:outline-none focus:border-amber-500/50"
               required
             >
-              <option value="">Choose a hotel...</option>
+              <option value="">{t('admin.users.assignModal.chooseHotel')}</option>
               {hotels?.map((hotel) => (
                 <option key={hotel._id} value={hotel._id}>
                   {hotel.name} - {hotel.city}, {hotel.country}
@@ -95,7 +101,9 @@ export function AssignModal({ userId, onClose }: AssignModalProps) {
           </div>
 
           <div>
-            <p className="block text-sm font-medium text-slate-300 mb-3">Role</p>
+            <p className="block text-sm font-medium text-slate-300 mb-3">
+              {t('admin.users.assignModal.role')}
+            </p>
             <div className="space-y-3">
               <label className="flex items-start gap-3 p-3 rounded-xl border border-slate-800 hover:border-slate-700 cursor-pointer">
                 <input
@@ -107,9 +115,11 @@ export function AssignModal({ userId, onClose }: AssignModalProps) {
                   className="mt-1"
                 />
                 <div>
-                  <p className="text-slate-200 font-medium">Hotel Administrator</p>
+                  <p className="text-slate-200 font-medium">
+                    {t('admin.users.assignModal.hotelAdmin')}
+                  </p>
                   <p className="text-sm text-slate-500">
-                    Can manage rooms, bookings, and hotel settings.
+                    {t('admin.users.assignModal.hotelAdminDescription')}
                   </p>
                 </div>
               </label>
@@ -124,9 +134,11 @@ export function AssignModal({ userId, onClose }: AssignModalProps) {
                   className="mt-1"
                 />
                 <div>
-                  <p className="text-slate-200 font-medium">Cashier</p>
+                  <p className="text-slate-200 font-medium">
+                    {t('admin.users.assignModal.cashier')}
+                  </p>
                   <p className="text-sm text-slate-500">
-                    Can view bookings, check-in/out guests, and process refunds.
+                    {t('admin.users.assignModal.cashierDescription')}
                   </p>
                 </div>
               </label>
@@ -139,14 +151,16 @@ export function AssignModal({ userId, onClose }: AssignModalProps) {
               onClick={onClose}
               className="px-5 py-2.5 rounded-xl border border-slate-700 text-slate-300 hover:bg-slate-800 transition-colors"
             >
-              Cancel
+              {t('common.cancel')}
             </button>
             <button
               type="submit"
               disabled={!selectedHotelId || isSubmitting}
               className="px-5 py-2.5 rounded-xl bg-gradient-to-r from-amber-500 to-amber-600 text-white font-medium disabled:opacity-50 disabled:cursor-not-allowed"
             >
-              {isSubmitting ? 'Assigning...' : 'Assign User'}
+              {isSubmitting
+                ? t('admin.users.assignModal.assigning')
+                : t('admin.users.assignModal.assignUser')}
             </button>
           </div>
         </form>

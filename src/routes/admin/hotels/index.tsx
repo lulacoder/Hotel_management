@@ -15,6 +15,7 @@ import {
 import { useState } from 'react'
 import { Id } from '../../../../convex/_generated/dataModel'
 import { HotelModal } from './index/components/-HotelModal'
+import { useI18n } from '../../../lib/i18n'
 
 export const Route = createFileRoute('/admin/hotels/')({
   component: HotelsPage,
@@ -22,6 +23,7 @@ export const Route = createFileRoute('/admin/hotels/')({
 
 function HotelsPage() {
   const { user } = useUser()
+  const { t } = useI18n()
   const [searchTerm, setSearchTerm] = useState('')
   const [showCreateModal, setShowCreateModal] = useState(false)
   const [editingHotel, setEditingHotel] = useState<Id<'hotels'> | null>(null)
@@ -59,7 +61,7 @@ function HotelsPage() {
   const handleDelete = async (hotelId: Id<'hotels'>) => {
     if (!user?.id) return
     if (!canAddHotel) return
-    if (confirm('Are you sure you want to delete this hotel?')) {
+    if (confirm(t('admin.hotels.confirmDelete'))) {
       await deleteHotel({ clerkUserId: user.id, hotelId })
     }
     setActiveMenu(null)
@@ -71,10 +73,10 @@ function HotelsPage() {
       <div className="flex items-center justify-between mb-8">
         <div>
           <h1 className="text-3xl font-semibold text-slate-100 tracking-tight mb-2">
-            Hotels
+            {t('admin.nav.hotels')}
           </h1>
           <p className="text-slate-400">
-            Manage your hotel properties and locations.
+            {t('admin.hotels.description')}
           </p>
         </div>
         {canAddHotel && (
@@ -83,7 +85,7 @@ function HotelsPage() {
             className="flex items-center gap-2 px-5 py-2.5 bg-gradient-to-r from-amber-500 to-amber-600 text-white font-medium rounded-xl hover:from-amber-600 hover:to-amber-700 transition-all duration-200 shadow-lg shadow-amber-500/20"
           >
             <Plus className="w-5 h-5" />
-            Add Hotel
+            {t('admin.hotels.addHotel')}
           </button>
         )}
       </div>
@@ -93,7 +95,7 @@ function HotelsPage() {
         <Search className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-slate-500" />
         <input
           type="text"
-          placeholder="Search hotels by name, city, or country..."
+          placeholder={t('admin.hotels.searchPlaceholder')}
           value={searchTerm}
           onChange={(e) => setSearchTerm(e.target.value)}
           className="w-full pl-12 pr-4 py-3 bg-slate-900/50 border border-slate-800/50 rounded-xl text-slate-200 placeholder-slate-500 focus:outline-none focus:border-amber-500/50 focus:ring-1 focus:ring-amber-500/20 transition-all"
@@ -111,12 +113,12 @@ function HotelsPage() {
             <Building2 className="w-8 h-8 text-slate-600" />
           </div>
           <h3 className="text-lg font-semibold text-slate-300 mb-2">
-            {searchTerm ? 'No hotels found' : 'No hotels yet'}
+            {searchTerm ? t('admin.hotels.noneFound') : t('admin.hotels.noneYet')}
           </h3>
           <p className="text-slate-500 mb-6">
             {searchTerm
-              ? 'Try adjusting your search terms.'
-              : 'Get started by adding your first hotel property.'}
+              ? t('admin.hotels.trySearchAdjust')
+              : t('admin.hotels.getStarted')}
           </p>
           {!searchTerm && canAddHotel && (
             <button
@@ -124,7 +126,7 @@ function HotelsPage() {
               className="inline-flex items-center gap-2 px-5 py-2.5 bg-amber-500/10 text-amber-400 font-medium rounded-xl hover:bg-amber-500/20 transition-colors border border-amber-500/20"
             >
               <Plus className="w-5 h-5" />
-              Add Your First Hotel
+              {t('admin.hotels.addFirst')}
             </button>
           )}
         </div>
@@ -155,7 +157,7 @@ function HotelsPage() {
                       className="flex items-center gap-3 px-4 py-3 text-slate-300 hover:bg-slate-700 transition-colors"
                     >
                       <Eye className="w-4 h-4" />
-                      View Details
+                      {t('admin.hotels.viewDetails')}
                     </Link>
                     {canEditHotel && (
                       <button
@@ -166,7 +168,7 @@ function HotelsPage() {
                         className="flex items-center gap-3 px-4 py-3 text-slate-300 hover:bg-slate-700 transition-colors w-full"
                       >
                         <Pencil className="w-4 h-4" />
-                        Edit Hotel
+                        {t('admin.hotels.editHotel')}
                       </button>
                     )}
                     {canAddHotel && (
@@ -175,7 +177,7 @@ function HotelsPage() {
                         className="flex items-center gap-3 px-4 py-3 text-red-400 hover:bg-slate-700 transition-colors w-full"
                       >
                         <Trash2 className="w-4 h-4" />
-                        Delete Hotel
+                        {t('admin.hotels.deleteHotel')}
                       </button>
                     )}
                   </div>
@@ -204,7 +206,7 @@ function HotelsPage() {
                 params={{ hotelId: hotel._id }}
                 className="inline-flex items-center gap-2 text-sm text-amber-400 hover:text-amber-300 transition-colors font-medium"
               >
-                Manage Rooms
+                {t('admin.hotels.manageRooms')}
                 <span className="text-lg">→</span>
               </Link>
             </div>

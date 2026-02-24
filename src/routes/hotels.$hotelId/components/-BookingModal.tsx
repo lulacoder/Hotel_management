@@ -9,6 +9,7 @@ import {
   formatPackageAddOn,
   getPackageByType,
 } from '../../../lib/packages'
+import { useI18n } from '../../../lib/i18n'
 import type { Id } from '../../../../convex/_generated/dataModel'
 import type { PackageType } from '../../../lib/packages'
 
@@ -32,6 +33,7 @@ export function BookingModal({
   onSuccess,
 }: BookingModalProps) {
   const { user } = useUser()
+  const { t } = useI18n()
   const room = useQuery(api.rooms.get, { roomId })
   const hotel = useQuery(api.hotels.get, { hotelId })
   const holdRoom = useMutation(api.bookings.holdRoom)
@@ -82,7 +84,7 @@ export function BookingModal({
       setBookingId(id)
       setStep('confirm')
     } catch (err: any) {
-      setError(err.message || 'Failed to hold room')
+      setError(err.message || t('bookingModal.failedHold'))
     } finally {
       setLoading(false)
     }
@@ -102,9 +104,9 @@ export function BookingModal({
       onSuccess()
     } catch (err: any) {
       if (err?.data?.code === 'EXPIRED') {
-        setError('Your hold has expired. Please start a new booking.')
+        setError(t('bookingModal.holdExpired'))
       } else {
-        setError(err.message || 'Failed to confirm booking')
+        setError(err.message || t('bookingModal.failedConfirm'))
       }
     } finally {
       setLoading(false)
@@ -126,17 +128,17 @@ export function BookingModal({
         <div className="p-6 border-b border-slate-800">
           <h2 className="text-xl font-semibold text-slate-100">
             {step === 'package'
-              ? 'Choose Your Stay Package'
+              ? t('bookingModal.step.packageTitle')
               : step === 'details'
-                ? 'Complete Your Booking'
-                : 'Confirm Reservation'}
+                ? t('bookingModal.step.detailsTitle')
+                : t('bookingModal.step.confirmTitle')}
           </h2>
           <p className="text-sm text-slate-500 mt-1">
             {step === 'package'
-              ? 'Select what you want included in your stay'
+              ? t('bookingModal.step.packageDescription')
               : step === 'details'
-                ? 'Enter your details to hold this room'
-                : 'Review and confirm your booking'}
+                ? t('bookingModal.step.detailsDescription')
+                : t('bookingModal.step.confirmDescription')}
           </p>
         </div>
 
@@ -149,30 +151,30 @@ export function BookingModal({
               <div>
                 <p className="font-semibold text-slate-200">{hotel.name}</p>
                 <p className="text-sm text-slate-400">
-                  Room {room.roomNumber} - {room.type}
+                  {t('hotel.room')} {room.roomNumber} - {room.type}
                 </p>
               </div>
             </div>
             <div className="grid grid-cols-2 gap-4 text-sm">
               <div>
-                <p className="text-slate-500">Check-in</p>
+                <p className="text-slate-500">{t('booking.checkIn')}</p>
                 <p className="text-slate-200">{checkIn}</p>
               </div>
               <div>
-                <p className="text-slate-500">Check-out</p>
+                <p className="text-slate-500">{t('booking.checkOut')}</p>
                 <p className="text-slate-200">{checkOut}</p>
               </div>
             </div>
             <div className="border-t border-slate-700 mt-4 pt-4 flex justify-between">
               <div className="text-slate-400 text-sm">
                 <p>
-                  Room: ${(room.basePrice / 100).toFixed(0)} × {nights} night
-                  {nights !== 1 ? 's' : ''}
+                  {t('hotel.room')}: ${(room.basePrice / 100).toFixed(0)} × {nights}{' '}
+                  {nights !== 1 ? t('hotel.nights') : t('hotel.night')}
                 </p>
                 {selectedPackage.addOnPerNight > 0 && (
                   <p>
-                    Package: ${(selectedPackage.addOnPerNight / 100).toFixed(0)} ×{' '}
-                    {nights}
+                    {t('booking.package')}: $
+                    {(selectedPackage.addOnPerNight / 100).toFixed(0)} × {nights}
                   </p>
                 )}
               </div>
@@ -235,14 +237,14 @@ export function BookingModal({
                   onClick={onClose}
                   className="flex-1 px-4 py-3 bg-slate-800 text-slate-300 font-medium rounded-xl hover:bg-slate-700 transition-colors border border-slate-700"
                 >
-                  Cancel
+                  {t('common.cancel')}
                 </button>
                 <button
                   type="button"
                   onClick={() => setStep('details')}
                   className="flex-1 px-4 py-3 bg-gradient-to-r from-amber-500 to-amber-600 text-white font-medium rounded-xl hover:from-amber-600 hover:to-amber-700 transition-all"
                 >
-                  Continue
+                  {t('bookingModal.continue')}
                 </button>
               </div>
             </div>
@@ -250,7 +252,7 @@ export function BookingModal({
             <form onSubmit={handleHold} className="space-y-4">
               <div>
                 <label className="block text-sm font-medium text-slate-300 mb-2">
-                  Guest Name
+                  {t('bookingModal.guestName')}
                 </label>
                 <input
                   type="text"
@@ -268,7 +270,7 @@ export function BookingModal({
 
               <div>
                 <label className="block text-sm font-medium text-slate-300 mb-2">
-                  Email
+                  {t('bookingModal.email')}
                 </label>
                 <input
                   type="email"
@@ -286,7 +288,7 @@ export function BookingModal({
 
               <div>
                 <label className="block text-sm font-medium text-slate-300 mb-2">
-                  Special Requests (optional)
+                  {t('bookingModal.specialRequests')}
                 </label>
                 <textarea
                   rows={3}
@@ -297,34 +299,36 @@ export function BookingModal({
                       specialRequests: e.target.value,
                     })
                   }
-                  placeholder="Any special requests..."
+                  placeholder={t('bookingModal.specialRequestsPlaceholder')}
                   className="w-full px-4 py-3 bg-slate-800/50 border border-slate-700 rounded-xl text-slate-200 placeholder-slate-500 focus:outline-none focus:border-amber-500/50 transition-all resize-none"
                 />
               </div>
 
               <div className="bg-amber-500/10 border border-amber-500/20 rounded-xl p-4">
                 <p className="text-amber-400 text-sm">
-                  <strong>Note:</strong> Your room will be held for 15 minutes.
-                  Please confirm your booking to complete the reservation.
+                  {t('bookingModal.holdNotice')}
                 </p>
               </div>
 
               <div className="bg-slate-800/40 border border-slate-700 rounded-xl p-4 text-sm">
                 <div className="flex items-center justify-between text-slate-300">
-                  <span>Room rate ({nights} night{nights !== 1 ? 's' : ''})</span>
+                  <span>
+                    {t('bookingModal.roomRate')} ({nights}{' '}
+                    {nights !== 1 ? t('hotel.nights') : t('hotel.night')})
+                  </span>
                   <span>${(roomSubtotalCents / 100).toFixed(2)}</span>
                 </div>
                 {selectedPackage.addOnPerNight > 0 && (
                   <div className="flex items-center justify-between text-slate-300 mt-2">
                     <span>
-                      {selectedPackage.label} add-on ({nights} night
-                      {nights !== 1 ? 's' : ''})
+                      {selectedPackage.label} {t('bookingModal.addOn')} ({nights}{' '}
+                      {nights !== 1 ? t('hotel.nights') : t('hotel.night')})
                     </span>
                     <span>${(packageSubtotalCents / 100).toFixed(2)}</span>
                   </div>
                 )}
                 <div className="border-t border-slate-700 mt-3 pt-3 flex items-center justify-between text-amber-400 font-semibold">
-                  <span>Total</span>
+                  <span>{t('booking.total')}</span>
                   <span>${(totalPriceCents / 100).toFixed(2)}</span>
                 </div>
               </div>
@@ -335,14 +339,14 @@ export function BookingModal({
                   onClick={() => setStep('package')}
                   className="flex-1 px-4 py-3 bg-slate-800 text-slate-300 font-medium rounded-xl hover:bg-slate-700 transition-colors border border-slate-700"
                 >
-                  Back
+                  {t('signIn.back')}
                 </button>
                 <button
                   type="submit"
                   disabled={loading}
                   className="flex-1 px-4 py-3 bg-gradient-to-r from-amber-500 to-amber-600 text-white font-medium rounded-xl hover:from-amber-600 hover:to-amber-700 transition-all disabled:opacity-50"
                 >
-                  {loading ? 'Holding...' : 'Hold Room'}
+                  {loading ? t('bookingModal.holding') : t('bookingModal.holdRoom')}
                 </button>
               </div>
             </form>
@@ -351,30 +355,32 @@ export function BookingModal({
               <div className="bg-emerald-500/10 border border-emerald-500/20 rounded-xl p-4">
                 <div className="flex items-center gap-2 text-emerald-400 mb-2">
                   <CheckCircle className="w-5 h-5" />
-                  <span className="font-semibold">Room Held Successfully!</span>
+                  <span className="font-semibold">{t('bookingModal.heldSuccess')}</span>
                 </div>
                 <p className="text-slate-400 text-sm">
-                  Your room is being held. Please confirm within 15 minutes to
-                  complete your reservation.
+                  {t('bookingModal.heldDescription')}
                 </p>
               </div>
 
               <div className="bg-slate-800/40 border border-slate-700 rounded-xl p-4 text-sm">
                 <div className="flex items-center justify-between text-slate-300">
-                  <span>Room rate ({nights} night{nights !== 1 ? 's' : ''})</span>
+                  <span>
+                    {t('bookingModal.roomRate')} ({nights}{' '}
+                    {nights !== 1 ? t('hotel.nights') : t('hotel.night')})
+                  </span>
                   <span>${(roomSubtotalCents / 100).toFixed(2)}</span>
                 </div>
                 {selectedPackage.addOnPerNight > 0 && (
                   <div className="flex items-center justify-between text-slate-300 mt-2">
                     <span>
-                      {selectedPackage.label} add-on ({nights} night
-                      {nights !== 1 ? 's' : ''})
+                      {selectedPackage.label} {t('bookingModal.addOn')} ({nights}{' '}
+                      {nights !== 1 ? t('hotel.nights') : t('hotel.night')})
                     </span>
                     <span>${(packageSubtotalCents / 100).toFixed(2)}</span>
                   </div>
                 )}
                 <div className="border-t border-slate-700 mt-3 pt-3 flex items-center justify-between text-emerald-400 font-semibold">
-                  <span>Total</span>
+                  <span>{t('booking.total')}</span>
                   <span>${(totalPriceCents / 100).toFixed(2)}</span>
                 </div>
               </div>
@@ -384,14 +390,14 @@ export function BookingModal({
                   onClick={onClose}
                   className="flex-1 px-4 py-3 bg-slate-800 text-slate-300 font-medium rounded-xl hover:bg-slate-700 transition-colors border border-slate-700"
                 >
-                  Cancel Hold
+                  {t('bookingModal.cancelHold')}
                 </button>
                 <button
                   onClick={handleConfirm}
                   disabled={loading}
                   className="flex-1 px-4 py-3 bg-gradient-to-r from-emerald-500 to-emerald-600 text-white font-medium rounded-xl hover:from-emerald-600 hover:to-emerald-700 transition-all disabled:opacity-50"
                 >
-                  {loading ? 'Confirming...' : 'Confirm Booking'}
+                  {loading ? t('bookingModal.confirming') : t('booking.confirmBooking')}
                 </button>
               </div>
             </div>

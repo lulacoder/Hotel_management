@@ -14,6 +14,7 @@ import {
 import { useState } from 'react'
 
 import { api } from '../../../../convex/_generated/api'
+import { useI18n } from '../../../lib/i18n'
 import {
   formatPackageAddOn,
   getPackageLabelOrDefault,
@@ -29,6 +30,7 @@ function BookingDetailPage() {
   const { bookingId } = Route.useParams()
   const typedBookingId = bookingId as Id<'bookings'>
   const { user } = useUser()
+  const { t } = useI18n()
   const [showOutsourceModal, setShowOutsourceModal] = useState(false)
 
   const profile = useQuery(
@@ -64,58 +66,61 @@ function BookingDetailPage() {
     return [] as const
   }
 
-  const transitionLabel: Record<'confirmed' | 'checked_in' | 'checked_out' | 'cancelled', string> = {
-    confirmed: 'Confirm',
-    checked_in: 'Check In',
-    checked_out: 'Check Out',
-    cancelled: 'Cancel',
+  const transitionLabel: Record<
+    'confirmed' | 'checked_in' | 'checked_out' | 'cancelled',
+    string
+  > = {
+    confirmed: t('booking.transition.confirm'),
+    checked_in: t('booking.transition.checkIn'),
+    checked_out: t('booking.transition.checkOut'),
+    cancelled: t('booking.transition.cancel'),
   }
 
   const statusConfig = {
     held: {
-      label: 'Held',
+      label: t('booking.status.held'),
       icon: Clock,
       color: 'text-amber-400',
       bg: 'bg-amber-500/10',
       border: 'border-amber-500/20',
     },
     confirmed: {
-      label: 'Confirmed',
+      label: t('booking.status.confirmed'),
       icon: CheckCircle,
       color: 'text-emerald-400',
       bg: 'bg-emerald-500/10',
       border: 'border-emerald-500/20',
     },
     checked_in: {
-      label: 'Checked In',
+      label: t('booking.status.checkedIn'),
       icon: LogIn,
       color: 'text-blue-400',
       bg: 'bg-blue-500/10',
       border: 'border-blue-500/20',
     },
     checked_out: {
-      label: 'Checked Out',
+      label: t('booking.status.checkedOut'),
       icon: LogOut,
       color: 'text-slate-400',
       bg: 'bg-slate-500/10',
       border: 'border-slate-500/20',
     },
     cancelled: {
-      label: 'Cancelled',
+      label: t('booking.status.cancelled'),
       icon: XCircle,
       color: 'text-red-400',
       bg: 'bg-red-500/10',
       border: 'border-red-500/20',
     },
     expired: {
-      label: 'Expired',
+      label: t('booking.status.expired'),
       icon: XCircle,
       color: 'text-slate-500',
       bg: 'bg-slate-600/10',
       border: 'border-slate-600/20',
     },
     outsourced: {
-      label: 'Outsourced',
+      label: t('booking.status.outsourced'),
       icon: Hotel,
       color: 'text-purple-400',
       bg: 'bg-purple-500/10',
@@ -158,13 +163,15 @@ function BookingDetailPage() {
     return (
       <div className="max-w-4xl mx-auto">
         <div className="bg-slate-900/50 border border-slate-800/50 rounded-2xl p-12 text-center">
-          <h3 className="text-lg font-semibold text-slate-300 mb-2">Booking not found</h3>
+          <h3 className="text-lg font-semibold text-slate-300 mb-2">
+            {t('admin.bookings.notFound')}
+          </h3>
           <Link
             to="/admin/bookings"
             className="inline-flex items-center gap-2 px-5 py-2.5 bg-slate-800 text-slate-200 font-medium rounded-xl hover:bg-slate-700 transition-colors"
           >
             <ArrowLeft className="w-4 h-4" />
-            Back to Bookings
+            {t('admin.bookings.backToBookings')}
           </Link>
         </div>
       </div>
@@ -181,12 +188,14 @@ function BookingDetailPage() {
         className="inline-flex items-center gap-2 text-slate-400 hover:text-slate-200 transition-colors mb-6"
       >
         <ArrowLeft className="w-4 h-4" />
-        Back to Bookings
+        {t('admin.bookings.backToBookings')}
       </Link>
 
       <div className="bg-slate-900/50 border border-slate-800/50 rounded-2xl p-6 mb-6">
         <div className="flex items-center justify-between gap-4 mb-4">
-          <h1 className="text-2xl font-semibold text-slate-100">Booking Detail</h1>
+          <h1 className="text-2xl font-semibold text-slate-100">
+            {t('admin.bookings.detailPageTitle')}
+          </h1>
           <div
             className={`inline-flex items-center gap-2 px-3 py-1 rounded-lg text-sm font-medium ${status.bg} ${status.color} ${status.border} border`}
           >
@@ -197,64 +206,66 @@ function BookingDetailPage() {
 
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4 text-sm">
           <div className="bg-slate-800/40 border border-slate-700 rounded-xl p-4">
-            <p className="text-slate-500 mb-1">Guest</p>
+            <p className="text-slate-500 mb-1">{t('admin.bookings.guest')}</p>
             <p className="text-slate-100 font-medium">
               {bookingDetail.guestProfile?.name ||
                 bookingDetail.booking.guestName ||
-                'N/A'}
+                t('admin.bookings.na')}
             </p>
             <p className="text-slate-400">
-              {bookingDetail.guestProfile?.phone || 'No phone'}
+              {bookingDetail.guestProfile?.phone || t('admin.bookings.noPhone')}
             </p>
             <p className="text-slate-400">
               {bookingDetail.guestProfile?.email ||
                 bookingDetail.booking.guestEmail ||
-                'No email'}
+                t('admin.bookings.noEmail')}
             </p>
             {bookingDetail.linkedUser && (
               <p className="text-xs text-slate-500 mt-1">
-                Linked account: {bookingDetail.linkedUser.email}
+                {t('admin.bookings.linkedAccount')}: {bookingDetail.linkedUser.email}
               </p>
             )}
           </div>
           <div className="bg-slate-800/40 border border-slate-700 rounded-xl p-4">
-            <p className="text-slate-500 mb-1">Room</p>
-            <p className="text-slate-100 font-medium">Room {bookingDetail.room.roomNumber}</p>
+            <p className="text-slate-500 mb-1">{t('hotel.room')}</p>
+            <p className="text-slate-100 font-medium">
+              {t('hotel.room')} {bookingDetail.room.roomNumber}
+            </p>
             <p className="text-slate-400 capitalize">{bookingDetail.room.type}</p>
           </div>
           <div className="bg-slate-800/40 border border-slate-700 rounded-xl p-4">
-            <p className="text-slate-500 mb-1">Hotel</p>
+            <p className="text-slate-500 mb-1">{t('admin.nav.hotels')}</p>
             <p className="text-slate-100 font-medium">{bookingDetail.hotel.name}</p>
             <p className="text-slate-400">{bookingDetail.hotel.address}, {bookingDetail.hotel.city}</p>
           </div>
           {bookingDetail.booking.status === 'outsourced' && (
             <div className="bg-slate-800/40 border border-slate-700 rounded-xl p-4">
-              <p className="text-slate-500 mb-1">Outsourced To</p>
+              <p className="text-slate-500 mb-1">{t('admin.bookings.outsourcedTo')}</p>
               <p className="text-slate-100 font-medium">
-                {outsourcedToHotel?.name || 'Unknown destination'}
+                {outsourcedToHotel?.name || t('admin.bookings.unknownDestination')}
               </p>
               <p className="text-slate-400">
                 {outsourcedToHotel
                   ? `${outsourcedToHotel.city}, ${outsourcedToHotel.country}`
-                  : 'Destination hotel not available'}
+                  : t('admin.bookings.destinationUnavailable')}
               </p>
             </div>
           )}
           <div className="bg-slate-800/40 border border-slate-700 rounded-xl p-4">
-            <p className="text-slate-500 mb-1">Stay</p>
+            <p className="text-slate-500 mb-1">{t('admin.bookings.stay')}</p>
             <p className="text-slate-100 font-medium">
               {bookingDetail.booking.checkIn} → {bookingDetail.booking.checkOut}
             </p>
             <p className="text-slate-400">${(bookingDetail.booking.totalPrice / 100).toFixed(2)}</p>
           </div>
           <div className="bg-slate-800/40 border border-slate-700 rounded-xl p-4">
-            <p className="text-slate-500 mb-1">Payment</p>
+            <p className="text-slate-500 mb-1">{t('admin.bookings.payment')}</p>
             <p className="text-slate-100 font-medium capitalize">
-              {bookingDetail.booking.paymentStatus || 'pending'}
+              {bookingDetail.booking.paymentStatus || t('admin.bookings.pending')}
             </p>
           </div>
           <div className="bg-slate-800/40 border border-slate-700 rounded-xl p-4">
-            <p className="text-slate-500 mb-1">Package</p>
+            <p className="text-slate-500 mb-1">{t('booking.package')}</p>
             <p className="text-slate-100 font-medium">
               {getPackageLabelOrDefault(bookingDetail.booking.packageType)}
             </p>
@@ -266,7 +277,7 @@ function BookingDetailPage() {
           </div>
           {bookingDetail.booking.specialRequests && (
             <div className="bg-slate-800/40 border border-slate-700 rounded-xl p-4">
-              <p className="text-slate-500 mb-1">Special Requests</p>
+              <p className="text-slate-500 mb-1">{t('bookingModal.specialRequests')}</p>
               <p className="text-slate-300">{bookingDetail.booking.specialRequests}</p>
             </div>
           )}
@@ -275,7 +286,9 @@ function BookingDetailPage() {
 
       {canManageBookings && (
         <div className="bg-slate-900/50 border border-slate-800/50 rounded-2xl p-6">
-          <h2 className="text-lg font-semibold text-slate-200 mb-4">Actions</h2>
+          <h2 className="text-lg font-semibold text-slate-200 mb-4">
+            {t('admin.bookings.actions')}
+          </h2>
           <div className="flex flex-wrap gap-2">
             {bookingDetail.booking.paymentStatus !== 'paid' &&
               !['cancelled', 'expired', 'outsourced'].includes(
@@ -286,7 +299,7 @@ function BookingDetailPage() {
                   className="px-3 py-2 bg-emerald-500/10 text-emerald-400 rounded-lg hover:bg-emerald-500/20 transition-colors text-sm font-medium border border-emerald-500/20 inline-flex items-center gap-2"
                 >
                   <CircleDollarSign className="w-4 h-4" />
-                  Accept Cash Payment
+                  {t('admin.bookings.acceptCashPayment')}
                 </button>
               )}
 
@@ -297,7 +310,7 @@ function BookingDetailPage() {
                   className="px-3 py-2 bg-purple-500/10 text-purple-400 rounded-lg hover:bg-purple-500/20 transition-colors text-sm font-medium border border-purple-500/20 inline-flex items-center gap-2"
                 >
                   <Hotel className="w-4 h-4" />
-                  Outsource
+                  {t('admin.bookings.outsource')}
                 </button>
               )}
 

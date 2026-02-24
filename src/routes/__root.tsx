@@ -12,6 +12,7 @@ import Header from '../components/Header'
 import ClerkProvider from '../integrations/clerk/provider'
 
 import ConvexProvider from '../integrations/convex/provider'
+import { I18nProvider, localeBootstrapScript, useI18n } from '../lib/i18n'
 import { ThemeProvider, themeBootstrapScript } from '../lib/theme'
 
 import appCss from '../styles.css?url'
@@ -70,17 +71,21 @@ export const Route = createRootRoute({
 })
 
 function RootNotFound() {
+  const { t } = useI18n()
+
   return (
     <main className="mx-auto flex min-h-[60vh] max-w-3xl flex-col items-center justify-center px-6 text-center">
-      <h1 className="text-3xl font-semibold text-slate-100">Page not found</h1>
+      <h1 className="text-3xl font-semibold text-slate-100">
+        {t('root.notFoundTitle')}
+      </h1>
       <p className="mt-3 text-slate-400">
-        The page you’re looking for doesn’t exist or may have been moved.
+        {t('root.notFoundDescription')}
       </p>
       <Link
         to="/"
         className="mt-6 rounded-xl bg-amber-500 px-5 py-2.5 font-semibold text-slate-900 transition-colors hover:bg-amber-400"
       >
-        Go to home
+        {t('root.goHome')}
       </Link>
     </main>
   )
@@ -91,28 +96,31 @@ function RootDocument({ children }: { children: React.ReactNode }) {
     <html lang="en" suppressHydrationWarning>
       <head>
         <script dangerouslySetInnerHTML={{ __html: themeBootstrapScript }} />
+        <script dangerouslySetInnerHTML={{ __html: localeBootstrapScript }} />
         <HeadContent />
       </head>
       <body>
-        <ThemeProvider>
-          <ClerkProvider>
-            <ConvexProvider>
-              <Header />
-              {children}
-              <TanStackDevtools
-                config={{
-                  position: 'bottom-right',
-                }}
-                plugins={[
-                  {
-                    name: 'Tanstack Router',
-                    render: <TanStackRouterDevtoolsPanel />,
-                  },
-                ]}
-              />
-            </ConvexProvider>
-          </ClerkProvider>
-        </ThemeProvider>
+        <I18nProvider>
+          <ThemeProvider>
+            <ClerkProvider>
+              <ConvexProvider>
+                <Header />
+                {children}
+                <TanStackDevtools
+                  config={{
+                    position: 'bottom-right',
+                  }}
+                  plugins={[
+                    {
+                      name: 'Tanstack Router',
+                      render: <TanStackRouterDevtoolsPanel />,
+                    },
+                  ]}
+                />
+              </ConvexProvider>
+            </ClerkProvider>
+          </ThemeProvider>
+        </I18nProvider>
         <Scripts />
       </body>
     </html>

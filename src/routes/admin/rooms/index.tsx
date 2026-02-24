@@ -4,6 +4,7 @@ import { useQuery } from 'convex/react'
 import { api } from '../../../../convex/_generated/api'
 import { Building2, Hotel, MapPin, Search, ChevronRight } from 'lucide-react'
 import { useState } from 'react'
+import { useI18n } from '../../../lib/i18n'
 
 export const Route = createFileRoute('/admin/rooms/')({
   component: RoomsPage,
@@ -11,6 +12,7 @@ export const Route = createFileRoute('/admin/rooms/')({
 
 function RoomsPage() {
   const { user } = useUser()
+  const { t } = useI18n()
   const [searchTerm, setSearchTerm] = useState('')
 
   const hotels = useQuery(api.hotels.list, {})
@@ -41,9 +43,9 @@ function RoomsPage() {
       {/* Header */}
       <div className="mb-8">
         <h1 className="text-3xl font-semibold text-slate-100 tracking-tight mb-2">
-          Rooms
+          {t('admin.nav.rooms')}
         </h1>
-        <p className="text-slate-400">Select a hotel to manage its rooms.</p>
+        <p className="text-slate-400">{t('admin.rooms.description')}</p>
       </div>
 
       {/* Search */}
@@ -51,7 +53,7 @@ function RoomsPage() {
         <Search className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-slate-500" />
         <input
           type="text"
-          placeholder="Search hotels..."
+          placeholder={t('admin.rooms.searchPlaceholder')}
           value={searchTerm}
           onChange={(e) => setSearchTerm(e.target.value)}
           className="w-full pl-12 pr-4 py-3 bg-slate-900/50 border border-slate-800/50 rounded-xl text-slate-200 placeholder-slate-500 focus:outline-none focus:border-amber-500/50 focus:ring-1 focus:ring-amber-500/20 transition-all"
@@ -69,20 +71,20 @@ function RoomsPage() {
             <Hotel className="w-8 h-8 text-slate-600" />
           </div>
           <h3 className="text-lg font-semibold text-slate-300 mb-2">
-            {searchTerm ? 'No hotels found' : 'No hotels yet'}
+            {searchTerm ? t('admin.hotels.noneFound') : t('admin.hotels.noneYet')}
           </h3>
           <p className="text-slate-500 mb-6">
             {searchTerm
-              ? 'Try adjusting your search.'
-              : 'Create a hotel first to manage rooms.'}
+              ? t('admin.rooms.trySearchAdjust')
+              : t('admin.rooms.createHotelFirst')}
           </p>
           {!searchTerm && (
             <Link
               to="/admin/hotels"
               className="light-hover-amber inline-flex items-center gap-2 px-5 py-2.5 bg-amber-500/10 text-amber-400 font-medium rounded-xl hover:bg-amber-500/20 transition-all border border-amber-500/20"
             >
-              Go to Hotels
-            </Link>
+                {t('admin.rooms.goToHotels')}
+              </Link>
           )}
         </div>
       ) : (

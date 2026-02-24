@@ -11,6 +11,7 @@ import {
   ArrowUpRight,
 } from 'lucide-react'
 import { Link } from '@tanstack/react-router'
+import { useI18n } from '../../lib/i18n'
 
 export const Route = createFileRoute('/admin/')({
   component: AdminDashboard,
@@ -18,6 +19,7 @@ export const Route = createFileRoute('/admin/')({
 
 function AdminDashboard() {
   const { user } = useUser()
+  const { t } = useI18n()
 
   const profile = useQuery(
     api.users.getByClerkId,
@@ -44,28 +46,28 @@ function AdminDashboard() {
 
   const stats = [
     {
-      label: 'Total Hotels',
+      label: t('admin.stats.totalHotels'),
       value: totalHotels.toString(),
       icon: Hotel,
       color: 'from-amber-500 to-amber-600',
       shadowColor: 'shadow-amber-500/20',
     },
     {
-      label: 'Total Rooms',
+      label: t('admin.stats.totalRooms'),
       value: '-',
       icon: Building2,
       color: 'from-blue-500 to-blue-600',
       shadowColor: 'shadow-blue-500/20',
     },
     {
-      label: 'Active Bookings',
+      label: t('admin.stats.activeBookings'),
       value: '-',
       icon: Calendar,
       color: 'from-emerald-500 to-emerald-600',
       shadowColor: 'shadow-emerald-500/20',
     },
     {
-      label: 'Total Revenue',
+      label: t('admin.stats.totalRevenue'),
       value: '$0',
       icon: TrendingUp,
       color: 'from-violet-500 to-violet-600',
@@ -109,10 +111,10 @@ function AdminDashboard() {
       {/* Welcome Header */}
       <div className="mb-8">
         <h1 className="text-3xl font-semibold text-slate-100 tracking-tight mb-2">
-          Welcome back, {user?.firstName || 'Admin'}
+          {t('admin.welcomeBack', { name: user?.firstName || 'Admin' })}
         </h1>
         <p className="text-slate-400">
-          Here's an overview of your hotel management system.
+          {t('admin.overview')}
         </p>
       </div>
 
@@ -164,7 +166,7 @@ function AdminDashboard() {
       {/* Quick Actions */}
       <div className="mb-8">
         <h2 className="text-lg font-semibold text-slate-200 mb-4">
-          Quick Actions
+          {t('admin.quickActions')}
         </h2>
         <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
           {quickActions.map((action) => (

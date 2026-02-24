@@ -11,6 +11,7 @@ import {
 
 import type { Id } from '../../../../convex/_generated/dataModel'
 import { formatDistance } from '../../../lib/distance'
+import { useI18n } from '../../../lib/i18n'
 import { categoryColors, SortOption } from './-helpers'
 
 interface HotelGridProps {
@@ -47,6 +48,8 @@ export function HotelGrid({
   onOpenRating,
   isLoading,
 }: HotelGridProps) {
+  const { t } = useI18n()
+
   if (isLoading) {
     return (
       <div className="flex items-center justify-center py-20">
@@ -65,12 +68,12 @@ export function HotelGrid({
           <Building2 className="w-10 h-10 text-slate-600" />
         </div>
         <h3 className="text-xl font-semibold text-slate-300 mb-3">
-          {isFiltered ? 'No hotels found' : 'No hotels available'}
+          {isFiltered ? t('grid.noHotelsFound') : t('grid.noHotelsAvailable')}
         </h3>
         <p className="text-slate-500">
           {isFiltered
-            ? 'Try adjusting your search or filters.'
-            : 'Check back soon for new listings.'}
+            ? t('grid.adjustFilters')
+            : t('grid.checkBackSoon')}
         </p>
       </div>
     )
@@ -80,16 +83,21 @@ export function HotelGrid({
     <>
       <div className="flex items-center justify-between mb-6">
         <h3 className="text-xl font-semibold text-slate-200">
-          {hotels.length} hotel{hotels.length !== 1 ? 's' : ''} available
+          {t('grid.hotelsAvailable', {
+            count: hotels.length,
+            suffix: hotels.length !== 1 ? 's' : '',
+          })}
         </h3>
         <div className="flex items-center gap-2 text-slate-500 text-sm">
           <ArrowUpDown className="w-4 h-4" />
-          Sorted by{' '}
-          {sortBy === 'distance'
-            ? 'distance'
-            : sortBy === 'rating'
-              ? 'rating'
-              : 'name'}
+          {t('grid.sortedBy', {
+            value:
+              sortBy === 'distance'
+                ? t('grid.sortDistance')
+                : sortBy === 'rating'
+                  ? t('grid.sortRating')
+                  : t('grid.sortName'),
+          })}
         </div>
       </div>
 
@@ -164,7 +172,7 @@ export function HotelGrid({
                     <div className="absolute bottom-4 right-4 flex items-center gap-1 bg-emerald-500/20 backdrop-blur-sm px-2 py-1 rounded-lg border border-emerald-500/30">
                       <Car className="w-3.5 h-3.5 text-emerald-400" />
                       <span className="text-xs text-emerald-300">
-                        Free Parking
+                        {t('grid.freeParking')}
                       </span>
                     </div>
                   )}
@@ -202,7 +210,7 @@ export function HotelGrid({
                       ))}
                       {hotel.tags.length > 3 && (
                         <span className="px-2 py-0.5 bg-slate-800 rounded text-xs text-slate-500">
-                          +{hotel.tags.length - 3} more
+                          {t('grid.more', { count: hotel.tags.length - 3 })}
                         </span>
                       )}
                     </div>
@@ -216,14 +224,14 @@ export function HotelGrid({
                   params={{ hotelId: hotel._id }}
                   className="text-amber-400 font-semibold group-hover:translate-x-1 transition-transform"
                 >
-                  View Rooms →
+                  {t('grid.viewRooms')}
                 </Link>
                 <button
                   type="button"
                   onClick={() => onOpenRating(hotel._id)}
                   className="light-hover-amber px-3 py-1.5 text-sm font-semibold text-slate-900 bg-amber-500 hover:bg-amber-400 rounded-lg transition-all border border-amber-500/30"
                 >
-                  Rate this hotel
+                  {t('grid.rateHotel')}
                 </button>
               </div>
             </div>

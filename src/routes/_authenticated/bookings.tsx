@@ -5,6 +5,7 @@ import { api } from '../../../convex/_generated/api'
 import { Id } from '../../../convex/_generated/dataModel'
 import { Calendar, Loader2 } from 'lucide-react'
 import { useState } from 'react'
+import { useI18n } from '../../lib/i18n'
 
 import { BookingsHeader } from './bookings/components/-BookingsHeader'
 import { BookingsFilters } from './bookings/components/-BookingsFilters'
@@ -16,6 +17,7 @@ export const Route = createFileRoute('/_authenticated/bookings')({
 
 function BookingsPage() {
   const { user } = useUser()
+  const { t } = useI18n()
   const [cancellingId, setCancellingId] = useState<string | null>(null)
   const [statusFilter, setStatusFilter] = useState<string>('all')
 
@@ -30,7 +32,7 @@ function BookingsPage() {
     if (!user?.id) return
 
     const confirmed = window.confirm(
-      'Are you sure you want to cancel this booking?',
+      t('bookings.confirmCancel'),
     )
     if (!confirmed) return
 
@@ -42,7 +44,7 @@ function BookingsPage() {
       })
     } catch (error) {
       console.error('Failed to cancel booking:', error)
-      alert('Failed to cancel booking. Please try again.')
+      alert(t('bookings.cancelFailed'))
     } finally {
       setCancellingId(null)
     }
@@ -84,19 +86,21 @@ function BookingsPage() {
             <Calendar className="w-16 h-16 text-slate-600 mx-auto mb-4" />
             <h2 className="text-xl font-semibold text-white mb-2">
               {statusFilter === 'all'
-                ? 'No Bookings Yet'
-                : `No ${statusFilter.replace('_', ' ')} bookings`}
+                ? t('bookings.noBookingsYet')
+                : t('bookings.noStatusBookings', {
+                    status: statusFilter.replace('_', ' '),
+                  })}
             </h2>
             <p className="text-slate-400 mb-6">
               {statusFilter === 'all'
-                ? "You haven't made any bookings. Start by selecting a location!"
-                : 'Try changing the filter to see other bookings.'}
+                ? t('bookings.startSelectingLocation')
+                : t('bookings.tryChangingFilter')}
             </p>
             <Link
               to="/select-location"
               className="inline-flex items-center px-6 py-3 bg-amber-500 text-slate-900 font-semibold rounded-xl hover:bg-amber-400 transition-colors"
             >
-              Browse Hotels
+              {t('bookings.browseHotels')}
             </Link>
           </div>
         )}

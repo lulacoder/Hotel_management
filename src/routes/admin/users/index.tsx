@@ -6,6 +6,7 @@ import { useMemo, useState } from 'react'
 import { api } from '../../../../convex/_generated/api'
 import { AssignModal } from './components/-AssignModal'
 import type { Id } from '../../../../convex/_generated/dataModel'
+import { useI18n } from '../../../lib/i18n'
 
 export const Route = createFileRoute('/admin/users/')({
   component: AdminUsersPage,
@@ -13,6 +14,7 @@ export const Route = createFileRoute('/admin/users/')({
 
 function AdminUsersPage() {
   const { user } = useUser()
+  const { t } = useI18n()
   const [searchQuery, setSearchQuery] = useState('')
   const [selectedUserId, setSelectedUserId] = useState<Id<'users'> | null>(null)
   const [error, setError] = useState<string | null>(null)
@@ -38,7 +40,7 @@ function AdminUsersPage() {
 
   const handleUnassign = async (targetUserId: Id<'users'>) => {
     if (!user?.id) return
-    if (!confirm('Are you sure you want to unassign this user?')) return
+    if (!confirm(t('admin.users.confirmUnassign'))) return
 
     setError(null)
     try {
@@ -47,7 +49,7 @@ function AdminUsersPage() {
       setError(
         submissionError instanceof Error
           ? submissionError.message
-          : 'Failed to unassign user.',
+          : t('admin.users.unassignFailed'),
       )
     }
   }
@@ -56,7 +58,7 @@ function AdminUsersPage() {
     return (
       <div className="max-w-7xl mx-auto">
         <div className="bg-slate-900/50 border border-slate-800/50 rounded-2xl p-8 text-center text-slate-500">
-          Loading profile...
+          {t('admin.users.loadingProfile')}
         </div>
       </div>
     )
@@ -66,8 +68,8 @@ function AdminUsersPage() {
     return (
       <div className="max-w-7xl mx-auto">
         <div className="bg-slate-900/50 border border-red-500/20 rounded-2xl p-8 text-center">
-          <h2 className="text-xl font-semibold text-red-400 mb-2">Access Denied</h2>
-          <p className="text-slate-400">Only room administrators can manage users.</p>
+          <h2 className="text-xl font-semibold text-red-400 mb-2">{t('admin.accessDenied')}</h2>
+          <p className="text-slate-400">{t('admin.users.onlyRoomAdmins')}</p>
         </div>
       </div>
     )
@@ -76,9 +78,11 @@ function AdminUsersPage() {
   return (
     <div className="max-w-7xl mx-auto">
       <div className="mb-8">
-        <h1 className="text-3xl font-semibold text-slate-100 tracking-tight mb-2">Users</h1>
+        <h1 className="text-3xl font-semibold text-slate-100 tracking-tight mb-2">
+          {t('admin.nav.users')}
+        </h1>
         <p className="text-slate-400">
-          Assign users to hotels and manage hotel staff roles.
+          {t('admin.users.description')}
         </p>
       </div>
 
@@ -92,7 +96,7 @@ function AdminUsersPage() {
         <Search className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-slate-500" />
         <input
           type="text"
-          placeholder="Search users by email..."
+          placeholder={t('admin.users.searchPlaceholder')}
           value={searchQuery}
           onChange={(e) => setSearchQuery(e.target.value)}
           className="w-full pl-12 pr-4 py-3 bg-slate-900/50 border border-slate-800/50 rounded-xl text-slate-200 placeholder-slate-500 focus:outline-none focus:border-amber-500/50 focus:ring-1 focus:ring-amber-500/20"
@@ -104,24 +108,24 @@ function AdminUsersPage() {
           <table className="w-full">
             <thead>
               <tr className="border-b border-slate-800/70 text-left">
-                <th className="px-6 py-4 text-xs text-slate-500 font-medium uppercase tracking-wider">Email</th>
-                <th className="px-6 py-4 text-xs text-slate-500 font-medium uppercase tracking-wider">Global Role</th>
-                <th className="px-6 py-4 text-xs text-slate-500 font-medium uppercase tracking-wider">Hotel Assignment</th>
-                <th className="px-6 py-4 text-xs text-slate-500 font-medium uppercase tracking-wider">Hotel Role</th>
-                <th className="px-6 py-4 text-xs text-slate-500 font-medium uppercase tracking-wider">Actions</th>
+                <th className="px-6 py-4 text-xs text-slate-500 font-medium uppercase tracking-wider">{t('admin.users.email')}</th>
+                <th className="px-6 py-4 text-xs text-slate-500 font-medium uppercase tracking-wider">{t('admin.users.globalRole')}</th>
+                <th className="px-6 py-4 text-xs text-slate-500 font-medium uppercase tracking-wider">{t('admin.users.hotelAssignment')}</th>
+                <th className="px-6 py-4 text-xs text-slate-500 font-medium uppercase tracking-wider">{t('admin.users.hotelRole')}</th>
+                <th className="px-6 py-4 text-xs text-slate-500 font-medium uppercase tracking-wider">{t('admin.bookings.actions')}</th>
               </tr>
             </thead>
             <tbody>
               {users === undefined ? (
                 <tr>
                   <td colSpan={5} className="px-6 py-8 text-center text-slate-500">
-                    Loading users...
+                    {t('admin.users.loadingUsers')}
                   </td>
                 </tr>
               ) : filteredUsers.length === 0 ? (
                 <tr>
                   <td colSpan={5} className="px-6 py-8 text-center text-slate-500">
-                    No users found.
+                    {t('admin.users.noneFound')}
                   </td>
                 </tr>
               ) : (
@@ -151,7 +155,7 @@ function AdminUsersPage() {
                           </span>
                         </div>
                       ) : (
-                        <span className="text-slate-500 italic">Not assigned</span>
+                        <span className="text-slate-500 italic">{t('admin.users.notAssigned')}</span>
                       )}
                     </td>
                     <td className="px-6 py-4">
@@ -175,14 +179,14 @@ function AdminUsersPage() {
                           onClick={() => handleUnassign(listedUser._id)}
                           className="px-3 py-1.5 rounded-lg text-xs font-medium bg-red-500/10 text-red-400 border border-red-500/20 hover:bg-red-500/20"
                         >
-                          Unassign
+                          {t('admin.users.unassign')}
                         </button>
                       ) : (
                         <button
                           onClick={() => setSelectedUserId(listedUser._id)}
                           className="px-3 py-1.5 rounded-lg text-xs font-medium bg-amber-500/10 text-amber-400 border border-amber-500/20 hover:bg-amber-500/20"
                         >
-                          Assign
+                          {t('admin.users.assign')}
                         </button>
                       )}
                     </td>

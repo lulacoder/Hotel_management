@@ -1,4 +1,5 @@
 import { SortOption } from './-helpers'
+import { useI18n } from '../../../lib/i18n'
 
 interface SearchFiltersProps {
   selectedCity: string
@@ -23,6 +24,8 @@ export function SearchFilters({
   onSortChange,
   hasUserLocation,
 }: SearchFiltersProps) {
+  const { t } = useI18n()
+
   return (
     <div className="flex flex-col sm:flex-row gap-3">
       <select
@@ -30,7 +33,7 @@ export function SearchFilters({
         onChange={(event) => onCityChange(event.target.value)}
         className="flex-1 px-4 py-3 bg-slate-800/50 border border-slate-700/50 rounded-xl text-slate-200 focus:outline-none focus:border-amber-500/50 transition-all"
       >
-        <option value="all">All Cities</option>
+        <option value="all">{t('select.allCities')}</option>
         {cities.map((city) => (
           <option key={city} value={city}>
             {city}
@@ -43,7 +46,7 @@ export function SearchFilters({
         onChange={(event) => onCategoryChange(event.target.value)}
         className="flex-1 px-4 py-3 bg-slate-800/50 border border-slate-700/50 rounded-xl text-slate-200 focus:outline-none focus:border-amber-500/50 transition-all"
       >
-        <option value="all">All Categories</option>
+        <option value="all">{t('select.allCategories')}</option>
         {categories.map((cat) => (
           <option key={cat} value={cat}>
             {cat}
@@ -56,9 +59,11 @@ export function SearchFilters({
         onChange={(event) => onSortChange(event.target.value as SortOption)}
         className="flex-1 px-4 py-3 bg-slate-800/50 border border-slate-700/50 rounded-xl text-slate-200 focus:outline-none focus:border-amber-500/50 transition-all"
       >
-        <option value="name">Sort by Name</option>
-        <option value="rating">Sort by Rating</option>
-        {hasUserLocation && <option value="distance">Sort by Distance</option>}
+        <option value="name">{t('select.sortByName')}</option>
+        <option value="rating">{t('select.sortByRating')}</option>
+        {hasUserLocation && (
+          <option value="distance">{t('select.sortByDistance')}</option>
+        )}
       </select>
     </div>
   )

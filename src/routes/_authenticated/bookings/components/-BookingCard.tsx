@@ -14,6 +14,7 @@ import {
   formatPackageAddOn,
   getPackageLabelOrDefault,
 } from '../../../../lib/packages'
+import { useI18n } from '../../../../lib/i18n'
 import { canCancel, formatDate, formatPrice, getRoomTypeName } from './-helpers'
 import type { Id } from '../../../../../convex/_generated/dataModel'
 import type { PackageType } from '../../../../lib/packages'
@@ -45,47 +46,49 @@ interface BookingCardProps {
 }
 
 function StatusBadge({ status }: { status: string }) {
+  const { t } = useI18n()
+
   switch (status) {
     case 'held':
       return (
         <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-xs font-medium bg-amber-500/20 text-amber-400 border border-amber-500/30">
           <Clock className="w-3 h-3" />
-          Held
+          {t('booking.status.held')}
         </span>
       )
     case 'confirmed':
       return (
         <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-xs font-medium bg-green-500/20 text-green-400 border border-green-500/30">
           <CheckCircle className="w-3 h-3" />
-          Confirmed
+          {t('booking.status.confirmed')}
         </span>
       )
     case 'checked_in':
       return (
         <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-xs font-medium bg-blue-500/20 text-blue-400 border border-blue-500/30">
           <CheckCircle className="w-3 h-3" />
-          Checked In
+          {t('booking.status.checkedIn')}
         </span>
       )
     case 'checked_out':
       return (
         <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-xs font-medium bg-slate-500/20 text-slate-400 border border-slate-500/30">
           <CheckCircle className="w-3 h-3" />
-          Checked Out
+          {t('booking.status.checkedOut')}
         </span>
       )
     case 'cancelled':
       return (
         <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-xs font-medium bg-red-500/20 text-red-400 border border-red-500/30">
           <XCircle className="w-3 h-3" />
-          Cancelled
+          {t('booking.status.cancelled')}
         </span>
       )
     case 'expired':
       return (
         <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-xs font-medium bg-slate-500/20 text-slate-400 border border-slate-500/30">
           <AlertCircle className="w-3 h-3" />
-          Expired
+          {t('booking.status.expired')}
         </span>
       )
     default:
@@ -104,6 +107,8 @@ export function BookingCard({
   cancellingId,
   onCancel,
 }: BookingCardProps) {
+  const { t } = useI18n()
+
   return (
     <div className="bg-slate-900 rounded-2xl border border-slate-800/50 p-6 hover:border-slate-700 transition-colors">
       <div className="flex justify-between items-start gap-4">
@@ -128,7 +133,7 @@ export function BookingCard({
 
           <div className="mb-4">
             <span className="inline-flex items-center gap-2 px-2.5 py-1 rounded-full text-xs font-medium bg-slate-800 text-slate-300 border border-slate-700">
-              Package: {getPackageLabelOrDefault(booking.packageType)}
+              {t('booking.package')}: {getPackageLabelOrDefault(booking.packageType)}
               {booking.packageType && (
                 <span className="text-slate-400">
                   ({formatPackageAddOn(booking.packageAddOn ?? 0)})
@@ -139,25 +144,25 @@ export function BookingCard({
 
           <div className="grid grid-cols-2 sm:grid-cols-4 gap-4 text-sm">
             <div>
-              <span className="text-slate-500 block">Check-in</span>
+              <span className="text-slate-500 block">{t('booking.checkIn')}</span>
               <span className="text-slate-200 font-medium">
                 {formatDate(booking.checkIn)}
               </span>
             </div>
             <div>
-              <span className="text-slate-500 block">Check-out</span>
+              <span className="text-slate-500 block">{t('booking.checkOut')}</span>
               <span className="text-slate-200 font-medium">
                 {formatDate(booking.checkOut)}
               </span>
             </div>
             <div>
-              <span className="text-slate-500 block">Price/Night</span>
+              <span className="text-slate-500 block">{t('booking.priceNight')}</span>
               <span className="text-slate-200 font-medium">
                 {formatPrice(booking.pricePerNight)}
               </span>
             </div>
             <div>
-              <span className="text-slate-500 block">Total</span>
+              <span className="text-slate-500 block">{t('booking.total')}</span>
               <span className="text-amber-400 font-semibold">
                 {formatPrice(booking.totalPrice)}
               </span>
@@ -167,17 +172,15 @@ export function BookingCard({
           {booking.status === 'held' && booking.holdExpiresAt && (
             <div className="mt-4 p-3 bg-amber-500/10 border border-amber-500/30 rounded-lg">
               <div className="flex items-center gap-2 text-amber-400 text-sm">
-                <Clock className="w-4 h-4" />
-                <span>
-                  Hold expires at{' '}
-                  {new Date(booking.holdExpiresAt).toLocaleTimeString('en-US', {
-                    hour: '2-digit',
-                    minute: '2-digit',
-                  })}
-                  . Please confirm your booking to secure it.
-                </span>
+                  <Clock className="w-4 h-4" />
+                  <span>{t('booking.holdExpires', {
+                    time: new Date(booking.holdExpiresAt).toLocaleTimeString('en-US', {
+                      hour: '2-digit',
+                      minute: '2-digit',
+                    }),
+                  })}</span>
+                </div>
               </div>
-            </div>
           )}
         </div>
       </div>
@@ -190,9 +193,9 @@ export function BookingCard({
               params={{ hotelId: hotel._id }}
               className="px-4 py-2 bg-amber-500 text-slate-900 font-medium rounded-lg hover:bg-amber-400 transition-colors text-sm"
             >
-              Confirm Booking
-            </Link>
-          )}
+                {t('booking.confirmBooking')}
+             </Link>
+           )}
           <button
             onClick={() => onCancel(booking._id)}
             disabled={cancellingId === booking._id}
@@ -201,12 +204,12 @@ export function BookingCard({
             {cancellingId === booking._id ? (
               <>
                 <Loader2 className="w-4 h-4 animate-spin" />
-                Cancelling...
+                {t('booking.cancelling')}
               </>
             ) : (
               <>
                 <X className="w-4 h-4" />
-                Cancel
+                {t('booking.cancel')}
               </>
             )}
           </button>

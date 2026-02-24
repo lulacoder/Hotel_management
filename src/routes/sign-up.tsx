@@ -2,6 +2,7 @@ import { Link, createFileRoute, useLocation } from '@tanstack/react-router'
 import { SignUp } from '@clerk/clerk-react'
 import { ArrowLeft } from 'lucide-react'
 import { ThemeToggle } from '../components/ThemeToggle'
+import { useI18n } from '../lib/i18n'
 import { getClerkAuthAppearance } from '../lib/clerkAppearance'
 import { useTheme } from '../lib/theme'
 
@@ -11,6 +12,7 @@ export const Route = createFileRoute('/sign-up')({
 
 function SignUpPage() {
   const { theme } = useTheme()
+  const { t } = useI18n()
   const location = useLocation()
   const params = new URLSearchParams(location.search)
   const redirectParam = params.get('redirect')
@@ -59,34 +61,32 @@ function SignUpPage() {
 
           {/* Main Content */}
           <div className="max-w-md">
-            <h1 className="text-4xl font-bold text-white mb-4 leading-tight">
-              Start your journey with us
-            </h1>
-            <p className="text-lg text-slate-400 leading-relaxed">
-              Create an account to unlock exclusive deals, manage your bookings,
-              and experience luxury stays around the world.
-            </p>
+              <h1 className="text-4xl font-bold text-white mb-4 leading-tight">
+                {t('signUp.startJourney')}
+              </h1>
+              <p className="text-lg text-slate-400 leading-relaxed">
+                {t('signUp.description')}
+              </p>
 
             {/* Features */}
             <div className="mt-8 space-y-4">
-              {[
-                'Browse hotels by location',
-                'Book and manage your stays',
-                'Simple and secure booking',
-              ].map((feature, index) => (
-                <div key={index} className="flex items-center gap-3">
-                  <div className="w-5 h-5 rounded-full bg-amber-500/20 flex items-center justify-center">
-                    <div className="w-2 h-2 rounded-full bg-amber-400" />
+                {[t('signUp.feature1'), t('signUp.feature2'), t('signUp.feature3')].map(
+                  (feature, index) => (
+                  <div key={index} className="flex items-center gap-3">
+                    <div className="w-5 h-5 rounded-full bg-amber-500/20 flex items-center justify-center">
+                      <div className="w-2 h-2 rounded-full bg-amber-400" />
+                    </div>
+                    <span className="text-slate-300 font-medium">{feature}</span>
                   </div>
-                  <span className="text-slate-300 font-medium">{feature}</span>
-                </div>
-              ))}
+                  ),
+                )}
+              </div>
             </div>
-          </div>
 
           {/* Footer */}
           <p className="text-slate-600 text-sm">
-            &copy; {new Date().getFullYear()} Luxe Hotels. All rights reserved.
+            &copy; {new Date().getFullYear()} Luxe Hotels.{' '}
+            {t('common.allRightsReserved')}
           </p>
         </div>
       </div>
@@ -97,7 +97,7 @@ function SignUpPage() {
         <div className="lg:hidden p-4 flex items-center justify-between">
           <Link to="/" className="flex items-center gap-2">
             <ArrowLeft size={20} className="text-slate-400" />
-            <span className="text-slate-400 font-medium">Back</span>
+            <span className="text-slate-400 font-medium">{t('signIn.back')}</span>
           </Link>
           <div className="flex items-center gap-2">
             <ThemeToggle compact />
@@ -120,10 +120,10 @@ function SignUpPage() {
           <div className="w-full max-w-md">
             <div className="lg:hidden text-center mb-8">
               <h1 className="text-2xl font-bold text-white mb-2">
-                Create your account
+                {t('signUp.createAccountTitle')}
               </h1>
               <p className="text-slate-400">
-                Join us for exclusive hotel deals
+                {t('signUp.mobileSubtitle')}
               </p>
             </div>
 
@@ -136,12 +136,12 @@ function SignUpPage() {
             />
 
             <p className="text-center text-slate-500 text-sm mt-6">
-              Already have an account?{' '}
+              {t('signUp.haveAccount')}{' '}
               <Link
                 to="/sign-in"
                 className="text-amber-400 hover:text-amber-300 font-medium transition-colors"
               >
-                Sign in
+                {t('header.signIn')}
               </Link>
             </p>
           </div>

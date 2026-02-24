@@ -5,6 +5,7 @@ import { useEffect, useState } from 'react'
 import { api } from '../../../../../../convex/_generated/api'
 import { Id } from '../../../../../../convex/_generated/dataModel'
 import { uploadImageToConvex, validateImageFile } from '../../../../../lib/imageUpload'
+import { useI18n } from '../../../../../lib/i18n'
 
 interface HotelModalProps {
   hotelId: Id<'hotels'> | null
@@ -30,6 +31,7 @@ const categories: Array<HotelCategory> = [
 
 export function HotelModal({ hotelId, onClose }: HotelModalProps) {
   const { user } = useUser()
+  const { t } = useI18n()
   const hotel = useQuery(api.hotels.get, hotelId ? { hotelId } : 'skip')
   const createHotel = useMutation(api.hotels.create)
   const updateHotel = useMutation(api.hotels.update)
@@ -157,17 +159,17 @@ export function HotelModal({ hotelId, onClose }: HotelModalProps) {
 
       const lat = formData.latitude.trim()
       const lng = formData.longitude.trim()
-      if ((lat && !lng) || (!lat && lng)) {
-        setError('Both latitude and longitude are required when setting location.')
-        return
-      }
+        if ((lat && !lng) || (!lat && lng)) {
+         setError(t('admin.hotels.modal.error.latLngRequired'))
+         return
+       }
 
       let location: { lat: number; lng: number } | undefined
       if (lat && lng) {
         const parsedLat = Number(lat)
         const parsedLng = Number(lng)
         if (Number.isNaN(parsedLat) || Number.isNaN(parsedLng)) {
-          setError('Latitude and longitude must be valid numbers.')
+          setError(t('admin.hotels.modal.error.latLngInvalid'))
           return
         }
         location = { lat: parsedLat, lng: parsedLng }
@@ -178,14 +180,14 @@ export function HotelModal({ hotelId, onClose }: HotelModalProps) {
         try {
           metadata = JSON.parse(formData.metadata)
         } catch {
-          setError('Metadata must be valid JSON.')
+          setError(t('admin.hotels.modal.error.metadataJson'))
           return
         }
       }
 
       const rating = formData.rating.trim() ? Number(formData.rating.trim()) : undefined
       if (rating !== undefined && Number.isNaN(rating)) {
-        setError('Rating must be a valid number.')
+        setError(t('admin.hotels.modal.error.ratingInvalid'))
         return
       }
 
@@ -238,7 +240,7 @@ export function HotelModal({ hotelId, onClose }: HotelModalProps) {
       }
       onClose()
     } catch (err: any) {
-      setError(err.message || 'Something went wrong')
+      setError(err.message || t('admin.hotels.modal.error.generic'))
     } finally {
       setUploadingImage(false)
       setLoading(false)
@@ -250,12 +252,12 @@ export function HotelModal({ hotelId, onClose }: HotelModalProps) {
       <div className="bg-slate-900 border border-slate-800 rounded-2xl shadow-2xl w-full max-w-md max-h-[90vh] flex flex-col my-4">
         <div className="p-6 border-b border-slate-800">
           <h2 className="text-xl font-semibold text-slate-100">
-            {hotelId ? 'Edit Hotel' : 'Add New Hotel'}
+            {hotelId ? t('admin.hotels.modal.editTitle') : t('admin.hotels.modal.addTitle')}
           </h2>
           <p className="text-sm text-slate-500 mt-1">
             {hotelId
-              ? 'Update the hotel details below.'
-              : 'Fill in the details to create a new hotel.'}
+              ? t('admin.hotels.modal.editDescription')
+              : t('admin.hotels.modal.addDescription')}
           </p>
         </div>
 
@@ -268,7 +270,7 @@ export function HotelModal({ hotelId, onClose }: HotelModalProps) {
 
           <div>
             <label className="block text-sm font-medium text-slate-300 mb-2">
-              Hotel Name
+              {t('admin.hotels.modal.hotelName')}
             </label>
             <input
               type="text"
@@ -277,14 +279,14 @@ export function HotelModal({ hotelId, onClose }: HotelModalProps) {
               onChange={(e) =>
                 setFormData({ ...formData, name: e.target.value })
               }
-              placeholder="Grand Hotel"
+               placeholder={t('admin.hotels.modal.hotelNamePlaceholder')}
               className="w-full px-4 py-3 bg-slate-800/50 border border-slate-700 rounded-xl text-slate-200 placeholder-slate-500 focus:outline-none focus:border-amber-500/50 focus:ring-1 focus:ring-amber-500/20 transition-all"
             />
           </div>
 
           <div>
             <label className="block text-sm font-medium text-slate-300 mb-2">
-              Address
+               {t('admin.hotels.modal.address')}
             </label>
             <input
               type="text"
@@ -293,7 +295,7 @@ export function HotelModal({ hotelId, onClose }: HotelModalProps) {
               onChange={(e) =>
                 setFormData({ ...formData, address: e.target.value })
               }
-              placeholder="123 Main Street"
+               placeholder={t('admin.hotels.modal.addressPlaceholder')}
               className="w-full px-4 py-3 bg-slate-800/50 border border-slate-700 rounded-xl text-slate-200 placeholder-slate-500 focus:outline-none focus:border-amber-500/50 focus:ring-1 focus:ring-amber-500/20 transition-all"
             />
           </div>
@@ -301,7 +303,7 @@ export function HotelModal({ hotelId, onClose }: HotelModalProps) {
           <div className="grid grid-cols-2 gap-4">
             <div>
               <label className="block text-sm font-medium text-slate-300 mb-2">
-                City
+                 {t('admin.hotels.modal.city')}
               </label>
               <input
                 type="text"
@@ -310,13 +312,13 @@ export function HotelModal({ hotelId, onClose }: HotelModalProps) {
                 onChange={(e) =>
                   setFormData({ ...formData, city: e.target.value })
                 }
-                placeholder="New York"
+                 placeholder={t('admin.hotels.modal.cityPlaceholder')}
                 className="w-full px-4 py-3 bg-slate-800/50 border border-slate-700 rounded-xl text-slate-200 placeholder-slate-500 focus:outline-none focus:border-amber-500/50 focus:ring-1 focus:ring-amber-500/20 transition-all"
               />
             </div>
             <div>
               <label className="block text-sm font-medium text-slate-300 mb-2">
-                Country
+                 {t('admin.hotels.modal.country')}
               </label>
               <input
                 type="text"
@@ -325,7 +327,7 @@ export function HotelModal({ hotelId, onClose }: HotelModalProps) {
                 onChange={(e) =>
                   setFormData({ ...formData, country: e.target.value })
                 }
-                placeholder="USA"
+                 placeholder={t('admin.hotels.modal.countryPlaceholder')}
                 className="w-full px-4 py-3 bg-slate-800/50 border border-slate-700 rounded-xl text-slate-200 placeholder-slate-500 focus:outline-none focus:border-amber-500/50 focus:ring-1 focus:ring-amber-500/20 transition-all"
               />
             </div>
@@ -334,7 +336,7 @@ export function HotelModal({ hotelId, onClose }: HotelModalProps) {
           <div className="grid grid-cols-2 gap-4">
             <div>
               <label className="block text-sm font-medium text-slate-300 mb-2">
-                Latitude
+                 {t('admin.hotels.modal.latitude')}
               </label>
               <input
                 type="number"
@@ -349,7 +351,7 @@ export function HotelModal({ hotelId, onClose }: HotelModalProps) {
             </div>
             <div>
               <label className="block text-sm font-medium text-slate-300 mb-2">
-                Longitude
+                 {t('admin.hotels.modal.longitude')}
               </label>
               <input
                 type="number"
@@ -366,7 +368,7 @@ export function HotelModal({ hotelId, onClose }: HotelModalProps) {
 
           <div>
             <label className="block text-sm font-medium text-slate-300 mb-2">
-              Description
+               {t('admin.hotels.modal.description')}
             </label>
             <textarea
               rows={3}
@@ -374,14 +376,14 @@ export function HotelModal({ hotelId, onClose }: HotelModalProps) {
               onChange={(e) =>
                 setFormData({ ...formData, description: e.target.value })
               }
-              placeholder="Describe the hotel..."
+               placeholder={t('admin.hotels.modal.descriptionPlaceholder')}
               className="w-full px-4 py-3 bg-slate-800/50 border border-slate-700 rounded-xl text-slate-200 placeholder-slate-500 focus:outline-none focus:border-amber-500/50 focus:ring-1 focus:ring-amber-500/20 transition-all"
             />
           </div>
 
           <div>
             <label className="block text-sm font-medium text-slate-300 mb-2">
-              Hotel Image (Optional)
+               {t('admin.hotels.modal.hotelImageOptional')}
             </label>
             <input
               type="file"
@@ -389,7 +391,7 @@ export function HotelModal({ hotelId, onClose }: HotelModalProps) {
               onChange={handleImageSelection}
               className="w-full px-4 py-2.5 bg-slate-800/50 border border-slate-700 rounded-xl text-slate-300 file:mr-3 file:px-3 file:py-1.5 file:border-0 file:rounded-lg file:bg-amber-500/20 file:text-amber-300 file:cursor-pointer"
             />
-            <p className="text-xs text-slate-500 mt-2">Max size: 10MB</p>
+             <p className="text-xs text-slate-500 mt-2">{t('common.maxSize10mb')}</p>
             {imagePreviewUrl && (
               <div className="mt-3">
                 <img
@@ -408,7 +410,7 @@ export function HotelModal({ hotelId, onClose }: HotelModalProps) {
                   }}
                   className="mt-2 text-xs text-red-400 hover:text-red-300"
                 >
-                  Remove image
+                   {t('common.removeImage')}
                 </button>
               </div>
             )}
@@ -417,7 +419,7 @@ export function HotelModal({ hotelId, onClose }: HotelModalProps) {
           <div className="grid grid-cols-2 gap-4">
             <div>
               <label className="block text-sm font-medium text-slate-300 mb-2">
-                External ID
+                 {t('admin.hotels.modal.externalId')}
               </label>
               <input
                 type="text"
@@ -431,7 +433,7 @@ export function HotelModal({ hotelId, onClose }: HotelModalProps) {
             </div>
             <div>
               <label className="block text-sm font-medium text-slate-300 mb-2">
-                Category
+                 {t('admin.hotels.modal.category')}
               </label>
               <select
                 value={formData.category}
@@ -443,7 +445,7 @@ export function HotelModal({ hotelId, onClose }: HotelModalProps) {
                 }
                 className="w-full px-4 py-3 bg-slate-800/50 border border-slate-700 rounded-xl text-slate-200 focus:outline-none focus:border-amber-500/50 focus:ring-1 focus:ring-amber-500/20 transition-all"
               >
-                <option value="">Select category</option>
+                 <option value="">{t('admin.hotels.modal.selectCategory')}</option>
                 {categories.map((category) => (
                   <option key={category} value={category}>
                     {category}
@@ -456,7 +458,7 @@ export function HotelModal({ hotelId, onClose }: HotelModalProps) {
           <div className="grid grid-cols-2 gap-4">
             <div>
               <label className="block text-sm font-medium text-slate-300 mb-2">
-                State / Province
+                 {t('admin.hotels.modal.stateProvince')}
               </label>
               <input
                 type="text"
@@ -470,7 +472,7 @@ export function HotelModal({ hotelId, onClose }: HotelModalProps) {
             </div>
             <div>
               <label className="block text-sm font-medium text-slate-300 mb-2">
-                Postal Code
+                 {t('admin.hotels.modal.postalCode')}
               </label>
               <input
                 type="text"
@@ -487,7 +489,7 @@ export function HotelModal({ hotelId, onClose }: HotelModalProps) {
           <div className="grid grid-cols-2 gap-4">
             <div>
               <label className="block text-sm font-medium text-slate-300 mb-2">
-                Rating
+                 {t('admin.hotels.modal.rating')}
               </label>
               <input
                 type="number"
@@ -504,7 +506,7 @@ export function HotelModal({ hotelId, onClose }: HotelModalProps) {
             </div>
             <div>
               <label className="block text-sm font-medium text-slate-300 mb-2">
-                Last Renovation Date
+                 {t('admin.hotels.modal.lastRenovationDate')}
               </label>
               <input
                 type="date"
@@ -522,7 +524,7 @@ export function HotelModal({ hotelId, onClose }: HotelModalProps) {
 
           <div>
             <label className="block text-sm font-medium text-slate-300 mb-2">
-              Tags (comma separated)
+               {t('admin.hotels.modal.tags')}
             </label>
             <input
               type="text"
@@ -535,7 +537,7 @@ export function HotelModal({ hotelId, onClose }: HotelModalProps) {
 
           <div>
             <label className="block text-sm font-medium text-slate-300 mb-2">
-              Metadata (JSON)
+               {t('admin.hotels.modal.metadata')}
             </label>
             <textarea
               rows={3}
@@ -559,7 +561,7 @@ export function HotelModal({ hotelId, onClose }: HotelModalProps) {
               className="h-4 w-4 rounded border-slate-600 bg-slate-800 text-amber-500 focus:ring-amber-500/40"
             />
             <label htmlFor="parkingIncluded" className="text-sm text-slate-300">
-              Parking included
+               {t('admin.hotels.modal.parkingIncluded')}
             </label>
           </div>
 
@@ -569,7 +571,7 @@ export function HotelModal({ hotelId, onClose }: HotelModalProps) {
               onClick={onClose}
               className="flex-1 px-4 py-3 bg-slate-800 text-slate-300 font-medium rounded-xl hover:bg-slate-700 transition-colors border border-slate-700"
             >
-              Cancel
+               {t('common.cancel')}
             </button>
             <button
               type="submit"
@@ -578,11 +580,11 @@ export function HotelModal({ hotelId, onClose }: HotelModalProps) {
             >
               {loading || uploadingImage
                 ? uploadingImage
-                  ? 'Uploading Image...'
-                  : 'Saving...'
+                  ? t('common.uploadingImage')
+                  : t('common.saving')
                 : hotelId
-                  ? 'Update Hotel'
-                  : 'Create Hotel'}
+                  ? t('admin.hotels.modal.updateHotel')
+                  : t('admin.hotels.modal.createHotel')}
             </button>
           </div>
         </form>

@@ -5,6 +5,7 @@ import { useEffect, useState } from 'react'
 import { api } from '../../../../../../convex/_generated/api'
 import { Id } from '../../../../../../convex/_generated/dataModel'
 import { uploadImageToConvex, validateImageFile } from '../../../../../lib/imageUpload'
+import { useI18n } from '../../../../../lib/i18n'
 
 interface RoomModalProps {
   hotelId: Id<'hotels'>
@@ -14,6 +15,7 @@ interface RoomModalProps {
 
 export function RoomModal({ hotelId, roomId, onClose }: RoomModalProps) {
   const { user } = useUser()
+  const { t } = useI18n()
   const room = useQuery(api.rooms.get, roomId ? { roomId } : 'skip')
   const createRoom = useMutation(api.rooms.create)
   const updateRoom = useMutation(api.rooms.update)
@@ -108,14 +110,14 @@ export function RoomModal({ hotelId, roomId, onClose }: RoomModalProps) {
 
       const basePriceNumber = Number(formData.basePrice)
       if (!Number.isFinite(basePriceNumber)) {
-        setError('Please enter a valid base price.')
+        setError(t('admin.hotels.roomModal.error.basePriceInvalid'))
         setLoading(false)
         return
       }
 
       const occupancy = Number.parseInt(formData.maxOccupancy, 10)
       if (!Number.isFinite(occupancy)) {
-        setError('Please enter a valid max occupancy.')
+        setError(t('admin.hotels.roomModal.error.maxOccupancyInvalid'))
         setLoading(false)
         return
       }
@@ -166,7 +168,7 @@ export function RoomModal({ hotelId, roomId, onClose }: RoomModalProps) {
       }
       onClose()
     } catch (err: any) {
-      setError(err.message || 'Something went wrong')
+      setError(err.message || t('admin.hotels.modal.error.generic'))
     } finally {
       setUploadingImage(false)
       setLoading(false)
@@ -178,7 +180,7 @@ export function RoomModal({ hotelId, roomId, onClose }: RoomModalProps) {
       <div className="bg-slate-900 border border-slate-800 rounded-2xl shadow-2xl w-full max-w-lg">
         <div className="p-6 border-b border-slate-800">
           <h2 className="text-xl font-semibold text-slate-100">
-            {roomId ? 'Edit Room' : 'Add New Room'}
+            {roomId ? t('admin.hotels.roomModal.editTitle') : t('admin.hotels.roomModal.addTitle')}
           </h2>
         </div>
 
@@ -192,7 +194,7 @@ export function RoomModal({ hotelId, roomId, onClose }: RoomModalProps) {
           <div className="grid grid-cols-2 gap-4">
             <div>
               <label className="block text-sm font-medium text-slate-300 mb-2">
-                Room Number
+                {t('admin.hotels.roomModal.roomNumber')}
               </label>
               <input
                 type="text"
@@ -207,7 +209,7 @@ export function RoomModal({ hotelId, roomId, onClose }: RoomModalProps) {
             </div>
             <div>
               <label className="block text-sm font-medium text-slate-300 mb-2">
-                Room Type
+                {t('admin.hotels.roomModal.roomType')}
               </label>
               <select
                 value={formData.type}
@@ -223,10 +225,10 @@ export function RoomModal({ hotelId, roomId, onClose }: RoomModalProps) {
                 }
                 className="w-full px-4 py-3 bg-slate-800/50 border border-slate-700 rounded-xl text-slate-200 focus:outline-none focus:border-amber-500/50 transition-all"
               >
-                <option value="budget">Budget</option>
-                <option value="standard">Standard</option>
-                <option value="suite">Suite</option>
-                <option value="deluxe">Deluxe</option>
+                <option value="budget">{t('hotel.budgetRoom')}</option>
+                <option value="standard">{t('hotel.standardRoom')}</option>
+                <option value="suite">{t('hotel.suiteRoom')}</option>
+                <option value="deluxe">{t('hotel.deluxeRoom')}</option>
               </select>
             </div>
           </div>
@@ -234,7 +236,7 @@ export function RoomModal({ hotelId, roomId, onClose }: RoomModalProps) {
           <div className="grid grid-cols-2 gap-4">
             <div>
               <label className="block text-sm font-medium text-slate-300 mb-2">
-                Price per Night ($)
+                {t('admin.hotels.roomModal.pricePerNight')}
               </label>
               <input
                 type="number"
@@ -251,7 +253,7 @@ export function RoomModal({ hotelId, roomId, onClose }: RoomModalProps) {
             </div>
             <div>
               <label className="block text-sm font-medium text-slate-300 mb-2">
-                Max Occupancy
+                {t('admin.hotels.roomModal.maxOccupancy')}
               </label>
               <input
                 type="number"
@@ -269,7 +271,7 @@ export function RoomModal({ hotelId, roomId, onClose }: RoomModalProps) {
 
           <div>
             <label className="block text-sm font-medium text-slate-300 mb-2">
-              Room Image (Optional)
+               {t('admin.hotels.roomModal.roomImageOptional')}
             </label>
             <input
               type="file"
@@ -277,7 +279,7 @@ export function RoomModal({ hotelId, roomId, onClose }: RoomModalProps) {
               onChange={handleImageSelection}
               className="w-full px-4 py-2.5 bg-slate-800/50 border border-slate-700 rounded-xl text-slate-300 file:mr-3 file:px-3 file:py-1.5 file:border-0 file:rounded-lg file:bg-amber-500/20 file:text-amber-300 file:cursor-pointer"
             />
-            <p className="text-xs text-slate-500 mt-2">Max size: 10MB</p>
+             <p className="text-xs text-slate-500 mt-2">{t('common.maxSize10mb')}</p>
             {imagePreviewUrl && (
               <div className="mt-3">
                 <img
@@ -296,7 +298,7 @@ export function RoomModal({ hotelId, roomId, onClose }: RoomModalProps) {
                   }}
                   className="mt-2 text-xs text-red-400 hover:text-red-300"
                 >
-                  Remove image
+                   {t('common.removeImage')}
                 </button>
               </div>
             )}
@@ -304,7 +306,7 @@ export function RoomModal({ hotelId, roomId, onClose }: RoomModalProps) {
 
           <div>
             <label className="block text-sm font-medium text-slate-300 mb-2">
-              Amenities (comma-separated)
+               {t('admin.hotels.roomModal.amenities')}
             </label>
             <input
               type="text"
@@ -323,7 +325,7 @@ export function RoomModal({ hotelId, roomId, onClose }: RoomModalProps) {
               onClick={onClose}
               className="flex-1 px-4 py-3 bg-slate-800 text-slate-300 font-medium rounded-xl hover:bg-slate-700 transition-colors border border-slate-700"
             >
-              Cancel
+              {t('common.cancel')}
             </button>
             <button
               type="submit"
@@ -332,11 +334,11 @@ export function RoomModal({ hotelId, roomId, onClose }: RoomModalProps) {
             >
               {loading || uploadingImage
                 ? uploadingImage
-                  ? 'Uploading Image...'
-                  : 'Saving...'
+                  ? t('common.uploadingImage')
+                  : t('common.saving')
                 : roomId
-                  ? 'Update Room'
-                  : 'Create Room'}
+                  ? t('admin.hotels.roomModal.updateRoom')
+                  : t('admin.hotels.roomModal.createRoom')}
             </button>
           </div>
         </form>

@@ -3,6 +3,7 @@ import { useUser } from '@clerk/clerk-react'
 import { useQuery } from 'convex/react'
 import { useEffect } from 'react'
 import { api } from '../../convex/_generated/api'
+import { useI18n } from '../lib/i18n'
 
 
 export const Route = createFileRoute('/post-login')({
@@ -12,6 +13,7 @@ export const Route = createFileRoute('/post-login')({
 
 function PostLoginPage() {
   const { user, isLoaded: isClerkLoaded } = useUser()
+  const { t } = useI18n()
   const navigate = useNavigate()
   const location = useLocation()
 
@@ -71,9 +73,9 @@ function PostLoginPage() {
     <div className="flex min-h-screen items-center justify-center bg-gradient-to-br from-blue-50 to-indigo-100">
       <div className="text-center">
         <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600 mx-auto mb-4"></div>
-        <p className="text-gray-600 text-lg">Loading your profile...</p>
+        <p className="text-gray-600 text-lg">{t('postLogin.loadingProfile')}</p>
         <p className="text-gray-400 text-sm mt-2">
-          Setting up your account, please wait...
+          {t('postLogin.settingUp')}
         </p>
       </div>
     </div>

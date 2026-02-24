@@ -5,6 +5,7 @@ import { useEffect, useState } from 'react'
 import { api } from '../../../../../../convex/_generated/api'
 import { Id } from '../../../../../../convex/_generated/dataModel'
 import { uploadImageToConvex, validateImageFile } from '../../../../../lib/imageUpload'
+import { useI18n } from '../../../../../lib/i18n'
 
 interface HotelEditModalProps {
   hotelId: Id<'hotels'>
@@ -13,6 +14,7 @@ interface HotelEditModalProps {
 
 export function HotelEditModal({ hotelId, onClose }: HotelEditModalProps) {
   const { user } = useUser()
+  const { t } = useI18n()
   const hotel = useQuery(api.hotels.get, { hotelId })
   const updateHotel = useMutation(api.hotels.update)
   const generateUploadUrl = useMutation(api.files.generateUploadUrl)
@@ -107,7 +109,7 @@ export function HotelEditModal({ hotelId, onClose }: HotelEditModalProps) {
       })
       onClose()
     } catch (err: any) {
-      setError(err.message || 'Something went wrong')
+      setError(err.message || t('admin.hotels.modal.error.generic'))
     } finally {
       setUploadingImage(false)
       setLoading(false)
@@ -118,7 +120,9 @@ export function HotelEditModal({ hotelId, onClose }: HotelEditModalProps) {
     <div className="fixed inset-0 bg-black/60 backdrop-blur-sm flex items-center justify-center z-50 p-4">
       <div className="bg-slate-900 border border-slate-800 rounded-2xl shadow-2xl w-full max-w-lg">
         <div className="p-6 border-b border-slate-800">
-          <h2 className="text-xl font-semibold text-slate-100">Edit Hotel</h2>
+          <h2 className="text-xl font-semibold text-slate-100">
+            {t('admin.hotels.modal.editTitle')}
+          </h2>
         </div>
 
         <form onSubmit={handleSubmit} className="p-6 space-y-4">
@@ -130,7 +134,7 @@ export function HotelEditModal({ hotelId, onClose }: HotelEditModalProps) {
 
           <div>
             <label className="block text-sm font-medium text-slate-300 mb-2">
-              Hotel Name
+              {t('admin.hotels.modal.hotelName')}
             </label>
             <input
               type="text"
@@ -145,7 +149,7 @@ export function HotelEditModal({ hotelId, onClose }: HotelEditModalProps) {
 
           <div>
             <label className="block text-sm font-medium text-slate-300 mb-2">
-              Address
+              {t('admin.hotels.modal.address')}
             </label>
             <input
               type="text"
@@ -161,7 +165,7 @@ export function HotelEditModal({ hotelId, onClose }: HotelEditModalProps) {
           <div className="grid grid-cols-2 gap-4">
             <div>
               <label className="block text-sm font-medium text-slate-300 mb-2">
-                City
+                 {t('admin.hotels.modal.city')}
               </label>
               <input
                 type="text"
@@ -175,7 +179,7 @@ export function HotelEditModal({ hotelId, onClose }: HotelEditModalProps) {
             </div>
             <div>
               <label className="block text-sm font-medium text-slate-300 mb-2">
-                Country
+                 {t('admin.hotels.modal.country')}
               </label>
               <input
                 type="text"
@@ -191,7 +195,7 @@ export function HotelEditModal({ hotelId, onClose }: HotelEditModalProps) {
 
           <div>
             <label className="block text-sm font-medium text-slate-300 mb-2">
-              Hotel Image (Optional)
+               {t('admin.hotels.modal.hotelImageOptional')}
             </label>
             <input
               type="file"
@@ -199,7 +203,7 @@ export function HotelEditModal({ hotelId, onClose }: HotelEditModalProps) {
               onChange={handleImageSelection}
               className="w-full px-4 py-2.5 bg-slate-800/50 border border-slate-700 rounded-xl text-slate-300 file:mr-3 file:px-3 file:py-1.5 file:border-0 file:rounded-lg file:bg-amber-500/20 file:text-amber-300 file:cursor-pointer"
             />
-            <p className="text-xs text-slate-500 mt-2">Max size: 10MB</p>
+             <p className="text-xs text-slate-500 mt-2">{t('common.maxSize10mb')}</p>
             {imagePreviewUrl && (
               <div className="mt-3">
                 <img
@@ -218,7 +222,7 @@ export function HotelEditModal({ hotelId, onClose }: HotelEditModalProps) {
                   }}
                   className="mt-2 text-xs text-red-400 hover:text-red-300"
                 >
-                  Remove image
+                   {t('common.removeImage')}
                 </button>
               </div>
             )}
@@ -230,7 +234,7 @@ export function HotelEditModal({ hotelId, onClose }: HotelEditModalProps) {
               onClick={onClose}
               className="flex-1 px-4 py-3 bg-slate-800 text-slate-300 font-medium rounded-xl hover:bg-slate-700 transition-colors border border-slate-700"
             >
-              Cancel
+              {t('common.cancel')}
             </button>
             <button
               type="submit"
@@ -239,9 +243,9 @@ export function HotelEditModal({ hotelId, onClose }: HotelEditModalProps) {
             >
               {loading || uploadingImage
                 ? uploadingImage
-                  ? 'Uploading Image...'
-                  : 'Saving...'
-                : 'Update Hotel'}
+                  ? t('common.uploadingImage')
+                  : t('common.saving')
+                : t('admin.hotels.modal.updateHotel')}
             </button>
           </div>
         </form>

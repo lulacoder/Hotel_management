@@ -16,6 +16,7 @@ import {
 import { useEffect, useState } from 'react'
 import { useMutation, useQuery } from 'convex/react'
 import { api } from '../../../../convex/_generated/api'
+import { useI18n } from '../../../lib/i18n'
 import {
   formatPackageAddOn,
   getPackageLabelOrDefault,
@@ -29,6 +30,7 @@ export const Route = createFileRoute('/admin/bookings/')({
 
 function BookingsPage() {
   const { user } = useUser()
+  const { t } = useI18n()
   const [statusFilter, setStatusFilter] = useState<string>('all')
   const [selectedHotel, setSelectedHotel] = useState<string>('all')
   const [selectedBookingId, setSelectedBookingId] = useState<Id<'bookings'> | null>(
@@ -106,7 +108,7 @@ function BookingsPage() {
 
   const handleCancel = async (bookingId: Id<'bookings'>) => {
     if (!user?.id) return
-    if (confirm('Are you sure you want to cancel this booking?')) {
+    if (confirm(t('bookings.confirmCancel'))) {
       await cancelBooking({ clerkUserId: user.id, bookingId })
     }
   }
@@ -131,58 +133,61 @@ function BookingsPage() {
     return [] as const
   }
 
-  const transitionLabel: Record<'confirmed' | 'checked_in' | 'checked_out' | 'cancelled', string> = {
-    confirmed: 'Confirm',
-    checked_in: 'Check In',
-    checked_out: 'Check Out',
-    cancelled: 'Cancel',
+  const transitionLabel: Record<
+    'confirmed' | 'checked_in' | 'checked_out' | 'cancelled',
+    string
+  > = {
+    confirmed: t('booking.transition.confirm'),
+    checked_in: t('booking.transition.checkIn'),
+    checked_out: t('booking.transition.checkOut'),
+    cancelled: t('booking.transition.cancel'),
   }
 
   const statusConfig = {
     held: {
-      label: 'Held',
+      label: t('booking.status.held'),
       icon: Clock,
       color: 'text-amber-400',
       bg: 'bg-amber-500/10',
       border: 'border-amber-500/20',
     },
     confirmed: {
-      label: 'Confirmed',
+      label: t('booking.status.confirmed'),
       icon: CheckCircle,
       color: 'text-emerald-400',
       bg: 'bg-emerald-500/10',
       border: 'border-emerald-500/20',
     },
     checked_in: {
-      label: 'Checked In',
+      label: t('booking.status.checkedIn'),
       icon: LogIn,
       color: 'text-blue-400',
       bg: 'bg-blue-500/10',
       border: 'border-blue-500/20',
     },
     checked_out: {
-      label: 'Checked Out',
+      label: t('booking.status.checkedOut'),
       icon: LogOut,
       color: 'text-slate-400',
       bg: 'bg-slate-500/10',
       border: 'border-slate-500/20',
     },
     cancelled: {
-      label: 'Cancelled',
+      label: t('booking.status.cancelled'),
       icon: XCircle,
       color: 'text-red-400',
       bg: 'bg-red-500/10',
       border: 'border-red-500/20',
     },
     expired: {
-      label: 'Expired',
+      label: t('booking.status.expired'),
       icon: Ban,
       color: 'text-slate-500',
       bg: 'bg-slate-600/10',
       border: 'border-slate-600/20',
     },
     outsourced: {
-      label: 'Outsourced',
+      label: t('booking.status.outsourced'),
       icon: Hotel,
       color: 'text-purple-400',
       bg: 'bg-purple-500/10',
@@ -207,10 +212,10 @@ function BookingsPage() {
       {/* Header */}
       <div className="mb-8">
         <h1 className="text-3xl font-semibold text-slate-100 tracking-tight mb-2">
-          Bookings
+          {t('admin.nav.bookings')}
         </h1>
         <p className="text-slate-400">
-          View and manage all customer reservations.
+          {t('admin.bookings.description')}
         </p>
       </div>
 
@@ -224,7 +229,7 @@ function BookingsPage() {
             className="w-full px-4 py-3 bg-slate-900/50 border border-slate-800/50 rounded-xl text-slate-200 focus:outline-none focus:border-amber-500/50 transition-all"
           >
             {profile?.role === 'room_admin' && (
-              <option value="all">Select a hotel...</option>
+              <option value="all">{t('admin.bookings.selectHotel')}</option>
             )}
             {visibleHotels?.map((hotel) => (
               <option key={hotel._id} value={hotel._id}>
@@ -241,14 +246,14 @@ function BookingsPage() {
             onChange={(e) => setStatusFilter(e.target.value)}
             className="w-full md:w-48 px-4 py-3 bg-slate-900/50 border border-slate-800/50 rounded-xl text-slate-200 focus:outline-none focus:border-amber-500/50 transition-all"
           >
-            <option value="all">All Statuses</option>
-            <option value="held">Held</option>
-            <option value="confirmed">Confirmed</option>
-            <option value="checked_in">Checked In</option>
-            <option value="checked_out">Checked Out</option>
-            <option value="cancelled">Cancelled</option>
-            <option value="expired">Expired</option>
-            <option value="outsourced">Outsourced</option>
+            <option value="all">{t('admin.bookings.allStatuses')}</option>
+            <option value="held">{t('booking.status.held')}</option>
+            <option value="confirmed">{t('booking.status.confirmed')}</option>
+            <option value="checked_in">{t('booking.status.checkedIn')}</option>
+            <option value="checked_out">{t('booking.status.checkedOut')}</option>
+            <option value="cancelled">{t('booking.status.cancelled')}</option>
+            <option value="expired">{t('booking.status.expired')}</option>
+            <option value="outsourced">{t('booking.status.outsourced')}</option>
           </select>
         </div>
       </div>
@@ -264,12 +269,12 @@ function BookingsPage() {
             <Calendar className="w-8 h-8 text-slate-600" />
           </div>
           <h3 className="text-lg font-semibold text-slate-300 mb-2">
-            No bookings found
+            {t('admin.bookings.noneFound')}
           </h3>
           <p className="text-slate-500">
             {statusFilter !== 'all'
-              ? 'Try changing the status filter.'
-              : 'This hotel has no bookings yet.'}
+              ? t('admin.bookings.tryStatusFilter')
+              : t('admin.bookings.noBookingsForHotel')}
           </p>
         </div>
       ) : (
@@ -296,7 +301,7 @@ function BookingsPage() {
                       </div>
                       {booking.status === 'held' && booking.holdExpiresAt && (
                         <span className="text-xs text-slate-500">
-                          Expires:{' '}
+                          {t('admin.bookings.expires')}:{' '}
                           {new Date(booking.holdExpiresAt).toLocaleTimeString()}
                         </span>
                       )}
@@ -304,34 +309,34 @@ function BookingsPage() {
 
                     <div className="grid grid-cols-2 md:grid-cols-4 gap-4 text-sm">
                       <div>
-                        <p className="text-slate-500 mb-1">Dates</p>
+                        <p className="text-slate-500 mb-1">{t('admin.bookings.dates')}</p>
                         <p className="text-slate-200">
                           {booking.checkIn} → {booking.checkOut}
                         </p>
                       </div>
                       <div>
-                        <p className="text-slate-500 mb-1">Guest</p>
+                        <p className="text-slate-500 mb-1">{t('admin.bookings.guest')}</p>
                         <div className="flex items-center gap-2">
                           <p className="text-slate-200">
-                            {item.guestProfile?.name || booking.guestName || 'N/A'}
-                          </p>
-                          {item.guestProfile && (
+                              {item.guestProfile?.name || booking.guestName || 'N/A'}
+                            </p>
+                            {item.guestProfile && (
                             <span className="px-2 py-0.5 text-[10px] rounded-full border border-amber-500/30 bg-amber-500/10 text-amber-300 uppercase tracking-wide">
-                              Walk-in
-                            </span>
-                          )}
+                                {t('admin.bookings.walkIn')}
+                              </span>
+                            )}
+                          </div>
                         </div>
-                      </div>
                       <div>
-                        <p className="text-slate-500 mb-1">Total</p>
+                        <p className="text-slate-500 mb-1">{t('booking.total')}</p>
                         <p className="text-slate-200 font-medium">
                           ${(booking.totalPrice / 100).toFixed(2)}
                         </p>
                       </div>
                       <div>
-                        <p className="text-slate-500 mb-1">Payment</p>
+                        <p className="text-slate-500 mb-1">{t('admin.bookings.payment')}</p>
                         <p className="text-slate-200 capitalize">
-                          {booking.paymentStatus || 'N/A'}
+                          {booking.paymentStatus || t('admin.bookings.na')}
                         </p>
                       </div>
                     </div>
@@ -343,7 +348,7 @@ function BookingsPage() {
                       className="light-hover-surface px-3 py-2 bg-slate-800 text-slate-200 rounded-lg hover:bg-slate-700 transition-all text-sm font-medium border border-slate-700 inline-flex items-center gap-2"
                     >
                       <Eye className="w-4 h-4" />
-                      View Detail
+                      {t('admin.bookings.viewDetail')}
                     </button>
 
                     <Link
@@ -351,7 +356,7 @@ function BookingsPage() {
                       params={{ bookingId: booking._id }}
                       className="light-hover-surface px-3 py-2 bg-slate-800 text-slate-200 rounded-lg hover:bg-slate-700 transition-all text-sm font-medium border border-slate-700"
                     >
-                      Open Page
+                      {t('admin.bookings.openPage')}
                     </Link>
 
                     {canManageBookings &&
@@ -364,7 +369,7 @@ function BookingsPage() {
                           className="light-hover-surface px-3 py-2 bg-emerald-500/10 text-emerald-400 rounded-lg hover:bg-emerald-500/20 transition-all text-sm font-medium border border-emerald-500/20 inline-flex items-center gap-2"
                         >
                           <CircleDollarSign className="w-4 h-4" />
-                          Accept Cash
+                          {t('admin.bookings.acceptCash')}
                         </button>
                       )}
 
@@ -397,7 +402,7 @@ function BookingsPage() {
                           className="px-3 py-2 bg-purple-500/10 text-purple-400 rounded-lg hover:bg-purple-500/20 transition-all text-sm font-medium border border-purple-500/20 inline-flex items-center gap-2"
                         >
                           <Hotel className="w-4 h-4" />
-                          Outsource
+                          {t('admin.bookings.outsource')}
                         </button>
                       )}
                   </div>
@@ -413,16 +418,16 @@ function BookingsPage() {
           <button
             className="absolute inset-0 bg-black/70"
             onClick={() => setSelectedBookingId(null)}
-            aria-label="Close booking details"
+            aria-label={t('admin.bookings.closeDetails')}
           />
           <div className="relative w-full max-w-2xl bg-slate-900 border border-slate-700 rounded-2xl p-6">
             <div className="flex items-start justify-between gap-4 mb-4">
               <div>
                 <h3 className="text-xl font-semibold text-slate-100">
-                  Booking Details
+                  {t('admin.bookings.detailsTitle')}
                 </h3>
                 <p className="text-slate-400 text-sm">
-                  Review booking, room assignment, and payment status.
+                  {t('admin.bookings.detailsSubtitle')}
                 </p>
               </div>
               <button
@@ -438,42 +443,43 @@ function BookingsPage() {
                 <div className="animate-spin rounded-full h-8 w-8 border-2 border-amber-500/20 border-t-amber-500"></div>
               </div>
             ) : selectedBookingDetail === null ? (
-              <div className="text-slate-400">Booking not found.</div>
+              <div className="text-slate-400">{t('admin.bookings.notFound')}</div>
             ) : (
               <div className="space-y-4">
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4 text-sm">
                   <div className="bg-slate-800/40 border border-slate-700 rounded-xl p-4">
-                    <p className="text-slate-500 mb-1">Guest</p>
+                    <p className="text-slate-500 mb-1">{t('admin.bookings.guest')}</p>
                     <p className="text-slate-100 font-medium">
                       {selectedBookingDetail.guestProfile?.name ||
                         selectedBookingDetail.booking.guestName ||
                         'N/A'}
                     </p>
                     <p className="text-slate-400">{
-                      selectedBookingDetail.guestProfile?.phone || 'No phone'
+                      selectedBookingDetail.guestProfile?.phone || t('admin.bookings.noPhone')
                     }</p>
                     <p className="text-slate-400">{
                       selectedBookingDetail.guestProfile?.email ||
                       selectedBookingDetail.booking.guestEmail ||
-                      'No email'
+                      t('admin.bookings.noEmail')
                     }</p>
                     {selectedBookingDetail.linkedUser && (
                       <p className="text-xs text-slate-500 mt-1">
-                        Linked account: {selectedBookingDetail.linkedUser.email}
+                        {t('admin.bookings.linkedAccount')}:{' '}
+                        {selectedBookingDetail.linkedUser.email}
                       </p>
                     )}
                   </div>
                   <div className="bg-slate-800/40 border border-slate-700 rounded-xl p-4">
-                    <p className="text-slate-500 mb-1">Room</p>
+                    <p className="text-slate-500 mb-1">{t('hotel.room')}</p>
                     <p className="text-slate-100 font-medium">
-                      Room {selectedBookingDetail.room.roomNumber}
+                      {t('hotel.room')} {selectedBookingDetail.room.roomNumber}
                     </p>
                     <p className="text-slate-400 capitalize">
                       {selectedBookingDetail.room.type}
                     </p>
                   </div>
                   <div className="bg-slate-800/40 border border-slate-700 rounded-xl p-4">
-                    <p className="text-slate-500 mb-1">Hotel</p>
+                    <p className="text-slate-500 mb-1">{t('admin.nav.hotels')}</p>
                     <p className="text-slate-100 font-medium">
                       {selectedBookingDetail.hotel.name}
                     </p>
@@ -482,7 +488,7 @@ function BookingsPage() {
                     </p>
                   </div>
                   <div className="bg-slate-800/40 border border-slate-700 rounded-xl p-4">
-                    <p className="text-slate-500 mb-1">Stay</p>
+                    <p className="text-slate-500 mb-1">{t('admin.bookings.stay')}</p>
                     <p className="text-slate-100 font-medium">
                       {selectedBookingDetail.booking.checkIn} →{' '}
                       {selectedBookingDetail.booking.checkOut}
@@ -492,7 +498,7 @@ function BookingsPage() {
                     </p>
                   </div>
                   <div className="bg-slate-800/40 border border-slate-700 rounded-xl p-4">
-                    <p className="text-slate-500 mb-1">Package</p>
+                    <p className="text-slate-500 mb-1">{t('booking.package')}</p>
                     <p className="text-slate-100 font-medium">
                       {getPackageLabelOrDefault(
                         selectedBookingDetail.booking.packageType,
@@ -521,7 +527,7 @@ function BookingsPage() {
                         className="px-4 py-2 bg-purple-500/10 text-purple-400 rounded-lg hover:bg-purple-500/20 transition-colors text-sm font-medium border border-purple-500/20 inline-flex items-center gap-2"
                       >
                         <Hotel className="w-4 h-4" />
-                        Outsource
+                        {t('admin.bookings.outsource')}
                       </button>
                     )}
                   <Link
@@ -529,7 +535,7 @@ function BookingsPage() {
                     params={{ bookingId: selectedBookingId }}
                     className="px-4 py-2 bg-slate-800 text-slate-200 rounded-lg hover:bg-slate-700 transition-colors text-sm font-medium border border-slate-700"
                   >
-                    Open Full Detail Page
+                    {t('admin.bookings.openFullPage')}
                   </Link>
                 </div>
               </div>

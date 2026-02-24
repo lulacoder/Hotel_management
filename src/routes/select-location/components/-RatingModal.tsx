@@ -1,5 +1,6 @@
 import { useNavigate } from '@tanstack/react-router'
 import { Star, X } from 'lucide-react'
+import { useI18n } from '../../../lib/i18n'
 
 interface RatingModalProps {
   isSignedIn: boolean
@@ -31,6 +32,7 @@ export function RatingModal({
   onRatingTextChange,
 }: RatingModalProps) {
   const navigate = useNavigate()
+  const { t } = useI18n()
 
   return (
     <div className="fixed inset-0 bg-black/60 backdrop-blur-sm flex items-center justify-center z-50 p-4">
@@ -47,20 +49,20 @@ export function RatingModal({
               id="rating-modal-title"
               className="text-xl font-semibold text-slate-100"
             >
-              {hasExistingRating ? 'Update Rating' : 'Rate This Hotel'}
+              {hasExistingRating ? t('rating.updateTitle') : t('rating.newTitle')}
             </h2>
             <p
               id="rating-modal-description"
               className="text-sm text-slate-500 mt-1"
             >
-              {hotelName || 'Share your experience'}
+              {hotelName || t('rating.shareExperience')}
             </p>
           </div>
           <button
             type="button"
             onClick={onClose}
             className="p-2 rounded-lg hover:bg-slate-800 transition-colors"
-            aria-label="Close rating modal"
+            aria-label={t('rating.closeModal')}
           >
             <X className="w-5 h-5 text-slate-400" />
           </button>
@@ -70,7 +72,7 @@ export function RatingModal({
           {!isSignedIn ? (
             <div className="space-y-5">
               <p className="text-slate-400">
-                Sign in to leave a rating for this hotel.
+                {t('rating.signInPrompt')}
               </p>
               <div className="flex flex-col sm:flex-row gap-3">
                 <button
@@ -83,7 +85,7 @@ export function RatingModal({
                   }
                   className="flex-1 px-4 py-3 bg-slate-800 text-slate-200 font-medium rounded-xl hover:bg-slate-700 transition-colors"
                 >
-                  Sign In
+                  {t('header.signIn')}
                 </button>
                 <button
                   type="button"
@@ -95,7 +97,7 @@ export function RatingModal({
                   }
                   className="flex-1 px-4 py-3 bg-amber-500 text-slate-900 font-semibold rounded-xl hover:bg-amber-400 transition-colors"
                 >
-                  Sign Up
+                  {t('header.signUp')}
                 </button>
               </div>
             </div>
@@ -109,7 +111,7 @@ export function RatingModal({
 
               <div>
                 <label className="block text-sm font-medium text-slate-300 mb-2">
-                  Your Rating
+                  {t('rating.yourRating')}
                 </label>
                 <div className="flex items-center gap-2">
                   {[1, 2, 3, 4, 5].map((value) => (
@@ -118,7 +120,7 @@ export function RatingModal({
                       type="button"
                       onClick={() => onRatingChange(value)}
                       className="p-1"
-                      aria-label={`Rate ${value} star`}
+                      aria-label={t('rating.rateStar', { value })}
                     >
                       <Star
                         className={`w-6 h-6 ${
@@ -130,21 +132,21 @@ export function RatingModal({
                     </button>
                   ))}
                   <span className="text-sm text-slate-500 ml-2">
-                    {ratingValue > 0 ? `${ratingValue}/5` : 'Select a rating'}
+                    {ratingValue > 0 ? `${ratingValue}/5` : t('rating.selectRating')}
                   </span>
                 </div>
               </div>
 
               <div>
                 <label className="block text-sm font-medium text-slate-300 mb-2">
-                  Review (optional)
+                  {t('rating.reviewOptional')}
                 </label>
                 <textarea
                   rows={4}
                   value={ratingText}
                   onChange={(event) => onRatingTextChange(event.target.value)}
                   maxLength={500}
-                  placeholder="Share anything you liked about your stay."
+                  placeholder={t('rating.reviewPlaceholder')}
                   className="w-full px-4 py-3 bg-slate-800/50 border border-slate-700 rounded-xl text-slate-200 placeholder-slate-500 focus:outline-none focus:border-amber-500/50 transition-all resize-none"
                 />
                 <p className="text-xs text-slate-500 mt-2">
@@ -158,14 +160,14 @@ export function RatingModal({
                   onClick={onClose}
                   className="flex-1 px-4 py-3 bg-slate-800 text-slate-200 font-medium rounded-xl hover:bg-slate-700 transition-colors"
                 >
-                  Cancel
+                  {t('common.cancel')}
                 </button>
                 <button
                   type="submit"
                   disabled={ratingSaving}
                   className="flex-1 px-4 py-3 bg-amber-500 text-slate-900 font-semibold rounded-xl hover:bg-amber-400 transition-colors disabled:opacity-60"
                 >
-                  {ratingSaving ? 'Saving...' : 'Save Rating'}
+                  {ratingSaving ? t('common.saving') : t('common.saveChanges')}
                 </button>
               </div>
             </form>

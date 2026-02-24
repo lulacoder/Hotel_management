@@ -2,6 +2,7 @@ import { Link, createFileRoute } from '@tanstack/react-router'
 import { SignUp } from '@clerk/clerk-react'
 import { ArrowLeft } from 'lucide-react'
 import { ThemeToggle } from '../components/ThemeToggle'
+import { useI18n } from '../lib/i18n'
 import { getClerkAuthAppearance } from '../lib/clerkAppearance'
 import { useTheme } from '../lib/theme'
 
@@ -11,6 +12,7 @@ export const Route = createFileRoute('/sign-up/$')({
 
 function SignUpCatchAll() {
   const { theme } = useTheme()
+  const { t } = useI18n()
 
   return (
     <div className="min-h-screen bg-slate-950 flex">
@@ -34,16 +36,16 @@ function SignUpCatchAll() {
 
           <div className="max-w-md">
             <h1 className="text-4xl font-bold text-white mb-4 leading-tight">
-              Start your journey with us
+              {t('signUp.startJourney')}
             </h1>
             <p className="text-lg text-slate-400 leading-relaxed">
-              Create an account to unlock exclusive deals, manage your bookings,
-              and experience luxury stays around the world.
+              {t('signUp.description')}
             </p>
           </div>
 
           <p className="text-slate-600 text-sm">
-            &copy; {new Date().getFullYear()} Luxe Hotels. All rights reserved.
+            &copy; {new Date().getFullYear()} Luxe Hotels.{' '}
+            {t('common.allRightsReserved')}
           </p>
         </div>
       </div>
@@ -52,7 +54,7 @@ function SignUpCatchAll() {
         <div className="lg:hidden p-4 flex items-center justify-between">
           <Link to="/" className="flex items-center gap-2">
             <ArrowLeft size={20} className="text-slate-400" />
-            <span className="text-slate-400 font-medium">Back</span>
+            <span className="text-slate-400 font-medium">{t('signIn.back')}</span>
           </Link>
           <div className="flex items-center gap-2">
             <ThemeToggle compact />

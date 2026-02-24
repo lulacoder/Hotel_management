@@ -20,7 +20,9 @@ import {
 } from 'lucide-react'
 import { useQuery } from 'convex/react'
 import { api } from '../../convex/_generated/api'
+import { LanguageSwitcher } from '../components/LanguageSwitcher'
 import { ThemeToggle } from '../components/ThemeToggle'
+import { useI18n } from '../lib/i18n'
 
 export const Route = createFileRoute('/admin')({
   beforeLoad: () => {
@@ -36,6 +38,7 @@ export const Route = createFileRoute('/admin')({
 
 function AdminLayout() {
   const { user, isLoaded, isSignedIn } = useUser()
+  const { t } = useI18n()
   const location = useLocation()
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false)
 
@@ -86,17 +89,16 @@ function AdminLayout() {
             <LogOut className="w-10 h-10 text-red-400" />
           </div>
           <h1 className="text-2xl font-semibold text-red-400 mb-3 tracking-tight">
-            Access Denied
+            {t('admin.accessDenied')}
           </h1>
           <p className="text-slate-400 mb-8 leading-relaxed">
-            You don't have permission to access the admin area. This section is
-            restricted to room administrators and assigned hotel staff.
+            {t('admin.accessDeniedDescription')}
           </p>
           <button
             onClick={() => (window.location.href = '/')}
             className="px-8 py-3 bg-slate-800 text-slate-200 font-medium rounded-xl hover:bg-slate-700 transition-all duration-200 border border-slate-700"
           >
-            Return Home
+            {t('admin.returnHome')}
           </button>
         </div>
       </div>
@@ -104,12 +106,17 @@ function AdminLayout() {
   }
 
   const navItems = [
-    { to: '/admin', label: 'Dashboard', icon: LayoutDashboard, exact: true },
-    { to: '/admin/hotels', label: 'Hotels', icon: Hotel },
-    { to: '/admin/rooms', label: 'Rooms', icon: Building2 },
-    { to: '/admin/bookings', label: 'Bookings', icon: Calendar },
-    { to: '/admin/walk-in', label: 'Walk-in Booking', icon: UserPlus },
-    { to: '/admin/users', label: 'Users', icon: Users },
+    {
+      to: '/admin',
+      label: t('admin.nav.dashboard'),
+      icon: LayoutDashboard,
+      exact: true,
+    },
+    { to: '/admin/hotels', label: t('admin.nav.hotels'), icon: Hotel },
+    { to: '/admin/rooms', label: t('admin.nav.rooms'), icon: Building2 },
+    { to: '/admin/bookings', label: t('admin.nav.bookings'), icon: Calendar },
+    { to: '/admin/walk-in', label: t('admin.nav.walkIn'), icon: UserPlus },
+    { to: '/admin/users', label: t('admin.nav.users'), icon: Users },
   ]
 
   const visibleNavItems = navItems.filter((item) => {
@@ -150,7 +157,7 @@ function AdminLayout() {
       <button
         onClick={() => setMobileMenuOpen(true)}
         className="md:hidden fixed top-4 left-4 z-50 p-2.5 hover:bg-white/10 rounded-xl transition-all duration-300 group"
-        aria-label="Open menu"
+        aria-label={t('header.openMenu')}
       >
         <Menu
           size={22}
@@ -175,17 +182,17 @@ function AdminLayout() {
             </div>
             <div>
               <h2 className="text-lg font-semibold text-white tracking-tight">
-                Hotel Admin
+                {t('admin.hotelAdmin')}
               </h2>
               <p className="text-xs text-slate-500 font-medium">
-                Navigation Menu
+                {t('admin.navigationMenu')}
               </p>
             </div>
           </div>
           <button
             onClick={() => setMobileMenuOpen(false)}
             className="p-2.5 hover:bg-white/5 rounded-xl transition-all duration-300 group"
-            aria-label="Close menu"
+            aria-label={t('header.closeMenu')}
           >
             <X
               size={22}
@@ -195,7 +202,10 @@ function AdminLayout() {
         </div>
 
         <div className="px-5 py-4 border-b border-slate-800/50">
-          <ThemeToggle className="w-full justify-center" />
+          <div className="flex items-center gap-2">
+            <LanguageSwitcher className="w-full justify-center" />
+            <ThemeToggle className="w-full justify-center" />
+          </div>
         </div>
 
         <nav className="flex-1 p-4 overflow-y-auto space-y-1">
@@ -264,17 +274,20 @@ function AdminLayout() {
             </div>
             <div>
               <h1 className="text-lg font-semibold text-slate-100 tracking-tight">
-                Hotel Admin
+                {t('admin.hotelAdmin')}
               </h1>
               <p className="text-xs text-slate-500 font-medium">
-                Management Portal
+                {t('admin.managementPortal')}
               </p>
             </div>
           </div>
         </div>
 
         <div className="px-6 py-4 border-b border-slate-800/50">
-          <ThemeToggle className="w-full justify-center" />
+          <div className="flex items-center gap-2">
+            <LanguageSwitcher className="w-full justify-center" />
+            <ThemeToggle className="w-full justify-center" />
+          </div>
         </div>
 
         <nav className="p-4 space-y-1">

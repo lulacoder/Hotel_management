@@ -10,6 +10,7 @@ import { useEffect, useMemo, useState } from 'react'
 import { api } from '../../convex/_generated/api'
 import { useGeolocation } from '../hooks/useGeolocation'
 import { calculateDistance } from '../lib/distance'
+import { useI18n } from '../lib/i18n'
 import { SelectLocationHeader } from './select-location/components/-SelectLocationHeader'
 import { HeroSection } from './select-location/components/-HeroSection'
 import { SearchFilters } from './select-location/components/-SearchFilters'
@@ -24,6 +25,7 @@ export const Route = createFileRoute('/select-location')({
 
 function SelectLocationPage() {
   const { user, isSignedIn } = useUser()
+  const { t } = useI18n()
   const navigate = useNavigate()
   const location = useLocation()
   const [searchTerm, setSearchTerm] = useState('')
@@ -249,7 +251,7 @@ function SelectLocationPage() {
     }
 
     if (ratingValue < 1 || ratingValue > 5) {
-      setRatingError('Please select a rating between 1 and 5.')
+      setRatingError(t('rating.selectRating'))
       return
     }
 
@@ -265,7 +267,7 @@ function SelectLocationPage() {
       })
       closeRatingModal()
     } catch (err: any) {
-      setRatingError(err.message || 'Failed to save rating.')
+      setRatingError(err.message || t('rating.saveFailed'))
     } finally {
       setRatingSaving(false)
     }

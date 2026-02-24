@@ -24,6 +24,7 @@ import { api } from '../../../../convex/_generated/api'
 import { RoomModal } from './$hotelId/components/-RoomModal'
 import { HotelEditModal } from './$hotelId/components/-HotelEditModal'
 import type { Id } from '../../../../convex/_generated/dataModel'
+import { useI18n } from '../../../lib/i18n'
 
 export const Route = createFileRoute('/admin/hotels/$hotelId')({
   component: HotelDetailPage,
@@ -37,6 +38,7 @@ function HotelDetailPage() {
   const [activeMenu, setActiveMenu] = useState<Id<'rooms'> | null>(null)
   const [showEditHotel, setShowEditHotel] = useState(false)
   const [isHydrated, setIsHydrated] = useState(false)
+  const { t } = useI18n()
 
   const hotel = useQuery(api.hotels.get, { hotelId: hotelId as Id<'hotels'> })
   const rooms = useQuery(
@@ -65,7 +67,7 @@ function HotelDetailPage() {
 
   const handleDeleteRoom = async (roomId: Id<'rooms'>) => {
     if (!user?.id) return
-    if (confirm('Are you sure you want to delete this room?')) {
+    if (confirm(t('admin.hotels.confirmDeleteRoom'))) {
       await deleteRoom({ clerkUserId: user.id, roomId })
     }
     setActiveMenu(null)
@@ -73,7 +75,7 @@ function HotelDetailPage() {
 
   const handleDeleteRating = async (ratingId: Id<'hotelRatings'>) => {
     if (!user?.id) return
-    if (confirm('Delete this rating? This will remove it from public view.')) {
+    if (confirm(t('admin.hotels.confirmDeleteRating'))) {
       await deleteRating({ clerkUserId: user.id, ratingId })
     }
   }
@@ -93,42 +95,42 @@ function HotelDetailPage() {
 
   const statusConfig = {
     available: {
-      label: 'Available',
+      label: t('admin.hotels.status.available'),
       icon: CheckCircle,
       color: 'text-emerald-400',
       bg: 'bg-emerald-500/10',
       border: 'border-emerald-500/20',
     },
     maintenance: {
-      label: 'Maintenance',
+      label: t('admin.hotels.status.maintenance'),
       icon: Wrench,
       color: 'text-amber-400',
       bg: 'bg-amber-500/10',
       border: 'border-amber-500/20',
     },
     cleaning: {
-      label: 'Cleaning',
+      label: t('admin.hotels.status.cleaning'),
       icon: Sparkles,
       color: 'text-blue-400',
       bg: 'bg-blue-500/10',
       border: 'border-blue-500/20',
     },
     out_of_order: {
-      label: 'Out of Order',
+      label: t('admin.hotels.status.outOfOrder'),
       icon: XCircle,
       color: 'text-red-400',
       bg: 'bg-red-500/10',
       border: 'border-red-500/20',
     },
     held: {
-      label: 'Held',
+      label: t('booking.status.held'),
       icon: CheckCircle,
       color: 'text-amber-400',
       bg: 'bg-amber-500/10',
       border: 'border-amber-500/20',
     },
     booked: {
-      label: 'Booked',
+      label: t('admin.hotels.status.booked'),
       icon: CheckCircle,
       color: 'text-blue-400',
       bg: 'bg-blue-500/10',
@@ -144,10 +146,10 @@ function HotelDetailPage() {
   ] as const
 
   const roomTypeLabels: Record<string, string> = {
-    budget: 'Budget',
-    standard: 'Standard',
-    suite: 'Suite',
-    deluxe: 'Deluxe',
+    budget: t('hotel.budgetRoom'),
+    standard: t('hotel.standardRoom'),
+    suite: t('hotel.suiteRoom'),
+    deluxe: t('hotel.deluxeRoom'),
   }
 
   if (!isHydrated || hotel === undefined) {
@@ -163,17 +165,17 @@ function HotelDetailPage() {
       <div className="max-w-7xl mx-auto">
         <div className="bg-slate-900/50 border border-slate-800/50 rounded-2xl p-12 text-center">
           <h2 className="text-xl font-semibold text-slate-300 mb-2">
-            Hotel not found
+            {t('hotel.notFoundTitle')}
           </h2>
           <p className="text-slate-500 mb-6">
-            This hotel may have been deleted or doesn't exist.
+            {t('hotel.notFoundDescription')}
           </p>
           <Link
             to="/admin/hotels"
             className="inline-flex items-center gap-2 px-5 py-2.5 bg-slate-800 text-slate-200 font-medium rounded-xl hover:bg-slate-700 transition-colors"
           >
             <ArrowLeft className="w-5 h-5" />
-            Back to My Hotel
+            {t('admin.hotels.backToHotels')}
           </Link>
         </div>
       </div>
@@ -188,7 +190,7 @@ function HotelDetailPage() {
         className="inline-flex items-center gap-2 text-slate-400 hover:text-slate-200 transition-colors mb-6"
       >
         <ArrowLeft className="w-4 h-4" />
-        Back to My Hotel
+        {t('admin.hotels.backToHotels')}
       </Link>
 
       {/* Hotel Header */}
@@ -211,20 +213,20 @@ function HotelDetailPage() {
             className="flex items-center gap-2 px-4 py-2 bg-slate-800 text-slate-300 rounded-xl hover:bg-slate-700 transition-colors border border-slate-700"
           >
             <Edit className="w-4 h-4" />
-            Edit Hotel
+            {t('admin.hotels.editHotel')}
           </button>
         </div>
       </div>
 
       {/* Rooms Section */}
       <div className="flex items-center justify-between mb-6">
-        <h2 className="text-xl font-semibold text-slate-200">Rooms</h2>
+        <h2 className="text-xl font-semibold text-slate-200">{t('admin.nav.rooms')}</h2>
         <button
           onClick={() => setShowCreateRoom(true)}
           className="flex items-center gap-2 px-4 py-2 bg-gradient-to-r from-amber-500 to-amber-600 text-white font-medium rounded-xl hover:from-amber-600 hover:to-amber-700 transition-all duration-200 shadow-lg shadow-amber-500/20"
         >
           <Plus className="w-5 h-5" />
-          Add Room
+          {t('admin.hotels.addRoom')}
         </button>
       </div>
 
@@ -239,17 +241,17 @@ function HotelDetailPage() {
             <Building2 className="w-8 h-8 text-slate-600" />
           </div>
           <h3 className="text-lg font-semibold text-slate-300 mb-2">
-            No rooms yet
+            {t('admin.hotels.noRooms')}
           </h3>
           <p className="text-slate-500 mb-6">
-            Add rooms to this hotel to start accepting bookings.
+            {t('admin.hotels.noRoomsDescription')}
           </p>
           <button
             onClick={() => setShowCreateRoom(true)}
             className="inline-flex items-center gap-2 px-5 py-2.5 bg-amber-500/10 text-amber-400 font-medium rounded-xl hover:bg-amber-500/20 transition-colors border border-amber-500/20"
           >
             <Plus className="w-5 h-5" />
-            Add First Room
+            {t('admin.hotels.addFirstRoom')}
           </button>
         </div>
       ) : (
@@ -284,11 +286,11 @@ function HotelDetailPage() {
                         className="flex items-center gap-3 px-4 py-2.5 text-slate-300 hover:bg-slate-700 transition-colors w-full text-sm"
                       >
                         <Pencil className="w-4 h-4" />
-                        Edit Room
+                        {t('admin.hotels.editRoom')}
                       </button>
                       <div className="border-t border-slate-700 my-1"></div>
                       <p className="px-4 py-2 text-xs text-slate-500 font-medium">
-                        Set Status
+                        {t('admin.hotels.setStatus')}
                       </p>
                       {operationalStatusOptions.map((key) => {
                         const config = statusConfig[key]
@@ -314,7 +316,7 @@ function HotelDetailPage() {
                         className="flex items-center gap-3 px-4 py-2.5 text-red-400 hover:bg-slate-700 transition-colors w-full text-sm"
                       >
                         <Trash2 className="w-4 h-4" />
-                        Delete Room
+                        {t('admin.hotels.deleteRoom')}
                       </button>
                     </div>
                   )}
@@ -327,7 +329,7 @@ function HotelDetailPage() {
                   </div>
                   <div>
                     <h3 className="font-semibold text-slate-200">
-                      Room {room.roomNumber}
+                      {t('hotel.room')} {room.roomNumber}
                     </h3>
                     <p className="text-sm text-slate-500">
                       {roomTypeLabels[room.type]}
@@ -347,11 +349,13 @@ function HotelDetailPage() {
                 <div className="grid grid-cols-2 gap-4 text-sm">
                   <div className="flex items-center gap-2 text-slate-400">
                     <DollarSign className="w-4 h-4" />
-                    <span>${(room.basePrice / 100).toFixed(2)}/night</span>
+                    <span>
+                      ${(room.basePrice / 100).toFixed(2)}/{t('hotel.night')}
+                    </span>
                   </div>
                   <div className="flex items-center gap-2 text-slate-400">
                     <Users className="w-4 h-4" />
-                    <span>Max {room.maxOccupancy}</span>
+                    <span>{t('admin.hotels.maxOccupancy', { count: room.maxOccupancy })}</span>
                   </div>
                 </div>
 
@@ -368,7 +372,7 @@ function HotelDetailPage() {
                       ))}
                       {room.amenities.length > 3 && (
                         <span className="px-2 py-1 bg-slate-800 text-slate-500 rounded text-xs">
-                          +{room.amenities.length - 3} more
+                          {t('grid.more', { count: room.amenities.length - 3 })}
                         </span>
                       )}
                     </div>
@@ -383,9 +387,9 @@ function HotelDetailPage() {
       {/* Ratings Section */}
       <div className="mt-10">
         <div className="flex items-center justify-between mb-4">
-          <h2 className="text-xl font-semibold text-slate-200">Ratings</h2>
+          <h2 className="text-xl font-semibold text-slate-200">{t('admin.hotels.ratings')}</h2>
           <span className="text-sm text-slate-500">
-            {ratings?.length ?? 0} total
+            {t('admin.hotels.totalCount', { count: ratings?.length ?? 0 })}
           </span>
         </div>
 
@@ -395,7 +399,7 @@ function HotelDetailPage() {
           </div>
         ) : ratings.length === 0 ? (
           <div className="bg-slate-900/50 border border-slate-800/50 rounded-2xl p-8 text-center text-slate-500">
-            No ratings yet.
+            {t('admin.hotels.noRatings')}
           </div>
         ) : (
           <div className="space-y-4">
@@ -431,11 +435,11 @@ function HotelDetailPage() {
                       </span>
                     </div>
 
-                    <p className="text-sm text-slate-400 mt-3">
-                      {rating.review || 'No review text provided.'}
+                     <p className="text-sm text-slate-400 mt-3">
+                      {rating.review || t('admin.hotels.noReviewText')}
                     </p>
                     <p className="text-xs text-slate-500 mt-2">
-                      {rating.user?.email || 'Unknown user'}
+                      {rating.user?.email || t('admin.hotels.unknownUser')}
                     </p>
                   </div>
 
@@ -443,7 +447,7 @@ function HotelDetailPage() {
                     type="button"
                     onClick={() => handleDeleteRating(rating._id)}
                     className="p-2 rounded-lg hover:bg-red-500/10 transition-colors text-red-400"
-                    aria-label="Delete rating"
+                    aria-label={t('admin.hotels.deleteRating')}
                   >
                     <Trash2 className="w-4 h-4" />
                   </button>
