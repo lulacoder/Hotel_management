@@ -1,6 +1,6 @@
 import { v } from 'convex/values'
 
-import { mutation } from './_generated/server'
+import { mutation, query } from './_generated/server'
 import { requireUser } from './lib/auth'
 
 // Generates a short-lived upload URL that the client can use to upload a file
@@ -55,5 +55,15 @@ export const trackUpload = mutation({
     })
 
     return null
+  },
+})
+
+export const getFileUrl = query({
+  args: {
+    storageId: v.id('_storage'),
+  },
+  returns: v.union(v.string(), v.null()),
+  handler: async (ctx, args) => {
+    return await ctx.storage.getUrl(args.storageId)
   },
 })

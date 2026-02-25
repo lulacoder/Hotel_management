@@ -32,5 +32,5 @@ export const getRoomTypeName = (type: string) => {
 
 export const canCancel = (status: string) => {
   // Cancellation is only allowed before stay completion.
-  return ['held', 'confirmed'].includes(status)
+  return ['held', 'pending_payment', 'confirmed'].includes(status)
 }

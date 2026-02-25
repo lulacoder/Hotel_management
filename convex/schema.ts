@@ -113,7 +113,9 @@ export default defineSchema({
       v.literal('assigned'),
       v.literal('deleted'),
     ),
-    resourceType: v.optional(v.union(v.literal('hotel'), v.literal('room'))),
+    resourceType: v.optional(
+      v.union(v.literal('hotel'), v.literal('room'), v.literal('booking')),
+    ),
     resourceId: v.optional(v.string()),
     uploadedAt: v.number(),
     assignedAt: v.optional(v.number()),
@@ -135,6 +137,13 @@ export default defineSchema({
     .index('by_email', ['email'])
     .index('by_linked_user', ['linkedUserId']),
 
+  hotelBankAccounts: defineTable({
+    hotelId: v.id('hotels'),
+    accountNumber: v.string(),
+    setBy: v.id('users'),
+    updatedAt: v.number(),
+  }).index('by_hotel', ['hotelId']),
+
   // Bookings table
   bookings: defineTable({
     userId: v.optional(v.id('users')),
@@ -145,6 +154,7 @@ export default defineSchema({
     checkOut: v.string(), // YYYY-MM-DD format
     status: v.union(
       v.literal('held'),
+      v.literal('pending_payment'),
       v.literal('confirmed'),
       v.literal('checked_in'),
       v.literal('checked_out'),
@@ -163,6 +173,8 @@ export default defineSchema({
         v.literal('refunded'),
       ),
     ),
+    transactionId: v.optional(v.string()),
+    nationalIdStorageId: v.optional(v.id('_storage')),
     pricePerNight: v.number(), // In cents, snapshot at booking time
     totalPrice: v.number(), // In cents
     packageType: v.optional(

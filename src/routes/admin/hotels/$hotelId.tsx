@@ -41,9 +41,26 @@ function HotelDetailPage() {
   const [activeMenu, setActiveMenu] = useState<Id<'rooms'> | null>(null)
   const [showEditHotel, setShowEditHotel] = useState(false)
   const [isHydrated, setIsHydrated] = useState(false)
+  const [accountNumberInput, setAccountNumberInput] = useState('')
+  const [savingAccount, setSavingAccount] = useState(false)
+  const [paymentError, setPaymentError] = useState('')
   const { t } = useI18n()
 
+  const profile = useQuery(
+    api.users.getByClerkId,
+    user?.id ? { clerkUserId: user.id } : 'skip',
+  )
+  const hotelAssignment = useQuery(
+    api.hotelStaff.getByUserId,
+    user?.id && profile?._id
+      ? { clerkUserId: user.id, userId: profile._id }
+      : 'skip',
+  )
+
   const hotel = useQuery(api.hotels.get, { hotelId: hotelId as Id<'hotels'> })
+  const bankAccount = useQuery(api.hotelBankAccounts.getByHotel, {
+    hotelId: hotelId as Id<'hotels'>,
+  })
   const rooms = useQuery(
     api.rooms.getByHotelWithLiveState,
     user?.id
@@ -63,10 +80,15 @@ function HotelDetailPage() {
   const deleteRoom = useMutation(api.rooms.softDelete)
   const updateRoomStatus = useMutation(api.rooms.updateStatus)
   const deleteRating = useMutation(api.ratings.softDeleteRating)
+  const setBankAccount = useMutation(api.hotelBankAccounts.set)
 
   useEffect(() => {
     setIsHydrated(true)
   }, [])
+
+  useEffect(() => {
+    setAccountNumberInput(bankAccount?.accountNumber ?? '')
+  }, [bankAccount?.accountNumber])
 
   const handleDeleteRoom = async (roomId: Id<'rooms'>) => {
     if (!user?.id) return
@@ -95,6 +117,37 @@ function HotelDetailPage() {
       operationalStatus: status,
     })
     setActiveMenu(null)
+  }
+
+  const canManagePaymentSettings =
+    hotelAssignment?.hotelId === (hotelId as Id<'hotels'>) &&
+    ['hotel_admin', 'hotel_cashier'].includes(hotelAssignment.role)
+
+  const handleSaveBankAccount = async () => {
+    if (!user?.id || !canManagePaymentSettings) {
+      return
+    }
+
+    const trimmed = accountNumberInput.trim()
+    if (!trimmed) {
+      setPaymentError(t('admin.hotels.payment.accountRequired'))
+      return
+    }
+
+    setSavingAccount(true)
+    setPaymentError('')
+
+    try {
+      await setBankAccount({
+        clerkUserId: user.id,
+        hotelId: hotelId as Id<'hotels'>,
+        accountNumber: trimmed,
+      })
+    } catch (error: any) {
+      setPaymentError(error?.message || t('admin.hotels.payment.saveFailed'))
+    } finally {
+      setSavingAccount(false)
+    }
   }
 
   const statusConfig = {
@@ -221,6 +274,51 @@ function HotelDetailPage() {
           </button>
         </div>
       </div>
+
+      {canManagePaymentSettings && (
+        <div className="bg-slate-900/50 border border-slate-800/50 rounded-2xl p-6 mb-8">
+          <h2 className="text-xl font-semibold text-slate-200 mb-2">
+            {t('admin.hotels.payment.title')}
+          </h2>
+          <p className="text-sm text-slate-500 mb-4">
+            {t('admin.hotels.payment.description')}
+          </p>
+
+          <div className="space-y-4">
+            <div>
+              <label className="block text-sm font-medium text-slate-300 mb-2">
+                {t('admin.hotels.payment.accountNumber')}
+              </label>
+              <input
+                type="text"
+                value={accountNumberInput}
+                onChange={(e) => setAccountNumberInput(e.target.value)}
+                placeholder={t('admin.hotels.payment.accountPlaceholder')}
+                className="w-full px-4 py-3 bg-slate-800/50 border border-slate-700 rounded-xl text-slate-200 placeholder-slate-500 focus:outline-none focus:border-amber-500/50 transition-all"
+              />
+            </div>
+
+            {paymentError && (
+              <div className="bg-red-500/10 border border-red-500/20 rounded-xl p-3 text-red-400 text-sm">
+                {paymentError}
+              </div>
+            )}
+
+            <div>
+              <button
+                type="button"
+                onClick={handleSaveBankAccount}
+                disabled={savingAccount}
+                className="px-4 py-2 bg-amber-500/10 text-amber-400 font-medium rounded-xl hover:bg-amber-500/20 transition-colors border border-amber-500/20 disabled:opacity-50"
+              >
+                {savingAccount
+                  ? t('admin.hotels.payment.saving')
+                  : t('admin.hotels.payment.save')}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
 
       {/* Rooms Section */}
       <div className="flex items-center justify-between mb-6">

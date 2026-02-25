@@ -5,9 +5,11 @@ import { useMutation, useQuery } from 'convex/react'
 import {
   ArrowLeft,
   CheckCircle,
+  Copy,
   CircleDollarSign,
   Clock,
   Hotel,
+  Image,
   LogIn,
   LogOut,
   XCircle,
@@ -61,10 +63,19 @@ function BookingDetailPage() {
 
   const updateBookingStatus = useMutation(api.bookings.updateStatus)
   const acceptCashPayment = useMutation(api.bookings.acceptCashPayment)
+  const verifyPayment = useMutation(api.bookings.verifyPayment)
+  const rejectPayment = useMutation(api.bookings.rejectPayment)
+
+  const nationalIdImageUrl = useQuery(
+    (api as any).files.getFileUrl,
+    bookingDetail?.booking.nationalIdStorageId
+      ? { storageId: bookingDetail.booking.nationalIdStorageId }
+      : 'skip',
+  )
 
   const getAllowedTransitions = (status: string) => {
     // Encode valid status transitions for action buttons.
-    if (status === 'held') return ['confirmed', 'cancelled'] as const
+    if (status === 'held') return ['cancelled'] as const
     if (status === 'confirmed') return ['checked_in', 'cancelled'] as const
     if (status === 'checked_in') return ['checked_out'] as const
     return [] as const
@@ -83,6 +94,13 @@ function BookingDetailPage() {
   const statusConfig = {
     held: {
       label: t('booking.status.held'),
+      icon: Clock,
+      color: 'text-amber-400',
+      bg: 'bg-amber-500/10',
+      border: 'border-amber-500/20',
+    },
+    pending_payment: {
+      label: t('booking.status.pendingPayment'),
       icon: Clock,
       color: 'text-amber-400',
       bg: 'bg-amber-500/10',
@@ -139,6 +157,11 @@ function BookingDetailPage() {
       hotelAssignment.hotelId === bookingDetail.hotel._id &&
       ['hotel_admin', 'hotel_cashier'].includes(hotelAssignment.role))
 
+  const canVerifyPayment =
+    bookingDetail &&
+    hotelAssignment?.hotelId === bookingDetail.hotel._id &&
+    ['hotel_admin', 'hotel_cashier'].includes(hotelAssignment.role)
+
   const handleStatusChange = async (
     nextStatus: 'confirmed' | 'checked_in' | 'checked_out' | 'cancelled',
   ) => {
@@ -153,6 +176,23 @@ function BookingDetailPage() {
   const handleAcceptCashPayment = async () => {
     if (!user?.id) return
     await acceptCashPayment({ clerkUserId: user.id, bookingId: typedBookingId })
+  }
+
+  const handleVerifyPayment = async () => {
+    if (!user?.id) return
+    if (!window.confirm(t('admin.bookings.confirmApprovePayment'))) return
+    await verifyPayment({ clerkUserId: user.id, bookingId: typedBookingId })
+  }
+
+  const handleRejectPayment = async () => {
+    if (!user?.id) return
+    if (!window.confirm(t('admin.bookings.confirmRejectPayment'))) return
+    await rejectPayment({ clerkUserId: user.id, bookingId: typedBookingId })
+  }
+
+  const handleCopyTransactionId = async () => {
+    if (!bookingDetail?.booking.transactionId) return
+    await navigator.clipboard.writeText(bookingDetail.booking.transactionId)
   }
 
   if (bookingDetail === undefined) {
@@ -305,6 +345,70 @@ function BookingDetailPage() {
         </div>
       </div>
 
+      {canVerifyPayment && bookingDetail.booking.status === 'pending_payment' && (
+        <div className="bg-slate-900/50 border border-slate-800/50 rounded-2xl p-6 mb-6">
+          <h2 className="text-lg font-semibold text-slate-200 mb-4">
+            {t('admin.bookings.paymentVerification')}
+          </h2>
+
+          <div className="space-y-4">
+            <div className="bg-slate-800/40 border border-slate-700 rounded-xl p-4">
+              <p className="text-slate-500 mb-1">
+                {t('admin.bookings.transactionId')}
+              </p>
+              <div className="flex items-center justify-between gap-2">
+                <p className="text-slate-100 font-medium break-all">
+                  {bookingDetail.booking.transactionId || t('admin.bookings.na')}
+                </p>
+                {bookingDetail.booking.transactionId && (
+                  <button
+                    type="button"
+                    onClick={handleCopyTransactionId}
+                    className="inline-flex items-center gap-2 px-3 py-2 bg-slate-800 text-slate-300 rounded-lg hover:bg-slate-700 transition-colors border border-slate-700 text-sm"
+                  >
+                    <Copy className="w-4 h-4" />
+                    {t('common.copy')}
+                  </button>
+                )}
+              </div>
+            </div>
+
+            <div className="bg-slate-800/40 border border-slate-700 rounded-xl p-4">
+              <p className="text-slate-500 mb-2">{t('admin.bookings.nationalId')}</p>
+              {nationalIdImageUrl ? (
+                <img
+                  src={nationalIdImageUrl}
+                  alt={t('admin.bookings.nationalId')}
+                  className="w-full max-h-80 object-contain rounded-lg border border-slate-700 bg-slate-900"
+                />
+              ) : (
+                <div className="flex items-center gap-2 text-slate-400 text-sm">
+                  <Image className="w-4 h-4" />
+                  <span>{t('admin.bookings.nationalIdUnavailable')}</span>
+                </div>
+              )}
+            </div>
+
+            <div className="flex flex-wrap gap-2">
+              <button
+                onClick={handleVerifyPayment}
+                className="px-3 py-2 bg-emerald-500/10 text-emerald-400 rounded-lg hover:bg-emerald-500/20 transition-colors text-sm font-medium border border-emerald-500/20 inline-flex items-center gap-2"
+              >
+                <CheckCircle className="w-4 h-4" />
+                {t('admin.bookings.approvePayment')}
+              </button>
+              <button
+                onClick={handleRejectPayment}
+                className="px-3 py-2 bg-red-500/10 text-red-400 rounded-lg hover:bg-red-500/20 transition-colors text-sm font-medium border border-red-500/20 inline-flex items-center gap-2"
+              >
+                <XCircle className="w-4 h-4" />
+                {t('admin.bookings.rejectPayment')}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
       {canManageBookings && (
         <div className="bg-slate-900/50 border border-slate-800/50 rounded-2xl p-6">
           <h2 className="text-lg font-semibold text-slate-200 mb-4">
@@ -312,9 +416,7 @@ function BookingDetailPage() {
           </h2>
           <div className="flex flex-wrap gap-2">
             {bookingDetail.booking.paymentStatus !== 'paid' &&
-              !['cancelled', 'expired', 'outsourced'].includes(
-                bookingDetail.booking.status,
-              ) && (
+              ['confirmed', 'checked_in'].includes(bookingDetail.booking.status) && (
                 <button
                   onClick={handleAcceptCashPayment}
                   className="px-3 py-2 bg-emerald-500/10 text-emerald-400 rounded-lg hover:bg-emerald-500/20 transition-colors text-sm font-medium border border-emerald-500/20 inline-flex items-center gap-2"

@@ -1,16 +1,17 @@
 // Customer bookings route with filtering and list rendering.
-import { createFileRoute, Link } from '@tanstack/react-router'
+import { Link, createFileRoute } from '@tanstack/react-router'
 import { useUser } from '@clerk/clerk-react'
-import { useQuery, useMutation } from 'convex/react'
-import { api } from '../../../convex/_generated/api'
-import { Id } from '../../../convex/_generated/dataModel'
+import { useMutation, useQuery } from 'convex/react'
 import { Calendar, Loader2 } from 'lucide-react'
 import { useState } from 'react'
+
+import { api } from '../../../convex/_generated/api'
 import { useI18n } from '../../lib/i18n'
 
 import { BookingsHeader } from './bookings/components/-BookingsHeader'
 import { BookingsFilters } from './bookings/components/-BookingsFilters'
 import { BookingsList } from './bookings/components/-BookingsList'
+import type { Id } from '../../../convex/_generated/dataModel'
 
 export const Route = createFileRoute('/_authenticated/bookings')({
   component: BookingsPage,

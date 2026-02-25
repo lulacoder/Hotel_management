@@ -13,10 +13,13 @@ import {
   isHoldExpired,
   validateBookingDates,
 } from './lib/dates'
+import type { MutationCtx } from './_generated/server'
+import type { Id } from './_generated/dataModel'
 
 // Status validators
 const bookingStatusValidator = v.union(
   v.literal('held'),
+  v.literal('pending_payment'),
   v.literal('confirmed'),
   v.literal('checked_in'),
   v.literal('checked_out'),
@@ -44,6 +47,74 @@ const packageAddOnByType = {
   full_package: 4000,
 } as const
 
+const markUploadAssignedToBooking = async (
+  ctx: MutationCtx,
+  uploadedBy: Id<'users'>,
+  storageId: Id<'_storage'>,
+  bookingId: Id<'bookings'>,
+) => {
+  const existing = await ctx.db
+    .query('fileUploads')
+    .withIndex('by_storage_id', (q) => q.eq('storageId', storageId))
+    .unique()
+
+  const now = Date.now()
+
+  if (existing) {
+    await ctx.db.replace(existing._id, {
+      storageId,
+      uploadedBy,
+      status: 'assigned',
+      resourceType: 'booking',
+      resourceId: bookingId,
+      uploadedAt: existing.uploadedAt,
+      assignedAt: now,
+    })
+    return
+  }
+
+  await ctx.db.insert('fileUploads', {
+    storageId,
+    uploadedBy,
+    status: 'assigned',
+    resourceType: 'booking',
+    resourceId: bookingId,
+    uploadedAt: now,
+    assignedAt: now,
+  })
+}
+
+const markUploadDeleted = async (
+  ctx: MutationCtx,
+  uploadedBy: Id<'users'>,
+  storageId: Id<'_storage'>,
+) => {
+  const existing = await ctx.db
+    .query('fileUploads')
+    .withIndex('by_storage_id', (q) => q.eq('storageId', storageId))
+    .unique()
+  const now = Date.now()
+
+  if (existing) {
+    await ctx.db.replace(existing._id, {
+      storageId,
+      uploadedBy,
+      status: 'deleted',
+      uploadedAt: existing.uploadedAt,
+      deletedAt: now,
+    })
+    return
+  }
+
+  await ctx.db.insert('fileUploads', {
+    storageId,
+    uploadedBy,
+    status: 'deleted',
+    uploadedAt: now,
+    deletedAt: now,
+  })
+}
+
 // Booking document validator for return types
 const bookingValidator = v.object({
   _id: v.id('bookings'),
@@ -59,6 +130,8 @@ const bookingValidator = v.object({
   outsourcedToHotelId: v.optional(v.id('hotels')),
   outsourcedAt: v.optional(v.number()),
   paymentStatus: v.optional(paymentStatusValidator),
+  transactionId: v.optional(v.string()),
+  nationalIdStorageId: v.optional(v.id('_storage')),
   pricePerNight: v.number(),
   totalPrice: v.number(),
   packageType: v.optional(packageTypeValidator),
@@ -636,6 +709,99 @@ export const confirmBooking = mutation({
   },
 })
 
+export const submitPaymentProof = mutation({
+  args: {
+    clerkUserId: v.string(),
+    bookingId: v.id('bookings'),
+    transactionId: v.string(),
+    nationalIdStorageId: v.id('_storage'),
+  },
+  returns: v.null(),
+  handler: async (ctx, args) => {
+    const customer = await requireCustomer(ctx, args.clerkUserId)
+
+    const booking = await ctx.db.get(args.bookingId)
+    if (!booking) {
+      throw new ConvexError({
+        code: 'NOT_FOUND',
+        message: 'Booking not found.',
+      })
+    }
+
+    if (booking.userId !== customer._id) {
+      throw new ConvexError({
+        code: 'FORBIDDEN',
+        message: 'You can only submit payment proof for your own booking.',
+      })
+    }
+
+    if (booking.status !== 'held') {
+      throw new ConvexError({
+        code: 'INVALID_STATE',
+        message: `Cannot submit payment proof for booking status '${booking.status}'.`,
+      })
+    }
+
+    if (isHoldExpired(booking.holdExpiresAt)) {
+      throw new ConvexError({
+        code: 'EXPIRED',
+        message: 'Your hold has expired. Please create a new booking.',
+      })
+    }
+
+    const trimmedTransactionId = args.transactionId.trim()
+    if (!trimmedTransactionId) {
+      throw new ConvexError({
+        code: 'INVALID_INPUT',
+        message: 'Transaction ID is required.',
+      })
+    }
+
+    const previousStorageId = booking.nationalIdStorageId
+
+    await ctx.db.patch(args.bookingId, {
+      status: 'pending_payment',
+      paymentStatus: 'pending',
+      transactionId: trimmedTransactionId,
+      nationalIdStorageId: args.nationalIdStorageId,
+      updatedAt: Date.now(),
+      updatedBy: customer._id,
+    })
+
+    await markUploadAssignedToBooking(
+      ctx,
+      customer._id,
+      args.nationalIdStorageId,
+      args.bookingId,
+    )
+
+    if (
+      previousStorageId &&
+      previousStorageId !== args.nationalIdStorageId
+    ) {
+      await ctx.storage.delete(previousStorageId)
+      await markUploadDeleted(ctx, customer._id, previousStorageId)
+    }
+
+    await createAuditLog(ctx, {
+      actorId: customer._id,
+      action: 'booking_payment_proof_submitted',
+      targetType: 'booking',
+      targetId: args.bookingId,
+      previousValue: {
+        status: booking.status,
+      },
+      newValue: {
+        status: 'pending_payment',
+        paymentStatus: 'pending',
+        transactionId: trimmedTransactionId,
+      },
+    })
+
+    return null
+  },
+})
+
 // Cancels a booking by setting its status to 'cancelled'.
 // Customers can cancel their own bookings; hotel staff can cancel bookings
 // belonging to their assigned hotel; room admins can cancel any booking.
@@ -747,7 +913,8 @@ export const updateStatus = mutation({
     }
 
     const allowedTransitions: Record<string, Array<string>> = {
-      held: ['confirmed', 'cancelled'],
+      held: ['cancelled'],
+      pending_payment: [],
       confirmed: ['checked_in', 'cancelled'],
       checked_in: ['checked_out'],
       checked_out: [],
@@ -859,6 +1026,141 @@ export const acceptCashPayment = mutation({
       targetId: args.bookingId,
       previousValue: { paymentStatus: booking.paymentStatus ?? 'pending' },
       newValue: { paymentStatus: 'paid' },
+    })
+
+    return null
+  },
+})
+
+export const verifyPayment = mutation({
+  args: {
+    clerkUserId: v.string(),
+    bookingId: v.id('bookings'),
+  },
+  returns: v.null(),
+  handler: async (ctx, args) => {
+    const user = await requireUser(ctx, args.clerkUserId)
+
+    const booking = await ctx.db.get(args.bookingId)
+    if (!booking) {
+      throw new ConvexError({
+        code: 'NOT_FOUND',
+        message: 'Booking not found.',
+      })
+    }
+
+    const assignment = await getHotelAssignment(ctx, user._id)
+    const isHotelStaffForBooking =
+      assignment?.hotelId === booking.hotelId &&
+      ['hotel_admin', 'hotel_cashier'].includes(assignment.role)
+
+    if (!isHotelStaffForBooking) {
+      throw new ConvexError({
+        code: 'FORBIDDEN',
+        message: 'Only assigned hotel cashiers or admins can verify payment.',
+      })
+    }
+
+    if (booking.status !== 'pending_payment') {
+      throw new ConvexError({
+        code: 'INVALID_STATE',
+        message: `Cannot verify payment for booking status '${booking.status}'.`,
+      })
+    }
+
+    await ctx.db.patch(args.bookingId, {
+      status: 'confirmed',
+      paymentStatus: 'paid',
+      updatedAt: Date.now(),
+      updatedBy: user._id,
+    })
+
+    await createAuditLog(ctx, {
+      actorId: user._id,
+      action: 'booking_payment_verified',
+      targetType: 'booking',
+      targetId: args.bookingId,
+      previousValue: {
+        status: booking.status,
+        paymentStatus: booking.paymentStatus ?? 'pending',
+      },
+      newValue: {
+        status: 'confirmed',
+        paymentStatus: 'paid',
+      },
+    })
+
+    return null
+  },
+})
+
+export const rejectPayment = mutation({
+  args: {
+    clerkUserId: v.string(),
+    bookingId: v.id('bookings'),
+  },
+  returns: v.null(),
+  handler: async (ctx, args) => {
+    const user = await requireUser(ctx, args.clerkUserId)
+
+    const booking = await ctx.db.get(args.bookingId)
+    if (!booking) {
+      throw new ConvexError({
+        code: 'NOT_FOUND',
+        message: 'Booking not found.',
+      })
+    }
+
+    const assignment = await getHotelAssignment(ctx, user._id)
+    const isHotelStaffForBooking =
+      assignment?.hotelId === booking.hotelId &&
+      ['hotel_admin', 'hotel_cashier'].includes(assignment.role)
+
+    if (!isHotelStaffForBooking) {
+      throw new ConvexError({
+        code: 'FORBIDDEN',
+        message: 'Only assigned hotel cashiers or admins can reject payment.',
+      })
+    }
+
+    if (booking.status !== 'pending_payment') {
+      throw new ConvexError({
+        code: 'INVALID_STATE',
+        message: `Cannot reject payment for booking status '${booking.status}'.`,
+      })
+    }
+
+    const now = Date.now()
+
+    await ctx.db.patch(args.bookingId, {
+      status: 'cancelled',
+      paymentStatus: 'failed',
+      nationalIdStorageId: undefined,
+      updatedAt: now,
+      updatedBy: user._id,
+    })
+
+    if (booking.nationalIdStorageId) {
+      await ctx.storage.delete(booking.nationalIdStorageId)
+      await markUploadDeleted(ctx, user._id, booking.nationalIdStorageId)
+    }
+
+    await createAuditLog(ctx, {
+      actorId: user._id,
+      action: 'booking_payment_rejected',
+      targetType: 'booking',
+      targetId: args.bookingId,
+      previousValue: {
+        status: booking.status,
+        paymentStatus: booking.paymentStatus ?? 'pending',
+      },
+      newValue: {
+        status: 'cancelled',
+        paymentStatus: 'failed',
+      },
+      metadata: {
+        nationalIdDeleted: Boolean(booking.nationalIdStorageId),
+      },
     })
 
     return null

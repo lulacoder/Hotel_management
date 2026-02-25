@@ -1,10 +1,12 @@
 // Booking confirmation modal for selecting guest details and creating reservations.
+import { Link } from '@tanstack/react-router'
 import { useUser } from '@clerk/clerk-react'
 import { useMutation, useQuery } from 'convex/react'
-import { Building2, CheckCircle } from 'lucide-react'
+import { Building2, Check, CheckCircle, Copy } from 'lucide-react'
 import { useEffect, useState } from 'react'
 
 import { api } from '../../../../convex/_generated/api'
+import { uploadImageToConvex, validateImageFile } from '../../../lib/imageUpload'
 import {
   PACKAGES,
   formatPackageAddOn,
@@ -38,8 +40,13 @@ export function BookingModal({
   const { t } = useI18n()
   const room = useQuery(api.rooms.get, { roomId })
   const hotel = useQuery(api.hotels.get, { hotelId })
+  const bankAccount = useQuery((api as any).hotelBankAccounts.getByHotel, {
+    hotelId,
+  })
   const holdRoom = useMutation(api.bookings.holdRoom)
-  const confirmBooking = useMutation(api.bookings.confirmBooking)
+  const submitPaymentProof = useMutation(api.bookings.submitPaymentProof)
+  const generateUploadUrl = useMutation(api.files.generateUploadUrl)
+  const trackUpload = useMutation(api.files.trackUpload)
 
   const [step, setStep] = useState<'package' | 'details' | 'confirm'>('package')
   const [selectedPackageType, setSelectedPackageType] =
@@ -50,6 +57,10 @@ export function BookingModal({
     specialRequests: '',
   })
   const [bookingId, setBookingId] = useState<Id<'bookings'> | null>(null)
+  const [nationalIdFile, setNationalIdFile] = useState<File | null>(null)
+  const [transactionId, setTransactionId] = useState('')
+  const [copied, setCopied] = useState(false)
+  const [submitted, setSubmitted] = useState(false)
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState('')
 
@@ -92,28 +103,62 @@ export function BookingModal({
     }
   }
 
-  const handleConfirm = async () => {
-    // Step 2 confirmation: convert hold to confirmed booking.
+  const handleSubmitPaymentProof = async () => {
+    // Step 3 confirmation: submit payment proof and move booking to pending verification.
     if (!user?.id || !bookingId) return
+    if (!nationalIdFile) {
+      setError(t('bookingModal.nationalIdRequired'))
+      return
+    }
+
+    const fileError = validateImageFile(nationalIdFile)
+    if (fileError) {
+      setError(fileError)
+      return
+    }
+
+    const trimmedTransactionId = transactionId.trim()
+    if (!trimmedTransactionId) {
+      setError(t('bookingModal.transactionIdRequired'))
+      return
+    }
 
     setLoading(true)
     setError('')
 
     try {
-      await confirmBooking({
+      const nationalIdStorageId = await uploadImageToConvex({
+        file: nationalIdFile,
+        clerkUserId: user.id,
+        generateUploadUrl,
+        trackUpload,
+      })
+
+      await submitPaymentProof({
         clerkUserId: user.id,
         bookingId,
+        transactionId: trimmedTransactionId,
+        nationalIdStorageId,
       })
-      onSuccess()
+
+      setSubmitted(true)
     } catch (err: any) {
       if (err?.data?.code === 'EXPIRED') {
         setError(t('bookingModal.holdExpired'))
       } else {
-        setError(err.message || t('bookingModal.failedConfirm'))
+        setError(err.message || t('bookingModal.failedSubmitPaymentProof'))
       }
     } finally {
       setLoading(false)
     }
+  }
+
+  const handleCopyBankAccount = async () => {
+    if (!bankAccount?.accountNumber) return
+
+    await navigator.clipboard.writeText(bankAccount.accountNumber)
+    setCopied(true)
+    window.setTimeout(() => setCopied(false), 1800)
   }
 
   if (!room || !hotel) {
@@ -134,14 +179,18 @@ export function BookingModal({
               ? t('bookingModal.step.packageTitle')
               : step === 'details'
                 ? t('bookingModal.step.detailsTitle')
-                : t('bookingModal.step.confirmTitle')}
+                : submitted
+                  ? t('bookingModal.step.submittedTitle')
+                  : t('bookingModal.step.paymentTitle')}
           </h2>
           <p className="text-sm text-slate-500 mt-1">
             {step === 'package'
               ? t('bookingModal.step.packageDescription')
               : step === 'details'
                 ? t('bookingModal.step.detailsDescription')
-                : t('bookingModal.step.confirmDescription')}
+                : submitted
+                  ? t('bookingModal.step.submittedDescription')
+                  : t('bookingModal.step.paymentDescription')}
           </p>
         </div>
 
@@ -361,6 +410,43 @@ export function BookingModal({
                 </button>
               </div>
             </form>
+          ) : submitted ? (
+            <div className="space-y-4">
+              <div className="bg-emerald-500/10 border border-emerald-500/20 rounded-xl p-4">
+                <div className="flex items-center gap-2 text-emerald-400 mb-2">
+                  <CheckCircle className="w-5 h-5" />
+                  <span className="font-semibold">
+                    {t('bookingModal.paymentProofSubmitted')}
+                  </span>
+                </div>
+                <p className="text-slate-300 text-sm">
+                  {t('bookingModal.awaitingVerification')}
+                </p>
+              </div>
+
+              {bookingId && (
+                <div className="bg-slate-800/40 border border-slate-700 rounded-xl p-4 text-sm">
+                  <p className="text-slate-500 mb-1">{t('bookingModal.bookingId')}</p>
+                  <p className="text-slate-200 font-medium">{bookingId}</p>
+                </div>
+              )}
+
+              <div className="flex gap-3">
+                <button
+                  onClick={onClose}
+                  className="flex-1 px-4 py-3 bg-slate-800 text-slate-300 font-medium rounded-xl hover:bg-slate-700 transition-colors border border-slate-700"
+                >
+                  {t('common.close')}
+                </button>
+                <Link
+                  to="/bookings"
+                  onClick={onSuccess}
+                  className="flex-1 px-4 py-3 text-center bg-gradient-to-r from-emerald-500 to-emerald-600 text-white font-medium rounded-xl hover:from-emerald-600 hover:to-emerald-700 transition-all"
+                >
+                  {t('bookingModal.viewMyBookings')}
+                </Link>
+              </div>
+            </div>
           ) : (
             <div className="space-y-4">
               <div className="bg-emerald-500/10 border border-emerald-500/20 rounded-xl p-4">
@@ -399,6 +485,61 @@ export function BookingModal({
                 </div>
               </div>
 
+              <div>
+                <p className="text-sm text-slate-400 mb-2">
+                  {t('bookingModal.transferTo')}
+                </p>
+                <div className="flex items-center justify-between gap-2 bg-slate-800/40 border border-slate-700 rounded-xl p-3">
+                  <div>
+                    <p className="text-xs text-slate-500 mb-1">
+                      {t('bookingModal.bankAccountNumber')}
+                    </p>
+                    <p className="text-slate-100 font-semibold break-all">
+                      {bankAccount?.accountNumber ||
+                        t('bookingModal.paymentNotConfigured')}
+                    </p>
+                  </div>
+                  {bankAccount?.accountNumber && (
+                    <button
+                      type="button"
+                      onClick={handleCopyBankAccount}
+                      className="inline-flex items-center gap-2 px-3 py-2 bg-slate-800 text-slate-300 rounded-lg hover:bg-slate-700 transition-colors border border-slate-700 text-sm"
+                    >
+                      {copied ? <Check className="w-4 h-4" /> : <Copy className="w-4 h-4" />}
+                      {copied ? t('common.copied') : t('common.copy')}
+                    </button>
+                  )}
+                </div>
+              </div>
+
+              <div>
+                <label className="block text-sm font-medium text-slate-300 mb-2">
+                  {t('bookingModal.uploadNationalId')}
+                </label>
+                <input
+                  type="file"
+                  accept="image/*"
+                  onChange={(e) => {
+                    const file = e.target.files?.[0] ?? null
+                    setNationalIdFile(file)
+                  }}
+                  className="w-full px-4 py-3 bg-slate-800/50 border border-slate-700 rounded-xl text-slate-200 focus:outline-none focus:border-amber-500/50 transition-all file:mr-3 file:px-3 file:py-1.5 file:rounded-md file:border-0 file:bg-slate-700 file:text-slate-100 hover:file:bg-slate-600"
+                />
+              </div>
+
+              <div>
+                <label className="block text-sm font-medium text-slate-300 mb-2">
+                  {t('bookingModal.transactionId')}
+                </label>
+                <input
+                  type="text"
+                  value={transactionId}
+                  onChange={(e) => setTransactionId(e.target.value)}
+                  placeholder={t('bookingModal.transactionIdPlaceholder')}
+                  className="w-full px-4 py-3 bg-slate-800/50 border border-slate-700 rounded-xl text-slate-200 placeholder-slate-500 focus:outline-none focus:border-amber-500/50 transition-all"
+                />
+              </div>
+
               <div className="flex gap-3">
                 <button
                   onClick={onClose}
@@ -407,13 +548,18 @@ export function BookingModal({
                   {t('bookingModal.cancelHold')}
                 </button>
                 <button
-                  onClick={handleConfirm}
-                  disabled={loading}
+                  onClick={handleSubmitPaymentProof}
+                  disabled={
+                    loading ||
+                    !nationalIdFile ||
+                    !transactionId.trim() ||
+                    !bankAccount?.accountNumber
+                  }
                   className="flex-1 px-4 py-3 bg-gradient-to-r from-emerald-500 to-emerald-600 text-white font-medium rounded-xl hover:from-emerald-600 hover:to-emerald-700 transition-all disabled:opacity-50"
                 >
                   {loading
-                    ? t('bookingModal.confirming')
-                    : t('booking.confirmBooking')}
+                    ? t('bookingModal.submittingPaymentProof')
+                    : t('bookingModal.submitPaymentProof')}
                 </button>
               </div>
             </div>

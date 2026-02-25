@@ -129,7 +129,7 @@ function BookingsPage() {
 
   const getAllowedTransitions = (status: string) => {
     // Keep transition rules consistent with backend booking workflow.
-    if (status === 'held') return ['confirmed', 'cancelled'] as const
+    if (status === 'held') return ['cancelled'] as const
     if (status === 'confirmed') return ['checked_in', 'cancelled'] as const
     if (status === 'checked_in') return ['checked_out'] as const
     return [] as const
@@ -148,6 +148,13 @@ function BookingsPage() {
   const statusConfig = {
     held: {
       label: t('booking.status.held'),
+      icon: Clock,
+      color: 'text-amber-400',
+      bg: 'bg-amber-500/10',
+      border: 'border-amber-500/20',
+    },
+    pending_payment: {
+      label: t('booking.status.pendingPayment'),
       icon: Clock,
       color: 'text-amber-400',
       bg: 'bg-amber-500/10',
@@ -248,6 +255,9 @@ function BookingsPage() {
           >
             <option value="all">{t('admin.bookings.allStatuses')}</option>
             <option value="held">{t('booking.status.held')}</option>
+            <option value="pending_payment">
+              {t('booking.status.pendingPayment')}
+            </option>
             <option value="confirmed">{t('booking.status.confirmed')}</option>
             <option value="checked_in">{t('booking.status.checkedIn')}</option>
             <option value="checked_out">
@@ -373,9 +383,7 @@ function BookingsPage() {
 
                     {canManageBookings &&
                       booking.paymentStatus !== 'paid' &&
-                      !['cancelled', 'expired', 'outsourced'].includes(
-                        booking.status,
-                      ) && (
+                      ['confirmed', 'checked_in'].includes(booking.status) && (
                         <button
                           onClick={() => handleAcceptCashPayment(booking._id)}
                           className="light-hover-surface px-3 py-2 bg-emerald-500/10 text-emerald-400 rounded-lg hover:bg-emerald-500/20 transition-all text-sm font-medium border border-emerald-500/20 inline-flex items-center gap-2"

@@ -160,7 +160,7 @@ function getDerivedLiveState(
   }
 
   const hasBooked = bookings.some((booking) =>
-    ['confirmed', 'checked_in'].includes(booking.status),
+    ['pending_payment', 'confirmed', 'checked_in'].includes(booking.status),
   )
 
   if (hasBooked) {
@@ -782,7 +782,9 @@ export const softDelete = mutation({
 
     const hasActiveBookings = activeBookings.some(
       (b) =>
-        ['held', 'confirmed', 'checked_in'].includes(b.status) &&
+        ['held', 'pending_payment', 'confirmed', 'checked_in'].includes(
+          b.status,
+        ) &&
         !(b.status === 'held' && isHoldExpired(b.holdExpiresAt)),
     )
 

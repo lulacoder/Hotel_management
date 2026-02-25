@@ -15,6 +15,7 @@ export function BookingsFilters({
   const filters = [
     { value: 'all', label: t('bookings.filter.all') },
     { value: 'held', label: t('bookings.filter.held') },
+    { value: 'pending_payment', label: t('bookings.filter.pendingPayment') },
     { value: 'confirmed', label: t('bookings.filter.confirmed') },
     { value: 'checked_in', label: t('bookings.filter.checkedIn') },
     { value: 'checked_out', label: t('bookings.filter.completed') },
