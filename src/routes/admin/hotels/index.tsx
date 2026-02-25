@@ -1,3 +1,4 @@
+// Admin hotels management route for creating, editing, and listing hotel properties.
 import { createFileRoute, Link } from '@tanstack/react-router'
 import { useUser } from '@clerk/clerk-react'
 import { useQuery, useMutation } from 'convex/react'
@@ -18,10 +19,12 @@ import { HotelModal } from './index/components/-HotelModal'
 import { useI18n } from '../../../lib/i18n'
 
 export const Route = createFileRoute('/admin/hotels/')({
+  // Register hotels management route in admin section.
   component: HotelsPage,
 })
 
 function HotelsPage() {
+  // Query hotels + role context, then derive visible/editable records.
   const { user } = useUser()
   const { t } = useI18n()
   const [searchTerm, setSearchTerm] = useState('')
@@ -59,6 +62,7 @@ function HotelsPage() {
   )
 
   const handleDelete = async (hotelId: Id<'hotels'>) => {
+    // Soft delete after confirmation; restricted to top-level admins.
     if (!user?.id) return
     if (!canAddHotel) return
     if (confirm(t('admin.hotels.confirmDelete'))) {
@@ -75,9 +79,7 @@ function HotelsPage() {
           <h1 className="text-3xl font-semibold text-slate-100 tracking-tight mb-2">
             {t('admin.nav.hotels')}
           </h1>
-          <p className="text-slate-400">
-            {t('admin.hotels.description')}
-          </p>
+          <p className="text-slate-400">{t('admin.hotels.description')}</p>
         </div>
         {canAddHotel && (
           <button
@@ -113,7 +115,9 @@ function HotelsPage() {
             <Building2 className="w-8 h-8 text-slate-600" />
           </div>
           <h3 className="text-lg font-semibold text-slate-300 mb-2">
-            {searchTerm ? t('admin.hotels.noneFound') : t('admin.hotels.noneYet')}
+            {searchTerm
+              ? t('admin.hotels.noneFound')
+              : t('admin.hotels.noneYet')}
           </h3>
           <p className="text-slate-500 mb-6">
             {searchTerm

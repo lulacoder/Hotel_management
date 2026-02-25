@@ -1,3 +1,4 @@
+// Search and filter controls for city/category selection and sorting.
 import { SortOption } from './-helpers'
 import { useI18n } from '../../../lib/i18n'
 
@@ -24,6 +25,7 @@ export function SearchFilters({
   onSortChange,
   hasUserLocation,
 }: SearchFiltersProps) {
+  // Controlled filter inputs drive parent-managed search and sort state.
   const { t } = useI18n()
 
   return (

@@ -1,3 +1,4 @@
+// Modal used to outsource a booking to another hotel when capacity is unavailable.
 import { useMemo, useState } from 'react'
 import { Loader2, X } from 'lucide-react'
 import { useMutation, useQuery } from 'convex/react'
@@ -37,6 +38,7 @@ interface OutsourceModalProps {
 }
 
 function getErrorMessage(error: unknown) {
+  // Normalize unknown error shapes into user-friendly text.
   if (error && typeof error === 'object') {
     const candidate = error as { data?: { message?: string }; message?: string }
     if (candidate.data?.message) return candidate.data.message
@@ -52,6 +54,7 @@ export function OutsourceModal({
   onClose,
   onSuccess,
 }: OutsourceModalProps) {
+  // Load destination hotels and submit outsource operation for selected target.
   const { t } = useI18n()
   const [destinationHotelId, setDestinationHotelId] = useState<string>('')
   const [isSubmitting, setIsSubmitting] = useState(false)
@@ -85,7 +88,8 @@ export function OutsourceModal({
     [bookingDetail.booking.paymentStatus, bookingDetail.booking.totalPrice, t],
   )
 
-  const guestName = bookingDetail.guestProfile?.name || t('admin.bookings.guest')
+  const guestName =
+    bookingDetail.guestProfile?.name || t('admin.bookings.guest')
 
   const handleSubmit = async () => {
     if (!destinationHotelId || !clerkUserId) {
@@ -141,7 +145,8 @@ export function OutsourceModal({
                 {t('admin.bookings.outsourceModal.currentHotel')}
               </p>
               <p className="text-slate-100 font-medium">
-                {bookingDetail.hotel.name} · {bookingDetail.hotel.city}, {bookingDetail.hotel.country}
+                {bookingDetail.hotel.name} · {bookingDetail.hotel.city},{' '}
+                {bookingDetail.hotel.country}
               </p>
             </div>
 
@@ -157,7 +162,8 @@ export function OutsourceModal({
                 {t('admin.bookings.stay')}
               </p>
               <p className="text-slate-100 font-medium">
-                {bookingDetail.booking.checkIn} → {bookingDetail.booking.checkOut}
+                {bookingDetail.booking.checkIn} →{' '}
+                {bookingDetail.booking.checkOut}
               </p>
             </div>
 
@@ -179,7 +185,9 @@ export function OutsourceModal({
               disabled={isSubmitting || isSuccess}
               className="w-full px-4 py-3 bg-slate-900 border border-slate-700 rounded-xl text-slate-200 focus:outline-none focus:border-amber-500/50 transition-colors"
             >
-              <option value="">{t('admin.bookings.outsourceModal.selectHotel')}</option>
+              <option value="">
+                {t('admin.bookings.outsourceModal.selectHotel')}
+              </option>
               {destinationHotels?.map((hotel) => (
                 <option key={hotel._id} value={hotel._id}>
                   {hotel.name} · {hotel.city}, {hotel.country}

@@ -1,3 +1,4 @@
+// Top header bar for select-location page with auth and navigation actions.
 import { Link } from '@tanstack/react-router'
 import { UserButton } from '@clerk/clerk-react'
 import { LanguageSwitcher } from '../../../components/LanguageSwitcher'
@@ -13,6 +14,7 @@ export function SelectLocationHeader({
   isSignedIn,
   userName,
 }: SelectLocationHeaderProps) {
+  // Header adapts account actions depending on signed-in state.
   const { t } = useI18n()
 
   return (

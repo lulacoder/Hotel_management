@@ -1,3 +1,4 @@
+// Hotel discovery route with geolocation, search filters, sorting, and rating workflow.
 import {
   createFileRoute,
   useLocation,
@@ -20,10 +21,12 @@ import type { Id } from '../../convex/_generated/dataModel'
 import type { SortOption } from './select-location/components/-helpers'
 
 export const Route = createFileRoute('/select-location')({
+  // Main discovery route where users search, filter, and rate hotels.
   component: SelectLocationPage,
 })
 
 function SelectLocationPage() {
+  // Local UI state for filters, geolocation state, and rating modal flow.
   const { user, isSignedIn } = useUser()
   const { t } = useI18n()
   const navigate = useNavigate()
@@ -42,6 +45,7 @@ function SelectLocationPage() {
   const [ratingPrefillKey, setRatingPrefillKey] = useState<string | null>(null)
   const [autoOpenHandled, setAutoOpenHandled] = useState(false)
 
+  // Primary data sources for cards and aggregated rating metadata.
   const hotels = useQuery(api.hotels.list, {})
   const cities = useQuery(api.hotels.getCities, {})
   const ratingSummaries = useQuery(
@@ -117,6 +121,7 @@ function SelectLocationPage() {
 
   // Compute hotels with distance
   const hotelsWithDistance = useMemo(() => {
+    // Enrich hotels with computed distance when geolocation is available.
     if (!hotels) return []
 
     return hotels.map((hotel) => {
@@ -163,6 +168,7 @@ function SelectLocationPage() {
 
   // Filter and sort hotels
   const filteredHotels = useMemo(() => {
+    // Apply search/filter criteria and then sort by selected option.
     const result = hotelsWithDistance.filter((hotel) => {
       const matchesSearch =
         hotel.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
@@ -232,6 +238,7 @@ function SelectLocationPage() {
     : '/select-location'
 
   const openRatingModal = (hotelId: Id<'hotels'>) => {
+    // Seed modal state for selected hotel and reset prior errors.
     setActiveRatingHotelId(hotelId)
     setRatingError('')
   }

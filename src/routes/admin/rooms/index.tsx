@@ -1,3 +1,4 @@
+// Room inventory management route scoped by hotel assignment/role.
 import { createFileRoute, Link } from '@tanstack/react-router'
 import { useUser } from '@clerk/clerk-react'
 import { useQuery } from 'convex/react'
@@ -7,10 +8,12 @@ import { useState } from 'react'
 import { useI18n } from '../../../lib/i18n'
 
 export const Route = createFileRoute('/admin/rooms/')({
+  // Register rooms entry route that links to hotel-scoped room management.
   component: RoomsPage,
 })
 
 function RoomsPage() {
+  // Build role-aware hotel list and local text search for quick navigation.
   const { user } = useUser()
   const { t } = useI18n()
   const [searchTerm, setSearchTerm] = useState('')
@@ -71,7 +74,9 @@ function RoomsPage() {
             <Hotel className="w-8 h-8 text-slate-600" />
           </div>
           <h3 className="text-lg font-semibold text-slate-300 mb-2">
-            {searchTerm ? t('admin.hotels.noneFound') : t('admin.hotels.noneYet')}
+            {searchTerm
+              ? t('admin.hotels.noneFound')
+              : t('admin.hotels.noneYet')}
           </h3>
           <p className="text-slate-500 mb-6">
             {searchTerm
@@ -83,8 +88,8 @@ function RoomsPage() {
               to="/admin/hotels"
               className="light-hover-amber inline-flex items-center gap-2 px-5 py-2.5 bg-amber-500/10 text-amber-400 font-medium rounded-xl hover:bg-amber-500/20 transition-all border border-amber-500/20"
             >
-                {t('admin.rooms.goToHotels')}
-              </Link>
+              {t('admin.rooms.goToHotels')}
+            </Link>
           )}
         </div>
       ) : (

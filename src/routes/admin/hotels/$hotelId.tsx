@@ -1,3 +1,4 @@
+// Hotel details management route inside admin, including room-level controls.
 import { Link, createFileRoute } from '@tanstack/react-router'
 import { useUser } from '@clerk/clerk-react'
 import { useMutation, useQuery } from 'convex/react'
@@ -27,10 +28,12 @@ import type { Id } from '../../../../convex/_generated/dataModel'
 import { useI18n } from '../../../lib/i18n'
 
 export const Route = createFileRoute('/admin/hotels/$hotelId')({
+  // Register per-hotel admin route for rooms, ratings, and metadata updates.
   component: HotelDetailPage,
 })
 
 function HotelDetailPage() {
+  // Hydrate hotel context and track UI state for room/rating management modals.
   const { hotelId } = Route.useParams()
   const { user } = useUser()
   const [showCreateRoom, setShowCreateRoom] = useState(false)
@@ -84,6 +87,7 @@ function HotelDetailPage() {
     roomId: Id<'rooms'>,
     status: 'available' | 'maintenance' | 'cleaning' | 'out_of_order',
   ) => {
+    // Update room operational status from contextual quick actions.
     if (!user?.id) return
     await updateRoomStatus({
       clerkUserId: user.id,
@@ -220,7 +224,9 @@ function HotelDetailPage() {
 
       {/* Rooms Section */}
       <div className="flex items-center justify-between mb-6">
-        <h2 className="text-xl font-semibold text-slate-200">{t('admin.nav.rooms')}</h2>
+        <h2 className="text-xl font-semibold text-slate-200">
+          {t('admin.nav.rooms')}
+        </h2>
         <button
           onClick={() => setShowCreateRoom(true)}
           className="flex items-center gap-2 px-4 py-2 bg-gradient-to-r from-amber-500 to-amber-600 text-white font-medium rounded-xl hover:from-amber-600 hover:to-amber-700 transition-all duration-200 shadow-lg shadow-amber-500/20"
@@ -355,7 +361,11 @@ function HotelDetailPage() {
                   </div>
                   <div className="flex items-center gap-2 text-slate-400">
                     <Users className="w-4 h-4" />
-                    <span>{t('admin.hotels.maxOccupancy', { count: room.maxOccupancy })}</span>
+                    <span>
+                      {t('admin.hotels.maxOccupancy', {
+                        count: room.maxOccupancy,
+                      })}
+                    </span>
                   </div>
                 </div>
 
@@ -387,7 +397,9 @@ function HotelDetailPage() {
       {/* Ratings Section */}
       <div className="mt-10">
         <div className="flex items-center justify-between mb-4">
-          <h2 className="text-xl font-semibold text-slate-200">{t('admin.hotels.ratings')}</h2>
+          <h2 className="text-xl font-semibold text-slate-200">
+            {t('admin.hotels.ratings')}
+          </h2>
           <span className="text-sm text-slate-500">
             {t('admin.hotels.totalCount', { count: ratings?.length ?? 0 })}
           </span>
@@ -435,7 +447,7 @@ function HotelDetailPage() {
                       </span>
                     </div>
 
-                     <p className="text-sm text-slate-400 mt-3">
+                    <p className="text-sm text-slate-400 mt-3">
                       {rating.review || t('admin.hotels.noReviewText')}
                     </p>
                     <p className="text-xs text-slate-500 mt-2">

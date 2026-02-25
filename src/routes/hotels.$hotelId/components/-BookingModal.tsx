@@ -1,3 +1,4 @@
+// Booking confirmation modal for selecting guest details and creating reservations.
 import { useUser } from '@clerk/clerk-react'
 import { useMutation, useQuery } from 'convex/react'
 import { Building2, CheckCircle } from 'lucide-react'
@@ -32,6 +33,7 @@ export function BookingModal({
   onClose,
   onSuccess,
 }: BookingModalProps) {
+  // Fetch room/hotel context and manage a 3-step booking flow in local state.
   const { user } = useUser()
   const { t } = useI18n()
   const room = useQuery(api.rooms.get, { roomId })
@@ -57,12 +59,12 @@ export function BookingModal({
     setGuestDetails((prev) => ({
       ...prev,
       guestName: prev.guestName || user.fullName || '',
-      guestEmail:
-        prev.guestEmail || user.emailAddresses[0]?.emailAddress || '',
+      guestEmail: prev.guestEmail || user.emailAddresses[0]?.emailAddress || '',
     }))
   }, [user])
 
   const handleHold = async (e: React.FormEvent) => {
+    // Step 1 submission: place temporary hold with package + guest details.
     e.preventDefault()
     if (!user?.id) return
 
@@ -91,6 +93,7 @@ export function BookingModal({
   }
 
   const handleConfirm = async () => {
+    // Step 2 confirmation: convert hold to confirmed booking.
     if (!user?.id || !bookingId) return
 
     setLoading(true)
@@ -168,13 +171,14 @@ export function BookingModal({
             <div className="border-t border-slate-700 mt-4 pt-4 flex justify-between">
               <div className="text-slate-400 text-sm">
                 <p>
-                  {t('hotel.room')}: ${(room.basePrice / 100).toFixed(0)} × {nights}{' '}
-                  {nights !== 1 ? t('hotel.nights') : t('hotel.night')}
+                  {t('hotel.room')}: ${(room.basePrice / 100).toFixed(0)} ×{' '}
+                  {nights} {nights !== 1 ? t('hotel.nights') : t('hotel.night')}
                 </p>
                 {selectedPackage.addOnPerNight > 0 && (
                   <p>
                     {t('booking.package')}: $
-                    {(selectedPackage.addOnPerNight / 100).toFixed(0)} × {nights}
+                    {(selectedPackage.addOnPerNight / 100).toFixed(0)} ×{' '}
+                    {nights}
                   </p>
                 )}
               </div>
@@ -208,8 +212,12 @@ export function BookingModal({
                   >
                     <div className="flex items-start justify-between gap-3 mb-2">
                       <div>
-                        <p className="text-slate-100 font-semibold">{pkg.label}</p>
-                        <p className="text-slate-400 text-sm">{pkg.description}</p>
+                        <p className="text-slate-100 font-semibold">
+                          {pkg.label}
+                        </p>
+                        <p className="text-slate-400 text-sm">
+                          {pkg.description}
+                        </p>
                       </div>
                       <span
                         className={`text-xs font-medium px-2.5 py-1 rounded-full border ${
@@ -321,7 +329,8 @@ export function BookingModal({
                 {selectedPackage.addOnPerNight > 0 && (
                   <div className="flex items-center justify-between text-slate-300 mt-2">
                     <span>
-                      {selectedPackage.label} {t('bookingModal.addOn')} ({nights}{' '}
+                      {selectedPackage.label} {t('bookingModal.addOn')} (
+                      {nights}{' '}
                       {nights !== 1 ? t('hotel.nights') : t('hotel.night')})
                     </span>
                     <span>${(packageSubtotalCents / 100).toFixed(2)}</span>
@@ -346,7 +355,9 @@ export function BookingModal({
                   disabled={loading}
                   className="flex-1 px-4 py-3 bg-gradient-to-r from-amber-500 to-amber-600 text-white font-medium rounded-xl hover:from-amber-600 hover:to-amber-700 transition-all disabled:opacity-50"
                 >
-                  {loading ? t('bookingModal.holding') : t('bookingModal.holdRoom')}
+                  {loading
+                    ? t('bookingModal.holding')
+                    : t('bookingModal.holdRoom')}
                 </button>
               </div>
             </form>
@@ -355,7 +366,9 @@ export function BookingModal({
               <div className="bg-emerald-500/10 border border-emerald-500/20 rounded-xl p-4">
                 <div className="flex items-center gap-2 text-emerald-400 mb-2">
                   <CheckCircle className="w-5 h-5" />
-                  <span className="font-semibold">{t('bookingModal.heldSuccess')}</span>
+                  <span className="font-semibold">
+                    {t('bookingModal.heldSuccess')}
+                  </span>
                 </div>
                 <p className="text-slate-400 text-sm">
                   {t('bookingModal.heldDescription')}
@@ -373,7 +386,8 @@ export function BookingModal({
                 {selectedPackage.addOnPerNight > 0 && (
                   <div className="flex items-center justify-between text-slate-300 mt-2">
                     <span>
-                      {selectedPackage.label} {t('bookingModal.addOn')} ({nights}{' '}
+                      {selectedPackage.label} {t('bookingModal.addOn')} (
+                      {nights}{' '}
                       {nights !== 1 ? t('hotel.nights') : t('hotel.night')})
                     </span>
                     <span>${(packageSubtotalCents / 100).toFixed(2)}</span>
@@ -397,7 +411,9 @@ export function BookingModal({
                   disabled={loading}
                   className="flex-1 px-4 py-3 bg-gradient-to-r from-emerald-500 to-emerald-600 text-white font-medium rounded-xl hover:from-emerald-600 hover:to-emerald-700 transition-all disabled:opacity-50"
                 >
-                  {loading ? t('bookingModal.confirming') : t('booking.confirmBooking')}
+                  {loading
+                    ? t('bookingModal.confirming')
+                    : t('booking.confirmBooking')}
                 </button>
               </div>
             </div>

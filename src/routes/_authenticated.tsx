@@ -1,22 +1,28 @@
-import { createFileRoute, Outlet, useNavigate } from '@tanstack/react-router'
+// Authenticated customer layout that redirects staff/admin users to the admin area.
+import { Outlet, createFileRoute, useNavigate } from '@tanstack/react-router'
 import { useUser } from '@clerk/clerk-react'
 import { useQuery } from 'convex/react'
-import { api } from '../../convex/_generated/api'
 import { useEffect } from 'react'
+import { api } from '../../convex/_generated/api'
 
 export const Route = createFileRoute('/_authenticated')({
+  // Registers the protected parent layout route for customer pages.
+  // Parent layout for customer-only authenticated pages.
   component: AuthenticatedLayout,
 })
 
 function AuthenticatedLayout() {
+  // Gather auth state and profile data used for redirect decisions.
   const { user, isLoaded, isSignedIn } = useUser()
   const navigate = useNavigate()
 
+  // Load app user profile mapped from the Clerk user id.
   const profile = useQuery(
     api.users.getByClerkId,
     user?.id ? { clerkUserId: user.id } : 'skip',
   )
 
+  // If present, user is staff/admin and should use admin area instead.
   const hotelAssignment = useQuery(
     api.hotelStaff.getByUserId,
     user?.id && profile?._id
@@ -25,6 +31,8 @@ function AuthenticatedLayout() {
   )
 
   useEffect(() => {
+    // Centralized redirect logic for signed-out and staff/admin users.
+    // Wait for Clerk initialization before redirect decisions.
     if (!isLoaded) return
 
     if (!isSignedIn) {
@@ -32,12 +40,13 @@ function AuthenticatedLayout() {
       return
     }
 
-    // Redirect admins and assigned hotel staff to admin panel
+    // Staff/admin users are routed to the admin workspace.
     if (profile?.role === 'room_admin' || hotelAssignment) {
       navigate({ to: '/admin' })
     }
   }, [isLoaded, isSignedIn, profile, hotelAssignment, navigate])
 
+  // Keep a neutral loader while profile query resolves.
   if (!isLoaded || profile === undefined) {
     return (
       <div className="flex min-h-screen items-center justify-center">
@@ -46,6 +55,7 @@ function AuthenticatedLayout() {
     )
   }
 
+  // Redirect effect will handle this case.
   if (!isSignedIn) {
     return null
   }

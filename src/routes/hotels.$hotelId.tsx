@@ -1,3 +1,4 @@
+// Hotel detail route showing rooms, amenities, and booking entry flow.
 import { createFileRoute, Link, useNavigate } from '@tanstack/react-router'
 import { useUser, UserButton } from '@clerk/clerk-react'
 import { useQuery } from 'convex/react'
@@ -29,10 +30,12 @@ import { ThemeToggle } from '../components/ThemeToggle'
 import { useI18n } from '../lib/i18n'
 
 export const Route = createFileRoute('/hotels/$hotelId')({
+  // Dynamic route for a single hotel's details and available rooms.
   component: HotelDetailPage,
 })
 
 function HotelDetailPage() {
+  // Load hotel + room availability and maintain booking date selections.
   const { hotelId } = Route.useParams()
   const { user, isSignedIn } = useUser()
   const { t } = useI18n()
@@ -89,6 +92,7 @@ function HotelDetailPage() {
 
   // Calculate number of nights
   const calculateNights = () => {
+    // Shared calculation used by room summary pricing labels.
     if (!selectedDates.checkIn || !selectedDates.checkOut) return 0
     const checkIn = new Date(selectedDates.checkIn)
     const checkOut = new Date(selectedDates.checkOut)
@@ -148,8 +152,8 @@ function HotelDetailPage() {
               <>
                 <Link
                   to="/bookings"
-                className="px-3 py-1.5 text-sm font-semibold text-slate-900 bg-amber-500 hover:bg-amber-400 rounded-lg transition-colors"
-              >
+                  className="px-3 py-1.5 text-sm font-semibold text-slate-900 bg-amber-500 hover:bg-amber-400 rounded-lg transition-colors"
+                >
                   {t('header.myBookings')}
                 </Link>
                 <UserButton afterSignOutUrl="/" />
@@ -275,9 +279,9 @@ function HotelDetailPage() {
           </p>
           <div className="flex flex-col md:flex-row gap-4">
             <div className="flex-1">
-                <label className="block text-sm text-slate-400 mb-2">
-                  {t('booking.checkIn')}
-                </label>
+              <label className="block text-sm text-slate-400 mb-2">
+                {t('booking.checkIn')}
+              </label>
               <input
                 type="date"
                 value={selectedDates.checkIn}
@@ -292,9 +296,9 @@ function HotelDetailPage() {
               />
             </div>
             <div className="flex-1">
-                <label className="block text-sm text-slate-400 mb-2">
-                  {t('booking.checkOut')}
-                </label>
+              <label className="block text-sm text-slate-400 mb-2">
+                {t('booking.checkOut')}
+              </label>
               <input
                 type="date"
                 value={selectedDates.checkOut}
@@ -339,15 +343,15 @@ function HotelDetailPage() {
             <div className="w-16 h-16 rounded-2xl bg-slate-800 flex items-center justify-center mx-auto mb-4">
               <Building2 className="w-8 h-8 text-slate-600" />
             </div>
-              <h3 className="text-lg font-semibold text-slate-300 mb-2">
-                {t('hotel.noRoomsAvailable')}
-              </h3>
-              <p className="text-slate-500">
-                {selectedDates.checkIn && selectedDates.checkOut
-                  ? t('hotel.tryDifferentDates')
-                  : t('hotel.noAvailableRooms')}
-              </p>
-            </div>
+            <h3 className="text-lg font-semibold text-slate-300 mb-2">
+              {t('hotel.noRoomsAvailable')}
+            </h3>
+            <p className="text-slate-500">
+              {selectedDates.checkIn && selectedDates.checkOut
+                ? t('hotel.tryDifferentDates')
+                : t('hotel.noAvailableRooms')}
+            </p>
+          </div>
         ) : (
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
             {rooms.map((room) => (
@@ -388,20 +392,20 @@ function HotelDetailPage() {
                       <p className="text-2xl font-bold text-amber-400">
                         ${(room.basePrice / 100).toFixed(0)}
                       </p>
-                       <p className="text-sm text-slate-500">
-                         {t('hotel.perNight')}
-                       </p>
-                     </div>
-                   </div>
+                      <p className="text-sm text-slate-500">
+                        {t('hotel.perNight')}
+                      </p>
+                    </div>
+                  </div>
 
                   {/* Room Details */}
                   <div className="flex items-center gap-4 text-sm text-slate-400 mb-4 flex-wrap">
                     <div className="flex items-center gap-1">
                       <Users className="w-4 h-4" />
-                        <span>
-                          {t('hotel.upTo', { count: room.maxOccupancy })}
-                        </span>
-                      </div>
+                      <span>
+                        {t('hotel.upTo', { count: room.maxOccupancy })}
+                      </span>
+                    </div>
                     {room.bedOptions && (
                       <div className="flex items-center gap-1">
                         <Bed className="w-4 h-4" />
@@ -448,13 +452,13 @@ function HotelDetailPage() {
                   )}
 
                   {/* Total Price */}
-                    {nights > 0 && (
-                      <div className="bg-slate-800/50 rounded-xl p-3 mb-4">
-                        <div className="flex justify-between text-sm">
-                          <span className="text-slate-400">
-                            ${(room.basePrice / 100).toFixed(0)} x {nights}{' '}
-                            {nights !== 1 ? t('hotel.nights') : t('hotel.night')}
-                          </span>
+                  {nights > 0 && (
+                    <div className="bg-slate-800/50 rounded-xl p-3 mb-4">
+                      <div className="flex justify-between text-sm">
+                        <span className="text-slate-400">
+                          ${(room.basePrice / 100).toFixed(0)} x {nights}{' '}
+                          {nights !== 1 ? t('hotel.nights') : t('hotel.night')}
+                        </span>
                         <span className="text-slate-200 font-semibold">
                           ${((room.basePrice * nights) / 100).toFixed(2)}
                         </span>
@@ -466,9 +470,7 @@ function HotelDetailPage() {
                   <button
                     onClick={() => {
                       if (!selectedDates.checkIn || !selectedDates.checkOut) {
-                        alert(
-                          t('hotel.selectDatesFirst'),
-                        )
+                        alert(t('hotel.selectDatesFirst'))
                         return
                       }
                       if (!isSignedIn) {

@@ -1,3 +1,4 @@
+// Hero/intro section for the hotel discovery page with location status messaging.
 import { Loader2, Navigation, Search } from 'lucide-react'
 import type { ReactNode } from 'react'
 
@@ -25,6 +26,7 @@ export function HeroSection({
   onSearchTermChange,
   children,
 }: HeroSectionProps) {
+  // Hero conveys search state and geolocation readiness to the user.
   const { t } = useI18n()
   const locationErrorMessage = locationError
     ? getGeolocationErrorMessage(locationError)
@@ -50,26 +52,28 @@ export function HeroSection({
         {locationSupported && (
           <div className="mb-6">
             {locationLoading ? (
-                <div className="inline-flex items-center gap-2 px-4 py-2 bg-slate-800/50 rounded-lg text-slate-400 text-sm">
-                  <Loader2 className="w-4 h-4 animate-spin" />
-                  {t('select.gettingLocation')}
-                </div>
-              ) : hasUserLocation ? (
-                <div className="inline-flex items-center gap-2 px-4 py-2 bg-emerald-500/10 border border-emerald-500/30 rounded-lg text-emerald-400 text-sm">
-                  <Navigation className="w-4 h-4" />
-                  {t('select.locationEnabled')}
-                </div>
-              ) : locationError ? (
+              <div className="inline-flex items-center gap-2 px-4 py-2 bg-slate-800/50 rounded-lg text-slate-400 text-sm">
+                <Loader2 className="w-4 h-4 animate-spin" />
+                {t('select.gettingLocation')}
+              </div>
+            ) : hasUserLocation ? (
+              <div className="inline-flex items-center gap-2 px-4 py-2 bg-emerald-500/10 border border-emerald-500/30 rounded-lg text-emerald-400 text-sm">
+                <Navigation className="w-4 h-4" />
+                {t('select.locationEnabled')}
+              </div>
+            ) : locationError ? (
               <button
                 onClick={requestLocation}
                 title={locationErrorMessage}
                 className="inline-flex items-center gap-2 px-4 py-2 bg-slate-800/50 hover:bg-slate-700/50 rounded-lg text-slate-400 text-sm transition-colors"
-                >
-                  <Navigation className="w-4 h-4" />
-                  {locationErrorPreview}
-                  <span className="text-amber-400 ml-1">{t('select.tryAgain')}</span>
-                </button>
-              ) : null}
+              >
+                <Navigation className="w-4 h-4" />
+                {locationErrorPreview}
+                <span className="text-amber-400 ml-1">
+                  {t('select.tryAgain')}
+                </span>
+              </button>
+            ) : null}
           </div>
         )}
 

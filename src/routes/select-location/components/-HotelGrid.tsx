@@ -1,3 +1,4 @@
+// Grid renderer for filtered hotels with cards, metadata, and actions.
 import { Link } from '@tanstack/react-router'
 import {
   ArrowUpDown,
@@ -48,6 +49,7 @@ export function HotelGrid({
   onOpenRating,
   isLoading,
 }: HotelGridProps) {
+  // Render filtered hotels with summary metrics and quick actions.
   const { t } = useI18n()
 
   if (isLoading) {
@@ -71,9 +73,7 @@ export function HotelGrid({
           {isFiltered ? t('grid.noHotelsFound') : t('grid.noHotelsAvailable')}
         </h3>
         <p className="text-slate-500">
-          {isFiltered
-            ? t('grid.adjustFilters')
-            : t('grid.checkBackSoon')}
+          {isFiltered ? t('grid.adjustFilters') : t('grid.checkBackSoon')}
         </p>
       </div>
     )

@@ -1,3 +1,4 @@
+// Catch-all sign-up route variant for Clerk callback/path compatibility.
 import { Link, createFileRoute } from '@tanstack/react-router'
 import { SignUp } from '@clerk/clerk-react'
 import { ArrowLeft } from 'lucide-react'
@@ -7,10 +8,12 @@ import { getClerkAuthAppearance } from '../lib/clerkAppearance'
 import { useTheme } from '../lib/theme'
 
 export const Route = createFileRoute('/sign-up/$')({
+  // Handles alternate Clerk sign-up paths using shared registration UI.
   component: SignUpCatchAll,
 })
 
 function SignUpCatchAll() {
+  // Minimal wrapper around Clerk SignUp with app branding/theming.
   const { theme } = useTheme()
   const { t } = useI18n()
 
@@ -54,7 +57,9 @@ function SignUpCatchAll() {
         <div className="lg:hidden p-4 flex items-center justify-between">
           <Link to="/" className="flex items-center gap-2">
             <ArrowLeft size={20} className="text-slate-400" />
-            <span className="text-slate-400 font-medium">{t('signIn.back')}</span>
+            <span className="text-slate-400 font-medium">
+              {t('signIn.back')}
+            </span>
           </Link>
           <div className="flex items-center gap-2">
             <ThemeToggle compact />

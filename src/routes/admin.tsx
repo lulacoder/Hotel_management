@@ -1,3 +1,4 @@
+// Admin layout route with role checks, sidebar navigation, and nested outlet rendering.
 import {
   Link,
   Outlet,
@@ -25,6 +26,7 @@ import { ThemeToggle } from '../components/ThemeToggle'
 import { useI18n } from '../lib/i18n'
 
 export const Route = createFileRoute('/admin')({
+  // Client-side guard: unauthenticated users are redirected to sign-in.
   beforeLoad: () => {
     if (typeof window !== 'undefined') {
       const clerk = (window as Window & { Clerk?: { user?: unknown } }).Clerk
@@ -42,11 +44,13 @@ function AdminLayout() {
   const location = useLocation()
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false)
 
+  // App-level profile (role, email, etc.)
   const profile = useQuery(
     api.users.getByClerkId,
     user?.id ? { clerkUserId: user.id } : 'skip',
   )
 
+  // Hotel-specific assignment determines scoped admin permissions.
   const hotelAssignment = useQuery(
     api.hotelStaff.getByUserId,
     user?.id && profile?._id
@@ -119,6 +123,7 @@ function AdminLayout() {
     { to: '/admin/users', label: t('admin.nav.users'), icon: Users },
   ]
 
+  // Filter sidebar items by global role + hotel assignment role.
   const visibleNavItems = navItems.filter((item) => {
     if (item.to === '/admin/walk-in') {
       return (
@@ -147,6 +152,7 @@ function AdminLayout() {
   })
 
   const isActive = (path: string, exact?: boolean) => {
+    // Exact match for dashboard; prefix match for nested sections.
     if (exact) return location.pathname === path
     return location.pathname.startsWith(path)
   }

@@ -1,3 +1,4 @@
+// Canonical sign-in route with redirect handling for protected destinations.
 import { Link, createFileRoute, useLocation } from '@tanstack/react-router'
 import { SignIn } from '@clerk/clerk-react'
 import { ArrowLeft } from 'lucide-react'
@@ -7,10 +8,12 @@ import { getClerkAuthAppearance } from '../lib/clerkAppearance'
 import { useTheme } from '../lib/theme'
 
 export const Route = createFileRoute('/sign-in')({
+  // Primary sign-in route entry for web auth.
   component: SignInPage,
 })
 
 function SignInPage() {
+  // Preserve and sanitize redirect target so users return to intended page.
   const { theme } = useTheme()
   const { t } = useI18n()
   const location = useLocation()
@@ -61,12 +64,12 @@ function SignInPage() {
 
           {/* Main Content */}
           <div className="max-w-md">
-              <h1 className="text-4xl font-bold text-white mb-4 leading-tight">
-                {t('signIn.welcomeBack')}
-              </h1>
-              <p className="text-lg text-slate-400 leading-relaxed">
-                {t('signIn.description')}
-              </p>
+            <h1 className="text-4xl font-bold text-white mb-4 leading-tight">
+              {t('signIn.welcomeBack')}
+            </h1>
+            <p className="text-lg text-slate-400 leading-relaxed">
+              {t('signIn.description')}
+            </p>
           </div>
 
           {/* Footer */}
@@ -83,7 +86,9 @@ function SignInPage() {
         <div className="lg:hidden p-4 flex items-center justify-between">
           <Link to="/" className="flex items-center gap-2">
             <ArrowLeft size={20} className="text-slate-400" />
-            <span className="text-slate-400 font-medium">{t('signIn.back')}</span>
+            <span className="text-slate-400 font-medium">
+              {t('signIn.back')}
+            </span>
           </Link>
           <div className="flex items-center gap-2">
             <ThemeToggle compact />

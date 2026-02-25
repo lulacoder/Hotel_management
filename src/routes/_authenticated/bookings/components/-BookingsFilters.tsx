@@ -1,3 +1,4 @@
+// Filter controls used to narrow down customer bookings.
 import { useI18n } from '../../../../lib/i18n'
 
 interface BookingsFiltersProps {
@@ -9,6 +10,7 @@ export function BookingsFilters({
   statusFilter,
   onFilterChange,
 }: BookingsFiltersProps) {
+  // Build localized filter chips for each booking lifecycle status.
   const { t } = useI18n()
   const filters = [
     { value: 'all', label: t('bookings.filter.all') },

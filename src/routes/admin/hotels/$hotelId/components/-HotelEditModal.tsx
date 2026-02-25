@@ -1,10 +1,14 @@
+// Modal form for editing metadata and configuration of a selected hotel.
 import { useUser } from '@clerk/clerk-react'
 import { useQuery, useMutation } from 'convex/react'
 import { useEffect, useState } from 'react'
 
 import { api } from '../../../../../../convex/_generated/api'
 import { Id } from '../../../../../../convex/_generated/dataModel'
-import { uploadImageToConvex, validateImageFile } from '../../../../../lib/imageUpload'
+import {
+  uploadImageToConvex,
+  validateImageFile,
+} from '../../../../../lib/imageUpload'
 import { useI18n } from '../../../../../lib/i18n'
 
 interface HotelEditModalProps {
@@ -13,6 +17,7 @@ interface HotelEditModalProps {
 }
 
 export function HotelEditModal({ hotelId, onClose }: HotelEditModalProps) {
+  // Focused edit modal for core hotel fields and optional image updates.
   const { user } = useUser()
   const { t } = useI18n()
   const hotel = useQuery(api.hotels.get, { hotelId })
@@ -31,7 +36,9 @@ export function HotelEditModal({ hotelId, onClose }: HotelEditModalProps) {
   const [error, setError] = useState('')
   const [selectedImageFile, setSelectedImageFile] = useState<File | null>(null)
   const [imagePreviewUrl, setImagePreviewUrl] = useState('')
-  const [imageStorageId, setImageStorageId] = useState<Id<'_storage'> | null>(null)
+  const [imageStorageId, setImageStorageId] = useState<Id<'_storage'> | null>(
+    null,
+  )
   const [imageChanged, setImageChanged] = useState(false)
   const [clearImage, setClearImage] = useState(false)
 
@@ -52,6 +59,7 @@ export function HotelEditModal({ hotelId, onClose }: HotelEditModalProps) {
   }, [hotel])
 
   const handleImageSelection = (event: React.ChangeEvent<HTMLInputElement>) => {
+    // Validate image input and stage local preview before upload.
     const file = event.target.files?.[0]
     if (!file) {
       return
@@ -165,7 +173,7 @@ export function HotelEditModal({ hotelId, onClose }: HotelEditModalProps) {
           <div className="grid grid-cols-2 gap-4">
             <div>
               <label className="block text-sm font-medium text-slate-300 mb-2">
-                 {t('admin.hotels.modal.city')}
+                {t('admin.hotels.modal.city')}
               </label>
               <input
                 type="text"
@@ -179,7 +187,7 @@ export function HotelEditModal({ hotelId, onClose }: HotelEditModalProps) {
             </div>
             <div>
               <label className="block text-sm font-medium text-slate-300 mb-2">
-                 {t('admin.hotels.modal.country')}
+                {t('admin.hotels.modal.country')}
               </label>
               <input
                 type="text"
@@ -195,7 +203,7 @@ export function HotelEditModal({ hotelId, onClose }: HotelEditModalProps) {
 
           <div>
             <label className="block text-sm font-medium text-slate-300 mb-2">
-               {t('admin.hotels.modal.hotelImageOptional')}
+              {t('admin.hotels.modal.hotelImageOptional')}
             </label>
             <input
               type="file"
@@ -203,7 +211,9 @@ export function HotelEditModal({ hotelId, onClose }: HotelEditModalProps) {
               onChange={handleImageSelection}
               className="w-full px-4 py-2.5 bg-slate-800/50 border border-slate-700 rounded-xl text-slate-300 file:mr-3 file:px-3 file:py-1.5 file:border-0 file:rounded-lg file:bg-amber-500/20 file:text-amber-300 file:cursor-pointer"
             />
-             <p className="text-xs text-slate-500 mt-2">{t('common.maxSize10mb')}</p>
+            <p className="text-xs text-slate-500 mt-2">
+              {t('common.maxSize10mb')}
+            </p>
             {imagePreviewUrl && (
               <div className="mt-3">
                 <img
@@ -222,7 +232,7 @@ export function HotelEditModal({ hotelId, onClose }: HotelEditModalProps) {
                   }}
                   className="mt-2 text-xs text-red-400 hover:text-red-300"
                 >
-                   {t('common.removeImage')}
+                  {t('common.removeImage')}
                 </button>
               </div>
             )}

@@ -1,3 +1,4 @@
+// Customer bookings route with filtering and list rendering.
 import { createFileRoute, Link } from '@tanstack/react-router'
 import { useUser } from '@clerk/clerk-react'
 import { useQuery, useMutation } from 'convex/react'
@@ -13,10 +14,12 @@ import { BookingsList } from './bookings/components/-BookingsList'
 
 export const Route = createFileRoute('/_authenticated/bookings')({
   component: BookingsPage,
+  // Child route mounted under authenticated layout for customer booking history.
 })
 
 function BookingsPage() {
   const { user } = useUser()
+  // Load current user profile/bookings and derive filter-ready display data.
   const { t } = useI18n()
   const [cancellingId, setCancellingId] = useState<string | null>(null)
   const [statusFilter, setStatusFilter] = useState<string>('all')
@@ -31,9 +34,7 @@ function BookingsPage() {
   const handleCancel = async (bookingId: Id<'bookings'>) => {
     if (!user?.id) return
 
-    const confirmed = window.confirm(
-      t('bookings.confirmCancel'),
-    )
+    const confirmed = window.confirm(t('bookings.confirmCancel'))
     if (!confirmed) return
 
     setCancellingId(bookingId)

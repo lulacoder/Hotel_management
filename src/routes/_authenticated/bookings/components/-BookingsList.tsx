@@ -1,3 +1,4 @@
+// List wrapper that renders empty/loading states and booking cards.
 import { BookingCard } from './-BookingCard'
 
 import type { Id } from '../../../../../convex/_generated/dataModel'
@@ -36,6 +37,7 @@ export function BookingsList({
   cancellingId,
   onCancel,
 }: BookingsListProps) {
+  // Render pre-filtered booking entries; item-level actions live in BookingCard.
   return (
     <div className="space-y-4">
       {bookings.map(({ booking, room, hotel }) => (

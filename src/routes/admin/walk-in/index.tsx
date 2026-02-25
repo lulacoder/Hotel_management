@@ -1,3 +1,4 @@
+// Walk-in booking management route for eligible hotel staff/admin users.
 import { createFileRoute, useNavigate } from '@tanstack/react-router'
 import { useUser } from '@clerk/clerk-react'
 import { useMemo, useState } from 'react'
@@ -5,15 +6,13 @@ import { useMutation, useQuery } from 'convex/react'
 import { Calendar, CheckCircle, Search, UserRound } from 'lucide-react'
 
 import { api } from '../../../../convex/_generated/api'
-import {
-  PACKAGES,
-  getPackageByType,
-} from '../../../lib/packages'
+import { PACKAGES, getPackageByType } from '../../../lib/packages'
 import type { Id } from '../../../../convex/_generated/dataModel'
 import type { PackageType } from '../../../lib/packages'
 import { useI18n } from '../../../lib/i18n'
 
 export const Route = createFileRoute('/admin/walk-in/')({
+  // Register walk-in booking route for hotel cashier/admin workflows.
   component: WalkInBookingPage,
 })
 
@@ -25,6 +24,7 @@ type GuestProfileLite = {
 }
 
 function normalizePhone(value: string): string {
+  // Canonicalize phone input for matching and storage.
   return value.replace(/\D/g, '')
 }
 
@@ -36,6 +36,7 @@ function getNights(checkIn: string, checkOut: string): number {
 }
 
 function WalkInBookingPage() {
+  // Manage guest search/creation, room selection, and walk-in booking submission.
   const { user } = useUser()
   const navigate = useNavigate()
   const { t } = useI18n()
@@ -54,7 +55,9 @@ function WalkInBookingPage() {
 
   const [searchTerm, setSearchTerm] = useState('')
   const [submittedTerm, setSubmittedTerm] = useState('')
-  const [selectedGuest, setSelectedGuest] = useState<GuestProfileLite | null>(null)
+  const [selectedGuest, setSelectedGuest] = useState<GuestProfileLite | null>(
+    null,
+  )
 
   const [guestName, setGuestName] = useState('')
   const [guestPhone, setGuestPhone] = useState('')
@@ -70,7 +73,8 @@ function WalkInBookingPage() {
   const [checkIn, setCheckIn] = useState(today)
   const [checkOut, setCheckOut] = useState(tomorrow)
   const [selectedRoomId, setSelectedRoomId] = useState<Id<'rooms'> | null>(null)
-  const [selectedPackage, setSelectedPackage] = useState<PackageType>('room_only')
+  const [selectedPackage, setSelectedPackage] =
+    useState<PackageType>('room_only')
   const [specialRequests, setSpecialRequests] = useState('')
   const [bookingError, setBookingError] = useState('')
   const [submitting, setSubmitting] = useState(false)
@@ -100,17 +104,21 @@ function WalkInBookingPage() {
           checkOut,
         }
       : 'skip',
-  ) as Array<{
-    _id: Id<'rooms'>
-    roomNumber: string
-    type: string
-    basePrice: number
-  }> | undefined
+  ) as
+    | Array<{
+        _id: Id<'rooms'>
+        roomNumber: string
+        type: string
+        basePrice: number
+      }>
+    | undefined
 
   const createGuest = useMutation((api as any).guestProfiles.findOrCreate)
   const createWalkInBooking = useMutation((api as any).bookings.walkInBooking)
 
-  const selectedRoom = availableRooms?.find((room) => room._id === selectedRoomId)
+  const selectedRoom = availableRooms?.find(
+    (room) => room._id === selectedRoomId,
+  )
   const nights = checkIn && checkOut ? getNights(checkIn, checkOut) : 1
 
   const roomSubtotal = selectedRoom ? selectedRoom.basePrice * nights : 0
@@ -118,6 +126,7 @@ function WalkInBookingPage() {
   const totalPrice = roomSubtotal + packageAddOn
 
   const handleSearch = () => {
+    // Trigger server-side search using trimmed query and clear selected guest.
     setSubmittedTerm(searchTerm.trim())
     setSelectedGuest(null)
   }
@@ -156,7 +165,9 @@ function WalkInBookingPage() {
         email: email || undefined,
       })
     } catch (error: any) {
-      setBookingError(error?.message || t('admin.walkIn.error.createGuestFailed'))
+      setBookingError(
+        error?.message || t('admin.walkIn.error.createGuestFailed'),
+      )
     }
   }
 
@@ -180,7 +191,9 @@ function WalkInBookingPage() {
 
       navigate({ to: '/admin/bookings' })
     } catch (error: any) {
-      setBookingError(error?.message || t('admin.walkIn.error.createBookingFailed'))
+      setBookingError(
+        error?.message || t('admin.walkIn.error.createBookingFailed'),
+      )
     } finally {
       setSubmitting(false)
     }
@@ -215,9 +228,7 @@ function WalkInBookingPage() {
         <h1 className="text-3xl font-semibold text-slate-100 tracking-tight mb-2">
           {t('admin.nav.walkIn')}
         </h1>
-        <p className="text-slate-400">
-          {t('admin.walkIn.description')}
-        </p>
+        <p className="text-slate-400">{t('admin.walkIn.description')}</p>
       </div>
 
       {bookingError && (
@@ -266,7 +277,9 @@ function WalkInBookingPage() {
                     : 'border-slate-700 bg-slate-800/30 hover:border-slate-600'
                 }`}
               >
-                <p className="text-slate-100 font-medium">{item.profile.name}</p>
+                <p className="text-slate-100 font-medium">
+                  {item.profile.name}
+                </p>
                 <p className="text-slate-400 text-sm">
                   {item.profile.phone || t('admin.bookings.noPhone')} ·{' '}
                   {item.profile.email || t('admin.bookings.noEmail')}
@@ -284,19 +297,19 @@ function WalkInBookingPage() {
             <input
               value={guestName}
               onChange={(e) => setGuestName(e.target.value)}
-               placeholder={t('admin.walkIn.guestName')}
+              placeholder={t('admin.walkIn.guestName')}
               className="px-4 py-3 bg-slate-800/50 border border-slate-700 rounded-xl text-slate-200 focus:outline-none focus:border-amber-500/50"
             />
             <input
               value={guestPhone}
               onChange={(e) => setGuestPhone(e.target.value)}
-               placeholder={t('admin.walkIn.phone')}
+              placeholder={t('admin.walkIn.phone')}
               className="px-4 py-3 bg-slate-800/50 border border-slate-700 rounded-xl text-slate-200 focus:outline-none focus:border-amber-500/50"
             />
             <input
               value={guestEmail}
               onChange={(e) => setGuestEmail(e.target.value)}
-               placeholder={t('admin.walkIn.email')}
+              placeholder={t('admin.walkIn.email')}
               type="email"
               className="px-4 py-3 bg-slate-800/50 border border-slate-700 rounded-xl text-slate-200 focus:outline-none focus:border-amber-500/50"
             />
@@ -305,7 +318,7 @@ function WalkInBookingPage() {
               onClick={handleCreateOrUseGuest}
               className="md:col-span-3 px-4 py-3 bg-amber-500/15 text-amber-300 rounded-xl border border-amber-500/30 hover:bg-amber-500/20"
             >
-               {t('admin.walkIn.createOrReuseGuest')}
+              {t('admin.walkIn.createOrReuseGuest')}
             </button>
           </div>
         )}
@@ -314,7 +327,9 @@ function WalkInBookingPage() {
           <div className="mt-3 p-3 rounded-xl border border-emerald-500/30 bg-emerald-500/10 flex items-center gap-3">
             <UserRound className="w-5 h-5 text-emerald-400" />
             <div>
-              <p className="text-emerald-300 font-medium">{selectedGuest.name}</p>
+              <p className="text-emerald-300 font-medium">
+                {selectedGuest.name}
+              </p>
               <p className="text-emerald-200/80 text-sm">
                 {selectedGuest.phone || t('admin.bookings.noPhone')} ·{' '}
                 {selectedGuest.email || t('admin.bookings.noEmail')}
@@ -384,7 +399,9 @@ function WalkInBookingPage() {
       <div className="bg-slate-900/50 border border-slate-800/50 rounded-2xl p-6">
         <div className="flex items-center gap-2 mb-4">
           <CheckCircle className="w-5 h-5 text-amber-400" />
-          <h2 className="text-lg font-semibold text-slate-100">{t('admin.walkIn.step3')}</h2>
+          <h2 className="text-lg font-semibold text-slate-100">
+            {t('admin.walkIn.step3')}
+          </h2>
         </div>
 
         <div className="grid grid-cols-1 md:grid-cols-3 gap-3 mb-4">
@@ -421,7 +438,9 @@ function WalkInBookingPage() {
           </p>
           <p className="text-slate-300">
             {t('hotel.room')}:{' '}
-            {selectedRoom ? `${t('hotel.room')} ${selectedRoom.roomNumber}` : '—'}
+            {selectedRoom
+              ? `${t('hotel.room')} ${selectedRoom.roomNumber}`
+              : '—'}
           </p>
           <p className="text-slate-300">
             {t('admin.bookings.dates')}: {checkIn} → {checkOut}
@@ -440,7 +459,9 @@ function WalkInBookingPage() {
           onClick={handleConfirmBooking}
           className="px-5 py-3 bg-gradient-to-r from-amber-500 to-amber-600 text-white font-medium rounded-xl hover:from-amber-600 hover:to-amber-700 transition-all disabled:opacity-50 disabled:cursor-not-allowed"
         >
-          {submitting ? t('admin.walkIn.booking') : t('admin.walkIn.bookConfirm')}
+          {submitting
+            ? t('admin.walkIn.booking')
+            : t('admin.walkIn.bookConfirm')}
         </button>
       </div>
     </div>

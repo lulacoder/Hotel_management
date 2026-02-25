@@ -1,3 +1,4 @@
+// User administration route for assigning and managing staff access.
 import { createFileRoute } from '@tanstack/react-router'
 import { useUser } from '@clerk/clerk-react'
 import { useMutation, useQuery } from 'convex/react'
@@ -9,10 +10,12 @@ import type { Id } from '../../../../convex/_generated/dataModel'
 import { useI18n } from '../../../lib/i18n'
 
 export const Route = createFileRoute('/admin/users/')({
+  // Register staff/user assignment route (room_admin only).
   component: AdminUsersPage,
 })
 
 function AdminUsersPage() {
+  // Query users and assignment actions; keep search + modal state local.
   const { user } = useUser()
   const { t } = useI18n()
   const [searchQuery, setSearchQuery] = useState('')
@@ -39,6 +42,7 @@ function AdminUsersPage() {
   }, [users, searchQuery])
 
   const handleUnassign = async (targetUserId: Id<'users'>) => {
+    // Remove hotel assignment after user confirmation.
     if (!user?.id) return
     if (!confirm(t('admin.users.confirmUnassign'))) return
 
@@ -68,7 +72,9 @@ function AdminUsersPage() {
     return (
       <div className="max-w-7xl mx-auto">
         <div className="bg-slate-900/50 border border-red-500/20 rounded-2xl p-8 text-center">
-          <h2 className="text-xl font-semibold text-red-400 mb-2">{t('admin.accessDenied')}</h2>
+          <h2 className="text-xl font-semibold text-red-400 mb-2">
+            {t('admin.accessDenied')}
+          </h2>
           <p className="text-slate-400">{t('admin.users.onlyRoomAdmins')}</p>
         </div>
       </div>
@@ -81,9 +87,7 @@ function AdminUsersPage() {
         <h1 className="text-3xl font-semibold text-slate-100 tracking-tight mb-2">
           {t('admin.nav.users')}
         </h1>
-        <p className="text-slate-400">
-          {t('admin.users.description')}
-        </p>
+        <p className="text-slate-400">{t('admin.users.description')}</p>
       </div>
 
       {error && (
@@ -108,23 +112,39 @@ function AdminUsersPage() {
           <table className="w-full">
             <thead>
               <tr className="border-b border-slate-800/70 text-left">
-                <th className="px-6 py-4 text-xs text-slate-500 font-medium uppercase tracking-wider">{t('admin.users.email')}</th>
-                <th className="px-6 py-4 text-xs text-slate-500 font-medium uppercase tracking-wider">{t('admin.users.globalRole')}</th>
-                <th className="px-6 py-4 text-xs text-slate-500 font-medium uppercase tracking-wider">{t('admin.users.hotelAssignment')}</th>
-                <th className="px-6 py-4 text-xs text-slate-500 font-medium uppercase tracking-wider">{t('admin.users.hotelRole')}</th>
-                <th className="px-6 py-4 text-xs text-slate-500 font-medium uppercase tracking-wider">{t('admin.bookings.actions')}</th>
+                <th className="px-6 py-4 text-xs text-slate-500 font-medium uppercase tracking-wider">
+                  {t('admin.users.email')}
+                </th>
+                <th className="px-6 py-4 text-xs text-slate-500 font-medium uppercase tracking-wider">
+                  {t('admin.users.globalRole')}
+                </th>
+                <th className="px-6 py-4 text-xs text-slate-500 font-medium uppercase tracking-wider">
+                  {t('admin.users.hotelAssignment')}
+                </th>
+                <th className="px-6 py-4 text-xs text-slate-500 font-medium uppercase tracking-wider">
+                  {t('admin.users.hotelRole')}
+                </th>
+                <th className="px-6 py-4 text-xs text-slate-500 font-medium uppercase tracking-wider">
+                  {t('admin.bookings.actions')}
+                </th>
               </tr>
             </thead>
             <tbody>
               {users === undefined ? (
                 <tr>
-                  <td colSpan={5} className="px-6 py-8 text-center text-slate-500">
+                  <td
+                    colSpan={5}
+                    className="px-6 py-8 text-center text-slate-500"
+                  >
                     {t('admin.users.loadingUsers')}
                   </td>
                 </tr>
               ) : filteredUsers.length === 0 ? (
                 <tr>
-                  <td colSpan={5} className="px-6 py-8 text-center text-slate-500">
+                  <td
+                    colSpan={5}
+                    className="px-6 py-8 text-center text-slate-500"
+                  >
                     {t('admin.users.noneFound')}
                   </td>
                 </tr>
@@ -134,7 +154,9 @@ function AdminUsersPage() {
                     key={listedUser._id}
                     className="border-b border-slate-800/40 last:border-b-0 hover:bg-slate-800/20"
                   >
-                    <td className="px-6 py-4 text-slate-200">{listedUser.email}</td>
+                    <td className="px-6 py-4 text-slate-200">
+                      {listedUser.email}
+                    </td>
                     <td className="px-6 py-4">
                       <span
                         className={`inline-flex px-2.5 py-1 rounded-lg text-xs font-medium border ${
@@ -151,11 +173,14 @@ function AdminUsersPage() {
                         <div className="flex items-center gap-2">
                           <Building2 className="w-4 h-4 text-slate-500" />
                           <span>
-                            {listedUser.assignment.hotelName}, {listedUser.assignment.hotelCity}
+                            {listedUser.assignment.hotelName},{' '}
+                            {listedUser.assignment.hotelCity}
                           </span>
                         </div>
                       ) : (
-                        <span className="text-slate-500 italic">{t('admin.users.notAssigned')}</span>
+                        <span className="text-slate-500 italic">
+                          {t('admin.users.notAssigned')}
+                        </span>
                       )}
                     </td>
                     <td className="px-6 py-4">
@@ -199,7 +224,10 @@ function AdminUsersPage() {
       </div>
 
       {selectedUserId && (
-        <AssignModal userId={selectedUserId} onClose={() => setSelectedUserId(null)} />
+        <AssignModal
+          userId={selectedUserId}
+          onClose={() => setSelectedUserId(null)}
+        />
       )}
     </div>
   )

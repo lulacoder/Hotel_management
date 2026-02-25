@@ -1,3 +1,4 @@
+// Modal for assigning user roles and hotel access from the admin users page.
 import { useUser } from '@clerk/clerk-react'
 import { useMutation, useQuery } from 'convex/react'
 import { X } from 'lucide-react'
@@ -12,10 +13,13 @@ interface AssignModalProps {
 }
 
 export function AssignModal({ userId, onClose }: AssignModalProps) {
+  // Collect hotel + role and submit assignment for the selected user.
   const { user } = useUser()
   const { t } = useI18n()
   const [selectedHotelId, setSelectedHotelId] = useState<Id<'hotels'> | ''>('')
-  const [role, setRole] = useState<'hotel_admin' | 'hotel_cashier'>('hotel_admin')
+  const [role, setRole] = useState<'hotel_admin' | 'hotel_cashier'>(
+    'hotel_admin',
+  )
   const [error, setError] = useState<string | null>(null)
   const [isSubmitting, setIsSubmitting] = useState(false)
 
@@ -23,6 +27,7 @@ export function AssignModal({ userId, onClose }: AssignModalProps) {
   const assignUser = useMutation(api.hotelStaff.assign)
 
   const handleSubmit = async (event: React.FormEvent) => {
+    // Validate form and execute assignment mutation.
     event.preventDefault()
     if (!user?.id) return
 
@@ -87,11 +92,15 @@ export function AssignModal({ userId, onClose }: AssignModalProps) {
             </label>
             <select
               value={selectedHotelId}
-              onChange={(e) => setSelectedHotelId(e.target.value as Id<'hotels'>)}
+              onChange={(e) =>
+                setSelectedHotelId(e.target.value as Id<'hotels'>)
+              }
               className="w-full px-4 py-3 bg-slate-950 border border-slate-800 rounded-xl text-slate-200 focus:outline-none focus:border-amber-500/50"
               required
             >
-              <option value="">{t('admin.users.assignModal.chooseHotel')}</option>
+              <option value="">
+                {t('admin.users.assignModal.chooseHotel')}
+              </option>
               {hotels?.map((hotel) => (
                 <option key={hotel._id} value={hotel._id}>
                   {hotel.name} - {hotel.city}, {hotel.country}

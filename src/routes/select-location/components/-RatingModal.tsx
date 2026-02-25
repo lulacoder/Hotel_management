@@ -1,3 +1,4 @@
+// Modal for creating/updating a user's hotel rating and optional written review.
 import { useNavigate } from '@tanstack/react-router'
 import { Star, X } from 'lucide-react'
 import { useI18n } from '../../../lib/i18n'
@@ -31,6 +32,7 @@ export function RatingModal({
   onRatingChange,
   onRatingTextChange,
 }: RatingModalProps) {
+  // Handles both authenticated rating form flow and guest sign-in prompts.
   const navigate = useNavigate()
   const { t } = useI18n()
 
@@ -49,7 +51,9 @@ export function RatingModal({
               id="rating-modal-title"
               className="text-xl font-semibold text-slate-100"
             >
-              {hasExistingRating ? t('rating.updateTitle') : t('rating.newTitle')}
+              {hasExistingRating
+                ? t('rating.updateTitle')
+                : t('rating.newTitle')}
             </h2>
             <p
               id="rating-modal-description"
@@ -71,9 +75,7 @@ export function RatingModal({
         <div className="p-6">
           {!isSignedIn ? (
             <div className="space-y-5">
-              <p className="text-slate-400">
-                {t('rating.signInPrompt')}
-              </p>
+              <p className="text-slate-400">{t('rating.signInPrompt')}</p>
               <div className="flex flex-col sm:flex-row gap-3">
                 <button
                   type="button"
@@ -132,7 +134,9 @@ export function RatingModal({
                     </button>
                   ))}
                   <span className="text-sm text-slate-500 ml-2">
-                    {ratingValue > 0 ? `${ratingValue}/5` : t('rating.selectRating')}
+                    {ratingValue > 0
+                      ? `${ratingValue}/5`
+                      : t('rating.selectRating')}
                   </span>
                 </div>
               </div>

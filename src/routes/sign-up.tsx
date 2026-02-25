@@ -1,3 +1,4 @@
+// Canonical sign-up route with optional post-registration redirect support.
 import { Link, createFileRoute, useLocation } from '@tanstack/react-router'
 import { SignUp } from '@clerk/clerk-react'
 import { ArrowLeft } from 'lucide-react'
@@ -7,10 +8,12 @@ import { getClerkAuthAppearance } from '../lib/clerkAppearance'
 import { useTheme } from '../lib/theme'
 
 export const Route = createFileRoute('/sign-up')({
+  // Primary sign-up route entry for new accounts.
   component: SignUpPage,
 })
 
 function SignUpPage() {
+  // Keep redirect context when users came from a protected route.
   const { theme } = useTheme()
   const { t } = useI18n()
   const location = useLocation()
@@ -61,27 +64,29 @@ function SignUpPage() {
 
           {/* Main Content */}
           <div className="max-w-md">
-              <h1 className="text-4xl font-bold text-white mb-4 leading-tight">
-                {t('signUp.startJourney')}
-              </h1>
-              <p className="text-lg text-slate-400 leading-relaxed">
-                {t('signUp.description')}
-              </p>
+            <h1 className="text-4xl font-bold text-white mb-4 leading-tight">
+              {t('signUp.startJourney')}
+            </h1>
+            <p className="text-lg text-slate-400 leading-relaxed">
+              {t('signUp.description')}
+            </p>
 
             {/* Features */}
             <div className="mt-8 space-y-4">
-                {[t('signUp.feature1'), t('signUp.feature2'), t('signUp.feature3')].map(
-                  (feature, index) => (
-                  <div key={index} className="flex items-center gap-3">
-                    <div className="w-5 h-5 rounded-full bg-amber-500/20 flex items-center justify-center">
-                      <div className="w-2 h-2 rounded-full bg-amber-400" />
-                    </div>
-                    <span className="text-slate-300 font-medium">{feature}</span>
+              {[
+                t('signUp.feature1'),
+                t('signUp.feature2'),
+                t('signUp.feature3'),
+              ].map((feature, index) => (
+                <div key={index} className="flex items-center gap-3">
+                  <div className="w-5 h-5 rounded-full bg-amber-500/20 flex items-center justify-center">
+                    <div className="w-2 h-2 rounded-full bg-amber-400" />
                   </div>
-                  ),
-                )}
-              </div>
+                  <span className="text-slate-300 font-medium">{feature}</span>
+                </div>
+              ))}
             </div>
+          </div>
 
           {/* Footer */}
           <p className="text-slate-600 text-sm">
@@ -97,7 +102,9 @@ function SignUpPage() {
         <div className="lg:hidden p-4 flex items-center justify-between">
           <Link to="/" className="flex items-center gap-2">
             <ArrowLeft size={20} className="text-slate-400" />
-            <span className="text-slate-400 font-medium">{t('signIn.back')}</span>
+            <span className="text-slate-400 font-medium">
+              {t('signIn.back')}
+            </span>
           </Link>
           <div className="flex items-center gap-2">
             <ThemeToggle compact />
@@ -122,9 +129,7 @@ function SignUpPage() {
               <h1 className="text-2xl font-bold text-white mb-2">
                 {t('signUp.createAccountTitle')}
               </h1>
-              <p className="text-slate-400">
-                {t('signUp.mobileSubtitle')}
-              </p>
+              <p className="text-slate-400">{t('signUp.mobileSubtitle')}</p>
             </div>
 
             <SignUp

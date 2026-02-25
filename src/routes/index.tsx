@@ -1,17 +1,28 @@
+// Public landing page route with entry actions for browsing or authentication.
 import { useAuth } from '@clerk/clerk-react'
 import { Link, createFileRoute } from '@tanstack/react-router'
-import { ArrowRight, CheckCircle2, Compass, MapPin, ShieldCheck, Sparkles } from 'lucide-react'
+import {
+  ArrowRight,
+  CheckCircle2,
+  Compass,
+  MapPin,
+  ShieldCheck,
+  Sparkles,
+} from 'lucide-react'
 import { useI18n } from '../lib/i18n'
 
 export const Route = createFileRoute('/')({
+  // Route definition for public landing experience.
+  // Public marketing/entry page.
   component: LandingPage,
 })
 
 function LandingPage() {
+  // Resolve auth state first to avoid showing guest CTA to signed-in users.
   const { isSignedIn, isLoaded } = useAuth()
   const { t } = useI18n()
 
-  // If already signed in, redirect to post-login
+  // Signed-in users should continue to role-aware post-login routing.
   if (isLoaded && isSignedIn) {
     return (
       <div className="min-h-screen flex items-center justify-center bg-slate-950">
@@ -34,6 +45,7 @@ function LandingPage() {
 
   return (
     <div className="landing-page min-h-screen bg-slate-950 text-slate-100">
+      {/* Hero section with primary actions */}
       <section className="landing-hero relative overflow-hidden">
         <div className="absolute inset-0">
           <div className="landing-hero-bg absolute inset-0 bg-[radial-gradient(circle_at_20%_20%,rgba(245,158,11,0.22),transparent_40%),radial-gradient(circle_at_75%_30%,rgba(249,115,22,0.18),transparent_42%),linear-gradient(180deg,#020617_0%,#020617_100%)]" />
@@ -87,8 +99,11 @@ function LandingPage() {
               </div>
 
               <div className="mt-10 grid gap-3 sm:grid-cols-3">
-                {[t('landing.pill1'), t('landing.pill2'), t('landing.pill3')].map(
-                  (value) => (
+                {[
+                  t('landing.pill1'),
+                  t('landing.pill2'),
+                  t('landing.pill3'),
+                ].map((value) => (
                   <div
                     key={value}
                     className="landing-pill flex items-center gap-2 rounded-lg border border-slate-800/80 bg-slate-900/45 px-3 py-2.5 text-sm text-slate-300"
@@ -96,8 +111,7 @@ function LandingPage() {
                     <CheckCircle2 size={16} className="text-amber-400" />
                     {value}
                   </div>
-                  ),
-                )}
+                ))}
               </div>
             </div>
 
@@ -140,6 +154,7 @@ function LandingPage() {
         </div>
       </section>
 
+      {/* Product highlights */}
       <section className="landing-features-section border-y border-slate-800/70 bg-slate-900/35 py-16">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <h2 className="text-2xl sm:text-3xl font-bold tracking-tight mb-8">
@@ -177,6 +192,7 @@ function LandingPage() {
         </div>
       </section>
 
+      {/* Minimal footer */}
       <footer className="landing-footer py-10 px-4 sm:px-6 lg:px-8">
         <div className="max-w-7xl mx-auto flex flex-col sm:flex-row items-center justify-between gap-5">
           <img
@@ -184,10 +200,10 @@ function LandingPage() {
             alt="Luxe Hotels"
             className="h-10 w-auto object-contain opacity-95"
           />
-            <p className="landing-copyright text-sm text-slate-500">
+          <p className="landing-copyright text-sm text-slate-500">
             &copy; {new Date().getFullYear()} Luxe Hotels.{' '}
             {t('common.allRightsReserved')}
-            </p>
+          </p>
         </div>
       </footer>
     </div>

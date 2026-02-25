@@ -1,3 +1,4 @@
+// Booking details route for a specific booking record in the admin area.
 import { Link, createFileRoute } from '@tanstack/react-router'
 import { useUser } from '@clerk/clerk-react'
 import { useMutation, useQuery } from 'convex/react'
@@ -23,10 +24,12 @@ import { OutsourceModal } from './components/-OutsourceModal'
 import type { Id } from '../../../../convex/_generated/dataModel'
 
 export const Route = createFileRoute('/admin/bookings/$bookingId')({
+  // Register admin booking detail route for status/payment operations.
   component: BookingDetailPage,
 })
 
 function BookingDetailPage() {
+  // Fetch booking graph + role context used for permissions and actions.
   const { bookingId } = Route.useParams()
   const typedBookingId = bookingId as Id<'bookings'>
   const { user } = useUser()
@@ -60,6 +63,7 @@ function BookingDetailPage() {
   const acceptCashPayment = useMutation(api.bookings.acceptCashPayment)
 
   const getAllowedTransitions = (status: string) => {
+    // Encode valid status transitions for action buttons.
     if (status === 'held') return ['confirmed', 'cancelled'] as const
     if (status === 'confirmed') return ['checked_in', 'cancelled'] as const
     if (status === 'checked_in') return ['checked_out'] as const
@@ -222,7 +226,8 @@ function BookingDetailPage() {
             </p>
             {bookingDetail.linkedUser && (
               <p className="text-xs text-slate-500 mt-1">
-                {t('admin.bookings.linkedAccount')}: {bookingDetail.linkedUser.email}
+                {t('admin.bookings.linkedAccount')}:{' '}
+                {bookingDetail.linkedUser.email}
               </p>
             )}
           </div>
@@ -231,18 +236,27 @@ function BookingDetailPage() {
             <p className="text-slate-100 font-medium">
               {t('hotel.room')} {bookingDetail.room.roomNumber}
             </p>
-            <p className="text-slate-400 capitalize">{bookingDetail.room.type}</p>
+            <p className="text-slate-400 capitalize">
+              {bookingDetail.room.type}
+            </p>
           </div>
           <div className="bg-slate-800/40 border border-slate-700 rounded-xl p-4">
             <p className="text-slate-500 mb-1">{t('admin.nav.hotels')}</p>
-            <p className="text-slate-100 font-medium">{bookingDetail.hotel.name}</p>
-            <p className="text-slate-400">{bookingDetail.hotel.address}, {bookingDetail.hotel.city}</p>
+            <p className="text-slate-100 font-medium">
+              {bookingDetail.hotel.name}
+            </p>
+            <p className="text-slate-400">
+              {bookingDetail.hotel.address}, {bookingDetail.hotel.city}
+            </p>
           </div>
           {bookingDetail.booking.status === 'outsourced' && (
             <div className="bg-slate-800/40 border border-slate-700 rounded-xl p-4">
-              <p className="text-slate-500 mb-1">{t('admin.bookings.outsourcedTo')}</p>
+              <p className="text-slate-500 mb-1">
+                {t('admin.bookings.outsourcedTo')}
+              </p>
               <p className="text-slate-100 font-medium">
-                {outsourcedToHotel?.name || t('admin.bookings.unknownDestination')}
+                {outsourcedToHotel?.name ||
+                  t('admin.bookings.unknownDestination')}
               </p>
               <p className="text-slate-400">
                 {outsourcedToHotel
@@ -256,12 +270,15 @@ function BookingDetailPage() {
             <p className="text-slate-100 font-medium">
               {bookingDetail.booking.checkIn} → {bookingDetail.booking.checkOut}
             </p>
-            <p className="text-slate-400">${(bookingDetail.booking.totalPrice / 100).toFixed(2)}</p>
+            <p className="text-slate-400">
+              ${(bookingDetail.booking.totalPrice / 100).toFixed(2)}
+            </p>
           </div>
           <div className="bg-slate-800/40 border border-slate-700 rounded-xl p-4">
             <p className="text-slate-500 mb-1">{t('admin.bookings.payment')}</p>
             <p className="text-slate-100 font-medium capitalize">
-              {bookingDetail.booking.paymentStatus || t('admin.bookings.pending')}
+              {bookingDetail.booking.paymentStatus ||
+                t('admin.bookings.pending')}
             </p>
           </div>
           <div className="bg-slate-800/40 border border-slate-700 rounded-xl p-4">
@@ -277,8 +294,12 @@ function BookingDetailPage() {
           </div>
           {bookingDetail.booking.specialRequests && (
             <div className="bg-slate-800/40 border border-slate-700 rounded-xl p-4">
-              <p className="text-slate-500 mb-1">{t('bookingModal.specialRequests')}</p>
-              <p className="text-slate-300">{bookingDetail.booking.specialRequests}</p>
+              <p className="text-slate-500 mb-1">
+                {t('bookingModal.specialRequests')}
+              </p>
+              <p className="text-slate-300">
+                {bookingDetail.booking.specialRequests}
+              </p>
             </div>
           )}
         </div>
@@ -304,7 +325,9 @@ function BookingDetailPage() {
               )}
 
             {profile?.role !== 'room_admin' &&
-              ['confirmed', 'checked_in'].includes(bookingDetail.booking.status) && (
+              ['confirmed', 'checked_in'].includes(
+                bookingDetail.booking.status,
+              ) && (
                 <button
                   onClick={() => setShowOutsourceModal(true)}
                   className="px-3 py-2 bg-purple-500/10 text-purple-400 rounded-lg hover:bg-purple-500/20 transition-colors text-sm font-medium border border-purple-500/20 inline-flex items-center gap-2"
@@ -314,19 +337,21 @@ function BookingDetailPage() {
                 </button>
               )}
 
-            {getAllowedTransitions(bookingDetail.booking.status).map((nextStatus) => (
-              <button
-                key={nextStatus}
-                onClick={() => handleStatusChange(nextStatus)}
-                className={`px-3 py-2 rounded-lg transition-colors text-sm font-medium border ${
-                  nextStatus === 'cancelled'
-                    ? 'bg-red-500/10 text-red-400 hover:bg-red-500/20 border-red-500/20'
-                    : 'bg-amber-500/10 text-amber-400 hover:bg-amber-500/20 border-amber-500/20'
-                }`}
-              >
-                {transitionLabel[nextStatus]}
-              </button>
-            ))}
+            {getAllowedTransitions(bookingDetail.booking.status).map(
+              (nextStatus) => (
+                <button
+                  key={nextStatus}
+                  onClick={() => handleStatusChange(nextStatus)}
+                  className={`px-3 py-2 rounded-lg transition-colors text-sm font-medium border ${
+                    nextStatus === 'cancelled'
+                      ? 'bg-red-500/10 text-red-400 hover:bg-red-500/20 border-red-500/20'
+                      : 'bg-amber-500/10 text-amber-400 hover:bg-amber-500/20 border-amber-500/20'
+                  }`}
+                >
+                  {transitionLabel[nextStatus]}
+                </button>
+              ),
+            )}
           </div>
         </div>
       )}

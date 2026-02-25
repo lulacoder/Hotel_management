@@ -1,3 +1,4 @@
+// Admin dashboard landing page with summary cards and quick actions.
 import { createFileRoute } from '@tanstack/react-router'
 import { useUser } from '@clerk/clerk-react'
 import { useQuery } from 'convex/react'
@@ -14,10 +15,12 @@ import { Link } from '@tanstack/react-router'
 import { useI18n } from '../../lib/i18n'
 
 export const Route = createFileRoute('/admin/')({
+  // Register admin dashboard home route.
   component: AdminDashboard,
 })
 
 function AdminDashboard() {
+  // Aggregate role context and lightweight metrics for overview cards.
   const { user } = useUser()
   const { t } = useI18n()
 
@@ -76,6 +79,7 @@ function AdminDashboard() {
   ]
 
   const quickActions = [
+    // Navigation shortcuts shown based on user permissions.
     {
       label: 'Manage Hotels',
       description: 'Add, edit, or remove hotel properties',
@@ -113,9 +117,7 @@ function AdminDashboard() {
         <h1 className="text-3xl font-semibold text-slate-100 tracking-tight mb-2">
           {t('admin.welcomeBack', { name: user?.firstName || 'Admin' })}
         </h1>
-        <p className="text-slate-400">
-          {t('admin.overview')}
-        </p>
+        <p className="text-slate-400">{t('admin.overview')}</p>
       </div>
 
       {hotelAssignment && assignedHotel && profile?.role !== 'room_admin' && (
@@ -130,7 +132,9 @@ function AdminDashboard() {
               </h3>
               <p className="text-slate-300 text-sm">
                 You are assigned to{' '}
-                <span className="font-medium text-white">{assignedHotel.name}</span>{' '}
+                <span className="font-medium text-white">
+                  {assignedHotel.name}
+                </span>{' '}
                 in {assignedHotel.city} as{' '}
                 <span className="text-blue-400 font-medium uppercase text-xs tracking-wider">
                   {hotelAssignment.role.replace('hotel_', '')}

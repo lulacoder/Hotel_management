@@ -1,3 +1,4 @@
+// Presentational card for a single booking item in the customer bookings list.
 import { Link } from '@tanstack/react-router'
 import {
   AlertCircle,
@@ -46,6 +47,7 @@ interface BookingCardProps {
 }
 
 function StatusBadge({ status }: { status: string }) {
+  // Centralize visual mapping from booking status to badge variant.
   const { t } = useI18n()
 
   switch (status) {
@@ -107,6 +109,7 @@ export function BookingCard({
   cancellingId,
   onCancel,
 }: BookingCardProps) {
+  // Render a single booking row with quick actions and pricing details.
   const { t } = useI18n()
 
   return (
@@ -133,7 +136,8 @@ export function BookingCard({
 
           <div className="mb-4">
             <span className="inline-flex items-center gap-2 px-2.5 py-1 rounded-full text-xs font-medium bg-slate-800 text-slate-300 border border-slate-700">
-              {t('booking.package')}: {getPackageLabelOrDefault(booking.packageType)}
+              {t('booking.package')}:{' '}
+              {getPackageLabelOrDefault(booking.packageType)}
               {booking.packageType && (
                 <span className="text-slate-400">
                   ({formatPackageAddOn(booking.packageAddOn ?? 0)})
@@ -144,19 +148,25 @@ export function BookingCard({
 
           <div className="grid grid-cols-2 sm:grid-cols-4 gap-4 text-sm">
             <div>
-              <span className="text-slate-500 block">{t('booking.checkIn')}</span>
+              <span className="text-slate-500 block">
+                {t('booking.checkIn')}
+              </span>
               <span className="text-slate-200 font-medium">
                 {formatDate(booking.checkIn)}
               </span>
             </div>
             <div>
-              <span className="text-slate-500 block">{t('booking.checkOut')}</span>
+              <span className="text-slate-500 block">
+                {t('booking.checkOut')}
+              </span>
               <span className="text-slate-200 font-medium">
                 {formatDate(booking.checkOut)}
               </span>
             </div>
             <div>
-              <span className="text-slate-500 block">{t('booking.priceNight')}</span>
+              <span className="text-slate-500 block">
+                {t('booking.priceNight')}
+              </span>
               <span className="text-slate-200 font-medium">
                 {formatPrice(booking.pricePerNight)}
               </span>
@@ -172,15 +182,20 @@ export function BookingCard({
           {booking.status === 'held' && booking.holdExpiresAt && (
             <div className="mt-4 p-3 bg-amber-500/10 border border-amber-500/30 rounded-lg">
               <div className="flex items-center gap-2 text-amber-400 text-sm">
-                  <Clock className="w-4 h-4" />
-                  <span>{t('booking.holdExpires', {
-                    time: new Date(booking.holdExpiresAt).toLocaleTimeString('en-US', {
-                      hour: '2-digit',
-                      minute: '2-digit',
-                    }),
-                  })}</span>
-                </div>
+                <Clock className="w-4 h-4" />
+                <span>
+                  {t('booking.holdExpires', {
+                    time: new Date(booking.holdExpiresAt).toLocaleTimeString(
+                      'en-US',
+                      {
+                        hour: '2-digit',
+                        minute: '2-digit',
+                      },
+                    ),
+                  })}
+                </span>
               </div>
+            </div>
           )}
         </div>
       </div>
@@ -193,9 +208,9 @@ export function BookingCard({
               params={{ hotelId: hotel._id }}
               className="px-4 py-2 bg-amber-500 text-slate-900 font-medium rounded-lg hover:bg-amber-400 transition-colors text-sm"
             >
-                {t('booking.confirmBooking')}
-             </Link>
-           )}
+              {t('booking.confirmBooking')}
+            </Link>
+          )}
           <button
             onClick={() => onCancel(booking._id)}
             disabled={cancellingId === booking._id}

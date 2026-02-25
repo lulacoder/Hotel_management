@@ -1,5 +1,7 @@
+// Shared types/constants for select-location filtering and sort behavior.
 export type SortOption = 'name' | 'rating' | 'distance'
 
+// Category badge styles used by hotel cards.
 export const categoryColors: Record<string, string> = {
   Boutique: 'bg-violet-500/20 text-violet-300 border-violet-500/30',
   Budget: 'bg-emerald-500/20 text-emerald-300 border-emerald-500/30',
