@@ -28,6 +28,7 @@ import { BookingModal } from './hotels.$hotelId/components/-BookingModal'
 import { LanguageSwitcher } from '../components/LanguageSwitcher'
 import { ThemeToggle } from '../components/ThemeToggle'
 import { useI18n } from '../lib/i18n'
+import { getHotelCategoryLabel } from '../lib/hotelCategories'
 
 export const Route = createFileRoute('/hotels/$hotelId')({
   // Dynamic route for a single hotel's details and available rooms.
@@ -211,7 +212,7 @@ function HotelDetailPage() {
                                 : 'bg-slate-700 text-slate-300'
                     }`}
                   >
-                    {hotel.category}
+                    {getHotelCategoryLabel(hotel.category, t)}
                   </span>
                 )}
               </div>
@@ -319,7 +320,7 @@ function HotelDetailPage() {
               <div className="flex items-end">
                 <div className="px-4 py-3 bg-amber-500/10 border border-amber-500/20 rounded-xl">
                   <span className="text-amber-400 font-semibold">
-                    {nights} night{nights !== 1 ? 's' : ''}
+                    {nights} {nights !== 1 ? t('hotel.nights') : t('hotel.night')}
                   </span>
                 </div>
               </div>
@@ -364,7 +365,7 @@ function HotelDetailPage() {
                   {room.imageUrl ? (
                     <img
                       src={room.imageUrl}
-                      alt={`Room ${room.roomNumber}`}
+                      alt={`${t('hotel.room')} ${room.roomNumber}`}
                       className="absolute inset-0 w-full h-full object-cover"
                     />
                   ) : (

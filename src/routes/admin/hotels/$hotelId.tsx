@@ -44,7 +44,8 @@ function HotelDetailPage() {
   const [accountNumberInput, setAccountNumberInput] = useState('')
   const [savingAccount, setSavingAccount] = useState(false)
   const [paymentError, setPaymentError] = useState('')
-  const { t } = useI18n()
+  const { t, locale } = useI18n()
+  const dateLocale = locale === 'am' ? 'am-ET' : 'en-US'
 
   const profile = useQuery(
     api.users.getByClerkId,
@@ -535,7 +536,7 @@ function HotelDetailPage() {
                       </div>
                       <span className="text-xs text-slate-500">
                         {new Date(rating.createdAt).toLocaleDateString(
-                          'en-US',
+                          dateLocale,
                           {
                             month: 'short',
                             day: 'numeric',

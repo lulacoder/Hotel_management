@@ -218,7 +218,7 @@ export function HotelEditModal({ hotelId, onClose }: HotelEditModalProps) {
               <div className="mt-3">
                 <img
                   src={imagePreviewUrl}
-                  alt="Hotel preview"
+                  alt={t('admin.hotels.modal.imagePreviewAlt')}
                   className="w-full h-36 object-cover rounded-xl border border-slate-700"
                 />
                 <button

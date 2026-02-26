@@ -37,7 +37,7 @@ interface OutsourceModalProps {
   onSuccess: () => void
 }
 
-function getErrorMessage(error: unknown) {
+function getErrorMessage(error: unknown, fallbackMessage: string) {
   // Normalize unknown error shapes into user-friendly text.
   if (error && typeof error === 'object') {
     const candidate = error as { data?: { message?: string }; message?: string }
@@ -45,7 +45,7 @@ function getErrorMessage(error: unknown) {
     if (candidate.message) return candidate.message
   }
 
-  return 'Failed to outsource booking. Please try again.'
+  return fallbackMessage
 }
 
 export function OutsourceModal({
@@ -111,7 +111,9 @@ export function OutsourceModal({
         onSuccess()
       }, 1500)
     } catch (error) {
-      setErrorMessage(getErrorMessage(error))
+      setErrorMessage(
+        getErrorMessage(error, t('admin.bookings.outsourceModal.errorFallback')),
+      )
       setIsSubmitting(false)
     }
   }

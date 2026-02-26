@@ -13,6 +13,7 @@ import {
 import type { Id } from '../../../../convex/_generated/dataModel'
 import { formatDistance } from '../../../lib/distance'
 import { useI18n } from '../../../lib/i18n'
+import { getHotelCategoryLabel } from '../../../lib/hotelCategories'
 import { categoryColors, SortOption } from './-helpers'
 
 interface HotelGridProps {
@@ -124,7 +125,7 @@ export function HotelGrid({
                   {hotel.imageUrl && (
                     <img
                       src={hotel.imageUrl}
-                      alt={`${hotel.name} preview`}
+                      alt={t('hotel.previewAlt', { name: hotel.name })}
                       className="absolute inset-0 w-full h-full object-cover"
                     />
                   )}
@@ -140,7 +141,7 @@ export function HotelGrid({
                       <span
                         className={`px-2 py-1 rounded-lg text-xs font-medium border ${categoryColors[hotel.category] || 'bg-slate-500/20 text-slate-300 border-slate-500/30'}`}
                       >
-                        {hotel.category}
+                        {getHotelCategoryLabel(hotel.category, t)}
                       </span>
                     )}
 

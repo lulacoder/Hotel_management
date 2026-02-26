@@ -293,7 +293,9 @@ function BookingsPage() {
         <div className="space-y-4">
           {filteredBookings?.map((item) => {
             const booking = item.booking
-            const status = statusConfig[booking.status]
+            const status =
+              statusConfig[booking.status as keyof typeof statusConfig] ??
+              statusConfig.held
             const StatusIcon = status.icon
             const canManageBookings = canManageBooking(booking.hotelId)
 
@@ -336,7 +338,7 @@ function BookingsPage() {
                           <p className="text-slate-200">
                             {item.guestProfile?.name ||
                               booking.guestName ||
-                              'N/A'}
+                              t('admin.bookings.na')}
                           </p>
                           {item.guestProfile && (
                             <span className="px-2 py-0.5 text-[10px] rounded-full border border-amber-500/30 bg-amber-500/10 text-amber-300 uppercase tracking-wide">
@@ -478,7 +480,7 @@ function BookingsPage() {
                     <p className="text-slate-100 font-medium">
                       {selectedBookingDetail.guestProfile?.name ||
                         selectedBookingDetail.booking.guestName ||
-                        'N/A'}
+                        t('admin.bookings.na')}
                     </p>
                     <p className="text-slate-400">
                       {selectedBookingDetail.guestProfile?.phone ||
@@ -538,12 +540,14 @@ function BookingsPage() {
                     <p className="text-slate-100 font-medium">
                       {getPackageLabelOrDefault(
                         selectedBookingDetail.booking.packageType,
+                        t,
                       )}
                     </p>
                     {selectedBookingDetail.booking.packageType && (
                       <p className="text-slate-400">
                         {formatPackageAddOn(
                           selectedBookingDetail.booking.packageAddOn ?? 0,
+                          t,
                         )}
                       </p>
                     )}

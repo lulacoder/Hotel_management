@@ -213,7 +213,7 @@ export function RoomModal({ hotelId, roomId, onClose }: RoomModalProps) {
                 onChange={(e) =>
                   setFormData({ ...formData, roomNumber: e.target.value })
                 }
-                placeholder="101"
+                placeholder={t('admin.hotels.roomModal.roomNumberPlaceholder')}
                 className="w-full px-4 py-3 bg-slate-800/50 border border-slate-700 rounded-xl text-slate-200 placeholder-slate-500 focus:outline-none focus:border-amber-500/50 transition-all"
               />
             </div>
@@ -257,7 +257,7 @@ export function RoomModal({ hotelId, roomId, onClose }: RoomModalProps) {
                 onChange={(e) =>
                   setFormData({ ...formData, basePrice: e.target.value })
                 }
-                placeholder="150.00"
+                placeholder={t('admin.hotels.roomModal.pricePlaceholder')}
                 className="w-full px-4 py-3 bg-slate-800/50 border border-slate-700 rounded-xl text-slate-200 placeholder-slate-500 focus:outline-none focus:border-amber-500/50 transition-all"
               />
             </div>
@@ -273,7 +273,7 @@ export function RoomModal({ hotelId, roomId, onClose }: RoomModalProps) {
                 onChange={(e) =>
                   setFormData({ ...formData, maxOccupancy: e.target.value })
                 }
-                placeholder="2"
+                placeholder={t('admin.hotels.roomModal.maxOccupancyPlaceholder')}
                 className="w-full px-4 py-3 bg-slate-800/50 border border-slate-700 rounded-xl text-slate-200 placeholder-slate-500 focus:outline-none focus:border-amber-500/50 transition-all"
               />
             </div>
@@ -296,7 +296,7 @@ export function RoomModal({ hotelId, roomId, onClose }: RoomModalProps) {
               <div className="mt-3">
                 <img
                   src={imagePreviewUrl}
-                  alt="Room preview"
+                  alt={t('admin.hotels.roomModal.imagePreviewAlt')}
                   className="w-full h-32 object-cover rounded-xl border border-slate-700"
                 />
                 <button
@@ -326,7 +326,7 @@ export function RoomModal({ hotelId, roomId, onClose }: RoomModalProps) {
               onChange={(e) =>
                 setFormData({ ...formData, amenities: e.target.value })
               }
-              placeholder="WiFi, TV, Mini Bar, Air Conditioning"
+              placeholder={t('admin.hotels.roomModal.amenitiesPlaceholder')}
               className="w-full px-4 py-3 bg-slate-800/50 border border-slate-700 rounded-xl text-slate-200 placeholder-slate-500 focus:outline-none focus:border-amber-500/50 transition-all"
             />
           </div>

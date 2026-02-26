@@ -37,6 +37,11 @@ function AdminUsersPage() {
   )
 
   const unassignUser = useMutation(api.hotelStaff.unassign)
+  const roleLabelByCode: Record<string, string> = {
+    room_admin: t('admin.role.roomAdmin'),
+    hotel_admin: t('admin.role.hotelAdmin'),
+    hotel_cashier: t('admin.role.hotelCashier'),
+  }
 
   // Filter users based on search query for responsive client-side searching.
   const filteredUsers = useMemo(() => {
@@ -102,7 +107,7 @@ function AdminUsersPage() {
         </div>
       )}
 
-      // Search input for filtering users by email.
+      {/* Search input for filtering users by email. */}
       <div className="relative mb-6">
         <Search className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-slate-500" />
         <input
@@ -114,7 +119,7 @@ function AdminUsersPage() {
         />
       </div>
 
-      // User list table with assignment status and actions.
+      {/* User list table with assignment status and actions. */}
       <div className="bg-slate-900/50 border border-slate-800/50 rounded-2xl overflow-hidden">
         <div className="overflow-x-auto">
           <table className="w-full">
@@ -138,7 +143,7 @@ function AdminUsersPage() {
               </tr>
             </thead>
             <tbody>
-              // Show loading state, empty state
+              {/* Show loading state, empty state */}
               {users === undefined ? (
                 <tr>
                   <td
@@ -148,7 +153,6 @@ function AdminUsersPage() {
                     {t('admin.users.loadingUsers')}
                   </td>
                 </tr>
-              // If no users match the search query, show a friendly message instead of an empty table.
               ) : filteredUsers.length === 0 ? (
                 <tr>
                   <td
@@ -158,7 +162,6 @@ function AdminUsersPage() {
                     {t('admin.users.noneFound')}
                   </td>
                 </tr>
-                // Otherwise, render the list of users with their roles and assignment status.
               ) : (
                 filteredUsers.map((listedUser) => (
                   <tr
@@ -176,7 +179,7 @@ function AdminUsersPage() {
                             : 'bg-slate-700/40 text-slate-300 border-slate-700'
                         }`}
                       >
-                        {listedUser.role}
+                        {roleLabelByCode[listedUser.role] || listedUser.role}
                       </span>
                     </td>
                     <td className="px-6 py-4 text-slate-300 text-sm">
@@ -203,10 +206,13 @@ function AdminUsersPage() {
                               : 'bg-emerald-500/10 text-emerald-400 border-emerald-500/20'
                           }`}
                         >
-                          {listedUser.assignment.role}
+                          {roleLabelByCode[listedUser.assignment.role] ||
+                            listedUser.assignment.role}
                         </span>
                       ) : (
-                        <span className="text-slate-500 text-sm">-</span>
+                        <span className="text-slate-500 text-sm">
+                          {t('admin.bookings.na')}
+                        </span>
                       )}
                     </td>
                     <td className="px-6 py-4">

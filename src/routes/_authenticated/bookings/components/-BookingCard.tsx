@@ -16,7 +16,7 @@ import {
   getPackageLabelOrDefault,
 } from '../../../../lib/packages'
 import { useI18n } from '../../../../lib/i18n'
-import { canCancel, formatDate, formatPrice, getRoomTypeName } from './-helpers'
+import { canCancel, formatDate, formatPrice, formatTime } from './-helpers'
 import type { Id } from '../../../../../convex/_generated/dataModel'
 import type { PackageType } from '../../../../lib/packages'
 
@@ -117,7 +117,16 @@ export function BookingCard({
   onCancel,
 }: BookingCardProps) {
   // Render a single booking row with quick actions and pricing details.
-  const { t } = useI18n()
+  const { t, locale } = useI18n()
+  const roomTypeLabels: Record<string, string> = {
+    single: t('hotel.singleRoom'),
+    double: t('hotel.doubleRoom'),
+    budget: t('hotel.budgetRoom'),
+    standard: t('hotel.standardRoom'),
+    suite: t('hotel.suiteRoom'),
+    deluxe: t('hotel.deluxeRoom'),
+  }
+  const roomTypeLabel = roomTypeLabels[room.type] ?? room.type
 
   return (
     <div className="bg-slate-900 rounded-2xl border border-slate-800/50 p-6 hover:border-slate-700 transition-colors">
@@ -137,17 +146,17 @@ export function BookingCard({
           <div className="flex items-center gap-2 text-slate-300 mb-4">
             <BedDouble className="w-4 h-4 text-amber-400" />
             <span>
-              {getRoomTypeName(room.type)} - Room {room.roomNumber}
+              {roomTypeLabel} - {t('hotel.room')} {room.roomNumber}
             </span>
           </div>
 
           <div className="mb-4">
             <span className="inline-flex items-center gap-2 px-2.5 py-1 rounded-full text-xs font-medium bg-slate-800 text-slate-300 border border-slate-700">
               {t('booking.package')}:{' '}
-              {getPackageLabelOrDefault(booking.packageType)}
+              {getPackageLabelOrDefault(booking.packageType, t)}
               {booking.packageType && (
                 <span className="text-slate-400">
-                  ({formatPackageAddOn(booking.packageAddOn ?? 0)})
+                  ({formatPackageAddOn(booking.packageAddOn ?? 0, t)})
                 </span>
               )}
             </span>
@@ -159,7 +168,7 @@ export function BookingCard({
                 {t('booking.checkIn')}
               </span>
               <span className="text-slate-200 font-medium">
-                {formatDate(booking.checkIn)}
+                {formatDate(booking.checkIn, locale)}
               </span>
             </div>
             <div>
@@ -167,7 +176,7 @@ export function BookingCard({
                 {t('booking.checkOut')}
               </span>
               <span className="text-slate-200 font-medium">
-                {formatDate(booking.checkOut)}
+                {formatDate(booking.checkOut, locale)}
               </span>
             </div>
             <div>
@@ -192,13 +201,7 @@ export function BookingCard({
                 <Clock className="w-4 h-4" />
                 <span>
                   {t('booking.holdExpires', {
-                    time: new Date(booking.holdExpiresAt).toLocaleTimeString(
-                      'en-US',
-                      {
-                        hour: '2-digit',
-                        minute: '2-digit',
-                      },
-                    ),
+                    time: formatTime(booking.holdExpiresAt, locale),
                   })}
                 </span>
               </div>

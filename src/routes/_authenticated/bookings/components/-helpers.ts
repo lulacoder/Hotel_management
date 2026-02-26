@@ -1,7 +1,14 @@
+import type { Locale } from '../../../../lib/i18n'
+
+const localeMap: Record<Locale, string> = {
+  en: 'en-US',
+  am: 'am-ET',
+}
+
 // Shared formatting and status helpers for the customer bookings UI.
-export const formatDate = (dateStr: string) => {
+export const formatDate = (dateStr: string, locale: Locale) => {
   // Human-friendly booking date for list/detail surfaces.
-  return new Date(dateStr).toLocaleDateString('en-US', {
+  return new Date(dateStr).toLocaleDateString(localeMap[locale], {
     weekday: 'short',
     month: 'short',
     day: 'numeric',
@@ -9,25 +16,16 @@ export const formatDate = (dateStr: string) => {
   })
 }
 
+export const formatTime = (timestamp: number, locale: Locale) => {
+  return new Date(timestamp).toLocaleTimeString(localeMap[locale], {
+    hour: '2-digit',
+    minute: '2-digit',
+  })
+}
+
 export const formatPrice = (cents: number) => {
   // Price storage is cents; convert to display currency.
   return `$${(cents / 100).toFixed(2)}`
-}
-
-export const getRoomTypeName = (type: string) => {
-  // Map internal room type keys to customer-facing labels.
-  switch (type) {
-    case 'single':
-      return 'Single Room'
-    case 'double':
-      return 'Double Room'
-    case 'suite':
-      return 'Suite'
-    case 'deluxe':
-      return 'Deluxe Room'
-    default:
-      return type
-  }
 }
 
 export const canCancel = (status: string) => {

@@ -1,6 +1,7 @@
 // Search and filter controls for city/category selection and sorting.
 import { SortOption } from './-helpers'
 import { useI18n } from '../../../lib/i18n'
+import { getHotelCategoryLabel } from '../../../lib/hotelCategories'
 
 interface SearchFiltersProps {
   selectedCity: string
@@ -51,7 +52,7 @@ export function SearchFilters({
         <option value="all">{t('select.allCategories')}</option>
         {categories.map((cat) => (
           <option key={cat} value={cat}>
-            {cat}
+            {getHotelCategoryLabel(cat, t)}
           </option>
         ))}
       </select>

@@ -80,23 +80,29 @@ function AdminDashboard() {
     },
   ]
 
+  const roleLabelByCode: Record<string, string> = {
+    room_admin: t('admin.role.roomAdmin'),
+    hotel_admin: t('admin.role.hotelAdmin'),
+    hotel_cashier: t('admin.role.hotelCashier'),
+  }
+
   const quickActions = [
     // Navigation shortcuts shown based on user permissions.
     {
-      label: 'Manage Hotels',
-      description: 'Add, edit, or remove hotel properties',
+      label: t('admin.nav.hotels'),
+      description: t('admin.hotels.description'),
       icon: Hotel,
       to: '/admin/hotels',
     },
     {
-      label: 'Manage Rooms',
-      description: 'Configure room inventory and pricing',
+      label: t('admin.nav.rooms'),
+      description: t('admin.rooms.description'),
       icon: Building2,
       to: '/admin/rooms',
     },
     {
-      label: 'View Bookings',
-      description: 'Review and manage customer reservations',
+      label: t('admin.nav.bookings'),
+      description: t('admin.bookings.description'),
       icon: Calendar,
       to: '/admin/bookings',
     },
@@ -117,7 +123,9 @@ function AdminDashboard() {
       {/* Welcome Header */}
       <div className="mb-8">
         <h1 className="text-3xl font-semibold text-slate-100 tracking-tight mb-2">
-          {t('admin.welcomeBack', { name: user?.firstName || 'Admin' })}
+          {t('admin.welcomeBack', {
+            name: user?.firstName || t('admin.defaultUserName'),
+          })}
         </h1>
         <p className="text-slate-400">{t('admin.overview')}</p>
       </div>
@@ -130,17 +138,15 @@ function AdminDashboard() {
             </div>
             <div>
               <h3 className="font-semibold text-blue-400 mb-1">
-                Hotel Assignment
+                {t('admin.users.hotelAssignment')}
               </h3>
               <p className="text-slate-300 text-sm">
-                You are assigned to{' '}
-                <span className="font-medium text-white">
-                  {assignedHotel.name}
-                </span>{' '}
-                in {assignedHotel.city} as{' '}
-                <span className="text-blue-400 font-medium uppercase text-xs tracking-wider">
-                  {hotelAssignment.role.replace('hotel_', '')}
-                </span>
+                {t('admin.dashboard.assignmentSummary', {
+                  hotelName: assignedHotel.name,
+                  city: assignedHotel.city,
+                  role:
+                    roleLabelByCode[hotelAssignment.role] || hotelAssignment.role,
+                })}
               </p>
             </div>
           </div>
@@ -204,18 +210,16 @@ function AdminDashboard() {
           </div>
           <div>
             <h3 className="font-semibold text-amber-400 mb-1">
-              Role-Based Access Active
+              {t('admin.dashboard.roleAccessTitle')}
             </h3>
             <p className="text-slate-400 text-sm leading-relaxed">
-              You're signed in as{' '}
-              <span className="text-slate-300 font-medium">
-                {profile?.email}
-              </span>{' '}
-              with{' '}
-              <span className="text-amber-400 font-medium uppercase text-xs tracking-wider">
-                {profile?.role}
-              </span>{' '}
-              privileges. Only administrators can access this dashboard.
+              {t('admin.dashboard.roleAccessDescription', {
+                email: profile?.email || t('admin.bookings.na'),
+                role:
+                  roleLabelByCode[profile?.role || ''] ||
+                  profile?.role ||
+                  t('admin.role.user'),
+              })}
             </p>
           </div>
         </div>

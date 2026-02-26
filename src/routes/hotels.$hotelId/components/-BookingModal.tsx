@@ -11,6 +11,9 @@ import {
   PACKAGES,
   formatPackageAddOn,
   getPackageByType,
+  getPackageDescription,
+  getPackageInclusions,
+  getPackageLabel,
 } from '../../../lib/packages'
 import { useI18n } from '../../../lib/i18n'
 import type { Id } from '../../../../convex/_generated/dataModel'
@@ -262,10 +265,10 @@ export function BookingModal({
                     <div className="flex items-start justify-between gap-3 mb-2">
                       <div>
                         <p className="text-slate-100 font-semibold">
-                          {pkg.label}
+                          {getPackageLabel(pkg.type, t)}
                         </p>
                         <p className="text-slate-400 text-sm">
-                          {pkg.description}
+                          {getPackageDescription(pkg.type, t)}
                         </p>
                       </div>
                       <span
@@ -275,12 +278,12 @@ export function BookingModal({
                             : 'text-slate-300 border-slate-600 bg-slate-700/40'
                         }`}
                       >
-                        {formatPackageAddOn(pkg.addOnPerNight)}
+                        {formatPackageAddOn(pkg.addOnPerNight, t)}
                       </span>
                     </div>
 
                     <ul className="list-disc list-inside text-sm text-slate-400 space-y-0.5">
-                      {pkg.inclusions.map((item) => (
+                      {getPackageInclusions(pkg.type, t).map((item) => (
                         <li key={item}>{item}</li>
                       ))}
                     </ul>
@@ -378,7 +381,8 @@ export function BookingModal({
                 {selectedPackage.addOnPerNight > 0 && (
                   <div className="flex items-center justify-between text-slate-300 mt-2">
                     <span>
-                      {selectedPackage.label} {t('bookingModal.addOn')} (
+                      {getPackageLabel(selectedPackage.type, t)}{' '}
+                      {t('bookingModal.addOn')} (
                       {nights}{' '}
                       {nights !== 1 ? t('hotel.nights') : t('hotel.night')})
                     </span>
@@ -472,7 +476,8 @@ export function BookingModal({
                 {selectedPackage.addOnPerNight > 0 && (
                   <div className="flex items-center justify-between text-slate-300 mt-2">
                     <span>
-                      {selectedPackage.label} {t('bookingModal.addOn')} (
+                      {getPackageLabel(selectedPackage.type, t)}{' '}
+                      {t('bookingModal.addOn')} (
                       {nights}{' '}
                       {nights !== 1 ? t('hotel.nights') : t('hotel.night')})
                     </span>

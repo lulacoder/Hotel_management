@@ -249,7 +249,7 @@ function AdminLayout() {
             />
             <div className="flex-1 min-w-0">
               <p className="text-sm font-medium text-slate-200 truncate">
-                {user.firstName || 'Admin'}
+                {user.firstName || t('admin.defaultUserName')}
               </p>
               <p className="text-xs text-slate-500 truncate">
                 {user.emailAddresses[0]?.emailAddress}
@@ -331,7 +331,7 @@ function AdminLayout() {
             />
             <div className="flex-1 min-w-0">
               <p className="text-sm font-medium text-slate-200 truncate">
-                {user.firstName || 'Admin'}
+                {user.firstName || t('admin.defaultUserName')}
               </p>
               <p className="text-xs text-slate-500 truncate">
                 {user.emailAddresses[0]?.emailAddress}

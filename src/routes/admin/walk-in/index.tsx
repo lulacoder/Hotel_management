@@ -6,7 +6,7 @@ import { useMutation, useQuery } from 'convex/react'
 import { Calendar, CheckCircle, Search, UserRound } from 'lucide-react'
 
 import { api } from '../../../../convex/_generated/api'
-import { PACKAGES, getPackageByType } from '../../../lib/packages'
+import { PACKAGES, getPackageByType, getPackageLabel } from '../../../lib/packages'
 import type { Id } from '../../../../convex/_generated/dataModel'
 import type { PackageType } from '../../../lib/packages'
 import { useI18n } from '../../../lib/i18n'
@@ -416,7 +416,9 @@ function WalkInBookingPage() {
                   : 'border-slate-700 bg-slate-800/30 hover:border-slate-600'
               }`}
             >
-              <p className="text-slate-100 font-medium">{pkg.label}</p>
+              <p className="text-slate-100 font-medium">
+                {getPackageLabel(pkg.type, t)}
+              </p>
               <p className="text-slate-400 text-sm">
                 +${(pkg.addOnPerNight / 100).toFixed(2)} / {t('hotel.night')}
               </p>

@@ -10,6 +10,7 @@ import {
   validateImageFile,
 } from '../../../../../lib/imageUpload'
 import { useI18n } from '../../../../../lib/i18n'
+import { getHotelCategoryLabel } from '../../../../../lib/hotelCategories'
 
 interface HotelModalProps {
   hotelId: Id<'hotels'> | null
@@ -360,7 +361,7 @@ export function HotelModal({ hotelId, onClose }: HotelModalProps) {
                 onChange={(e) =>
                   setFormData({ ...formData, latitude: e.target.value })
                 }
-                placeholder="40.7128"
+                placeholder={t('admin.hotels.modal.latitudePlaceholder')}
                 className="w-full px-4 py-3 bg-slate-800/50 border border-slate-700 rounded-xl text-slate-200 placeholder-slate-500 focus:outline-none focus:border-amber-500/50 focus:ring-1 focus:ring-amber-500/20 transition-all"
               />
             </div>
@@ -375,7 +376,7 @@ export function HotelModal({ hotelId, onClose }: HotelModalProps) {
                 onChange={(e) =>
                   setFormData({ ...formData, longitude: e.target.value })
                 }
-                placeholder="-74.0060"
+                placeholder={t('admin.hotels.modal.longitudePlaceholder')}
                 className="w-full px-4 py-3 bg-slate-800/50 border border-slate-700 rounded-xl text-slate-200 placeholder-slate-500 focus:outline-none focus:border-amber-500/50 focus:ring-1 focus:ring-amber-500/20 transition-all"
               />
             </div>
@@ -413,7 +414,7 @@ export function HotelModal({ hotelId, onClose }: HotelModalProps) {
               <div className="mt-3">
                 <img
                   src={imagePreviewUrl}
-                  alt="Hotel preview"
+                  alt={t('admin.hotels.modal.imagePreviewAlt')}
                   className="w-full h-36 object-cover rounded-xl border border-slate-700"
                 />
                 <button
@@ -444,7 +445,7 @@ export function HotelModal({ hotelId, onClose }: HotelModalProps) {
                 onChange={(e) =>
                   setFormData({ ...formData, externalId: e.target.value })
                 }
-                placeholder="HOTEL-001"
+                placeholder={t('admin.hotels.modal.externalIdPlaceholder')}
                 className="w-full px-4 py-3 bg-slate-800/50 border border-slate-700 rounded-xl text-slate-200 placeholder-slate-500 focus:outline-none focus:border-amber-500/50 focus:ring-1 focus:ring-amber-500/20 transition-all"
               />
             </div>
@@ -467,7 +468,7 @@ export function HotelModal({ hotelId, onClose }: HotelModalProps) {
                 </option>
                 {categories.map((category) => (
                   <option key={category} value={category}>
-                    {category}
+                    {getHotelCategoryLabel(category, t)}
                   </option>
                 ))}
               </select>
@@ -485,7 +486,7 @@ export function HotelModal({ hotelId, onClose }: HotelModalProps) {
                 onChange={(e) =>
                   setFormData({ ...formData, stateProvince: e.target.value })
                 }
-                placeholder="NY"
+                placeholder={t('admin.hotels.modal.stateProvincePlaceholder')}
                 className="w-full px-4 py-3 bg-slate-800/50 border border-slate-700 rounded-xl text-slate-200 placeholder-slate-500 focus:outline-none focus:border-amber-500/50 focus:ring-1 focus:ring-amber-500/20 transition-all"
               />
             </div>
@@ -499,7 +500,7 @@ export function HotelModal({ hotelId, onClose }: HotelModalProps) {
                 onChange={(e) =>
                   setFormData({ ...formData, postalCode: e.target.value })
                 }
-                placeholder="10001"
+                placeholder={t('admin.hotels.modal.postalCodePlaceholder')}
                 className="w-full px-4 py-3 bg-slate-800/50 border border-slate-700 rounded-xl text-slate-200 placeholder-slate-500 focus:outline-none focus:border-amber-500/50 focus:ring-1 focus:ring-amber-500/20 transition-all"
               />
             </div>
@@ -519,7 +520,7 @@ export function HotelModal({ hotelId, onClose }: HotelModalProps) {
                 onChange={(e) =>
                   setFormData({ ...formData, rating: e.target.value })
                 }
-                placeholder="4.5"
+                placeholder={t('admin.hotels.modal.ratingPlaceholder')}
                 className="w-full px-4 py-3 bg-slate-800/50 border border-slate-700 rounded-xl text-slate-200 placeholder-slate-500 focus:outline-none focus:border-amber-500/50 focus:ring-1 focus:ring-amber-500/20 transition-all"
               />
             </div>
@@ -551,7 +552,7 @@ export function HotelModal({ hotelId, onClose }: HotelModalProps) {
               onChange={(e) =>
                 setFormData({ ...formData, tags: e.target.value })
               }
-              placeholder="pool, free wifi, breakfast"
+              placeholder={t('admin.hotels.modal.tagsPlaceholder')}
               className="w-full px-4 py-3 bg-slate-800/50 border border-slate-700 rounded-xl text-slate-200 placeholder-slate-500 focus:outline-none focus:border-amber-500/50 focus:ring-1 focus:ring-amber-500/20 transition-all"
             />
           </div>
@@ -566,7 +567,7 @@ export function HotelModal({ hotelId, onClose }: HotelModalProps) {
               onChange={(e) =>
                 setFormData({ ...formData, metadata: e.target.value })
               }
-              placeholder='{"source":"manual"}'
+              placeholder={t('admin.hotels.modal.metadataPlaceholder')}
               className="w-full px-4 py-3 bg-slate-800/50 border border-slate-700 rounded-xl text-slate-200 placeholder-slate-500 focus:outline-none focus:border-amber-500/50 focus:ring-1 focus:ring-amber-500/20 transition-all"
             />
           </div>

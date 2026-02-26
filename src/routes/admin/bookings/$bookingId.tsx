@@ -324,11 +324,11 @@ function BookingDetailPage() {
           <div className="bg-slate-800/40 border border-slate-700 rounded-xl p-4">
             <p className="text-slate-500 mb-1">{t('booking.package')}</p>
             <p className="text-slate-100 font-medium">
-              {getPackageLabelOrDefault(bookingDetail.booking.packageType)}
+              {getPackageLabelOrDefault(bookingDetail.booking.packageType, t)}
             </p>
             {bookingDetail.booking.packageType && (
               <p className="text-slate-400">
-                {formatPackageAddOn(bookingDetail.booking.packageAddOn ?? 0)}
+                {formatPackageAddOn(bookingDetail.booking.packageAddOn ?? 0, t)}
               </p>
             )}
           </div>
