@@ -23,19 +23,21 @@ function AdminDashboard() {
   // Aggregate role context and lightweight metrics for overview cards.
   const { user } = useUser()
   const { t } = useI18n()
-
+  // Fetch user profile to determine role and permissions.
   const profile = useQuery(
     api.users.getByClerkId,
     user?.id ? { clerkUserId: user.id } : 'skip',
   )
 
+  // Fetch hotel assignment for non-room_admin users to show relevant data.
   const hotelAssignment = useQuery(
     api.hotelStaff.getByUserId,
-    user?.id && profile?._id
+    user?.id && profile?._id // Only fetch if we have both Clerk user ID and Convex user ID from profile.
       ? { clerkUserId: user.id, userId: profile._id }
       : 'skip',
   )
-
+ 
+  // If assigned to a hotel, fetch that hotel's details for display in the dashboard.
   const assignedHotel = useQuery(
     api.hotels.get,
     hotelAssignment?.hotelId ? { hotelId: hotelAssignment.hotelId } : 'skip',
@@ -119,7 +121,7 @@ function AdminDashboard() {
         </h1>
         <p className="text-slate-400">{t('admin.overview')}</p>
       </div>
-
+      
       {hotelAssignment && assignedHotel && profile?.role !== 'room_admin' && (
         <div className="bg-blue-500/10 border border-blue-500/20 rounded-2xl p-6 mb-8">
           <div className="flex items-start gap-4">

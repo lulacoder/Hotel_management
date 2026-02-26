@@ -5,9 +5,10 @@ import { useMutation, useQuery } from 'convex/react'
 import { Building2, Search } from 'lucide-react'
 import { useMemo, useState } from 'react'
 import { api } from '../../../../convex/_generated/api'
+import { useI18n } from '../../../lib/i18n'
 import { AssignModal } from './components/-AssignModal'
 import type { Id } from '../../../../convex/_generated/dataModel'
-import { useI18n } from '../../../lib/i18n'
+
 
 export const Route = createFileRoute('/admin/users/')({
   // Register staff/user assignment route (room_admin only).
@@ -22,18 +23,22 @@ function AdminUsersPage() {
   const [selectedUserId, setSelectedUserId] = useState<Id<'users'> | null>(null)
   const [error, setError] = useState<string | null>(null)
 
+  // Fetch user profile to determine role and permissions.
   const profile = useQuery(
     api.users.getByClerkId,
     user?.id ? { clerkUserId: user.id } : 'skip',
   )
 
+
+  // Get all users with their hotel assignments for display in the user management table.
   const users = useQuery(
     api.hotelStaff.listAllUsers,
-    user?.id ? { clerkUserId: user.id } : 'skip',
+    user?.id ? { clerkUserId: user.id } : 'skip',// Only fetch if we have a logged-in user to determine permissions.
   )
 
   const unassignUser = useMutation(api.hotelStaff.unassign)
 
+  // Filter users based on search query for responsive client-side searching.
   const filteredUsers = useMemo(() => {
     if (!users) return []
     return users.filter((u) =>
@@ -67,7 +72,8 @@ function AdminUsersPage() {
       </div>
     )
   }
-
+ 
+  // Restrict access to this route to room_admin users only; show message if not authorized.
   if (profile?.role !== 'room_admin') {
     return (
       <div className="max-w-7xl mx-auto">
@@ -96,6 +102,7 @@ function AdminUsersPage() {
         </div>
       )}
 
+      // Search input for filtering users by email.
       <div className="relative mb-6">
         <Search className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-slate-500" />
         <input
@@ -107,6 +114,7 @@ function AdminUsersPage() {
         />
       </div>
 
+      // User list table with assignment status and actions.
       <div className="bg-slate-900/50 border border-slate-800/50 rounded-2xl overflow-hidden">
         <div className="overflow-x-auto">
           <table className="w-full">
@@ -130,6 +138,7 @@ function AdminUsersPage() {
               </tr>
             </thead>
             <tbody>
+              // Show loading state, empty state
               {users === undefined ? (
                 <tr>
                   <td
@@ -139,6 +148,7 @@ function AdminUsersPage() {
                     {t('admin.users.loadingUsers')}
                   </td>
                 </tr>
+              // If no users match the search query, show a friendly message instead of an empty table.
               ) : filteredUsers.length === 0 ? (
                 <tr>
                   <td
@@ -148,6 +158,7 @@ function AdminUsersPage() {
                     {t('admin.users.noneFound')}
                   </td>
                 </tr>
+                // Otherwise, render the list of users with their roles and assignment status.
               ) : (
                 filteredUsers.map((listedUser) => (
                   <tr
@@ -160,7 +171,7 @@ function AdminUsersPage() {
                     <td className="px-6 py-4">
                       <span
                         className={`inline-flex px-2.5 py-1 rounded-lg text-xs font-medium border ${
-                          listedUser.role === 'room_admin'
+                          listedUser.role === 'room_admin' // Highlight room_admin users with a distinct color badge.
                             ? 'bg-amber-500/10 text-amber-400 border-amber-500/20'
                             : 'bg-slate-700/40 text-slate-300 border-slate-700'
                         }`}

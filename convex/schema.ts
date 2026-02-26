@@ -15,7 +15,7 @@ export default defineSchema({
 
   // Hotel staff assignments (hotel-specific roles)
   hotelStaff: defineTable({
-    userId: v.id('users'),
+    userId: v.id('users'), // Reference to users table
     hotelId: v.id('hotels'),
     role: v.union(v.literal('hotel_admin'), v.literal('hotel_cashier')),
     assignedAt: v.number(),

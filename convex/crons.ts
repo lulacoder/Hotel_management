@@ -8,7 +8,7 @@ const crons = cronJobs()
 // state consistent so rooms are released for new customers promptly.
 crons.interval(
   'cleanup expired holds',
-  { minutes: 5 },
+  { minutes: 15 },
   internal.bookingsInternal.cleanupExpiredHolds,
 )
 
