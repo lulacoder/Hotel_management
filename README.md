@@ -1,12 +1,49 @@
-Welcome to your new TanStack app! 
+# Hotel Management System
+
+A comprehensive hotel management application built with the TanStack ecosystem, Convex, and Clerk. This platform manages hotels, rooms, bookings, and user roles (RBAC) across different administrative levels.
+
+## Key Features
+
+- **Multi-level Role Based Access Control (RBAC):**
+  - **Customer:** Browse hotels, view available rooms, and manage personal bookings.
+  - **Hotel Admin:** Manage specific hotel details, staff assignments, and room configurations.
+  - **Hotel Cashier:** Handle walk-in bookings and manage room statuses.
+  - **Room Admin:** Global administrative access for system-wide configuration.
+- **Dynamic Booking System:** Supports both online customer bookings and staff-managed walk-in bookings.
+- **Real-time Live Sync:** Room availability and statuses are synced in real-time using Convex.
+- **Hotel & Room Management:** Detailed management of hotel categories, amenities, pricing, and operational statuses (Maintenance, Cleaning, etc.).
+- **Geolocation Support:** Find hotels based on city, country, or proximity.
+- **Internationalization:** Multi-language support with integrated language switching.
+
+## Tech Stack
+
+- **Frontend:** [React 19](https://react.dev/), [TanStack Router](https://tanstack.com/router) (File-based), [Tailwind CSS 4](https://tailwindcss.com/)
+- **Backend/Database:** [Convex](https://convex.dev/) (Real-time database, serverless functions)
+- **Authentication:** [Clerk](https://clerk.com/) (Secure user management and RBAC)
+- **State Management:** TanStack Query & Store
+- **Testing:** [Vitest](https://vitest.dev/)
 
 # Getting Started
+
+### Environment Variables
+
+Configure your `.env.local` file with the following keys:
+
+```bash
+# Clerk Authentication
+VITE_CLERK_PUBLISHABLE_KEY=pk_test_...
+
+# Convex Backend
+VITE_CONVEX_URL=https://...
+CONVEX_DEPLOYMENT=...
+```
 
 To run this application:
 
 ```bash
 npm install
-npm run dev
+npm run dev # Starts the frontend
+npx convex dev # Starts the Convex backend in a separate terminal
 ```
 
 # Building For Production
@@ -25,9 +62,36 @@ This project uses [Vitest](https://vitest.dev/) for testing. You can run the tes
 npm run test
 ```
 
-## Styling
+## Project Overview
 
-This project uses [Tailwind CSS](https://tailwindcss.com/) for styling.
+This project is a modern hotel management platform designed to streamline operations for hotel owners and providing a seamless booking experience for customers. It integrates several sophisticated features to ensure data consistency and real-time updates.
+
+### Architecture
+
+The application uses a serverless architecture with:
+- **Convex** as the real-time backend and database.
+- **TanStack Router** for client-side routing and data loading.
+- **Clerk** for authentication and managing roles.
+- **Tailwind CSS 4** for styling and standardizing the UI.
+
+### Directory Structure
+
+- `convex/`: All serverless functions, database schemas, and backend logic.
+- `src/routes/`: File-based routing structure using TanStack Router.
+- `src/hooks/`: Custom React hooks for geolocation and state management.
+- `src/lib/`: Unified utility functions, categories, and business logic.
+- `doc/`: Detailed implementation plans and reports for various features.
+- `scripts/`: Data seeding and maintenance scripts.
+
+## Data Seeding
+
+To seed the initial hotel data into your Convex deployment:
+
+```bash
+npx convex run seed:data
+# or use the provided script
+npm run seed-hotels
+```
 
 
 ## Linting & Formatting
