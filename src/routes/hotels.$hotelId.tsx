@@ -21,6 +21,10 @@ import {
   Cigarette,
   CigaretteOff,
   Bed,
+  Menu,
+  X,
+  Home,
+  CalendarCheck,
 } from 'lucide-react'
 import { useState } from 'react'
 
@@ -48,6 +52,7 @@ function HotelDetailPage() {
   const [showBookingModal, setShowBookingModal] = useState<Id<'rooms'> | null>(
     null,
   )
+  const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false)
 
   const hotel = useQuery(api.hotels.get, { hotelId: hotelId as Id<'hotels'> })
 
@@ -139,14 +144,17 @@ function HotelDetailPage() {
       {/* Header */}
       <header className="bg-slate-900/80 backdrop-blur-xl border-b border-slate-800/50 sticky top-0 z-50">
         <div className="max-w-7xl mx-auto px-4 py-4 flex justify-between items-center">
+          {/* Left: back link (all sizes) */}
           <Link
             to="/select-location"
             className="flex items-center gap-2 text-slate-400 hover:text-slate-200 transition-colors"
           >
             <ArrowLeft className="w-5 h-5" />
-            {t('hotel.backToHotels')}
+            <span className="hidden md:inline">{t('hotel.backToHotels')}</span>
           </Link>
-          <div className="flex items-center gap-4">
+
+          {/* Desktop right-side actions */}
+          <div className="hidden md:flex items-center gap-4">
             <LanguageSwitcher compact />
             <ThemeToggle compact />
             {isSignedIn ? (
@@ -176,8 +184,132 @@ function HotelDetailPage() {
               </>
             )}
           </div>
+
+          {/* Mobile right-side: LanguageSwitcher + My Bookings + hamburger */}
+          <div className="flex md:hidden items-center gap-3">
+            <LanguageSwitcher compact />
+            {isSignedIn && (
+              <Link
+                to="/bookings"
+                className="px-3 py-1.5 text-sm font-semibold text-slate-900 bg-amber-500 hover:bg-amber-400 rounded-lg transition-colors"
+              >
+                {t('header.myBookings')}
+              </Link>
+            )}
+            <button
+              onClick={() => setIsMobileMenuOpen(true)}
+              className="p-2.5 hover:bg-white/10 rounded-xl transition-all duration-300 group"
+              aria-label={t('header.openMenu')}
+            >
+              <Menu
+                size={22}
+                className="text-slate-300 group-hover:text-amber-400 transition-colors"
+              />
+            </button>
+          </div>
         </div>
       </header>
+
+      {/* Mobile Slide-out Menu */}
+      <aside
+        className={`fixed top-0 left-0 h-full w-80 bg-slate-900 border-r border-slate-800/50 shadow-2xl z-[60] transform transition-transform duration-500 ease-out flex flex-col ${
+          isMobileMenuOpen ? 'translate-x-0' : '-translate-x-full'
+        }`}
+      >
+        <div className="flex items-center justify-between p-5 border-b border-slate-800/50">
+          <div className="flex items-center gap-3">
+            <div className="h-10 rounded-xl bg-slate-950/70 border border-amber-500/30 px-2 flex items-center justify-center shadow-lg shadow-amber-500/20">
+              <img
+                src="/logo.png"
+                alt="Luxe Hotels"
+                className="h-7 w-auto object-contain"
+              />
+            </div>
+            <p className="text-xs text-slate-500 font-medium">
+              {t('header.navigationMenu')}
+            </p>
+          </div>
+          <button
+            onClick={() => setIsMobileMenuOpen(false)}
+            className="p-2.5 hover:bg-white/5 rounded-xl transition-all duration-300 group"
+            aria-label={t('header.closeMenu')}
+          >
+            <X
+              size={22}
+              className="text-slate-400 group-hover:text-white transition-colors"
+            />
+          </button>
+        </div>
+
+        <nav className="flex-1 p-4 overflow-y-auto">
+          <div className="space-y-1">
+            <Link
+              to="/"
+              onClick={() => setIsMobileMenuOpen(false)}
+              className="flex items-center gap-3 px-4 py-3 rounded-xl text-slate-400 hover:text-white hover:bg-white/5 transition-all duration-300 group"
+            >
+              <Home size={20} className="group-hover:text-amber-400 transition-colors" />
+              <span className="font-medium">{t('header.home')}</span>
+            </Link>
+
+            <Link
+              to="/select-location"
+              onClick={() => setIsMobileMenuOpen(false)}
+              className="flex items-center gap-3 px-4 py-3 rounded-xl text-slate-400 hover:text-white hover:bg-white/5 transition-all duration-300 group"
+            >
+              <MapPin size={20} className="group-hover:text-amber-400 transition-colors" />
+              <span className="font-medium">{t('header.browseLocations')}</span>
+            </Link>
+          </div>
+
+          <div className="mt-6 pt-6 border-t border-slate-800/50">
+            <div className="flex items-center gap-3 px-4 py-3">
+              <ThemeToggle />
+            </div>
+          </div>
+
+          {!isSignedIn && (
+            <div className="mt-6 pt-6 border-t border-slate-800/50">
+              <p className="text-xs text-slate-500 font-medium uppercase tracking-wider mb-3 px-4">
+                {t('header.account')}
+              </p>
+              <div className="space-y-2">
+                <Link
+                  to="/sign-in"
+                  onClick={() => setIsMobileMenuOpen(false)}
+                  className="flex items-center justify-center gap-2 px-4 py-3 rounded-xl text-slate-300 border border-slate-700 hover:border-slate-600 hover:bg-white/5 transition-all duration-300 font-medium"
+                >
+                  {t('header.signIn')}
+                </Link>
+                <Link
+                  to="/sign-up"
+                  onClick={() => setIsMobileMenuOpen(false)}
+                  className="flex items-center justify-center gap-2 px-4 py-3 rounded-xl bg-gradient-to-r from-amber-500 to-orange-500 hover:from-amber-400 hover:to-orange-400 text-white font-semibold transition-all duration-300 shadow-lg shadow-amber-500/25"
+                >
+                  {t('header.createAccount')}
+                </Link>
+              </div>
+            </div>
+          )}
+        </nav>
+
+        {isSignedIn && (
+          <div className="p-4 border-t border-slate-800/50 bg-slate-800/30">
+            <div className="flex items-center gap-3">
+              <UserButton afterSignOutUrl="/" />
+              <span className="text-sm text-slate-400">{user?.firstName || ''}</span>
+            </div>
+          </div>
+        )}
+      </aside>
+
+      {/* Backdrop Overlay */}
+      <div
+        className={`fixed inset-0 bg-black/60 backdrop-blur-sm z-[55] transition-all duration-500 ${
+          isMobileMenuOpen ? 'opacity-100' : 'opacity-0 pointer-events-none'
+        }`}
+        onClick={() => setIsMobileMenuOpen(false)}
+      />
 
       <main className="max-w-7xl mx-auto px-4 py-8">
         {/* Hotel Header */}

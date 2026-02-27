@@ -88,7 +88,9 @@ export default function Header() {
             {/* Right: Auth */}
             <div className="flex items-center gap-3">
               <LanguageSwitcher compact />
-              <ThemeToggle compact />
+              <div className="hidden md:block">
+                <ThemeToggle compact />
+              </div>
               {!isSignedIn && (
                 <>
                   <Link
