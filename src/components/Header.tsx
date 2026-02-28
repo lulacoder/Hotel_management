@@ -204,6 +204,10 @@ export default function Header() {
             )}
           </div>
 
+          <div className="mt-6 pt-6 border-t border-slate-800/50">
+            <ThemeToggle className="w-full justify-center" />
+          </div>
+
           {!isSignedIn && (
             <div className="mt-6 pt-6 border-t border-slate-800/50">
               <p className="text-xs text-slate-500 font-medium uppercase tracking-wider mb-3 px-4">
