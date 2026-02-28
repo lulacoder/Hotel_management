@@ -58,15 +58,15 @@ export default function Header() {
               >
                 <Menu
                   size={22}
-                  className="text-slate-300 group-hover:text-amber-400 transition-colors"
+                  className="text-slate-300 group-hover:text-blue-400 transition-colors"
                 />
               </button>
               <Link to="/" className="flex items-center gap-3 group">
-                <div className="h-10 rounded-xl bg-slate-950/70 border border-amber-500/30 px-2 flex items-center justify-center shadow-lg shadow-amber-500/20 group-hover:shadow-amber-500/40 transition-all duration-300 group-hover:scale-105">
+                <div className="h-10 rounded-xl bg-slate-950/70 border border-blue-500/30 px-1 flex items-center justify-center shadow-lg shadow-blue-500/20 group-hover:shadow-blue-500/40 transition-all duration-300 group-hover:scale-105">
                   <img
                     src="/logo.png"
                     alt="Luxe Hotels"
-                    className="h-7 w-auto object-contain"
+                    className="h-8 w-auto object-contain logo-tight"
                   />
                 </div>
               </Link>
@@ -77,7 +77,7 @@ export default function Header() {
               {isSignedIn && (
                 <Link
                   to="/bookings"
-                  className="px-4 py-2 text-sm font-semibold text-slate-900 bg-amber-500 hover:bg-amber-400 rounded-lg transition-colors flex items-center gap-2"
+                  className="px-4 py-2 text-sm font-semibold text-slate-900 bg-blue-500 hover:bg-blue-400 rounded-lg transition-colors flex items-center gap-2"
                 >
                   <CalendarCheck size={16} />
                   {t('header.myBookings')}
@@ -101,7 +101,7 @@ export default function Header() {
                   </Link>
                   <Link
                     to="/sign-up"
-                    className="px-5 py-2.5 text-sm font-semibold bg-gradient-to-r from-amber-500 to-orange-500 hover:from-amber-400 hover:to-orange-400 text-white rounded-xl transition-all duration-300 shadow-lg shadow-amber-500/25 hover:shadow-amber-500/40 hover:scale-105"
+                    className="px-5 py-2.5 text-sm font-semibold bg-gradient-to-r from-blue-500 to-indigo-500 hover:from-blue-400 hover:to-indigo-400 text-white rounded-xl transition-all duration-300 shadow-lg shadow-blue-500/25 hover:shadow-blue-500/40 hover:scale-105"
                   >
                     {t('header.getStarted')}
                   </Link>
@@ -125,11 +125,11 @@ export default function Header() {
         {/* Menu Header */}
         <div className="flex items-center justify-between p-5 border-b border-slate-800/50">
           <div className="flex items-center gap-3">
-            <div className="h-10 rounded-xl bg-slate-950/70 border border-amber-500/30 px-2 flex items-center justify-center shadow-lg shadow-amber-500/20">
+            <div className="h-10 rounded-xl bg-slate-950/70 border border-blue-500/30 px-1 flex items-center justify-center shadow-lg shadow-blue-500/20">
               <img
                 src="/logo.png"
                 alt="Luxe Hotels"
-                className="h-7 w-auto object-contain"
+                className="h-8 w-auto object-contain logo-tight"
               />
             </div>
             <div>
@@ -159,12 +159,12 @@ export default function Header() {
               className="flex items-center gap-3 px-4 py-3 rounded-xl text-slate-400 hover:text-white hover:bg-white/5 transition-all duration-300 group"
               activeProps={{
                 className:
-                  'flex items-center gap-3 px-4 py-3 rounded-xl bg-amber-500/10 text-amber-400 border border-amber-500/20 transition-all duration-300',
+                  'flex items-center gap-3 px-4 py-3 rounded-xl bg-blue-500/10 text-blue-400 border border-blue-500/20 transition-all duration-300',
               }}
             >
               <Home
                 size={20}
-                className="group-hover:text-amber-400 transition-colors"
+                className="group-hover:text-blue-400 transition-colors"
               />
               <span className="font-medium">{t('header.home')}</span>
             </Link>
@@ -175,12 +175,12 @@ export default function Header() {
               className="flex items-center gap-3 px-4 py-3 rounded-xl text-slate-400 hover:text-white hover:bg-white/5 transition-all duration-300 group"
               activeProps={{
                 className:
-                  'flex items-center gap-3 px-4 py-3 rounded-xl bg-amber-500/10 text-amber-400 border border-amber-500/20 transition-all duration-300',
+                  'flex items-center gap-3 px-4 py-3 rounded-xl bg-blue-500/10 text-blue-400 border border-blue-500/20 transition-all duration-300',
               }}
             >
               <MapPin
                 size={20}
-                className="group-hover:text-amber-400 transition-colors"
+                className="group-hover:text-blue-400 transition-colors"
               />
               <span className="font-medium">{t('header.browseLocations')}</span>
             </Link>
@@ -192,12 +192,12 @@ export default function Header() {
                 className="flex items-center gap-3 px-4 py-3 rounded-xl text-slate-400 hover:text-white hover:bg-white/5 transition-all duration-300 group"
                 activeProps={{
                   className:
-                    'flex items-center gap-3 px-4 py-3 rounded-xl bg-amber-500/10 text-amber-400 border border-amber-500/20 transition-all duration-300',
+                    'flex items-center gap-3 px-4 py-3 rounded-xl bg-blue-500/10 text-blue-400 border border-blue-500/20 transition-all duration-300',
                 }}
               >
                 <CalendarCheck
                   size={20}
-                  className="group-hover:text-amber-400 transition-colors"
+                  className="group-hover:text-blue-400 transition-colors"
                 />
                 <span className="font-medium">{t('header.myBookings')}</span>
               </Link>
@@ -220,7 +220,7 @@ export default function Header() {
                 <Link
                   to="/sign-up"
                   onClick={() => setIsOpen(false)}
-                  className="flex items-center justify-center gap-2 px-4 py-3 rounded-xl bg-gradient-to-r from-amber-500 to-orange-500 hover:from-amber-400 hover:to-orange-400 text-white font-semibold transition-all duration-300 shadow-lg shadow-amber-500/25"
+                  className="flex items-center justify-center gap-2 px-4 py-3 rounded-xl bg-gradient-to-r from-blue-500 to-indigo-500 hover:from-blue-400 hover:to-indigo-400 text-white font-semibold transition-all duration-300 shadow-lg shadow-blue-500/25"
                 >
                   {t('header.createAccount')}
                 </Link>
@@ -247,3 +247,4 @@ export default function Header() {
     </>
   )
 }
+

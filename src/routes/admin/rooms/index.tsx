@@ -59,14 +59,14 @@ function RoomsPage() {
           placeholder={t('admin.rooms.searchPlaceholder')}
           value={searchTerm}
           onChange={(e) => setSearchTerm(e.target.value)}
-          className="w-full pl-12 pr-4 py-3 bg-slate-900/50 border border-slate-800/50 rounded-xl text-slate-200 placeholder-slate-500 focus:outline-none focus:border-amber-500/50 focus:ring-1 focus:ring-amber-500/20 transition-all"
+          className="w-full pl-12 pr-4 py-3 bg-slate-900/50 border border-slate-800/50 rounded-xl text-slate-200 placeholder-slate-500 focus:outline-none focus:border-blue-500/50 focus:ring-1 focus:ring-blue-500/20 transition-all"
         />
       </div>
 
       {/* Hotels List */}
       {visibleHotels === undefined ? (
         <div className="flex items-center justify-center py-20">
-          <div className="animate-spin rounded-full h-8 w-8 border-2 border-amber-500/20 border-t-amber-500"></div>
+          <div className="animate-spin rounded-full h-8 w-8 border-2 border-blue-500/20 border-t-blue-500"></div>
         </div>
       ) : filteredHotels?.length === 0 ? (
         <div className="bg-slate-900/50 border border-slate-800/50 rounded-2xl p-12 text-center">
@@ -86,7 +86,7 @@ function RoomsPage() {
           {!searchTerm && (
             <Link
               to="/admin/hotels"
-              className="light-hover-amber inline-flex items-center gap-2 px-5 py-2.5 bg-amber-500/10 text-amber-400 font-medium rounded-xl hover:bg-amber-500/20 transition-all border border-amber-500/20"
+              className="light-hover-accent inline-flex items-center gap-2 px-5 py-2.5 bg-blue-500/10 text-blue-400 font-medium rounded-xl hover:bg-blue-500/20 transition-all border border-blue-500/20"
             >
               {t('admin.rooms.goToHotels')}
             </Link>
@@ -103,10 +103,10 @@ function RoomsPage() {
             >
               <div className="flex items-center gap-4">
                 <div className="w-12 h-12 rounded-xl bg-slate-800 flex items-center justify-center group-hover:bg-slate-700 transition-colors">
-                  <Building2 className="w-6 h-6 text-slate-400 group-hover:text-amber-400 transition-colors" />
+                  <Building2 className="w-6 h-6 text-slate-400 group-hover:text-blue-400 transition-colors" />
                 </div>
                 <div>
-                  <h3 className="font-semibold text-slate-200 group-hover:text-amber-400 transition-colors">
+                  <h3 className="font-semibold text-slate-200 group-hover:text-blue-400 transition-colors">
                     {hotel.name}
                   </h3>
                   <div className="flex items-center gap-2 text-sm text-slate-500">
@@ -117,7 +117,7 @@ function RoomsPage() {
                   </div>
                 </div>
               </div>
-              <ChevronRight className="w-5 h-5 text-slate-600 group-hover:text-amber-400 transition-colors" />
+              <ChevronRight className="w-5 h-5 text-slate-600 group-hover:text-blue-400 transition-colors" />
             </Link>
           ))}
         </div>

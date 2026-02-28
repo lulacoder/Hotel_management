@@ -185,7 +185,7 @@ export function OutsourceModal({
               value={destinationHotelId}
               onChange={(event) => setDestinationHotelId(event.target.value)}
               disabled={isSubmitting || isSuccess}
-              className="w-full px-4 py-3 bg-slate-900 border border-slate-700 rounded-xl text-slate-200 focus:outline-none focus:border-amber-500/50 transition-colors"
+              className="w-full px-4 py-3 bg-slate-900 border border-slate-700 rounded-xl text-slate-200 focus:outline-none focus:border-blue-500/50 transition-colors"
             >
               <option value="">
                 {t('admin.bookings.outsourceModal.selectHotel')}
@@ -212,7 +212,7 @@ export function OutsourceModal({
             <button
               onClick={handleSubmit}
               disabled={!destinationHotelId || isSubmitting || isSuccess}
-              className="px-4 py-2 bg-gradient-to-r from-amber-500 to-amber-600 text-white rounded-lg transition-all text-sm font-medium disabled:opacity-50 disabled:cursor-not-allowed inline-flex items-center gap-2"
+              className="px-4 py-2 bg-gradient-to-r from-blue-500 to-blue-600 text-white rounded-lg transition-all text-sm font-medium disabled:opacity-50 disabled:cursor-not-allowed inline-flex items-center gap-2"
             >
               {isSubmitting && <Loader2 className="w-4 h-4 animate-spin" />}
               {isSuccess

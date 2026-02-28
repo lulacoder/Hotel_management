@@ -24,7 +24,7 @@ export function BookingsHeader({ userName }: BookingsHeaderProps) {
             {/* Back arrow (all sizes) */}
             <Link
               to="/select-location"
-              className="p-2 text-slate-400 hover:text-amber-400 hover:bg-slate-800 rounded-lg transition-colors"
+              className="p-2 text-slate-400 hover:text-blue-400 hover:bg-slate-800 rounded-lg transition-colors"
             >
               <ArrowLeft className="w-5 h-5" />
             </Link>
@@ -51,7 +51,7 @@ export function BookingsHeader({ userName }: BookingsHeaderProps) {
             >
               <Menu
                 size={22}
-                className="text-slate-300 group-hover:text-amber-400 transition-colors"
+                className="text-slate-300 group-hover:text-blue-400 transition-colors"
               />
             </button>
           </div>
@@ -66,11 +66,11 @@ export function BookingsHeader({ userName }: BookingsHeaderProps) {
       >
         <div className="flex items-center justify-between p-5 border-b border-slate-800/50">
           <div className="flex items-center gap-3">
-            <div className="h-10 rounded-xl bg-slate-950/70 border border-amber-500/30 px-2 flex items-center justify-center shadow-lg shadow-amber-500/20">
+            <div className="h-10 rounded-xl bg-slate-950/70 border border-blue-500/30 px-1 flex items-center justify-center shadow-lg shadow-blue-500/20">
               <img
                 src="/logo.png"
                 alt="Luxe Hotels"
-                className="h-7 w-auto object-contain"
+                className="h-8 w-auto object-contain logo-tight"
               />
             </div>
             <p className="text-xs text-slate-500 font-medium">
@@ -96,7 +96,7 @@ export function BookingsHeader({ userName }: BookingsHeaderProps) {
               onClick={() => setIsOpen(false)}
               className="flex items-center gap-3 px-4 py-3 rounded-xl text-slate-400 hover:text-white hover:bg-white/5 transition-all duration-300 group"
             >
-              <Home size={20} className="group-hover:text-amber-400 transition-colors" />
+              <Home size={20} className="group-hover:text-blue-400 transition-colors" />
               <span className="font-medium">{t('header.home')}</span>
             </Link>
 
@@ -105,7 +105,7 @@ export function BookingsHeader({ userName }: BookingsHeaderProps) {
               onClick={() => setIsOpen(false)}
               className="flex items-center gap-3 px-4 py-3 rounded-xl text-slate-400 hover:text-white hover:bg-white/5 transition-all duration-300 group"
             >
-              <MapPin size={20} className="group-hover:text-amber-400 transition-colors" />
+              <MapPin size={20} className="group-hover:text-blue-400 transition-colors" />
               <span className="font-medium">{t('header.browseLocations')}</span>
             </Link>
           </div>
@@ -137,3 +137,4 @@ export function BookingsHeader({ userName }: BookingsHeaderProps) {
     </>
   )
 }
+

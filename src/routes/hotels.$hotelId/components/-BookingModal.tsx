@@ -174,9 +174,9 @@ export function BookingModal({
   const totalPriceCents = roomSubtotalCents + packageSubtotalCents
 
   return (
-    <div className="fixed inset-0 bg-black/60 backdrop-blur-sm flex items-center justify-center z-50 p-4">
-      <div className="bg-slate-900 border border-slate-800 rounded-2xl shadow-2xl w-full max-w-lg max-h-[90vh] overflow-auto">
-        <div className="p-6 border-b border-slate-800">
+    <div className="booking-modal fixed inset-0 bg-black/60 backdrop-blur-sm flex items-center justify-center z-50 p-4">
+      <div className="booking-modal-panel bg-slate-900 border border-slate-800 rounded-2xl shadow-2xl w-full max-w-lg max-h-[92vh] overflow-hidden flex flex-col">
+        <div className="p-4 sm:p-5 border-b border-slate-800 shrink-0">
           <h2 className="text-xl font-semibold text-slate-100">
             {step === 'package'
               ? t('bookingModal.step.packageTitle')
@@ -197,8 +197,8 @@ export function BookingModal({
           </p>
         </div>
 
-        <div className="p-6">
-          <div className="bg-slate-800/50 rounded-xl p-4 mb-6">
+        <div className="p-4 sm:p-5 flex-1 overflow-y-auto overscroll-contain scroll-smooth">
+          <div className="bg-slate-800/50 rounded-xl p-4 mb-4">
             <div className="flex items-center gap-3 mb-3">
               <div className="w-12 h-12 rounded-lg bg-slate-700 flex items-center justify-center">
                 <Building2 className="w-6 h-6 text-slate-400" />
@@ -234,7 +234,7 @@ export function BookingModal({
                   </p>
                 )}
               </div>
-              <span className="text-xl font-bold text-amber-400">
+              <span className="text-xl font-bold text-blue-400">
                 ${(totalPriceCents / 100).toFixed(2)}
               </span>
             </div>
@@ -256,9 +256,9 @@ export function BookingModal({
                     key={pkg.type}
                     type="button"
                     onClick={() => setSelectedPackageType(pkg.type)}
-                    className={`w-full text-left rounded-xl border p-4 transition-all ${
+                    className={`booking-package-card light-hover-surface w-full text-left rounded-xl border p-4 transition-all ${
                       isSelected
-                        ? 'border-amber-500/50 bg-amber-500/10'
+                        ? 'booking-package-card--selected border-blue-500/50 bg-blue-500/10'
                         : 'border-slate-700 bg-slate-800/40 hover:border-slate-600'
                     }`}
                   >
@@ -272,9 +272,9 @@ export function BookingModal({
                         </p>
                       </div>
                       <span
-                        className={`text-xs font-medium px-2.5 py-1 rounded-full border ${
+                        className={`booking-package-badge text-xs font-medium px-2.5 py-1 rounded-full border ${
                           isSelected
-                            ? 'text-amber-300 border-amber-500/40 bg-amber-500/10'
+                            ? 'booking-package-badge--selected text-blue-300 border-blue-500/40 bg-blue-500/10'
                             : 'text-slate-300 border-slate-600 bg-slate-700/40'
                         }`}
                       >
@@ -282,7 +282,7 @@ export function BookingModal({
                       </span>
                     </div>
 
-                    <ul className="list-disc list-inside text-sm text-slate-400 space-y-0.5">
+                    <ul className="booking-package-inclusions list-disc list-inside text-sm text-slate-400 space-y-0.5">
                       {getPackageInclusions(pkg.type, t).map((item) => (
                         <li key={item}>{item}</li>
                       ))}
@@ -302,7 +302,7 @@ export function BookingModal({
                 <button
                   type="button"
                   onClick={() => setStep('details')}
-                  className="flex-1 px-4 py-3 bg-gradient-to-r from-amber-500 to-amber-600 text-white font-medium rounded-xl hover:from-amber-600 hover:to-amber-700 transition-all"
+                  className="flex-1 px-4 py-3 bg-gradient-to-r from-blue-500 to-blue-600 text-white font-medium rounded-xl hover:from-blue-600 hover:to-blue-700 transition-all"
                 >
                   {t('bookingModal.continue')}
                 </button>
@@ -324,7 +324,7 @@ export function BookingModal({
                       guestName: e.target.value,
                     })
                   }
-                  className="w-full px-4 py-3 bg-slate-800/50 border border-slate-700 rounded-xl text-slate-200 focus:outline-none focus:border-amber-500/50 transition-all"
+                  className="w-full px-4 py-3 bg-slate-800/50 border border-slate-700 rounded-xl text-slate-200 focus:outline-none focus:border-blue-500/50 transition-all"
                 />
               </div>
 
@@ -342,7 +342,7 @@ export function BookingModal({
                       guestEmail: e.target.value,
                     })
                   }
-                  className="w-full px-4 py-3 bg-slate-800/50 border border-slate-700 rounded-xl text-slate-200 focus:outline-none focus:border-amber-500/50 transition-all"
+                  className="w-full px-4 py-3 bg-slate-800/50 border border-slate-700 rounded-xl text-slate-200 focus:outline-none focus:border-blue-500/50 transition-all"
                 />
               </div>
 
@@ -360,12 +360,12 @@ export function BookingModal({
                     })
                   }
                   placeholder={t('bookingModal.specialRequestsPlaceholder')}
-                  className="w-full px-4 py-3 bg-slate-800/50 border border-slate-700 rounded-xl text-slate-200 placeholder-slate-500 focus:outline-none focus:border-amber-500/50 transition-all resize-none"
+                  className="w-full px-4 py-3 bg-slate-800/50 border border-slate-700 rounded-xl text-slate-200 placeholder-slate-500 focus:outline-none focus:border-blue-500/50 transition-all resize-none"
                 />
               </div>
 
-              <div className="bg-amber-500/10 border border-amber-500/20 rounded-xl p-4">
-                <p className="text-amber-400 text-sm">
+              <div className="booking-hold-notice-card bg-blue-500/10 border border-blue-500/20 rounded-xl p-4">
+                <p className="booking-hold-notice-text text-blue-400 text-base font-medium">
                   {t('bookingModal.holdNotice')}
                 </p>
               </div>
@@ -389,7 +389,7 @@ export function BookingModal({
                     <span>${(packageSubtotalCents / 100).toFixed(2)}</span>
                   </div>
                 )}
-                <div className="border-t border-slate-700 mt-3 pt-3 flex items-center justify-between text-amber-400 font-semibold">
+                <div className="booking-details-total border-t border-slate-700 mt-3 pt-3 flex items-center justify-between text-blue-400 font-semibold">
                   <span>{t('booking.total')}</span>
                   <span>${(totalPriceCents / 100).toFixed(2)}</span>
                 </div>
@@ -406,7 +406,7 @@ export function BookingModal({
                 <button
                   type="submit"
                   disabled={loading}
-                  className="flex-1 px-4 py-3 bg-gradient-to-r from-amber-500 to-amber-600 text-white font-medium rounded-xl hover:from-amber-600 hover:to-amber-700 transition-all disabled:opacity-50"
+                  className="flex-1 px-4 py-3 bg-gradient-to-r from-blue-500 to-blue-600 text-white font-medium rounded-xl hover:from-blue-600 hover:to-blue-700 transition-all disabled:opacity-50"
                 >
                   {loading
                     ? t('bookingModal.holding')
@@ -528,7 +528,7 @@ export function BookingModal({
                     const file = e.target.files?.[0] ?? null
                     setNationalIdFile(file)
                   }}
-                  className="w-full px-4 py-3 bg-slate-800/50 border border-slate-700 rounded-xl text-slate-200 focus:outline-none focus:border-amber-500/50 transition-all file:mr-3 file:px-3 file:py-1.5 file:rounded-md file:border-0 file:bg-slate-700 file:text-slate-100 hover:file:bg-slate-600"
+                  className="w-full px-4 py-3 bg-slate-800/50 border border-slate-700 rounded-xl text-slate-200 focus:outline-none focus:border-blue-500/50 transition-all file:mr-3 file:px-3 file:py-1.5 file:rounded-md file:border-0 file:bg-slate-700 file:text-slate-100 hover:file:bg-slate-600"
                 />
               </div>
 
@@ -541,7 +541,7 @@ export function BookingModal({
                   value={transactionId}
                   onChange={(e) => setTransactionId(e.target.value)}
                   placeholder={t('bookingModal.transactionIdPlaceholder')}
-                  className="w-full px-4 py-3 bg-slate-800/50 border border-slate-700 rounded-xl text-slate-200 placeholder-slate-500 focus:outline-none focus:border-amber-500/50 transition-all"
+                  className="w-full px-4 py-3 bg-slate-800/50 border border-slate-700 rounded-xl text-slate-200 placeholder-slate-500 focus:outline-none focus:border-blue-500/50 transition-all"
                 />
               </div>
 

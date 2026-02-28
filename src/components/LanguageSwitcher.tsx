@@ -22,7 +22,7 @@ export function LanguageSwitcher({
         onClick={() => setLocale('en')}
         className={`rounded-lg px-2.5 py-1 text-xs font-semibold transition-colors ${
           locale === 'en'
-            ? 'bg-amber-500 text-slate-900'
+            ? 'bg-blue-500 text-slate-900'
             : 'text-slate-300 hover:text-white'
         }`}
       >
@@ -33,7 +33,7 @@ export function LanguageSwitcher({
         onClick={() => setLocale('am')}
         className={`rounded-lg px-2.5 py-1 text-xs font-semibold transition-colors ${
           locale === 'am'
-            ? 'bg-amber-500 text-slate-900'
+            ? 'bg-blue-500 text-slate-900'
             : 'text-slate-300 hover:text-white'
         } ${compact ? '' : 'min-w-[2.5rem]'}`}
       >

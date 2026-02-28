@@ -162,9 +162,9 @@ function HotelDetailPage() {
     maintenance: {
       label: t('admin.hotels.status.maintenance'),
       icon: Wrench,
-      color: 'text-amber-400',
-      bg: 'bg-amber-500/10',
-      border: 'border-amber-500/20',
+      color: 'text-blue-400',
+      bg: 'bg-blue-500/10',
+      border: 'border-blue-500/20',
     },
     cleaning: {
       label: t('admin.hotels.status.cleaning'),
@@ -183,9 +183,9 @@ function HotelDetailPage() {
     held: {
       label: t('booking.status.held'),
       icon: CheckCircle,
-      color: 'text-amber-400',
-      bg: 'bg-amber-500/10',
-      border: 'border-amber-500/20',
+      color: 'text-blue-400',
+      bg: 'bg-blue-500/10',
+      border: 'border-blue-500/20',
     },
     booked: {
       label: t('admin.hotels.status.booked'),
@@ -213,7 +213,7 @@ function HotelDetailPage() {
   if (!isHydrated || hotel === undefined) {
     return (
       <div className="flex items-center justify-center py-20">
-        <div className="animate-spin rounded-full h-8 w-8 border-2 border-amber-500/20 border-t-amber-500"></div>
+        <div className="animate-spin rounded-full h-8 w-8 border-2 border-blue-500/20 border-t-blue-500"></div>
       </div>
     )
   }
@@ -295,7 +295,7 @@ function HotelDetailPage() {
                 value={accountNumberInput}
                 onChange={(e) => setAccountNumberInput(e.target.value)}
                 placeholder={t('admin.hotels.payment.accountPlaceholder')}
-                className="w-full px-4 py-3 bg-slate-800/50 border border-slate-700 rounded-xl text-slate-200 placeholder-slate-500 focus:outline-none focus:border-amber-500/50 transition-all"
+                className="w-full px-4 py-3 bg-slate-800/50 border border-slate-700 rounded-xl text-slate-200 placeholder-slate-500 focus:outline-none focus:border-blue-500/50 transition-all"
               />
             </div>
 
@@ -310,7 +310,7 @@ function HotelDetailPage() {
                 type="button"
                 onClick={handleSaveBankAccount}
                 disabled={savingAccount}
-                className="px-4 py-2 bg-amber-500/10 text-amber-400 font-medium rounded-xl hover:bg-amber-500/20 transition-colors border border-amber-500/20 disabled:opacity-50"
+                className="px-4 py-2 bg-blue-500/10 text-blue-400 font-medium rounded-xl hover:bg-blue-500/20 transition-colors border border-blue-500/20 disabled:opacity-50"
               >
                 {savingAccount
                   ? t('admin.hotels.payment.saving')
@@ -328,7 +328,7 @@ function HotelDetailPage() {
         </h2>
         <button
           onClick={() => setShowCreateRoom(true)}
-          className="flex items-center gap-2 px-4 py-2 bg-gradient-to-r from-amber-500 to-amber-600 text-white font-medium rounded-xl hover:from-amber-600 hover:to-amber-700 transition-all duration-200 shadow-lg shadow-amber-500/20"
+          className="flex items-center gap-2 px-4 py-2 bg-gradient-to-r from-blue-500 to-blue-600 text-white font-medium rounded-xl hover:from-blue-600 hover:to-blue-700 transition-all duration-200 shadow-lg shadow-blue-500/20"
         >
           <Plus className="w-5 h-5" />
           {t('admin.hotels.addRoom')}
@@ -338,7 +338,7 @@ function HotelDetailPage() {
       {/* Rooms Grid */}
       {rooms === undefined ? (
         <div className="flex items-center justify-center py-12">
-          <div className="animate-spin rounded-full h-8 w-8 border-2 border-amber-500/20 border-t-amber-500"></div>
+          <div className="animate-spin rounded-full h-8 w-8 border-2 border-blue-500/20 border-t-blue-500"></div>
         </div>
       ) : rooms.length === 0 ? (
         <div className="bg-slate-900/50 border border-slate-800/50 rounded-2xl p-12 text-center">
@@ -353,7 +353,7 @@ function HotelDetailPage() {
           </p>
           <button
             onClick={() => setShowCreateRoom(true)}
-            className="inline-flex items-center gap-2 px-5 py-2.5 bg-amber-500/10 text-amber-400 font-medium rounded-xl hover:bg-amber-500/20 transition-colors border border-amber-500/20"
+            className="inline-flex items-center gap-2 px-5 py-2.5 bg-blue-500/10 text-blue-400 font-medium rounded-xl hover:bg-blue-500/20 transition-colors border border-blue-500/20"
           >
             <Plus className="w-5 h-5" />
             {t('admin.hotels.addFirstRoom')}
@@ -506,7 +506,7 @@ function HotelDetailPage() {
 
         {ratings === undefined ? (
           <div className="flex items-center justify-center py-8">
-            <div className="animate-spin rounded-full h-6 w-6 border-2 border-amber-500/20 border-t-amber-500"></div>
+            <div className="animate-spin rounded-full h-6 w-6 border-2 border-blue-500/20 border-t-blue-500"></div>
           </div>
         ) : ratings.length === 0 ? (
           <div className="bg-slate-900/50 border border-slate-800/50 rounded-2xl p-8 text-center text-slate-500">
@@ -528,7 +528,7 @@ function HotelDetailPage() {
                             key={value}
                             className={`w-4 h-4 ${
                               value <= rating.rating
-                                ? 'text-amber-400 fill-amber-400'
+                                ? 'text-blue-400 fill-blue-400'
                                 : 'text-slate-600'
                             }`}
                           />

@@ -97,7 +97,7 @@ export function RatingModal({
                       search: { redirect: ratingRedirect },
                     })
                   }
-                  className="flex-1 px-4 py-3 bg-amber-500 text-slate-900 font-semibold rounded-xl hover:bg-amber-400 transition-colors"
+                  className="flex-1 px-4 py-3 bg-blue-500 text-slate-900 font-semibold rounded-xl hover:bg-blue-400 transition-colors"
                 >
                   {t('header.signUp')}
                 </button>
@@ -127,7 +127,7 @@ export function RatingModal({
                       <Star
                         className={`w-6 h-6 ${
                           value <= ratingValue
-                            ? 'text-amber-400 fill-amber-400'
+                            ? 'text-blue-400 fill-blue-400'
                             : 'text-slate-600'
                         }`}
                       />
@@ -151,7 +151,7 @@ export function RatingModal({
                   onChange={(event) => onRatingTextChange(event.target.value)}
                   maxLength={500}
                   placeholder={t('rating.reviewPlaceholder')}
-                  className="w-full px-4 py-3 bg-slate-800/50 border border-slate-700 rounded-xl text-slate-200 placeholder-slate-500 focus:outline-none focus:border-amber-500/50 transition-all resize-none"
+                  className="w-full px-4 py-3 bg-slate-800/50 border border-slate-700 rounded-xl text-slate-200 placeholder-slate-500 focus:outline-none focus:border-blue-500/50 transition-all resize-none"
                 />
                 <p className="text-xs text-slate-500 mt-2">
                   {ratingText.length}/500
@@ -169,7 +169,7 @@ export function RatingModal({
                 <button
                   type="submit"
                   disabled={ratingSaving}
-                  className="flex-1 px-4 py-3 bg-amber-500 text-slate-900 font-semibold rounded-xl hover:bg-amber-400 transition-colors disabled:opacity-60"
+                  className="flex-1 px-4 py-3 bg-blue-500 text-slate-900 font-semibold rounded-xl hover:bg-blue-400 transition-colors disabled:opacity-60"
                 >
                   {ratingSaving ? t('common.saving') : t('common.saveChanges')}
                 </button>

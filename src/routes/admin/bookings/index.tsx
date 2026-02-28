@@ -149,16 +149,16 @@ function BookingsPage() {
     held: {
       label: t('booking.status.held'),
       icon: Clock,
-      color: 'text-amber-400',
-      bg: 'bg-amber-500/10',
-      border: 'border-amber-500/20',
+      color: 'text-blue-400',
+      bg: 'bg-blue-500/10',
+      border: 'border-blue-500/20',
     },
     pending_payment: {
       label: t('booking.status.pendingPayment'),
       icon: Clock,
-      color: 'text-amber-400',
-      bg: 'bg-amber-500/10',
-      border: 'border-amber-500/20',
+      color: 'text-blue-400',
+      bg: 'bg-blue-500/10',
+      border: 'border-blue-500/20',
     },
     confirmed: {
       label: t('booking.status.confirmed'),
@@ -233,7 +233,7 @@ function BookingsPage() {
           <select
             value={selectedHotel}
             onChange={(e) => setSelectedHotel(e.target.value)}
-            className="w-full px-4 py-3 bg-slate-900/50 border border-slate-800/50 rounded-xl text-slate-200 focus:outline-none focus:border-amber-500/50 transition-all"
+            className="w-full px-4 py-3 bg-slate-900/50 border border-slate-800/50 rounded-xl text-slate-200 focus:outline-none focus:border-blue-500/50 transition-all"
           >
             {profile?.role === 'room_admin' && (
               <option value="all">{t('admin.bookings.selectHotel')}</option>
@@ -251,7 +251,7 @@ function BookingsPage() {
           <select
             value={statusFilter}
             onChange={(e) => setStatusFilter(e.target.value)}
-            className="w-full md:w-48 px-4 py-3 bg-slate-900/50 border border-slate-800/50 rounded-xl text-slate-200 focus:outline-none focus:border-amber-500/50 transition-all"
+            className="w-full md:w-48 px-4 py-3 bg-slate-900/50 border border-slate-800/50 rounded-xl text-slate-200 focus:outline-none focus:border-blue-500/50 transition-all"
           >
             <option value="all">{t('admin.bookings.allStatuses')}</option>
             <option value="held">{t('booking.status.held')}</option>
@@ -273,7 +273,7 @@ function BookingsPage() {
       {/* Content */}
       {bookings === undefined ? (
         <div className="flex items-center justify-center py-20">
-          <div className="animate-spin rounded-full h-8 w-8 border-2 border-amber-500/20 border-t-amber-500"></div>
+          <div className="animate-spin rounded-full h-8 w-8 border-2 border-blue-500/20 border-t-blue-500"></div>
         </div>
       ) : filteredBookings?.length === 0 ? (
         <div className="bg-slate-900/50 border border-slate-800/50 rounded-2xl p-12 text-center">
@@ -341,7 +341,7 @@ function BookingsPage() {
                               t('admin.bookings.na')}
                           </p>
                           {item.guestProfile && (
-                            <span className="px-2 py-0.5 text-[10px] rounded-full border border-amber-500/30 bg-amber-500/10 text-amber-300 uppercase tracking-wide">
+                            <span className="px-2 py-0.5 text-[10px] rounded-full border border-blue-500/30 bg-blue-500/10 text-blue-300 uppercase tracking-wide">
                               {t('admin.bookings.walkIn')}
                             </span>
                           )}
@@ -411,7 +411,7 @@ function BookingsPage() {
                             onClick={() =>
                               handleStatusChange(booking._id, nextStatus)
                             }
-                            className="light-hover-amber px-3 py-2 bg-amber-500/10 text-amber-400 rounded-lg hover:bg-amber-500/20 transition-all text-sm font-medium border border-amber-500/20"
+                            className="light-hover-accent px-3 py-2 bg-blue-500/10 text-blue-400 rounded-lg hover:bg-blue-500/20 transition-all text-sm font-medium border border-blue-500/20"
                           >
                             {transitionLabel[nextStatus]}
                           </button>
@@ -464,7 +464,7 @@ function BookingsPage() {
 
             {selectedBookingDetail === undefined ? (
               <div className="flex items-center justify-center py-12">
-                <div className="animate-spin rounded-full h-8 w-8 border-2 border-amber-500/20 border-t-amber-500"></div>
+                <div className="animate-spin rounded-full h-8 w-8 border-2 border-blue-500/20 border-t-blue-500"></div>
               </div>
             ) : selectedBookingDetail === null ? (
               <div className="text-slate-400">

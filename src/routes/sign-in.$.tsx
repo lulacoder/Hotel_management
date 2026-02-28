@@ -40,12 +40,12 @@ function SignInCatchAll() {
       {/* Left Panel - Branding */}
       <div className="hidden lg:flex lg:w-1/2 relative overflow-hidden">
         {/* Gradient Background */}
-        <div className="absolute inset-0 bg-gradient-to-br from-amber-500/20 via-slate-900 to-slate-950" />
+        <div className="absolute inset-0 bg-gradient-to-br from-blue-500/20 via-slate-900 to-slate-950" />
 
         {/* Animated Gradient Orbs */}
-        <div className="absolute top-1/3 right-1/4 w-96 h-96 bg-amber-500/30 rounded-full blur-3xl animate-pulse" />
+        <div className="absolute top-1/3 right-1/4 w-96 h-96 bg-blue-500/30 rounded-full blur-3xl animate-pulse" />
         <div
-          className="absolute bottom-1/3 left-1/4 w-80 h-80 bg-orange-500/20 rounded-full blur-3xl animate-pulse"
+          className="absolute bottom-1/3 left-1/4 w-80 h-80 bg-indigo-500/20 rounded-full blur-3xl animate-pulse"
           style={{ animationDelay: '1s' }}
         />
 
@@ -53,11 +53,11 @@ function SignInCatchAll() {
         <div className="relative z-10 flex flex-col justify-between p-12 w-full">
           {/* Logo */}
           <Link to="/" className="inline-flex items-center group">
-            <div className="h-12 rounded-xl bg-slate-950/70 border border-amber-500/30 px-3 flex items-center justify-center shadow-lg shadow-amber-500/20 group-hover:shadow-amber-500/40 transition-all duration-300">
+            <div className="h-12 rounded-xl bg-slate-950/70 border border-blue-500/30 px-1 flex items-center justify-center shadow-lg shadow-blue-500/20 group-hover:shadow-blue-500/40 transition-all duration-300">
               <img
                 src="/logo.png"
-                alt="Luxe Hotels"
-                className="h-8 w-auto object-contain"
+                alt="Trip Way Hotels"
+                className="h-9 w-auto object-contain logo-tight"
               />
             </div>
           </Link>
@@ -74,7 +74,7 @@ function SignInCatchAll() {
 
           {/* Footer */}
           <p className="text-slate-600 text-sm">
-            &copy; {new Date().getFullYear()} Luxe Hotels.{' '}
+            &copy; {new Date().getFullYear()} Trip Way Hotels.{' '}
             {t('common.allRightsReserved')}
           </p>
         </div>
@@ -92,11 +92,11 @@ function SignInCatchAll() {
           </Link>
           <div className="flex items-center gap-2">
             <ThemeToggle compact />
-            <div className="h-8 rounded-lg bg-slate-950/70 border border-amber-500/30 px-1.5 flex items-center justify-center">
+            <div className="h-8 rounded-lg bg-slate-950/70 border border-blue-500/30 px-1 flex items-center justify-center">
               <img
                 src="/logo.png"
                 alt="Luxe Hotels"
-                className="h-5 w-auto object-contain"
+                className="h-6 w-auto object-contain logo-tight"
               />
             </div>
           </div>
@@ -122,3 +122,4 @@ function SignInCatchAll() {
     </div>
   )
 }
+

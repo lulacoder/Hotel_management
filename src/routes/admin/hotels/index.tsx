@@ -84,7 +84,7 @@ function HotelsPage() {
         {canAddHotel && (
           <button
             onClick={() => setShowCreateModal(true)}
-            className="flex items-center gap-2 px-5 py-2.5 bg-gradient-to-r from-amber-500 to-amber-600 text-white font-medium rounded-xl hover:from-amber-600 hover:to-amber-700 transition-all duration-200 shadow-lg shadow-amber-500/20"
+            className="flex items-center gap-2 px-5 py-2.5 bg-gradient-to-r from-blue-500 to-blue-600 text-white font-medium rounded-xl hover:from-blue-600 hover:to-blue-700 transition-all duration-200 shadow-lg shadow-blue-500/20"
           >
             <Plus className="w-5 h-5" />
             {t('admin.hotels.addHotel')}
@@ -100,14 +100,14 @@ function HotelsPage() {
           placeholder={t('admin.hotels.searchPlaceholder')}
           value={searchTerm}
           onChange={(e) => setSearchTerm(e.target.value)}
-          className="w-full pl-12 pr-4 py-3 bg-slate-900/50 border border-slate-800/50 rounded-xl text-slate-200 placeholder-slate-500 focus:outline-none focus:border-amber-500/50 focus:ring-1 focus:ring-amber-500/20 transition-all"
+          className="w-full pl-12 pr-4 py-3 bg-slate-900/50 border border-slate-800/50 rounded-xl text-slate-200 placeholder-slate-500 focus:outline-none focus:border-blue-500/50 focus:ring-1 focus:ring-blue-500/20 transition-all"
         />
       </div>
 
       {/* Hotels Grid */}
       {visibleHotels === undefined ? (
         <div className="flex items-center justify-center py-20">
-          <div className="animate-spin rounded-full h-8 w-8 border-2 border-amber-500/20 border-t-amber-500"></div>
+          <div className="animate-spin rounded-full h-8 w-8 border-2 border-blue-500/20 border-t-blue-500"></div>
         </div>
       ) : filteredHotels?.length === 0 ? (
         <div className="bg-slate-900/50 border border-slate-800/50 rounded-2xl p-12 text-center">
@@ -127,7 +127,7 @@ function HotelsPage() {
           {!searchTerm && canAddHotel && (
             <button
               onClick={() => setShowCreateModal(true)}
-              className="inline-flex items-center gap-2 px-5 py-2.5 bg-amber-500/10 text-amber-400 font-medium rounded-xl hover:bg-amber-500/20 transition-colors border border-amber-500/20"
+              className="inline-flex items-center gap-2 px-5 py-2.5 bg-blue-500/10 text-blue-400 font-medium rounded-xl hover:bg-blue-500/20 transition-colors border border-blue-500/20"
             >
               <Plus className="w-5 h-5" />
               {t('admin.hotels.addFirst')}
@@ -208,7 +208,7 @@ function HotelsPage() {
               <Link
                 to="/admin/hotels/$hotelId"
                 params={{ hotelId: hotel._id }}
-                className="inline-flex items-center gap-2 text-sm text-amber-400 hover:text-amber-300 transition-colors font-medium"
+                className="inline-flex items-center gap-2 text-sm text-blue-400 hover:text-blue-300 transition-colors font-medium"
               >
                 {t('admin.hotels.manageRooms')}
                 <span className="text-lg">→</span>

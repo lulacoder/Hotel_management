@@ -34,7 +34,7 @@ export function SearchFilters({
       <select
         value={selectedCity}
         onChange={(event) => onCityChange(event.target.value)}
-        className="flex-1 px-4 py-3 bg-slate-800/50 border border-slate-700/50 rounded-xl text-slate-200 focus:outline-none focus:border-amber-500/50 transition-all"
+        className="flex-1 px-4 py-3 bg-slate-800/50 border border-slate-700/50 rounded-xl text-slate-200 focus:outline-none focus:border-blue-500/50 transition-all"
       >
         <option value="all">{t('select.allCities')}</option>
         {cities.map((city) => (
@@ -47,7 +47,7 @@ export function SearchFilters({
       <select
         value={selectedCategory}
         onChange={(event) => onCategoryChange(event.target.value)}
-        className="flex-1 px-4 py-3 bg-slate-800/50 border border-slate-700/50 rounded-xl text-slate-200 focus:outline-none focus:border-amber-500/50 transition-all"
+        className="flex-1 px-4 py-3 bg-slate-800/50 border border-slate-700/50 rounded-xl text-slate-200 focus:outline-none focus:border-blue-500/50 transition-all"
       >
         <option value="all">{t('select.allCategories')}</option>
         {categories.map((cat) => (
@@ -60,7 +60,7 @@ export function SearchFilters({
       <select
         value={sortBy}
         onChange={(event) => onSortChange(event.target.value as SortOption)}
-        className="flex-1 px-4 py-3 bg-slate-800/50 border border-slate-700/50 rounded-xl text-slate-200 focus:outline-none focus:border-amber-500/50 transition-all"
+        className="flex-1 px-4 py-3 bg-slate-800/50 border border-slate-700/50 rounded-xl text-slate-200 focus:outline-none focus:border-blue-500/50 transition-all"
       >
         <option value="name">{t('select.sortByName')}</option>
         <option value="rating">{t('select.sortByRating')}</option>

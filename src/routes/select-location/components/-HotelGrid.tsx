@@ -56,7 +56,7 @@ export function HotelGrid({
   if (isLoading) {
     return (
       <div className="flex items-center justify-center py-20">
-        <div className="animate-spin rounded-full h-10 w-10 border-2 border-amber-500/20 border-t-amber-500"></div>
+        <div className="animate-spin rounded-full h-10 w-10 border-2 border-blue-500/20 border-t-blue-500"></div>
       </div>
     )
   }
@@ -114,7 +114,7 @@ export function HotelGrid({
           return (
             <div
               key={hotel._id}
-              className="group light-hover-surface bg-slate-900/50 border border-slate-800/50 rounded-2xl overflow-hidden hover:border-amber-500/30 hover:shadow-xl hover:shadow-amber-500/5 transition-all duration-300"
+              className="group light-hover-surface bg-slate-900/50 border border-slate-800/50 rounded-2xl overflow-hidden hover:border-blue-500/30 hover:shadow-xl hover:shadow-blue-500/5 transition-all duration-300"
             >
               <Link
                 to="/hotels/$hotelId"
@@ -147,7 +147,7 @@ export function HotelGrid({
 
                     {displayRating !== undefined && (
                       <div className="flex items-center gap-1 bg-slate-900/80 backdrop-blur-sm px-2 py-1 rounded-lg">
-                        <Star className="w-4 h-4 text-amber-400 fill-amber-400" />
+                        <Star className="w-4 h-4 text-blue-400 fill-blue-400" />
                         <span className="text-sm text-slate-200 font-medium">
                           {displayRating.toFixed(1)}
                         </span>
@@ -180,7 +180,7 @@ export function HotelGrid({
                 </div>
 
                 <div className="p-5 pb-4">
-                  <h4 className="text-lg font-semibold text-slate-200 mb-2 group-hover:text-amber-400 transition-colors">
+                  <h4 className="text-lg font-semibold text-slate-200 mb-2 group-hover:text-blue-400 transition-colors">
                     {hotel.name}
                   </h4>
                   <div className="flex items-center gap-2 text-slate-400 text-sm mb-3">
@@ -223,14 +223,14 @@ export function HotelGrid({
                 <Link
                   to="/hotels/$hotelId"
                   params={{ hotelId: hotel._id }}
-                  className="text-amber-400 font-semibold group-hover:translate-x-1 transition-transform"
+                  className="text-blue-400 font-semibold group-hover:translate-x-1 transition-transform"
                 >
                   {t('grid.viewRooms')}
                 </Link>
                 <button
                   type="button"
                   onClick={() => onOpenRating(hotel._id)}
-                  className="light-hover-amber px-3 py-1.5 text-sm font-semibold text-slate-900 bg-amber-500 hover:bg-amber-400 rounded-lg transition-all border border-amber-500/30"
+                  className="light-hover-accent px-3 py-1.5 text-sm font-semibold text-slate-900 bg-blue-500 hover:bg-blue-400 rounded-lg transition-all border border-blue-500/30"
                 >
                   {t('grid.rateHotel')}
                 </button>

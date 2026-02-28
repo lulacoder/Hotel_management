@@ -296,7 +296,7 @@ export function HotelModal({ hotelId, onClose }: HotelModalProps) {
                 setFormData({ ...formData, name: e.target.value })
               }
               placeholder={t('admin.hotels.modal.hotelNamePlaceholder')}
-              className="w-full px-4 py-3 bg-slate-800/50 border border-slate-700 rounded-xl text-slate-200 placeholder-slate-500 focus:outline-none focus:border-amber-500/50 focus:ring-1 focus:ring-amber-500/20 transition-all"
+              className="w-full px-4 py-3 bg-slate-800/50 border border-slate-700 rounded-xl text-slate-200 placeholder-slate-500 focus:outline-none focus:border-blue-500/50 focus:ring-1 focus:ring-blue-500/20 transition-all"
             />
           </div>
 
@@ -312,7 +312,7 @@ export function HotelModal({ hotelId, onClose }: HotelModalProps) {
                 setFormData({ ...formData, address: e.target.value })
               }
               placeholder={t('admin.hotels.modal.addressPlaceholder')}
-              className="w-full px-4 py-3 bg-slate-800/50 border border-slate-700 rounded-xl text-slate-200 placeholder-slate-500 focus:outline-none focus:border-amber-500/50 focus:ring-1 focus:ring-amber-500/20 transition-all"
+              className="w-full px-4 py-3 bg-slate-800/50 border border-slate-700 rounded-xl text-slate-200 placeholder-slate-500 focus:outline-none focus:border-blue-500/50 focus:ring-1 focus:ring-blue-500/20 transition-all"
             />
           </div>
 
@@ -329,7 +329,7 @@ export function HotelModal({ hotelId, onClose }: HotelModalProps) {
                   setFormData({ ...formData, city: e.target.value })
                 }
                 placeholder={t('admin.hotels.modal.cityPlaceholder')}
-                className="w-full px-4 py-3 bg-slate-800/50 border border-slate-700 rounded-xl text-slate-200 placeholder-slate-500 focus:outline-none focus:border-amber-500/50 focus:ring-1 focus:ring-amber-500/20 transition-all"
+                className="w-full px-4 py-3 bg-slate-800/50 border border-slate-700 rounded-xl text-slate-200 placeholder-slate-500 focus:outline-none focus:border-blue-500/50 focus:ring-1 focus:ring-blue-500/20 transition-all"
               />
             </div>
             <div>
@@ -344,7 +344,7 @@ export function HotelModal({ hotelId, onClose }: HotelModalProps) {
                   setFormData({ ...formData, country: e.target.value })
                 }
                 placeholder={t('admin.hotels.modal.countryPlaceholder')}
-                className="w-full px-4 py-3 bg-slate-800/50 border border-slate-700 rounded-xl text-slate-200 placeholder-slate-500 focus:outline-none focus:border-amber-500/50 focus:ring-1 focus:ring-amber-500/20 transition-all"
+                className="w-full px-4 py-3 bg-slate-800/50 border border-slate-700 rounded-xl text-slate-200 placeholder-slate-500 focus:outline-none focus:border-blue-500/50 focus:ring-1 focus:ring-blue-500/20 transition-all"
               />
             </div>
           </div>
@@ -362,7 +362,7 @@ export function HotelModal({ hotelId, onClose }: HotelModalProps) {
                   setFormData({ ...formData, latitude: e.target.value })
                 }
                 placeholder={t('admin.hotels.modal.latitudePlaceholder')}
-                className="w-full px-4 py-3 bg-slate-800/50 border border-slate-700 rounded-xl text-slate-200 placeholder-slate-500 focus:outline-none focus:border-amber-500/50 focus:ring-1 focus:ring-amber-500/20 transition-all"
+                className="w-full px-4 py-3 bg-slate-800/50 border border-slate-700 rounded-xl text-slate-200 placeholder-slate-500 focus:outline-none focus:border-blue-500/50 focus:ring-1 focus:ring-blue-500/20 transition-all"
               />
             </div>
             <div>
@@ -377,7 +377,7 @@ export function HotelModal({ hotelId, onClose }: HotelModalProps) {
                   setFormData({ ...formData, longitude: e.target.value })
                 }
                 placeholder={t('admin.hotels.modal.longitudePlaceholder')}
-                className="w-full px-4 py-3 bg-slate-800/50 border border-slate-700 rounded-xl text-slate-200 placeholder-slate-500 focus:outline-none focus:border-amber-500/50 focus:ring-1 focus:ring-amber-500/20 transition-all"
+                className="w-full px-4 py-3 bg-slate-800/50 border border-slate-700 rounded-xl text-slate-200 placeholder-slate-500 focus:outline-none focus:border-blue-500/50 focus:ring-1 focus:ring-blue-500/20 transition-all"
               />
             </div>
           </div>
@@ -393,7 +393,7 @@ export function HotelModal({ hotelId, onClose }: HotelModalProps) {
                 setFormData({ ...formData, description: e.target.value })
               }
               placeholder={t('admin.hotels.modal.descriptionPlaceholder')}
-              className="w-full px-4 py-3 bg-slate-800/50 border border-slate-700 rounded-xl text-slate-200 placeholder-slate-500 focus:outline-none focus:border-amber-500/50 focus:ring-1 focus:ring-amber-500/20 transition-all"
+              className="w-full px-4 py-3 bg-slate-800/50 border border-slate-700 rounded-xl text-slate-200 placeholder-slate-500 focus:outline-none focus:border-blue-500/50 focus:ring-1 focus:ring-blue-500/20 transition-all"
             />
           </div>
 
@@ -405,7 +405,7 @@ export function HotelModal({ hotelId, onClose }: HotelModalProps) {
               type="file"
               accept="image/*"
               onChange={handleImageSelection}
-              className="w-full px-4 py-2.5 bg-slate-800/50 border border-slate-700 rounded-xl text-slate-300 file:mr-3 file:px-3 file:py-1.5 file:border-0 file:rounded-lg file:bg-amber-500/20 file:text-amber-300 file:cursor-pointer"
+              className="w-full px-4 py-2.5 bg-slate-800/50 border border-slate-700 rounded-xl text-slate-300 file:mr-3 file:px-3 file:py-1.5 file:border-0 file:rounded-lg file:bg-blue-500/20 file:text-blue-300 file:cursor-pointer"
             />
             <p className="text-xs text-slate-500 mt-2">
               {t('common.maxSize10mb')}
@@ -446,7 +446,7 @@ export function HotelModal({ hotelId, onClose }: HotelModalProps) {
                   setFormData({ ...formData, externalId: e.target.value })
                 }
                 placeholder={t('admin.hotels.modal.externalIdPlaceholder')}
-                className="w-full px-4 py-3 bg-slate-800/50 border border-slate-700 rounded-xl text-slate-200 placeholder-slate-500 focus:outline-none focus:border-amber-500/50 focus:ring-1 focus:ring-amber-500/20 transition-all"
+                className="w-full px-4 py-3 bg-slate-800/50 border border-slate-700 rounded-xl text-slate-200 placeholder-slate-500 focus:outline-none focus:border-blue-500/50 focus:ring-1 focus:ring-blue-500/20 transition-all"
               />
             </div>
             <div>
@@ -461,7 +461,7 @@ export function HotelModal({ hotelId, onClose }: HotelModalProps) {
                     category: e.target.value as HotelCategory | '',
                   })
                 }
-                className="w-full px-4 py-3 bg-slate-800/50 border border-slate-700 rounded-xl text-slate-200 focus:outline-none focus:border-amber-500/50 focus:ring-1 focus:ring-amber-500/20 transition-all"
+                className="w-full px-4 py-3 bg-slate-800/50 border border-slate-700 rounded-xl text-slate-200 focus:outline-none focus:border-blue-500/50 focus:ring-1 focus:ring-blue-500/20 transition-all"
               >
                 <option value="">
                   {t('admin.hotels.modal.selectCategory')}
@@ -487,7 +487,7 @@ export function HotelModal({ hotelId, onClose }: HotelModalProps) {
                   setFormData({ ...formData, stateProvince: e.target.value })
                 }
                 placeholder={t('admin.hotels.modal.stateProvincePlaceholder')}
-                className="w-full px-4 py-3 bg-slate-800/50 border border-slate-700 rounded-xl text-slate-200 placeholder-slate-500 focus:outline-none focus:border-amber-500/50 focus:ring-1 focus:ring-amber-500/20 transition-all"
+                className="w-full px-4 py-3 bg-slate-800/50 border border-slate-700 rounded-xl text-slate-200 placeholder-slate-500 focus:outline-none focus:border-blue-500/50 focus:ring-1 focus:ring-blue-500/20 transition-all"
               />
             </div>
             <div>
@@ -501,7 +501,7 @@ export function HotelModal({ hotelId, onClose }: HotelModalProps) {
                   setFormData({ ...formData, postalCode: e.target.value })
                 }
                 placeholder={t('admin.hotels.modal.postalCodePlaceholder')}
-                className="w-full px-4 py-3 bg-slate-800/50 border border-slate-700 rounded-xl text-slate-200 placeholder-slate-500 focus:outline-none focus:border-amber-500/50 focus:ring-1 focus:ring-amber-500/20 transition-all"
+                className="w-full px-4 py-3 bg-slate-800/50 border border-slate-700 rounded-xl text-slate-200 placeholder-slate-500 focus:outline-none focus:border-blue-500/50 focus:ring-1 focus:ring-blue-500/20 transition-all"
               />
             </div>
           </div>
@@ -521,7 +521,7 @@ export function HotelModal({ hotelId, onClose }: HotelModalProps) {
                   setFormData({ ...formData, rating: e.target.value })
                 }
                 placeholder={t('admin.hotels.modal.ratingPlaceholder')}
-                className="w-full px-4 py-3 bg-slate-800/50 border border-slate-700 rounded-xl text-slate-200 placeholder-slate-500 focus:outline-none focus:border-amber-500/50 focus:ring-1 focus:ring-amber-500/20 transition-all"
+                className="w-full px-4 py-3 bg-slate-800/50 border border-slate-700 rounded-xl text-slate-200 placeholder-slate-500 focus:outline-none focus:border-blue-500/50 focus:ring-1 focus:ring-blue-500/20 transition-all"
               />
             </div>
             <div>
@@ -537,7 +537,7 @@ export function HotelModal({ hotelId, onClose }: HotelModalProps) {
                     lastRenovationDate: e.target.value,
                   })
                 }
-                className="w-full px-4 py-3 bg-slate-800/50 border border-slate-700 rounded-xl text-slate-200 focus:outline-none focus:border-amber-500/50 focus:ring-1 focus:ring-amber-500/20 transition-all"
+                className="w-full px-4 py-3 bg-slate-800/50 border border-slate-700 rounded-xl text-slate-200 focus:outline-none focus:border-blue-500/50 focus:ring-1 focus:ring-blue-500/20 transition-all"
               />
             </div>
           </div>
@@ -553,7 +553,7 @@ export function HotelModal({ hotelId, onClose }: HotelModalProps) {
                 setFormData({ ...formData, tags: e.target.value })
               }
               placeholder={t('admin.hotels.modal.tagsPlaceholder')}
-              className="w-full px-4 py-3 bg-slate-800/50 border border-slate-700 rounded-xl text-slate-200 placeholder-slate-500 focus:outline-none focus:border-amber-500/50 focus:ring-1 focus:ring-amber-500/20 transition-all"
+              className="w-full px-4 py-3 bg-slate-800/50 border border-slate-700 rounded-xl text-slate-200 placeholder-slate-500 focus:outline-none focus:border-blue-500/50 focus:ring-1 focus:ring-blue-500/20 transition-all"
             />
           </div>
 
@@ -568,7 +568,7 @@ export function HotelModal({ hotelId, onClose }: HotelModalProps) {
                 setFormData({ ...formData, metadata: e.target.value })
               }
               placeholder={t('admin.hotels.modal.metadataPlaceholder')}
-              className="w-full px-4 py-3 bg-slate-800/50 border border-slate-700 rounded-xl text-slate-200 placeholder-slate-500 focus:outline-none focus:border-amber-500/50 focus:ring-1 focus:ring-amber-500/20 transition-all"
+              className="w-full px-4 py-3 bg-slate-800/50 border border-slate-700 rounded-xl text-slate-200 placeholder-slate-500 focus:outline-none focus:border-blue-500/50 focus:ring-1 focus:ring-blue-500/20 transition-all"
             />
           </div>
 
@@ -580,7 +580,7 @@ export function HotelModal({ hotelId, onClose }: HotelModalProps) {
               onChange={(e) =>
                 setFormData({ ...formData, parkingIncluded: e.target.checked })
               }
-              className="h-4 w-4 rounded border-slate-600 bg-slate-800 text-amber-500 focus:ring-amber-500/40"
+              className="h-4 w-4 rounded border-slate-600 bg-slate-800 text-blue-500 focus:ring-blue-500/40"
             />
             <label htmlFor="parkingIncluded" className="text-sm text-slate-300">
               {t('admin.hotels.modal.parkingIncluded')}
@@ -598,7 +598,7 @@ export function HotelModal({ hotelId, onClose }: HotelModalProps) {
             <button
               type="submit"
               disabled={loading || uploadingImage}
-              className="flex-1 px-4 py-3 bg-gradient-to-r from-amber-500 to-amber-600 text-white font-medium rounded-xl hover:from-amber-600 hover:to-amber-700 transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed"
+              className="flex-1 px-4 py-3 bg-gradient-to-r from-blue-500 to-blue-600 text-white font-medium rounded-xl hover:from-blue-600 hover:to-blue-700 transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed"
             >
               {loading || uploadingImage
                 ? uploadingImage

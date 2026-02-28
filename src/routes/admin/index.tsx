@@ -54,8 +54,8 @@ function AdminDashboard() {
       label: t('admin.stats.totalHotels'),
       value: totalHotels.toString(),
       icon: Hotel,
-      color: 'from-amber-500 to-amber-600',
-      shadowColor: 'shadow-amber-500/20',
+      color: 'from-blue-500 to-blue-600',
+      shadowColor: 'shadow-blue-500/20',
     },
     {
       label: t('admin.stats.totalRooms'),
@@ -189,11 +189,11 @@ function AdminDashboard() {
             >
               <div className="flex items-start justify-between mb-4">
                 <div className="w-12 h-12 rounded-xl bg-slate-800 flex items-center justify-center group-hover:bg-slate-700 transition-colors">
-                  <action.icon className="w-6 h-6 text-slate-400 group-hover:text-amber-400 transition-colors" />
+                  <action.icon className="w-6 h-6 text-slate-400 group-hover:text-blue-400 transition-colors" />
                 </div>
-                <ArrowUpRight className="w-5 h-5 text-slate-600 group-hover:text-amber-400 transition-colors" />
+                <ArrowUpRight className="w-5 h-5 text-slate-600 group-hover:text-blue-400 transition-colors" />
               </div>
-              <h3 className="font-semibold text-slate-200 mb-1 group-hover:text-amber-400 transition-colors">
+              <h3 className="font-semibold text-slate-200 mb-1 group-hover:text-blue-400 transition-colors">
                 {action.label}
               </h3>
               <p className="text-sm text-slate-500">{action.description}</p>
@@ -203,13 +203,13 @@ function AdminDashboard() {
       </div>
 
       {/* Info Banner */}
-      <div className="bg-slate-900/50 border border-amber-500/20 rounded-2xl p-6">
+      <div className="bg-slate-900/50 border border-blue-500/20 rounded-2xl p-6">
         <div className="flex items-start gap-4">
-          <div className="w-10 h-10 rounded-xl bg-amber-500/10 flex items-center justify-center flex-shrink-0">
-            <Users className="w-5 h-5 text-amber-400" />
+          <div className="w-10 h-10 rounded-xl bg-blue-500/10 flex items-center justify-center flex-shrink-0">
+            <Users className="w-5 h-5 text-blue-400" />
           </div>
           <div>
-            <h3 className="font-semibold text-amber-400 mb-1">
+            <h3 className="font-semibold text-blue-400 mb-1">
               {t('admin.dashboard.roleAccessTitle')}
             </h3>
             <p className="text-slate-400 text-sm leading-relaxed">

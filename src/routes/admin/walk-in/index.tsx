@@ -202,7 +202,7 @@ function WalkInBookingPage() {
   if (profile === undefined || hotelAssignment === undefined) {
     return (
       <div className="flex items-center justify-center py-20">
-        <div className="animate-spin rounded-full h-8 w-8 border-2 border-amber-500/20 border-t-amber-500"></div>
+        <div className="animate-spin rounded-full h-8 w-8 border-2 border-blue-500/20 border-t-blue-500"></div>
       </div>
     )
   }
@@ -237,9 +237,9 @@ function WalkInBookingPage() {
         </div>
       )}
 
-      <div className="bg-slate-900/50 border border-slate-800/50 rounded-2xl p-6">
+      <div className="walkin-section-card bg-slate-900/50 border border-slate-800/50 rounded-2xl p-6">
         <div className="flex items-center gap-2 mb-4">
-          <Search className="w-5 h-5 text-amber-400" />
+          <Search className="w-5 h-5 text-blue-400" />
           <h2 className="text-lg font-semibold text-slate-100">
             {t('admin.walkIn.step1')}
           </h2>
@@ -250,7 +250,7 @@ function WalkInBookingPage() {
             value={searchTerm}
             onChange={(e) => setSearchTerm(e.target.value)}
             placeholder={t('admin.walkIn.searchPlaceholder')}
-            className="flex-1 px-4 py-3 bg-slate-800/50 border border-slate-700 rounded-xl text-slate-200 focus:outline-none focus:border-amber-500/50"
+            className="flex-1 px-4 py-3 bg-slate-800/50 border border-slate-700 rounded-xl text-slate-200 focus:outline-none focus:border-blue-500/50"
           />
           <button
             type="button"
@@ -271,9 +271,9 @@ function WalkInBookingPage() {
                   setSelectedGuest(item.profile)
                   setBookingError('')
                 }}
-                className={`w-full text-left p-3 rounded-xl border transition-all ${
+                className={`walkin-selectable-card light-hover-surface w-full text-left p-3 rounded-xl border transition-all ${
                   selectedGuest?._id === item.profile._id
-                    ? 'border-amber-500/40 bg-amber-500/10'
+                    ? 'border-blue-500/40 bg-blue-500/10'
                     : 'border-slate-700 bg-slate-800/30 hover:border-slate-600'
                 }`}
               >
@@ -298,25 +298,25 @@ function WalkInBookingPage() {
               value={guestName}
               onChange={(e) => setGuestName(e.target.value)}
               placeholder={t('admin.walkIn.guestName')}
-              className="px-4 py-3 bg-slate-800/50 border border-slate-700 rounded-xl text-slate-200 focus:outline-none focus:border-amber-500/50"
+              className="px-4 py-3 bg-slate-800/50 border border-slate-700 rounded-xl text-slate-200 focus:outline-none focus:border-blue-500/50"
             />
             <input
               value={guestPhone}
               onChange={(e) => setGuestPhone(e.target.value)}
               placeholder={t('admin.walkIn.phone')}
-              className="px-4 py-3 bg-slate-800/50 border border-slate-700 rounded-xl text-slate-200 focus:outline-none focus:border-amber-500/50"
+              className="px-4 py-3 bg-slate-800/50 border border-slate-700 rounded-xl text-slate-200 focus:outline-none focus:border-blue-500/50"
             />
             <input
               value={guestEmail}
               onChange={(e) => setGuestEmail(e.target.value)}
               placeholder={t('admin.walkIn.email')}
               type="email"
-              className="px-4 py-3 bg-slate-800/50 border border-slate-700 rounded-xl text-slate-200 focus:outline-none focus:border-amber-500/50"
+              className="px-4 py-3 bg-slate-800/50 border border-slate-700 rounded-xl text-slate-200 focus:outline-none focus:border-blue-500/50"
             />
             <button
               type="button"
               onClick={handleCreateOrUseGuest}
-              className="md:col-span-3 px-4 py-3 bg-amber-500/15 text-amber-300 rounded-xl border border-amber-500/30 hover:bg-amber-500/20"
+              className="md:col-span-3 px-4 py-3 bg-blue-500/15 text-blue-300 rounded-xl border border-blue-500/30 hover:bg-blue-500/20"
             >
               {t('admin.walkIn.createOrReuseGuest')}
             </button>
@@ -339,9 +339,9 @@ function WalkInBookingPage() {
         )}
       </div>
 
-      <div className="bg-slate-900/50 border border-slate-800/50 rounded-2xl p-6">
+      <div className="walkin-section-card bg-slate-900/50 border border-slate-800/50 rounded-2xl p-6">
         <div className="flex items-center gap-2 mb-4">
-          <Calendar className="w-5 h-5 text-amber-400" />
+          <Calendar className="w-5 h-5 text-blue-400" />
           <h2 className="text-lg font-semibold text-slate-100">
             {t('admin.walkIn.step2')}
           </h2>
@@ -352,13 +352,13 @@ function WalkInBookingPage() {
             type="date"
             value={checkIn}
             onChange={(e) => setCheckIn(e.target.value)}
-            className="px-4 py-3 bg-slate-800/50 border border-slate-700 rounded-xl text-slate-200 focus:outline-none focus:border-amber-500/50"
+            className="hotel-date-input px-4 py-3 bg-slate-800/50 border border-slate-700 rounded-xl text-slate-200 focus:outline-none focus:border-blue-500/50"
           />
           <input
             type="date"
             value={checkOut}
             onChange={(e) => setCheckOut(e.target.value)}
-            className="px-4 py-3 bg-slate-800/50 border border-slate-700 rounded-xl text-slate-200 focus:outline-none focus:border-amber-500/50"
+            className="hotel-date-input px-4 py-3 bg-slate-800/50 border border-slate-700 rounded-xl text-slate-200 focus:outline-none focus:border-blue-500/50"
           />
         </div>
 
@@ -366,7 +366,7 @@ function WalkInBookingPage() {
           <p className="text-slate-500">{t('admin.walkIn.selectGuestFirst')}</p>
         ) : availableRooms === undefined ? (
           <div className="flex items-center justify-center py-8">
-            <div className="animate-spin rounded-full h-7 w-7 border-2 border-amber-500/20 border-t-amber-500"></div>
+            <div className="animate-spin rounded-full h-7 w-7 border-2 border-blue-500/20 border-t-blue-500"></div>
           </div>
         ) : availableRooms.length === 0 ? (
           <p className="text-slate-500">{t('admin.walkIn.noRooms')}</p>
@@ -377,9 +377,9 @@ function WalkInBookingPage() {
                 key={room._id}
                 type="button"
                 onClick={() => setSelectedRoomId(room._id)}
-                className={`text-left p-4 rounded-xl border transition-all ${
+                className={`walkin-selectable-card light-hover-surface text-left p-4 rounded-xl border transition-all ${
                   selectedRoomId === room._id
-                    ? 'border-amber-500/40 bg-amber-500/10'
+                    ? 'border-blue-500/40 bg-blue-500/10'
                     : 'border-slate-700 bg-slate-800/30 hover:border-slate-600'
                 }`}
               >
@@ -387,7 +387,7 @@ function WalkInBookingPage() {
                   {t('hotel.room')} {room.roomNumber}
                 </p>
                 <p className="text-slate-400 text-sm capitalize">{room.type}</p>
-                <p className="text-amber-300 text-sm mt-2">
+                <p className="text-blue-300 text-sm mt-2">
                   ${(room.basePrice / 100).toFixed(2)} / {t('hotel.night')}
                 </p>
               </button>
@@ -396,9 +396,9 @@ function WalkInBookingPage() {
         )}
       </div>
 
-      <div className="bg-slate-900/50 border border-slate-800/50 rounded-2xl p-6">
+      <div className="walkin-section-card bg-slate-900/50 border border-slate-800/50 rounded-2xl p-6">
         <div className="flex items-center gap-2 mb-4">
-          <CheckCircle className="w-5 h-5 text-amber-400" />
+          <CheckCircle className="w-5 h-5 text-blue-400" />
           <h2 className="text-lg font-semibold text-slate-100">
             {t('admin.walkIn.step3')}
           </h2>
@@ -410,9 +410,9 @@ function WalkInBookingPage() {
               key={pkg.type}
               type="button"
               onClick={() => setSelectedPackage(pkg.type)}
-              className={`text-left p-3 rounded-xl border transition-all ${
+              className={`walkin-selectable-card light-hover-surface text-left p-3 rounded-xl border transition-all ${
                 selectedPackage === pkg.type
-                  ? 'border-amber-500/40 bg-amber-500/10'
+                  ? 'border-blue-500/40 bg-blue-500/10'
                   : 'border-slate-700 bg-slate-800/30 hover:border-slate-600'
               }`}
             >
@@ -430,7 +430,7 @@ function WalkInBookingPage() {
           value={specialRequests}
           onChange={(e) => setSpecialRequests(e.target.value)}
           placeholder={t('bookingModal.specialRequestsPlaceholder')}
-          className="w-full px-4 py-3 bg-slate-800/50 border border-slate-700 rounded-xl text-slate-200 focus:outline-none focus:border-amber-500/50 mb-4"
+          className="w-full px-4 py-3 bg-slate-800/50 border border-slate-700 rounded-xl text-slate-200 focus:outline-none focus:border-blue-500/50 mb-4"
           rows={3}
         />
 
@@ -450,7 +450,7 @@ function WalkInBookingPage() {
           <p className="text-slate-300">
             {t('admin.walkIn.nights')}: {nights}
           </p>
-          <p className="text-amber-300 font-semibold mt-2">
+          <p className="walkin-total-text text-blue-300 font-semibold mt-2">
             {t('booking.total')}: ${(totalPrice / 100).toFixed(2)}
           </p>
         </div>
@@ -459,7 +459,7 @@ function WalkInBookingPage() {
           type="button"
           disabled={!selectedGuest || !selectedRoom || submitting}
           onClick={handleConfirmBooking}
-          className="px-5 py-3 bg-gradient-to-r from-amber-500 to-amber-600 text-white font-medium rounded-xl hover:from-amber-600 hover:to-amber-700 transition-all disabled:opacity-50 disabled:cursor-not-allowed"
+          className="px-5 py-3 bg-gradient-to-r from-blue-500 to-blue-600 text-white font-medium rounded-xl hover:from-blue-600 hover:to-blue-700 transition-all disabled:opacity-50 disabled:cursor-not-allowed"
         >
           {submitting
             ? t('admin.walkIn.booking')

@@ -30,7 +30,7 @@ export function BookingsFilters({
           onClick={() => onFilterChange(filter.value)}
           className={`px-4 py-2 rounded-lg text-sm font-medium transition-colors ${
             statusFilter === filter.value
-              ? 'bg-amber-500 text-slate-900'
+              ? 'bg-blue-500 text-slate-900'
               : 'bg-slate-800 text-slate-400 hover:bg-slate-700 hover:text-white'
           }`}
         >

@@ -95,7 +95,7 @@ export function AssignModal({ userId, onClose }: AssignModalProps) {
               onChange={(e) =>
                 setSelectedHotelId(e.target.value as Id<'hotels'>)
               }
-              className="w-full px-4 py-3 bg-slate-950 border border-slate-800 rounded-xl text-slate-200 focus:outline-none focus:border-amber-500/50"
+              className="w-full px-4 py-3 bg-slate-950 border border-slate-800 rounded-xl text-slate-200 focus:outline-none focus:border-blue-500/50"
               required
             >
               <option value="">
@@ -165,7 +165,7 @@ export function AssignModal({ userId, onClose }: AssignModalProps) {
             <button
               type="submit"
               disabled={!selectedHotelId || isSubmitting}
-              className="px-5 py-2.5 rounded-xl bg-gradient-to-r from-amber-500 to-amber-600 text-white font-medium disabled:opacity-50 disabled:cursor-not-allowed"
+              className="px-5 py-2.5 rounded-xl bg-gradient-to-r from-blue-500 to-blue-600 text-white font-medium disabled:opacity-50 disabled:cursor-not-allowed"
             >
               {isSubmitting
                 ? t('admin.users.assignModal.assigning')

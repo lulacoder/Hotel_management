@@ -62,8 +62,8 @@ function AdminLayout() {
     return (
       <div className="flex min-h-screen items-center justify-center bg-slate-950">
         <div className="relative">
-          <div className="animate-spin rounded-full h-12 w-12 border-2 border-amber-500/20 border-t-amber-500"></div>
-          <div className="absolute inset-0 animate-ping rounded-full h-12 w-12 border border-amber-500/10"></div>
+          <div className="animate-spin rounded-full h-12 w-12 border-2 border-blue-500/20 border-t-blue-500"></div>
+          <div className="absolute inset-0 animate-ping rounded-full h-12 w-12 border border-blue-500/10"></div>
         </div>
       </div>
     )
@@ -77,8 +77,8 @@ function AdminLayout() {
     return (
       <div className="flex min-h-screen items-center justify-center bg-slate-950">
         <div className="relative">
-          <div className="animate-spin rounded-full h-12 w-12 border-2 border-amber-500/20 border-t-amber-500"></div>
-          <div className="absolute inset-0 animate-ping rounded-full h-12 w-12 border border-amber-500/10"></div>
+          <div className="animate-spin rounded-full h-12 w-12 border-2 border-blue-500/20 border-t-blue-500"></div>
+          <div className="absolute inset-0 animate-ping rounded-full h-12 w-12 border border-blue-500/10"></div>
         </div>
       </div>
     )
@@ -167,7 +167,7 @@ function AdminLayout() {
       >
         <Menu
           size={22}
-          className="text-slate-300 group-hover:text-amber-400 transition-colors"
+          className="text-slate-300 group-hover:text-blue-400 transition-colors"
         />
       </button>
 
@@ -179,11 +179,11 @@ function AdminLayout() {
       >
         <div className="flex items-center justify-between p-5 border-b border-slate-800/50">
           <div className="flex items-center gap-3">
-            <div className="h-10 rounded-xl bg-slate-950/70 border border-amber-500/30 px-2 flex items-center justify-center shadow-lg shadow-amber-500/20">
+            <div className="h-10 rounded-xl bg-slate-950/70 border border-blue-500/30 px-1 flex items-center justify-center shadow-lg shadow-blue-500/20">
               <img
                 src="/logo.png"
                 alt="Luxe Hotels"
-                className="h-7 w-auto object-contain"
+                className="h-8 w-auto object-contain logo-tight"
               />
             </div>
             <div>
@@ -224,12 +224,12 @@ function AdminLayout() {
                 onClick={() => setMobileMenuOpen(false)}
                 className={`flex items-center gap-3 px-4 py-3 rounded-xl font-medium transition-all duration-200 ${
                   active
-                    ? 'bg-amber-500/10 text-amber-400 border border-amber-500/20'
+                    ? 'bg-blue-500/10 text-blue-400 border border-blue-500/20'
                     : 'text-slate-400 hover:bg-slate-800/50 hover:text-slate-200 border border-transparent'
                 }`}
               >
                 <item.icon
-                  className={`w-5 h-5 ${active ? 'text-amber-400' : ''}`}
+                  className={`w-5 h-5 ${active ? 'text-blue-400' : ''}`}
                 />
                 {item.label}
               </Link>
@@ -271,11 +271,11 @@ function AdminLayout() {
       <aside className="hidden md:flex md:h-dvh w-72 shrink-0 bg-slate-900/50 border-r border-slate-800/50 backdrop-blur-xl flex-col">
         <div className="p-6 border-b border-slate-800/50">
           <div className="flex items-center gap-3">
-            <div className="h-10 rounded-xl bg-slate-950/70 border border-amber-500/30 px-2 flex items-center justify-center shadow-lg shadow-amber-500/20">
+            <div className="h-10 rounded-xl bg-slate-950/70 border border-blue-500/30 px-1 flex items-center justify-center shadow-lg shadow-blue-500/20">
               <img
                 src="/logo.png"
                 alt="Luxe Hotels"
-                className="h-7 w-auto object-contain"
+                className="h-8 w-auto object-contain logo-tight"
               />
             </div>
             <div>
@@ -305,12 +305,12 @@ function AdminLayout() {
                 to={item.to}
                 className={`flex items-center gap-3 px-4 py-3 rounded-xl font-medium transition-all duration-200 ${
                   active
-                    ? 'bg-amber-500/10 text-amber-400 border border-amber-500/20'
+                    ? 'bg-blue-500/10 text-blue-400 border border-blue-500/20'
                     : 'text-slate-400 hover:bg-slate-800/50 hover:text-slate-200 border border-transparent'
                 }`}
               >
                 <item.icon
-                  className={`w-5 h-5 ${active ? 'text-amber-400' : ''}`}
+                  className={`w-5 h-5 ${active ? 'text-blue-400' : ''}`}
                 />
                 {item.label}
               </Link>
@@ -351,3 +351,4 @@ function AdminLayout() {
     </div>
   )
 }
+

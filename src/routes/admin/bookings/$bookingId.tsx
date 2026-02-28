@@ -95,16 +95,16 @@ function BookingDetailPage() {
     held: {
       label: t('booking.status.held'),
       icon: Clock,
-      color: 'text-amber-400',
-      bg: 'bg-amber-500/10',
-      border: 'border-amber-500/20',
+      color: 'text-blue-400',
+      bg: 'bg-blue-500/10',
+      border: 'border-blue-500/20',
     },
     pending_payment: {
       label: t('booking.status.pendingPayment'),
       icon: Clock,
-      color: 'text-amber-400',
-      bg: 'bg-amber-500/10',
-      border: 'border-amber-500/20',
+      color: 'text-blue-400',
+      bg: 'bg-blue-500/10',
+      border: 'border-blue-500/20',
     },
     confirmed: {
       label: t('booking.status.confirmed'),
@@ -198,7 +198,7 @@ function BookingDetailPage() {
   if (bookingDetail === undefined) {
     return (
       <div className="flex items-center justify-center py-20">
-        <div className="animate-spin rounded-full h-8 w-8 border-2 border-amber-500/20 border-t-amber-500"></div>
+        <div className="animate-spin rounded-full h-8 w-8 border-2 border-blue-500/20 border-t-blue-500"></div>
       </div>
     )
   }
@@ -447,7 +447,7 @@ function BookingDetailPage() {
                   className={`px-3 py-2 rounded-lg transition-colors text-sm font-medium border ${
                     nextStatus === 'cancelled'
                       ? 'bg-red-500/10 text-red-400 hover:bg-red-500/20 border-red-500/20'
-                      : 'bg-amber-500/10 text-amber-400 hover:bg-amber-500/20 border-amber-500/20'
+                      : 'bg-blue-500/10 text-blue-400 hover:bg-blue-500/20 border-blue-500/20'
                   }`}
                 >
                   {transitionLabel[nextStatus]}

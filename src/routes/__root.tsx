@@ -87,7 +87,7 @@ function RootNotFound() {
       <p className="mt-3 text-slate-400">{t('root.notFoundDescription')}</p>
       <Link
         to="/"
-        className="mt-6 rounded-xl bg-amber-500 px-5 py-2.5 font-semibold text-slate-900 transition-colors hover:bg-amber-400"
+        className="mt-6 rounded-xl bg-blue-500 px-5 py-2.5 font-semibold text-slate-900 transition-colors hover:bg-blue-400"
       >
         {t('root.goHome')}
       </Link>

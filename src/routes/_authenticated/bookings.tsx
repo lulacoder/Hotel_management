@@ -78,7 +78,7 @@ function BookingsPage() {
         {/* Loading State */}
         {isLoading && (
           <div className="flex items-center justify-center py-20">
-            <Loader2 className="w-8 h-8 text-amber-400 animate-spin" />
+            <Loader2 className="w-8 h-8 text-blue-400 animate-spin" />
           </div>
         )}
 
@@ -100,7 +100,7 @@ function BookingsPage() {
             </p>
             <Link
               to="/select-location"
-              className="inline-flex items-center px-6 py-3 bg-amber-500 text-slate-900 font-semibold rounded-xl hover:bg-amber-400 transition-colors"
+              className="inline-flex items-center px-6 py-3 bg-blue-500 text-slate-900 font-semibold rounded-xl hover:bg-blue-400 transition-colors"
             >
               {t('bookings.browseHotels')}
             </Link>

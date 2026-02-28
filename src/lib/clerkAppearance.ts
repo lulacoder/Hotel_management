@@ -15,12 +15,12 @@ export function getClerkAuthAppearance(theme: Theme) {
         dividerText: 'text-slate-500',
         formFieldLabel: 'text-slate-700',
         formFieldInput:
-          'bg-white border-slate-300 text-slate-900 placeholder:text-slate-500 focus:border-amber-500 focus:ring-amber-500/20',
+          'bg-white border-slate-300 text-slate-900 placeholder:text-slate-500 focus:border-blue-500 focus:ring-blue-500/20',
         formButtonPrimary:
-          'bg-gradient-to-r from-amber-500 to-orange-500 hover:from-amber-400 hover:to-orange-400 text-white font-semibold shadow-lg shadow-amber-500/25',
-        footerActionLink: 'text-amber-600 hover:text-amber-500',
+          'bg-gradient-to-r from-blue-500 to-indigo-500 hover:from-blue-400 hover:to-indigo-400 text-white font-semibold shadow-lg shadow-blue-500/25',
+        footerActionLink: 'text-blue-600 hover:text-blue-500',
         identityPreviewText: 'text-slate-700',
-        identityPreviewEditButton: 'text-amber-600',
+        identityPreviewEditButton: 'text-blue-600',
         formFieldInputShowPasswordButton: 'text-slate-500',
         footer: 'hidden',
       },
@@ -40,12 +40,12 @@ export function getClerkAuthAppearance(theme: Theme) {
       dividerText: 'text-slate-500',
       formFieldLabel: 'text-slate-300',
       formFieldInput:
-        'bg-slate-800 border-slate-700 text-white placeholder:text-slate-500 focus:border-amber-500 focus:ring-amber-500/20',
+        'bg-slate-800 border-slate-700 text-white placeholder:text-slate-500 focus:border-blue-500 focus:ring-blue-500/20',
       formButtonPrimary:
-        'bg-gradient-to-r from-amber-500 to-orange-500 hover:from-amber-400 hover:to-orange-400 text-white font-semibold shadow-lg shadow-amber-500/25',
-      footerActionLink: 'text-amber-400 hover:text-amber-300',
+        'bg-gradient-to-r from-blue-500 to-indigo-500 hover:from-blue-400 hover:to-indigo-400 text-white font-semibold shadow-lg shadow-blue-500/25',
+      footerActionLink: 'text-blue-400 hover:text-blue-300',
       identityPreviewText: 'text-slate-300',
-      identityPreviewEditButton: 'text-amber-400',
+      identityPreviewEditButton: 'text-blue-400',
       formFieldInputShowPasswordButton: 'text-slate-400',
       footer: 'hidden',
     },

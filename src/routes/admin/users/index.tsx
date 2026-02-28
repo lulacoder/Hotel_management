@@ -115,7 +115,7 @@ function AdminUsersPage() {
           placeholder={t('admin.users.searchPlaceholder')}
           value={searchQuery}
           onChange={(e) => setSearchQuery(e.target.value)}
-          className="w-full pl-12 pr-4 py-3 bg-slate-900/50 border border-slate-800/50 rounded-xl text-slate-200 placeholder-slate-500 focus:outline-none focus:border-amber-500/50 focus:ring-1 focus:ring-amber-500/20"
+          className="w-full pl-12 pr-4 py-3 bg-slate-900/50 border border-slate-800/50 rounded-xl text-slate-200 placeholder-slate-500 focus:outline-none focus:border-blue-500/50 focus:ring-1 focus:ring-blue-500/20"
         />
       </div>
 
@@ -175,7 +175,7 @@ function AdminUsersPage() {
                       <span
                         className={`inline-flex px-2.5 py-1 rounded-lg text-xs font-medium border ${
                           listedUser.role === 'room_admin' // Highlight room_admin users with a distinct color badge.
-                            ? 'bg-amber-500/10 text-amber-400 border-amber-500/20'
+                            ? 'bg-blue-500/10 text-blue-400 border-blue-500/20'
                             : 'bg-slate-700/40 text-slate-300 border-slate-700'
                         }`}
                       >
@@ -226,7 +226,7 @@ function AdminUsersPage() {
                       ) : (
                         <button
                           onClick={() => setSelectedUserId(listedUser._id)}
-                          className="px-3 py-1.5 rounded-lg text-xs font-medium bg-amber-500/10 text-amber-400 border border-amber-500/20 hover:bg-amber-500/20"
+                          className="px-3 py-1.5 rounded-lg text-xs font-medium bg-blue-500/10 text-blue-400 border border-blue-500/20 hover:bg-blue-500/20"
                         >
                           {t('admin.users.assign')}
                         </button>

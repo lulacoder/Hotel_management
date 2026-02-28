@@ -53,14 +53,14 @@ function StatusBadge({ status }: { status: string }) {
   switch (status) {
     case 'held':
       return (
-        <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-xs font-medium bg-amber-500/20 text-amber-400 border border-amber-500/30">
+        <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-xs font-medium bg-blue-500/20 text-blue-400 border border-blue-500/30">
           <Clock className="w-3 h-3" />
           {t('booking.status.held')}
         </span>
       )
     case 'pending_payment':
       return (
-        <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-xs font-medium bg-amber-500/20 text-amber-400 border border-amber-500/30">
+        <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-xs font-medium bg-blue-500/20 text-blue-400 border border-blue-500/30">
           <Clock className="w-3 h-3" />
           {t('booking.status.pendingPayment')}
         </span>
@@ -144,7 +144,7 @@ export function BookingCard({
           </div>
 
           <div className="flex items-center gap-2 text-slate-300 mb-4">
-            <BedDouble className="w-4 h-4 text-amber-400" />
+            <BedDouble className="w-4 h-4 text-blue-400" />
             <span>
               {roomTypeLabel} - {t('hotel.room')} {room.roomNumber}
             </span>
@@ -189,15 +189,15 @@ export function BookingCard({
             </div>
             <div>
               <span className="text-slate-500 block">{t('booking.total')}</span>
-              <span className="text-amber-400 font-semibold">
+              <span className="text-blue-400 font-semibold">
                 {formatPrice(booking.totalPrice)}
               </span>
             </div>
           </div>
 
           {booking.status === 'held' && booking.holdExpiresAt && (
-            <div className="mt-4 p-3 bg-amber-500/10 border border-amber-500/30 rounded-lg">
-              <div className="flex items-center gap-2 text-amber-400 text-sm">
+            <div className="mt-4 p-3 bg-blue-500/10 border border-blue-500/30 rounded-lg">
+              <div className="flex items-center gap-2 text-blue-400 text-sm">
                 <Clock className="w-4 h-4" />
                 <span>
                   {t('booking.holdExpires', {
@@ -216,7 +216,7 @@ export function BookingCard({
             <Link
               to="/hotels/$hotelId"
               params={{ hotelId: hotel._id }}
-              className="px-4 py-2 bg-amber-500 text-slate-900 font-medium rounded-lg hover:bg-amber-400 transition-colors text-sm"
+              className="px-4 py-2 bg-blue-500 text-slate-900 font-medium rounded-lg hover:bg-blue-400 transition-colors text-sm"
             >
               {t('booking.confirmBooking')}
             </Link>
