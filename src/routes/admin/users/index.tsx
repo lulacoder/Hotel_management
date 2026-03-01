@@ -24,16 +24,13 @@ function AdminUsersPage() {
   const [error, setError] = useState<string | null>(null)
 
   // Fetch user profile to determine role and permissions.
-  const profile = useQuery(
-    api.users.getByClerkId,
-    user?.id ? { clerkUserId: user.id } : 'skip',
-  )
+  const profile = useQuery(api.users.getMe, user?.id ? {} : 'skip')
 
 
   // Get all users with their hotel assignments for display in the user management table.
   const users = useQuery(
     api.hotelStaff.listAllUsers,
-    user?.id ? { clerkUserId: user.id } : 'skip',// Only fetch if we have a logged-in user to determine permissions.
+    user?.id ? {} : 'skip',// Only fetch if we have a logged-in user to determine permissions.
   )
 
   const unassignUser = useMutation(api.hotelStaff.unassign)
@@ -58,7 +55,7 @@ function AdminUsersPage() {
 
     setError(null)
     try {
-      await unassignUser({ clerkUserId: user.id, targetUserId })
+      await unassignUser({ targetUserId })
     } catch (submissionError) {
       setError(
         submissionError instanceof Error

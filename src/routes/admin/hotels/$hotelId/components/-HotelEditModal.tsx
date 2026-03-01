@@ -90,7 +90,6 @@ export function HotelEditModal({ hotelId, onClose }: HotelEditModalProps) {
         setUploadingImage(true)
         nextImageStorageId = await uploadImageToConvex({
           file: selectedImageFile,
-          clerkUserId: user.id,
           generateUploadUrl,
           trackUpload,
         })
@@ -110,7 +109,6 @@ export function HotelEditModal({ hotelId, onClose }: HotelEditModalProps) {
       }
 
       await updateHotel({
-        clerkUserId: user.id,
         hotelId,
         ...formData,
         ...imagePayload,

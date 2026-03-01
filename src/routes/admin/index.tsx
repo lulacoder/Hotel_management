@@ -24,17 +24,12 @@ function AdminDashboard() {
   const { user } = useUser()
   const { t } = useI18n()
   // Fetch user profile to determine role and permissions.
-  const profile = useQuery(
-    api.users.getByClerkId,
-    user?.id ? { clerkUserId: user.id } : 'skip',
-  )
+  const profile = useQuery(api.users.getMe, user?.id ? {} : 'skip')
 
   // Fetch hotel assignment for non-room_admin users to show relevant data.
   const hotelAssignment = useQuery(
-    api.hotelStaff.getByUserId,
-    user?.id && profile?._id // Only fetch if we have both Clerk user ID and Convex user ID from profile.
-      ? { clerkUserId: user.id, userId: profile._id }
-      : 'skip',
+    api.hotelStaff.getMyAssignment,
+    profile ? {} : 'skip',
   )
  
   // If assigned to a hotel, fetch that hotel's details for display in the dashboard.

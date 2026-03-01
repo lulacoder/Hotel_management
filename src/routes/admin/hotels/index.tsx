@@ -33,15 +33,10 @@ function HotelsPage() {
   const [activeMenu, setActiveMenu] = useState<Id<'hotels'> | null>(null)
 
   const hotels = useQuery(api.hotels.list, {})
-  const profile = useQuery(
-    api.users.getByClerkId,
-    user?.id ? { clerkUserId: user.id } : 'skip',
-  )
+  const profile = useQuery(api.users.getMe, user?.id ? {} : 'skip')
   const hotelAssignment = useQuery(
-    api.hotelStaff.getByUserId,
-    user?.id && profile?._id
-      ? { clerkUserId: user.id, userId: profile._id }
-      : 'skip',
+    api.hotelStaff.getMyAssignment,
+    profile ? {} : 'skip',
   )
   const deleteHotel = useMutation(api.hotels.softDelete)
 
@@ -66,7 +61,7 @@ function HotelsPage() {
     if (!user?.id) return
     if (!canAddHotel) return
     if (confirm(t('admin.hotels.confirmDelete'))) {
-      await deleteHotel({ clerkUserId: user.id, hotelId })
+      await deleteHotel({ hotelId })
     }
     setActiveMenu(null)
   }

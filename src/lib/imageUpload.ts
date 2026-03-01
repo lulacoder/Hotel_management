@@ -18,17 +18,13 @@ export function validateImageFile(file: File): string | null {
 
 export async function uploadImageToConvex(params: {
   file: File
-  clerkUserId: string
-  generateUploadUrl: (args: { clerkUserId: string }) => Promise<string>
+  generateUploadUrl: (args: Record<string, never>) => Promise<string>
   trackUpload: (args: {
-    clerkUserId: string
     storageId: Id<'_storage'>
   }) => Promise<null>
 }): Promise<Id<'_storage'>> {
   // Request a specific upload URL from Convex
-  const uploadUrl = await params.generateUploadUrl({
-    clerkUserId: params.clerkUserId,
-  })
+  const uploadUrl = await params.generateUploadUrl({})
 
   // POST the file data to the generated upload URL
   const uploadResponse = await fetch(uploadUrl, {
@@ -50,7 +46,6 @@ export async function uploadImageToConvex(params: {
 
   // Track the upload by linking the storageId to the user
   await params.trackUpload({
-    clerkUserId: params.clerkUserId,
     storageId: payload.storageId,
   })
 

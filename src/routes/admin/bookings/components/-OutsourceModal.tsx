@@ -32,7 +32,6 @@ interface EnrichedBooking {
 
 interface OutsourceModalProps {
   bookingDetail: EnrichedBooking
-  clerkUserId: string
   onClose: () => void
   onSuccess: () => void
 }
@@ -50,7 +49,6 @@ function getErrorMessage(error: unknown, fallbackMessage: string) {
 
 export function OutsourceModal({
   bookingDetail,
-  clerkUserId,
   onClose,
   onSuccess,
 }: OutsourceModalProps) {
@@ -63,12 +61,9 @@ export function OutsourceModal({
 
   const destinationHotels = useQuery(
     (api as any).hotels.listForOutsource,
-    clerkUserId
-      ? {
-          clerkUserId,
-          excludeHotelId: bookingDetail.hotel._id,
-        }
-      : 'skip',
+    {
+      excludeHotelId: bookingDetail.hotel._id,
+    },
   ) as
     | Array<{
         _id: Id<'hotels'>
@@ -92,7 +87,7 @@ export function OutsourceModal({
     bookingDetail.guestProfile?.name || t('admin.bookings.guest')
 
   const handleSubmit = async () => {
-    if (!destinationHotelId || !clerkUserId) {
+    if (!destinationHotelId) {
       return
     }
 
@@ -101,7 +96,6 @@ export function OutsourceModal({
 
     try {
       await outsourceBooking({
-        clerkUserId,
         bookingId: bookingDetail.booking._id,
         destinationHotelId: destinationHotelId as Id<'hotels'>,
       })

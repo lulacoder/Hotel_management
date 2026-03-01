@@ -41,7 +41,6 @@ export function AssignModal({ userId, onClose }: AssignModalProps) {
 
     try {
       await assignUser({
-        clerkUserId: user.id,
         targetUserId: userId,
         hotelId: selectedHotelId,
         role,

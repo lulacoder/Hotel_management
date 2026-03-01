@@ -41,16 +41,11 @@ function WalkInBookingPage() {
   const navigate = useNavigate()
   const { t } = useI18n()
 
-  const profile = useQuery(
-    api.users.getByClerkId,
-    user?.id ? { clerkUserId: user.id } : 'skip',
-  )
+  const profile = useQuery(api.users.getMe, user?.id ? {} : 'skip')
 
   const hotelAssignment = useQuery(
-    api.hotelStaff.getByUserId,
-    user?.id && profile?._id
-      ? { clerkUserId: user.id, userId: profile._id }
-      : 'skip',
+    api.hotelStaff.getMyAssignment,
+    profile ? {} : 'skip',
   )
 
   const [searchTerm, setSearchTerm] = useState('')
@@ -86,7 +81,7 @@ function WalkInBookingPage() {
   const searchResults = useQuery(
     (api as any).guestProfiles.search,
     user?.id && submittedTerm.trim().length >= 2
-      ? { clerkUserId: user.id, searchTerm: submittedTerm }
+      ? { searchTerm: submittedTerm }
       : 'skip',
   ) as
     | Array<{
@@ -152,7 +147,6 @@ function WalkInBookingPage() {
 
     try {
       const guestProfileId = (await createGuest({
-        clerkUserId: user.id,
         name,
         phone: phone || undefined,
         email: email || undefined,
@@ -179,7 +173,6 @@ function WalkInBookingPage() {
 
     try {
       await createWalkInBooking({
-        clerkUserId: user.id,
         guestProfileId: selectedGuest._id,
         roomId: selectedRoom._id,
         checkIn,

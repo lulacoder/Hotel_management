@@ -199,7 +199,6 @@ export const list = query({
 // The list excludes the current hotel from the results and sorts alphabetically by name.
 export const listForOutsource = query({
   args: {
-    clerkUserId: v.string(),
     excludeHotelId: v.id('hotels'),
   },
   returns: v.array(
@@ -211,7 +210,7 @@ export const listForOutsource = query({
     }),
   ),
   handler: async (ctx, args) => {
-    await requireUser(ctx, args.clerkUserId)
+    await requireUser(ctx)
 
     const hotels = await ctx.db
       .query('hotels')
@@ -302,7 +301,6 @@ export const get = query({
 // Logs an audit event for the creation.
 export const create = mutation({
   args: {
-    clerkUserId: v.string(),
     name: v.string(),
     address: v.string(),
     city: v.string(),
@@ -330,7 +328,7 @@ export const create = mutation({
   },
   returns: v.id('hotels'),
   handler: async (ctx, args) => {
-    const admin = await requireAdmin(ctx, args.clerkUserId)
+    const admin = await requireAdmin(ctx)
     const normalizedLocation = normalizeLocation(args)
 
     const now = Date.now()
@@ -383,7 +381,6 @@ export const create = mutation({
 // the hotel image and updating the associated fileUploads status.
 export const update = mutation({
   args: {
-    clerkUserId: v.string(),
     hotelId: v.id('hotels'),
     name: v.optional(v.string()),
     address: v.optional(v.string()),
@@ -413,11 +410,7 @@ export const update = mutation({
   },
   returns: v.null(),
   handler: async (ctx, args) => {
-    const { user } = await requireHotelManagement(
-      ctx,
-      args.clerkUserId,
-      args.hotelId,
-    )
+    const { user } = await requireHotelManagement(ctx, args.hotelId)
 
     const hotel = await ctx.db.get(args.hotelId)
     if (!hotel) {
@@ -535,16 +528,11 @@ export const update = mutation({
 // Logs an audit event recording the soft deletion.
 export const softDelete = mutation({
   args: {
-    clerkUserId: v.string(),
     hotelId: v.id('hotels'),
   },
   returns: v.null(),
   handler: async (ctx, args) => {
-    const { user } = await requireHotelManagement(
-      ctx,
-      args.clerkUserId,
-      args.hotelId,
-    )
+    const { user } = await requireHotelManagement(ctx, args.hotelId)
 
     const hotel = await ctx.db.get(args.hotelId)
     if (!hotel) {
@@ -583,16 +571,11 @@ export const softDelete = mutation({
 // Logs an audit event recording the restoration.
 export const restore = mutation({
   args: {
-    clerkUserId: v.string(),
     hotelId: v.id('hotels'),
   },
   returns: v.null(),
   handler: async (ctx, args) => {
-    const { user } = await requireHotelManagement(
-      ctx,
-      args.clerkUserId,
-      args.hotelId,
-    )
+    const { user } = await requireHotelManagement(ctx, args.hotelId)
 
     const hotel = await ctx.db.get(args.hotelId)
     if (!hotel) {

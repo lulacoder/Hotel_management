@@ -38,21 +38,16 @@ function BookingDetailPage() {
   const { t } = useI18n()
   const [showOutsourceModal, setShowOutsourceModal] = useState(false)
 
-  const profile = useQuery(
-    api.users.getByClerkId,
-    user?.id ? { clerkUserId: user.id } : 'skip',
-  )
+  const profile = useQuery(api.users.getMe, user?.id ? {} : 'skip')
 
   const hotelAssignment = useQuery(
-    api.hotelStaff.getByUserId,
-    user?.id && profile?._id
-      ? { clerkUserId: user.id, userId: profile._id }
-      : 'skip',
+    api.hotelStaff.getMyAssignment,
+    profile ? {} : 'skip',
   )
 
   const bookingDetail = useQuery(
     api.bookings.getEnriched,
-    user?.id ? { clerkUserId: user.id, bookingId: typedBookingId } : 'skip',
+    user?.id ? { bookingId: typedBookingId } : 'skip',
   )
   const outsourcedToHotel = useQuery(
     api.hotels.get,
@@ -167,7 +162,6 @@ function BookingDetailPage() {
   ) => {
     if (!user?.id) return
     await updateBookingStatus({
-      clerkUserId: user.id,
       bookingId: typedBookingId,
       nextStatus,
     })
@@ -175,19 +169,19 @@ function BookingDetailPage() {
 
   const handleAcceptCashPayment = async () => {
     if (!user?.id) return
-    await acceptCashPayment({ clerkUserId: user.id, bookingId: typedBookingId })
+    await acceptCashPayment({ bookingId: typedBookingId })
   }
 
   const handleVerifyPayment = async () => {
     if (!user?.id) return
     if (!window.confirm(t('admin.bookings.confirmApprovePayment'))) return
-    await verifyPayment({ clerkUserId: user.id, bookingId: typedBookingId })
+    await verifyPayment({ bookingId: typedBookingId })
   }
 
   const handleRejectPayment = async () => {
     if (!user?.id) return
     if (!window.confirm(t('admin.bookings.confirmRejectPayment'))) return
-    await rejectPayment({ clerkUserId: user.id, bookingId: typedBookingId })
+    await rejectPayment({ bookingId: typedBookingId })
   }
 
   const handleCopyTransactionId = async () => {
@@ -461,7 +455,6 @@ function BookingDetailPage() {
       {showOutsourceModal && bookingDetail && (
         <OutsourceModal
           bookingDetail={bookingDetail}
-          clerkUserId={user?.id || ''}
           onClose={() => setShowOutsourceModal(false)}
           onSuccess={() => setShowOutsourceModal(false)}
         />

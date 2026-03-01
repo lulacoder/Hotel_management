@@ -32,16 +32,11 @@ function PostLoginPage() {
       ? redirectParam
       : null
 
-  const profile = useQuery(
-    api.users.getByClerkId,
-    user?.id ? { clerkUserId: user.id } : 'skip',
-  )
+  const profile = useQuery(api.users.getMe, user?.id ? {} : 'skip')
 
   const hotelAssignment = useQuery(
-    api.hotelStaff.getByUserId,
-    user?.id && profile?._id
-      ? { clerkUserId: user.id, userId: profile._id }
-      : 'skip',
+    api.hotelStaff.getMyAssignment,
+    profile ? {} : 'skip',
   )
 
   useEffect(() => {
@@ -76,7 +71,7 @@ function PostLoginPage() {
       // Wait a bit and check again (handled by Convex reactivity)
       console.log('Waiting for user profile to be created...')
     }
-  }, [isClerkLoaded, user, profile, hotelAssignment, navigate, redirectTarget])
+  }, [isClerkLoaded, user, profile, hotelAssignment, navigate, redirectTarget])// this effect runs whenever any of the dependencies change, which includes the loading states and query results. It ensures that the user is redirected to the appropriate page based on their role and hotel assignment once all necessary data is available.
 
   return (
     <div className="flex min-h-screen items-center justify-center bg-gradient-to-br from-blue-50 to-indigo-100">

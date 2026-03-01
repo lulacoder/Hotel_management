@@ -162,12 +162,11 @@ const linkedUserSummaryValidator = v.object({
 // assigned to the hotel where the booking was made.
 export const get = query({
   args: {
-    clerkUserId: v.string(),
     bookingId: v.id('bookings'),
   },
   returns: v.union(bookingValidator, v.null()),
   handler: async (ctx, args) => {
-    const user = await requireUser(ctx, args.clerkUserId)
+    const user = await requireUser(ctx)
     const booking = await ctx.db.get(args.bookingId)
 
     if (!booking) {
@@ -195,13 +194,12 @@ export const get = query({
 // Optionally filters results by booking status.
 export const getByUser = query({
   args: {
-    clerkUserId: v.string(),
     userId: v.optional(v.id('users')), // Admin can query for any user
     status: v.optional(bookingStatusValidator),
   },
   returns: v.array(bookingValidator),
   handler: async (ctx, args) => {
-    const user = await requireUser(ctx, args.clerkUserId)
+    const user = await requireUser(ctx)
 
     // Determine which user's bookings to fetch
     let targetUserId = user._id
@@ -237,7 +235,6 @@ export const getByUser = query({
 // Optionally filters by booking status.
 export const getByHotel = query({
   args: {
-    clerkUserId: v.string(),
     hotelId: v.optional(v.id('hotels')),
     status: v.optional(bookingStatusValidator),
   },
@@ -250,9 +247,9 @@ export const getByHotel = query({
   ),
   handler: async (ctx, args) => {
     if (args.hotelId !== undefined) {
-      await requireHotelAccess(ctx, args.clerkUserId, args.hotelId)
+      await requireHotelAccess(ctx, args.hotelId)
     } else {
-      const user = await requireUser(ctx, args.clerkUserId)
+      const user = await requireUser(ctx)
       if (user.role !== 'room_admin') {
         throw new ConvexError({
           code: 'FORBIDDEN',
@@ -314,7 +311,6 @@ export const getByHotel = query({
 // that owns the room. Optionally filters by booking status.
 export const getByRoom = query({
   args: {
-    clerkUserId: v.string(),
     roomId: v.id('rooms'),
     status: v.optional(bookingStatusValidator),
   },
@@ -328,7 +324,7 @@ export const getByRoom = query({
       })
     }
 
-    await requireHotelAccess(ctx, args.clerkUserId, room.hotelId)
+    await requireHotelAccess(ctx, room.hotelId)
 
     let bookings = await ctx.db
       .query('bookings')
@@ -352,7 +348,6 @@ export const getByRoom = query({
 // based on the room's base price and selected package. Logs the creation as an audit event.
 export const holdRoom = mutation({
   args: {
-    clerkUserId: v.string(),
     roomId: v.id('rooms'),
     checkIn: v.string(),
     checkOut: v.string(),
@@ -364,7 +359,7 @@ export const holdRoom = mutation({
   },
   returns: v.id('bookings'),
   handler: async (ctx, args) => {
-    const customer = await requireCustomer(ctx, args.clerkUserId)
+    const customer = await requireCustomer(ctx)
 
     // Validate dates
     const { nights } = validateBookingDates(args.checkIn, args.checkOut)
@@ -493,7 +488,6 @@ export const holdRoom = mutation({
 // Logs the creation as an audit event.
 export const walkInBooking = mutation({
   args: {
-    clerkUserId: v.string(),
     guestProfileId: v.id('guestProfiles'),
     roomId: v.id('rooms'),
     checkIn: v.string(),
@@ -504,7 +498,7 @@ export const walkInBooking = mutation({
   },
   returns: v.id('bookings'),
   handler: async (ctx, args) => {
-    const user = await requireUser(ctx, args.clerkUserId)
+    const user = await requireUser(ctx)
 
     const assignment = await getHotelAssignment(ctx, user._id)
     const isAllowedStaff =
@@ -646,12 +640,11 @@ export const walkInBooking = mutation({
 // placeholder for payment integration. Logs the status change as an audit event.
 export const confirmBooking = mutation({
   args: {
-    clerkUserId: v.string(),
     bookingId: v.id('bookings'),
   },
   returns: v.null(),
   handler: async (ctx, args) => {
-    const customer = await requireCustomer(ctx, args.clerkUserId)
+    const customer = await requireCustomer(ctx)
 
     const booking = await ctx.db.get(args.bookingId)
     if (!booking) {
@@ -711,14 +704,13 @@ export const confirmBooking = mutation({
 
 export const submitPaymentProof = mutation({
   args: {
-    clerkUserId: v.string(),
     bookingId: v.id('bookings'),
     transactionId: v.string(),
     nationalIdStorageId: v.id('_storage'),
   },
   returns: v.null(),
   handler: async (ctx, args) => {
-    const customer = await requireCustomer(ctx, args.clerkUserId)
+    const customer = await requireCustomer(ctx)
 
     const booking = await ctx.db.get(args.bookingId)
     if (!booking) {
@@ -809,13 +801,12 @@ export const submitPaymentProof = mutation({
 // states cannot be cancelled. Logs the cancellation with an optional reason.
 export const cancelBooking = mutation({
   args: {
-    clerkUserId: v.string(),
     bookingId: v.id('bookings'),
     reason: v.optional(v.string()),
   },
   returns: v.null(),
   handler: async (ctx, args) => {
-    const user = await requireUser(ctx, args.clerkUserId)
+    const user = await requireUser(ctx)
 
     const booking = await ctx.db.get(args.bookingId)
     if (!booking) {
@@ -881,13 +872,12 @@ export const cancelBooking = mutation({
 // confirming a held booking. Logs the status change as an audit event.
 export const updateStatus = mutation({
   args: {
-    clerkUserId: v.string(),
     bookingId: v.id('bookings'),
     nextStatus: bookingStatusValidator,
   },
   returns: v.null(),
   handler: async (ctx, args) => {
-    const user = await requireUser(ctx, args.clerkUserId)
+    const user = await requireUser(ctx)
 
     const booking = await ctx.db.get(args.bookingId)
     if (!booking) {
@@ -971,12 +961,11 @@ export const updateStatus = mutation({
 // Logs the payment event as an audit record.
 export const acceptCashPayment = mutation({
   args: {
-    clerkUserId: v.string(),
     bookingId: v.id('bookings'),
   },
   returns: v.null(),
   handler: async (ctx, args) => {
-    const user = await requireUser(ctx, args.clerkUserId)
+    const user = await requireUser(ctx)
 
     const booking = await ctx.db.get(args.bookingId)
     if (!booking) {
@@ -1034,12 +1023,11 @@ export const acceptCashPayment = mutation({
 
 export const verifyPayment = mutation({
   args: {
-    clerkUserId: v.string(),
     bookingId: v.id('bookings'),
   },
   returns: v.null(),
   handler: async (ctx, args) => {
-    const user = await requireUser(ctx, args.clerkUserId)
+    const user = await requireUser(ctx)
 
     const booking = await ctx.db.get(args.bookingId)
     if (!booking) {
@@ -1096,12 +1084,11 @@ export const verifyPayment = mutation({
 
 export const rejectPayment = mutation({
   args: {
-    clerkUserId: v.string(),
     bookingId: v.id('bookings'),
   },
   returns: v.null(),
   handler: async (ctx, args) => {
-    const user = await requireUser(ctx, args.clerkUserId)
+    const user = await requireUser(ctx)
 
     const booking = await ctx.db.get(args.bookingId)
     if (!booking) {
@@ -1174,13 +1161,12 @@ export const rejectPayment = mutation({
 // Logs the outsource action as an audit event.
 export const outsourceBooking = mutation({
   args: {
-    clerkUserId: v.string(),
     bookingId: v.id('bookings'),
     destinationHotelId: v.id('hotels'),
   },
   returns: v.null(),
   handler: async (ctx, args) => {
-    const user = await requireUser(ctx, args.clerkUserId)
+    const user = await requireUser(ctx)
 
     if (user.role === 'room_admin') {
       throw new ConvexError({
@@ -1197,11 +1183,7 @@ export const outsourceBooking = mutation({
       })
     }
 
-    const access = await requireHotelAccess(
-      ctx,
-      args.clerkUserId,
-      booking.hotelId,
-    )
+    const access = await requireHotelAccess(ctx, booking.hotelId)
     const assignment = access.assignment
     const isAllowedRole =
       assignment && ['hotel_admin', 'hotel_cashier'].includes(assignment.role)
@@ -1272,7 +1254,6 @@ export const outsourceBooking = mutation({
 // assigned to the booking's hotel. Returns null if the booking, room, or hotel is not found.
 export const getEnriched = query({
   args: {
-    clerkUserId: v.string(),
     bookingId: v.id('bookings'),
   },
   returns: v.union(
@@ -1301,7 +1282,7 @@ export const getEnriched = query({
     v.null(),
   ),
   handler: async (ctx, args) => {
-    const user = await requireUser(ctx, args.clerkUserId)
+    const user = await requireUser(ctx)
     const booking = await ctx.db.get(args.bookingId)
 
     if (!booking) {
@@ -1369,7 +1350,6 @@ export const getEnriched = query({
 // are silently excluded from the result.
 export const getMyBookingsEnriched = query({
   args: {
-    clerkUserId: v.string(),
     status: v.optional(bookingStatusValidator),
   },
   returns: v.array(
@@ -1394,7 +1374,7 @@ export const getMyBookingsEnriched = query({
     }),
   ),
   handler: async (ctx, args) => {
-    const user = await requireUser(ctx, args.clerkUserId)
+    const user = await requireUser(ctx)
 
     let bookings = await ctx.db
       .query('bookings')

@@ -7,12 +7,10 @@ import { requireUser } from './lib/auth'
 // directly to Convex storage. Requires the caller to be an authenticated user.
 // The URL is single-use and expires shortly after being issued.
 export const generateUploadUrl = mutation({
-  args: {
-    clerkUserId: v.string(),
-  },
+  args: {},
   returns: v.string(),
-  handler: async (ctx, args) => {
-    await requireUser(ctx, args.clerkUserId)
+  handler: async (ctx, _args) => {
+    await requireUser(ctx)
     return await ctx.storage.generateUploadUrl()
   },
 })
@@ -23,12 +21,11 @@ export const generateUploadUrl = mutation({
 // exists, it resets the status to 'pending' and updates the timestamp.
 export const trackUpload = mutation({
   args: {
-    clerkUserId: v.string(),
     storageId: v.id('_storage'),
   },
   returns: v.null(),
   handler: async (ctx, args) => {
-    const user = await requireUser(ctx, args.clerkUserId)
+    const user = await requireUser(ctx)
 
     const existing = await ctx.db
       .query('fileUploads')

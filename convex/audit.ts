@@ -70,7 +70,6 @@ export async function createAuditLog(
 // Query audit events by target (admin only)
 export const getByTarget = query({
   args: {
-    clerkUserId: v.string(),
     targetType: v.union(
       v.literal('hotel'),
       v.literal('room'),
@@ -103,7 +102,7 @@ export const getByTarget = query({
   ),
   handler: async (ctx, args) => {
     // Only admins can view audit logs
-    await requireAdmin(ctx, args.clerkUserId)
+    await requireAdmin(ctx)
 
     const limit = args.limit ?? 50
 
@@ -120,7 +119,6 @@ export const getByTarget = query({
 // Query recent audit events (admin only)
 export const getRecent = query({
   args: {
-    clerkUserId: v.string(),
     limit: v.optional(v.number()),
   },
   returns: v.array(
@@ -145,7 +143,7 @@ export const getRecent = query({
   ),
   handler: async (ctx, args) => {
     // Only admins can view audit logs
-    await requireAdmin(ctx, args.clerkUserId)
+    await requireAdmin(ctx)
 
     const limit = args.limit ?? 50
 

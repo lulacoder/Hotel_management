@@ -25,12 +25,12 @@ function normalizeEmail(value?: string): string | undefined {
   return normalized.length > 0 ? normalized : undefined
 }
 
-async function requireHotelStaffOrAdmin(ctx: any, clerkUserId: string) {
-  const user = await requireUser(ctx, clerkUserId)
+async function requireHotelStaffOrAdmin(ctx: any) {
+  const user = await requireUser(ctx)
   if (user.role === 'room_admin') {
     return user
   }
-
+  // For hotel staff, verify they have an active assignment to ensure they are not a former employee.
   const assignment = await getHotelAssignment(ctx, user._id)
   if (
     !assignment ||
@@ -52,14 +52,13 @@ async function requireHotelStaffOrAdmin(ctx: any, clerkUserId: string) {
 // otherwise, creates a new profile.
 export const findOrCreate = mutation({
   args: {
-    clerkUserId: v.string(),
     name: v.string(),
     phone: v.optional(v.string()),
     email: v.optional(v.string()),
   },
   returns: v.id('guestProfiles'),
   handler: async (ctx, args) => {
-    const actor = await requireHotelStaffOrAdmin(ctx, args.clerkUserId)
+    const actor = await requireHotelStaffOrAdmin(ctx)
 
     const name = args.name.trim()
     if (!name) {
@@ -116,7 +115,6 @@ export const findOrCreate = mutation({
 // Returns the top 10 matching guest profiles, along with the total count of their associated bookings.
 export const search = query({
   args: {
-    clerkUserId: v.string(),
     searchTerm: v.string(),
   },
   returns: v.array(
@@ -126,7 +124,7 @@ export const search = query({
     }),
   ),
   handler: async (ctx, args) => {
-    await requireHotelStaffOrAdmin(ctx, args.clerkUserId)
+    await requireHotelStaffOrAdmin(ctx)
 
     const rawTerm = args.searchTerm.trim()
     if (rawTerm.length < 2) {
@@ -169,12 +167,11 @@ export const search = query({
 // Returns null if the profile is not found.
 export const get = query({
   args: {
-    clerkUserId: v.string(),
     guestProfileId: v.id('guestProfiles'),
   },
   returns: v.union(guestProfileValidator, v.null()),
   handler: async (ctx, args) => {
-    await requireHotelStaffOrAdmin(ctx, args.clerkUserId)
+    await requireHotelStaffOrAdmin(ctx)
     return await ctx.db.get(args.guestProfileId)
   },
 })

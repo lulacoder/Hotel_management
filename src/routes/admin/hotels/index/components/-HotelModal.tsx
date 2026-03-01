@@ -160,7 +160,6 @@ export function HotelModal({ hotelId, onClose }: HotelModalProps) {
         setUploadingImage(true)
         nextImageStorageId = await uploadImageToConvex({
           file: selectedImageFile,
-          clerkUserId: user.id,
           generateUploadUrl,
           trackUpload,
         })
@@ -203,7 +202,6 @@ export function HotelModal({ hotelId, onClose }: HotelModalProps) {
       }
 
       const payload = {
-        clerkUserId: user.id,
         name: formData.name,
         address: formData.address,
         city: formData.city,

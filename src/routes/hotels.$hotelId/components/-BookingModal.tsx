@@ -87,7 +87,6 @@ export function BookingModal({
 
     try {
       const id = await holdRoom({
-        clerkUserId: user.id,
         roomId,
         checkIn,
         checkOut,
@@ -132,13 +131,11 @@ export function BookingModal({
     try {
       const nationalIdStorageId = await uploadImageToConvex({
         file: nationalIdFile,
-        clerkUserId: user.id,
         generateUploadUrl,
         trackUpload,
       })
 
       await submitPaymentProof({
-        clerkUserId: user.id,
         bookingId,
         transactionId: trimmedTransactionId,
         nationalIdStorageId,

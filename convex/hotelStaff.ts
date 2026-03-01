@@ -23,13 +23,38 @@ const hotelAssignmentValidator = v.object({
   assignedBy: v.id('users'),
 })
 
+// Returns the authenticated user's own hotel staff assignment, if any.
+// Identity is derived from the Clerk JWT — no arguments needed.
+// Returns null if not authenticated, user not found, or no assignment exists.
+export const getMyAssignment = query({
+  args: {},
+  returns: v.union(hotelAssignmentValidator, v.null()),
+  handler: async (ctx) => {
+    const identity = await ctx.auth.getUserIdentity()
+    if (!identity) {
+      return null
+    }
+    const user = await ctx.db
+      .query('users')
+      .withIndex('by_clerk_user_id', (q) =>
+        q.eq('clerkUserId', identity.subject),
+      )
+      .unique()
+    if (!user) {
+      return null
+    }
+    return await ctx.db
+      .query('hotelStaff')
+      .withIndex('by_user', (q) => q.eq('userId', user._id))
+      .unique()
+  },
+})
+
 // Lists all users in the system alongside their active hotel staff assignment (if any).
 // Requires the caller to have the 'room_admin' role. The assignment details include
 // the hotel's name and city for easier administration.
 export const listAllUsers = query({
-  args: {
-    clerkUserId: v.string(),
-  },
+  args: {},
   returns: v.array(
     v.object({
       _id: v.id('users'),
@@ -49,8 +74,8 @@ export const listAllUsers = query({
       ),
     }),
   ),
-  handler: async (ctx, args) => {
-    await requireAdmin(ctx, args.clerkUserId)
+  handler: async (ctx, _args) => {
+    await requireAdmin(ctx)
 
     const users = await ctx.db.query('users').collect()
     const result = []
@@ -99,12 +124,11 @@ export const listAllUsers = query({
 // themselves are assigned to the same hotel as the target user.
 export const getByUserId = query({
   args: {
-    clerkUserId: v.string(),
     userId: v.id('users'),
   },
   returns: v.union(hotelAssignmentValidator, v.null()),
   handler: async (ctx, args) => {
-    const user = await requireUser(ctx, args.clerkUserId)
+    const user = await requireUser(ctx)
 
     if (user.role !== 'room_admin' && user._id !== args.userId) {
       const currentAssignment = await getHotelAssignment(ctx, user._id)
@@ -134,7 +158,6 @@ export const getByUserId = query({
 // Requires the caller to have access to the target hotel.
 export const getByHotelId = query({
   args: {
-    clerkUserId: v.string(),
     hotelId: v.id('hotels'),
   },
   returns: v.array(
@@ -144,7 +167,7 @@ export const getByHotelId = query({
     }),
   ),
   handler: async (ctx, args) => {
-    await requireHotelAccess(ctx, args.clerkUserId, args.hotelId)
+    await requireHotelAccess(ctx, args.hotelId)
 
     const assignments = await ctx.db
       .query('hotelStaff')
@@ -169,14 +192,13 @@ export const getByHotelId = query({
 // and that the user does not already have a hotel assignment. Logs an audit event.
 export const assign = mutation({
   args: {
-    clerkUserId: v.string(),
     targetUserId: v.id('users'),
     hotelId: v.id('hotels'),
     role: hotelStaffRoleValidator,
   },
   returns: v.id('hotelStaff'),
   handler: async (ctx, args) => {
-    const admin = await requireAdmin(ctx, args.clerkUserId)
+    const admin = await requireAdmin(ctx)
 
     const targetUser = await ctx.db.get(args.targetUserId)
     if (!targetUser) {
@@ -237,12 +259,11 @@ export const assign = mutation({
 // a hotel assignment before deleting it. Logs an audit event for the unassignment.
 export const unassign = mutation({
   args: {
-    clerkUserId: v.string(),
     targetUserId: v.id('users'),
   },
   returns: v.null(),
   handler: async (ctx, args) => {
-    const admin = await requireAdmin(ctx, args.clerkUserId)
+    const admin = await requireAdmin(ctx)
 
     const existingAssignment = await ctx.db
       .query('hotelStaff')

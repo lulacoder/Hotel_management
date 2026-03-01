@@ -45,17 +45,12 @@ function AdminLayout() {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false)
 
   // App-level profile (role, email, etc.)
-  const profile = useQuery(
-    api.users.getByClerkId,
-    user?.id ? { clerkUserId: user.id } : 'skip',
-  )
+  const profile = useQuery(api.users.getMe, user?.id ? {} : 'skip')
 
   // Hotel-specific assignment determines scoped admin permissions.
   const hotelAssignment = useQuery(
-    api.hotelStaff.getByUserId,
-    user?.id && profile?._id
-      ? { clerkUserId: user.id, userId: profile._id }
-      : 'skip',
+    api.hotelStaff.getMyAssignment,
+    profile ? {} : 'skip',
   )
 
   if (!isLoaded || profile === undefined) {

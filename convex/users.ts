@@ -1,11 +1,12 @@
 import { query, internalMutation } from './_generated/server'
 import { v } from 'convex/values'
 
-// Public query to fetch the user document matching the provided Clerk User ID.
-// Useful for clients to determine their own role and verify that their Convex
-// user record has been correctly synced after sign-in. Returns null if not found.
-export const getByClerkId = query({
-  args: { clerkUserId: v.string() },
+// Authenticated query returning the current user's own record.
+// Identity is derived from the Clerk JWT token — no arguments needed.
+// Returns null while the token is loading or if the user record hasn't been
+// synced from Clerk yet.
+export const getMe = query({
+  args: {},
   returns: v.union(
     v.object({
       _id: v.id('users'),
@@ -17,11 +18,15 @@ export const getByClerkId = query({
     }),
     v.null(),
   ),
-  handler: async (ctx, args) => {
+  handler: async (ctx) => {
+    const identity = await ctx.auth.getUserIdentity()
+    if (!identity) {
+      return null
+    }
     return await ctx.db
       .query('users')
       .withIndex('by_clerk_user_id', (q) =>
-        q.eq('clerkUserId', args.clerkUserId),
+        q.eq('clerkUserId', identity.subject),
       )
       .unique()
   },

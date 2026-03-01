@@ -31,7 +31,6 @@ export const getByHotel = query({
 
 export const set = mutation({
   args: {
-    clerkUserId: v.string(),
     hotelId: v.id('hotels'),
     accountNumber: v.string(),
   },
@@ -45,11 +44,7 @@ export const set = mutation({
       })
     }
 
-    const { user, assignment } = await requireHotelAccess(
-      ctx,
-      args.clerkUserId,
-      args.hotelId,
-    )
+    const { user, assignment } = await requireHotelAccess(ctx, args.hotelId)
 
     if (user.role === 'room_admin') {
       throw new ConvexError({

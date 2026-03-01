@@ -83,12 +83,11 @@ export const getHotelRatings = query({
 // If the user has not left a review or the review has been soft-deleted, it returns null.
 export const getMyRatingForHotel = query({
   args: {
-    clerkUserId: v.string(),
     hotelId: v.id('hotels'),
   },
   returns: v.union(ratingValidator, v.null()),
   handler: async (ctx, args) => {
-    const user = await requireUser(ctx, args.clerkUserId)
+    const user = await requireUser(ctx)
     const rating = await ctx.db
       .query('hotelRatings')
       .withIndex('by_user_and_hotel', (q) =>
@@ -110,14 +109,13 @@ export const getMyRatingForHotel = query({
 // Restores a soft-deleted review if the user updates it.
 export const upsertRating = mutation({
   args: {
-    clerkUserId: v.string(),
     hotelId: v.id('hotels'),
     rating: v.number(),
     review: v.optional(v.string()),
   },
   returns: v.id('hotelRatings'),
   handler: async (ctx, args) => {
-    const customer = await requireCustomer(ctx, args.clerkUserId)
+    const customer = await requireCustomer(ctx)
     const hotel = await ctx.db.get(args.hotelId)
 
     if (!hotel || hotel.isDeleted) {
@@ -178,7 +176,6 @@ export const upsertRating = mutation({
 // and logs the deletion via an audit event.
 export const softDeleteRating = mutation({
   args: {
-    clerkUserId: v.string(),
     ratingId: v.id('hotelRatings'),
   },
   returns: v.null(),
@@ -192,11 +189,7 @@ export const softDeleteRating = mutation({
       })
     }
 
-    const { user } = await requireHotelManagement(
-      ctx,
-      args.clerkUserId,
-      rating.hotelId,
-    )
+    const { user } = await requireHotelManagement(ctx, rating.hotelId)
 
     if (rating.isDeleted) {
       return null
@@ -230,7 +223,6 @@ export const softDeleteRating = mutation({
 // It bypasses the soft-delete check internally but ignores deleted ratings.
 export const getHotelRatingsAdmin = query({
   args: {
-    clerkUserId: v.string(),
     hotelId: v.id('hotels'),
     limit: v.optional(v.number()),
   },
@@ -257,7 +249,7 @@ export const getHotelRatingsAdmin = query({
     }),
   ),
   handler: async (ctx, args) => {
-    await requireHotelAccess(ctx, args.clerkUserId, args.hotelId)
+    await requireHotelAccess(ctx, args.hotelId)
     const limit = args.limit ?? 50
 
     const ratings = await ctx.db

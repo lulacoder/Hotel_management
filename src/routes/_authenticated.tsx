@@ -17,17 +17,12 @@ function AuthenticatedLayout() {
   const navigate = useNavigate()
 
   // Load app user profile mapped from the Clerk user id.
-  const profile = useQuery(
-    api.users.getByClerkId,
-    user?.id ? { clerkUserId: user.id } : 'skip',
-  )
+  const profile = useQuery(api.users.getMe, user?.id ? {} : 'skip')
 
   // If present, user is staff/admin and should use admin area instead.
   const hotelAssignment = useQuery(
-    api.hotelStaff.getByUserId,
-    user?.id && profile?._id
-      ? { clerkUserId: user.id, userId: profile._id }
-      : 'skip',
+    api.hotelStaff.getMyAssignment,
+    profile ? {} : 'skip',
   )
 
   useEffect(() => {

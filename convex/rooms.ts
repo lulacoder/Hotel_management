@@ -221,13 +221,12 @@ export const getByHotel = query({
 // Enriches each returned room with its associated image URL from storage.
 export const getByHotelWithLiveState = query({
   args: {
-    clerkUserId: v.string(),
     hotelId: v.id('hotels'),
     includeDeleted: v.optional(v.boolean()),
   },
   returns: v.array(roomWithLiveStateValidator),
   handler: async (ctx, args) => {
-    await requireHotelAccess(ctx, args.clerkUserId, args.hotelId)
+    await requireHotelAccess(ctx, args.hotelId)
 
     let rooms = await ctx.db
       .query('rooms')
@@ -428,7 +427,6 @@ export const getAvailableRooms = query({
 // Logs an audit event of the creation.
 export const create = mutation({
   args: {
-    clerkUserId: v.string(),
     hotelId: v.id('hotels'),
     roomNumber: v.string(),
     type: roomTypeValidator,
@@ -444,11 +442,7 @@ export const create = mutation({
   },
   returns: v.id('rooms'),
   handler: async (ctx, args) => {
-    const { user } = await requireHotelAccess(
-      ctx,
-      args.clerkUserId,
-      args.hotelId,
-    )
+    const { user } = await requireHotelAccess(ctx, args.hotelId)
 
     // Verify hotel exists
     const hotel = await ctx.db.get(args.hotelId)
@@ -537,7 +531,6 @@ export const create = mutation({
 // Logs an audit event with previous and new values.
 export const update = mutation({
   args: {
-    clerkUserId: v.string(),
     roomId: v.id('rooms'),
     roomNumber: v.optional(v.string()),
     type: v.optional(roomTypeValidator),
@@ -561,11 +554,7 @@ export const update = mutation({
       })
     }
 
-    const { user } = await requireHotelAccess(
-      ctx,
-      args.clerkUserId,
-      room.hotelId,
-    )
+    const { user } = await requireHotelAccess(ctx, room.hotelId)
 
     if (room.isDeleted) {
       throw new ConvexError({
@@ -691,7 +680,6 @@ export const update = mutation({
 // Idempotent: skips if the room is already in the requested status. Logs an audit event.
 export const updateStatus = mutation({
   args: {
-    clerkUserId: v.string(),
     roomId: v.id('rooms'),
     operationalStatus: operationalStatusValidator,
   },
@@ -705,11 +693,7 @@ export const updateStatus = mutation({
       })
     }
 
-    const { user } = await requireHotelAccess(
-      ctx,
-      args.clerkUserId,
-      room.hotelId,
-    )
+    const { user } = await requireHotelAccess(ctx, room.hotelId)
 
     if (room.isDeleted) {
       throw new ConvexError({
@@ -750,7 +734,6 @@ export const updateStatus = mutation({
 // Cannot be called on a deleted room (idempotent).
 export const softDelete = mutation({
   args: {
-    clerkUserId: v.string(),
     roomId: v.id('rooms'),
   },
   returns: v.null(),
@@ -763,11 +746,7 @@ export const softDelete = mutation({
       })
     }
 
-    const { user } = await requireHotelAccess(
-      ctx,
-      args.clerkUserId,
-      room.hotelId,
-    )
+    const { user } = await requireHotelAccess(ctx, room.hotelId)
 
     if (room.isDeleted) {
       // Already deleted, idempotent operation
@@ -819,7 +798,6 @@ export const softDelete = mutation({
 // Logs an audit event of the restoration.
 export const restore = mutation({
   args: {
-    clerkUserId: v.string(),
     roomId: v.id('rooms'),
   },
   returns: v.null(),
@@ -832,11 +810,7 @@ export const restore = mutation({
       })
     }
 
-    const { user } = await requireHotelAccess(
-      ctx,
-      args.clerkUserId,
-      room.hotelId,
-    )
+    const { user } = await requireHotelAccess(ctx, room.hotelId)
 
     if (!room.isDeleted) {
       // Already active, idempotent operation

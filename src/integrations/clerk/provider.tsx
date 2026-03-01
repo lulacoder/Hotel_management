@@ -21,5 +21,6 @@ export default function AppClerkProvider({
     >
       {children}
     </ClerkProvider>
+    
   )
 }

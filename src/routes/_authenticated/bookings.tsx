@@ -27,7 +27,7 @@ function BookingsPage() {
 
   const bookings = useQuery(
     api.bookings.getMyBookingsEnriched,
-    user?.id ? { clerkUserId: user.id } : 'skip',
+    user?.id ? {} : 'skip',
   )
 
   const cancelBooking = useMutation(api.bookings.cancelBooking)
@@ -41,7 +41,6 @@ function BookingsPage() {
     setCancellingId(bookingId)
     try {
       await cancelBooking({
-        clerkUserId: user.id,
         bookingId,
       })
     } catch (error) {

@@ -110,7 +110,6 @@ export function RoomModal({ hotelId, roomId, onClose }: RoomModalProps) {
         setUploadingImage(true)
         nextImageStorageId = await uploadImageToConvex({
           file: selectedImageFile,
-          clerkUserId: user.id,
           generateUploadUrl,
           trackUpload,
         })
@@ -153,7 +152,6 @@ export function RoomModal({ hotelId, roomId, onClose }: RoomModalProps) {
         }
 
         await updateRoom({
-          clerkUserId: user.id,
           roomId,
           roomNumber: formData.roomNumber,
           type: formData.type,
@@ -164,7 +162,6 @@ export function RoomModal({ hotelId, roomId, onClose }: RoomModalProps) {
         })
       } else {
         await createRoom({
-          clerkUserId: user.id,
           hotelId,
           roomNumber: formData.roomNumber,
           type: formData.type,

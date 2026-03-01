@@ -41,15 +41,10 @@ function BookingsPage() {
   const [outsourceBookingId, setOutsourceBookingId] =
     useState<Id<'bookings'> | null>(null)
 
-  const profile = useQuery(
-    api.users.getByClerkId,
-    user?.id ? { clerkUserId: user.id } : 'skip',
-  )
+  const profile = useQuery(api.users.getMe, user?.id ? {} : 'skip')
   const hotelAssignment = useQuery(
-    api.hotelStaff.getByUserId,
-    user?.id && profile?._id
-      ? { clerkUserId: user.id, userId: profile._id }
-      : 'skip',
+    api.hotelStaff.getMyAssignment,
+    profile ? {} : 'skip',
   )
 
   const hotels = useQuery(api.hotels.list, {})
@@ -68,7 +63,6 @@ function BookingsPage() {
     (api as any).bookings.getByHotel,
     user?.id
       ? {
-          clerkUserId: user.id,
           hotelId:
             selectedHotel !== 'all'
               ? (selectedHotel as Id<'hotels'>)
@@ -97,20 +91,20 @@ function BookingsPage() {
   const selectedBookingDetail = useQuery(
     api.bookings.getEnriched,
     user?.id && selectedBookingId
-      ? { clerkUserId: user.id, bookingId: selectedBookingId }
+      ? { bookingId: selectedBookingId }
       : 'skip',
   )
   const outsourceBookingDetail = useQuery(
     api.bookings.getEnriched,
     user?.id && outsourceBookingId
-      ? { clerkUserId: user.id, bookingId: outsourceBookingId }
+      ? { bookingId: outsourceBookingId }
       : 'skip',
   )
 
   const handleCancel = async (bookingId: Id<'bookings'>) => {
     if (!user?.id) return
     if (confirm(t('bookings.confirmCancel'))) {
-      await cancelBooking({ clerkUserId: user.id, bookingId })
+      await cancelBooking({ bookingId })
     }
   }
 
@@ -119,12 +113,12 @@ function BookingsPage() {
     nextStatus: 'confirmed' | 'checked_in' | 'checked_out' | 'cancelled',
   ) => {
     if (!user?.id) return
-    await updateBookingStatus({ clerkUserId: user.id, bookingId, nextStatus })
+    await updateBookingStatus({ bookingId, nextStatus })
   }
 
   const handleAcceptCashPayment = async (bookingId: Id<'bookings'>) => {
     if (!user?.id) return
-    await acceptCashPayment({ clerkUserId: user.id, bookingId })
+    await acceptCashPayment({ bookingId })
   }
 
   const getAllowedTransitions = (status: string) => {
@@ -589,7 +583,6 @@ function BookingsPage() {
       {outsourceBookingId && outsourceBookingDetail && user?.id && (
         <OutsourceModal
           bookingDetail={outsourceBookingDetail}
-          clerkUserId={user.id}
           onClose={() => setOutsourceBookingId(null)}
           onSuccess={() => setOutsourceBookingId(null)}
         />

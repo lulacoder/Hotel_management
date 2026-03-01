@@ -24,7 +24,6 @@ import {
   Menu,
   X,
   Home,
-  CalendarCheck,
 } from 'lucide-react'
 import { useState } from 'react'
 
@@ -77,10 +76,7 @@ function HotelDetailPage() {
   const rooms =
     selectedDates.checkIn && selectedDates.checkOut ? availableRooms : allRooms
 
-  const profile = useQuery(
-    api.users.getByClerkId,
-    user?.id ? { clerkUserId: user.id } : 'skip',
-  )
+  const profile = useQuery(api.users.getMe, user?.id ? {} : 'skip')
 
   const roomTypeLabels: Record<string, string> = {
     budget: t('hotel.budgetRoom'),

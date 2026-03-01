@@ -5,28 +5,54 @@ import { Doc, Id } from '../_generated/dataModel'
 export type UserRole = 'customer' | 'room_admin'
 export type HotelStaffRole = 'hotel_admin' | 'hotel_cashier'
 
+// ---------------------------------------------------------------------------
+// Core identity helpers — JWT-verified, never from args
+// ---------------------------------------------------------------------------
+
 /**
- * Get the current user from the database by their Clerk user ID
- * Returns null if user not found
+ * Verify the caller's identity from the Clerk JWT token.
+ * Returns the verified Clerk user ID (`identity.subject`).
+ * Throws UNAUTHORIZED if no valid token is present.
+ */
+export async function requireAuth(
+  ctx: QueryCtx | MutationCtx,
+): Promise<string> {
+  const identity = await ctx.auth.getUserIdentity()
+  if (!identity) {
+    throw new ConvexError({
+      code: 'UNAUTHORIZED',
+      message: 'Not authenticated. Please sign in.',
+    })
+  }
+  return identity.subject // Clerk user ID, cryptographically verified
+}
+
+/**
+ * Get the current user from the database using their verified JWT identity.
+ * Returns null if user record not found.
  */
 export async function getCurrentUser(
   ctx: QueryCtx | MutationCtx,
-  clerkUserId: string,
 ): Promise<Doc<'users'> | null> {
+  const clerkUserId = await requireAuth(ctx)
   return await ctx.db
     .query('users')
     .withIndex('by_clerk_user_id', (q) => q.eq('clerkUserId', clerkUserId))
     .unique()
 }
 
+// ---------------------------------------------------------------------------
+// Role-gated helpers
+// ---------------------------------------------------------------------------
+
 /**
- * Get the current user or throw an error if not found
+ * Get the current user or throw an error if not found.
+ * Identity derived from JWT — never from args.
  */
 export async function requireUser(
   ctx: QueryCtx | MutationCtx,
-  clerkUserId: string,
 ): Promise<Doc<'users'>> {
-  const user = await getCurrentUser(ctx, clerkUserId)
+  const user = await getCurrentUser(ctx)
   if (!user) {
     throw new ConvexError({
       code: 'UNAUTHORIZED',
@@ -37,14 +63,13 @@ export async function requireUser(
 }
 
 /**
- * Require the user to have admin role
- * Throws ConvexError if user is not an admin
+ * Require the user to have admin role.
+ * Throws ConvexError if user is not a room_admin.
  */
 export async function requireAdmin(
   ctx: QueryCtx | MutationCtx,
-  clerkUserId: string,
 ): Promise<Doc<'users'>> {
-  const user = await requireUser(ctx, clerkUserId)
+  const user = await requireUser(ctx)
   if (user.role !== 'room_admin') {
     throw new ConvexError({
       code: 'FORBIDDEN',
@@ -56,14 +81,13 @@ export async function requireAdmin(
 }
 
 /**
- * Require the user to have customer role
- * Throws ConvexError if user is not a customer
+ * Require the user to have customer role.
+ * Throws ConvexError if user is not a customer.
  */
 export async function requireCustomer(
   ctx: QueryCtx | MutationCtx,
-  clerkUserId: string,
 ): Promise<Doc<'users'>> {
-  const user = await requireUser(ctx, clerkUserId)
+  const user = await requireUser(ctx)
   if (user.role !== 'customer') {
     throw new ConvexError({
       code: 'FORBIDDEN',
@@ -74,29 +98,47 @@ export async function requireCustomer(
 }
 
 /**
- * Check if user is admin (doesn't throw, returns boolean)
+ * Check if user is admin (doesn't throw, returns boolean).
+ * Returns false if not authenticated or user not found.
  */
 export async function isAdmin(
   ctx: QueryCtx | MutationCtx,
-  clerkUserId: string,
 ): Promise<boolean> {
-  const user = await getCurrentUser(ctx, clerkUserId)
+  const identity = await ctx.auth.getUserIdentity()
+  if (!identity) return false
+  const user = await ctx.db
+    .query('users')
+    .withIndex('by_clerk_user_id', (q) =>
+      q.eq('clerkUserId', identity.subject),
+    )
+    .unique()
   return user?.role === 'room_admin'
 }
 
 /**
- * Check if user is customer (doesn't throw, returns boolean)
+ * Check if user is customer (doesn't throw, returns boolean).
+ * Returns false if not authenticated or user not found.
  */
 export async function isCustomer(
   ctx: QueryCtx | MutationCtx,
-  clerkUserId: string,
 ): Promise<boolean> {
-  const user = await getCurrentUser(ctx, clerkUserId)
+  const identity = await ctx.auth.getUserIdentity()
+  if (!identity) return false
+  const user = await ctx.db
+    .query('users')
+    .withIndex('by_clerk_user_id', (q) =>
+      q.eq('clerkUserId', identity.subject),
+    )
+    .unique()
   return user?.role === 'customer'
 }
 
+// ---------------------------------------------------------------------------
+// Convex-ID based helpers (no change — already take Convex Id, not Clerk Id)
+// ---------------------------------------------------------------------------
+
 /**
- * Get user by their Convex user ID
+ * Get user by their Convex user ID.
  */
 export async function getUserById(
   ctx: QueryCtx | MutationCtx,
@@ -119,39 +161,45 @@ export async function getHotelAssignment(
     .unique()
 }
 
+// ---------------------------------------------------------------------------
+// Hotel-scoped access helpers
+// ---------------------------------------------------------------------------
+
 /**
- * Evaluates whether a user can perform an action on a specific hotel,
- * returning a boolean instead of throwing an error. A room admin automatically has access.
+ * Evaluates whether the authenticated user can access a specific hotel.
+ * Returns false instead of throwing. A room_admin automatically has access.
  */
 export async function canAccessHotel(
   ctx: QueryCtx | MutationCtx,
-  clerkUserId: string,
   hotelId: Id<'hotels'>,
 ): Promise<boolean> {
-  const user = await getCurrentUser(ctx, clerkUserId)
-  if (!user) {
-    return false
-  }
+  const identity = await ctx.auth.getUserIdentity()
+  if (!identity) return false
 
-  if (user.role === 'room_admin') {
-    return true
-  }
+  const user = await ctx.db
+    .query('users')
+    .withIndex('by_clerk_user_id', (q) =>
+      q.eq('clerkUserId', identity.subject),
+    )
+    .unique()
+  if (!user) return false
+
+  if (user.role === 'room_admin') return true
 
   const assignment = await getHotelAssignment(ctx, user._id)
   return Boolean(assignment && assignment.hotelId === hotelId)
 }
 
 /**
- * Demands that the user possesses valid access to a specified hotel (either as an assigned hotel staff
- * member or a global room admin). If unauthorized, throws a ConvexError.
- * Returns the user's document along with their assigned staff privileges (if applicable).
+ * Demands that the authenticated user possesses valid access to a specified hotel
+ * (either as an assigned hotel staff member or a global room_admin).
+ * Throws a ConvexError if unauthorized.
  */
 export async function requireHotelAccess(
   ctx: QueryCtx | MutationCtx,
-  clerkUserId: string,
   hotelId: Id<'hotels'>,
 ): Promise<{ user: Doc<'users'>; assignment: Doc<'hotelStaff'> | null }> {
-  const user = await requireUser(ctx, clerkUserId)
+  const user = await requireUser(ctx)
 
   if (user.role === 'room_admin') {
     return { user, assignment: null }
@@ -169,38 +217,42 @@ export async function requireHotelAccess(
 }
 
 /**
- * Evaluates whether a user can perform management operations on a specific hotel,
- * returning a boolean. A room admin or hotel admin automatically has access. Cashiers do not.
+ * Evaluates whether the authenticated user can manage a specific hotel.
+ * Returns false instead of throwing. A room_admin or hotel_admin has access.
  */
 export async function canManageHotel(
   ctx: QueryCtx | MutationCtx,
-  clerkUserId: string,
   hotelId: Id<'hotels'>,
 ): Promise<boolean> {
-  const { user, assignment } = await requireHotelAccess(
-    ctx,
-    clerkUserId,
-    hotelId,
-  )
+  const identity = await ctx.auth.getUserIdentity()
+  if (!identity) return false
 
-  if (user.role === 'room_admin') {
-    return true
-  }
+  const user = await ctx.db
+    .query('users')
+    .withIndex('by_clerk_user_id', (q) =>
+      q.eq('clerkUserId', identity.subject),
+    )
+    .unique()
+  if (!user) return false
 
-  return assignment?.role === 'hotel_admin'
+  if (user.role === 'room_admin') return true
+
+  const assignment = await getHotelAssignment(ctx, user._id)
+  if (!assignment || assignment.hotelId !== hotelId) return false
+
+  return assignment.role === 'hotel_admin'
 }
 
 /**
- * Validates that the specified user possesses administrative-level management rights
- * over a hotel (i.e. 'room_admin' or a 'hotel_admin' assignment to the hotel).
- * Throws a ConvexError if the user is unauthorized (like a cashier) or not found.
+ * Validates that the authenticated user possesses administrative-level management
+ * rights over a hotel (i.e. room_admin or a hotel_admin assignment to the hotel).
+ * Throws a ConvexError if the user is unauthorized.
  */
 export async function requireHotelManagement(
   ctx: QueryCtx | MutationCtx,
-  clerkUserId: string,
   hotelId: Id<'hotels'>,
 ): Promise<{ user: Doc<'users'>; assignment: Doc<'hotelStaff'> | null }> {
-  const access = await requireHotelAccess(ctx, clerkUserId, hotelId)
+  const access = await requireHotelAccess(ctx, hotelId)
 
   if (access.user.role === 'room_admin') {
     return access

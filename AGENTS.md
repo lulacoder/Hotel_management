@@ -179,25 +179,77 @@ throw new ConvexError({
 
 ### Authentication Patterns
 
-Frontend:
+**CRITICAL: Identity is always derived from the JWT token — NEVER from client-supplied arguments.**
+
+All Convex public functions (queries/mutations) authenticate the caller via
+`ctx.auth.getUserIdentity()`, which Convex populates from the Clerk JWT that
+`ConvexProviderWithClerk` forwards automatically. No `clerkUserId` argument
+should ever appear in a public function's `args` validator.
+
+Frontend — fetching the current user profile & hotel assignment:
 
 ```typescript
 const { user } = useUser() // From @clerk/clerk-react
-const profile = useQuery(
-  api.users.getByClerkId,
-  user?.id ? { clerkUserId: user.id } : 'skip',
+
+// Current user's DB profile (replaces the old getByClerkId pattern)
+const profile = useQuery(api.users.getMe, user?.id ? {} : 'skip')
+
+// Current user's hotel assignment (for staff roles)
+const hotelAssignment = useQuery(
+  api.hotelStaff.getMyAssignment,
+  profile ? {} : 'skip',
 )
 ```
 
-Backend (Convex):
+Frontend — calling mutations (no `clerkUserId` in args):
 
 ```typescript
-import { requireUser, requireAdmin, requireCustomer } from './lib/auth'
+const hold = useMutation(api.bookings.holdRoom)
 
-// In handler:
-const user = await requireUser(ctx, args.clerkUserId)
-const admin = await requireAdmin(ctx, args.clerkUserId)
+await hold({
+  roomId: room._id,
+  checkInDate: '2025-03-01',
+  checkOutDate: '2025-03-03',
+  // clerkUserId is NOT passed — identity comes from the JWT
+})
 ```
+
+Backend (Convex) — auth helpers from `convex/lib/auth.ts`:
+
+```typescript
+import {
+  requireUser,    // returns user doc, throws UNAUTHORIZED / NOT_FOUND
+  requireAdmin,   // returns user doc with role=room_admin, throws FORBIDDEN
+  requireCustomer,// returns user doc with role=customer, throws FORBIDDEN
+  requireHotelAccess,     // verifies staff is assigned to the hotel
+  requireHotelManagement, // verifies hotel_admin role for the hotel
+  getCurrentUser, // returns user doc or null (no throw)
+  isAdmin,        // boolean check
+  isCustomer,     // boolean check
+  canAccessHotel, // boolean check
+  canManageHotel, // boolean check
+} from './lib/auth'
+
+// In any handler — zero arguments needed, identity from JWT:
+const user = await requireUser(ctx)
+const admin = await requireAdmin(ctx)
+const customer = await requireCustomer(ctx)
+await requireHotelAccess(ctx, args.hotelId)
+```
+
+**Hybrid role model:**
+
+| Role           | Source                | Scope            |
+| -------------- | --------------------- | ---------------- |
+| `customer`     | Clerk metadata (signup) | Global         |
+| `room_admin`   | Clerk metadata (signup) | Global         |
+| `hotel_admin`  | Convex `hotelStaff` table | Per-hotel    |
+| `hotel_cashier`| Convex `hotelStaff` table | Per-hotel    |
+
+**Files involved:**
+- `convex/auth.config.ts` — tells Convex how to validate Clerk JWTs
+- `src/integrations/convex/provider.tsx` — `ConvexProviderWithClerk` bridges tokens
+- `convex/lib/auth.ts` — all auth helper functions (JWT-based)
 
 ### Date Handling
 
@@ -225,3 +277,4 @@ const admin = await requireAdmin(ctx, args.clerkUserId)
 3. Use `'skip'` as query argument to conditionally skip queries
 4. Audit logging: Use `createAuditLog()` for admin mutations
 5. Soft deletes: Use `isDeleted` boolean, never hard delete
+6. **NEVER pass `clerkUserId` as an argument** to any public Convex function — identity MUST be derived from the JWT via `ctx.auth.getUserIdentity()` inside the handler

@@ -59,7 +59,7 @@ function SelectLocationPage() {
   const myRating = useQuery(
     api.ratings.getMyRatingForHotel,
     user?.id && activeRatingHotelId
-      ? { clerkUserId: user.id, hotelId: activeRatingHotelId }
+      ? { hotelId: activeRatingHotelId }
       : 'skip',
   )
 
@@ -267,7 +267,6 @@ function SelectLocationPage() {
 
     try {
       await upsertRating({
-        clerkUserId: user.id,
         hotelId: activeRatingHotelId,
         rating: ratingValue,
         review: ratingText.trim() || undefined,

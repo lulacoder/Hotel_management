@@ -47,15 +47,10 @@ function HotelDetailPage() {
   const { t, locale } = useI18n()
   const dateLocale = locale === 'am' ? 'am-ET' : 'en-US'
 
-  const profile = useQuery(
-    api.users.getByClerkId,
-    user?.id ? { clerkUserId: user.id } : 'skip',
-  )
+  const profile = useQuery(api.users.getMe, user?.id ? {} : 'skip')
   const hotelAssignment = useQuery(
-    api.hotelStaff.getByUserId,
-    user?.id && profile?._id
-      ? { clerkUserId: user.id, userId: profile._id }
-      : 'skip',
+    api.hotelStaff.getMyAssignment,
+    profile ? {} : 'skip',
   )
 
   const hotel = useQuery(api.hotels.get, { hotelId: hotelId as Id<'hotels'> })
@@ -66,7 +61,6 @@ function HotelDetailPage() {
     api.rooms.getByHotelWithLiveState,
     user?.id
       ? {
-          clerkUserId: user.id,
           hotelId: hotelId as Id<'hotels'>,
         }
       : 'skip',
@@ -74,7 +68,7 @@ function HotelDetailPage() {
   const ratings = useQuery(
     api.ratings.getHotelRatingsAdmin,
     user?.id
-      ? { clerkUserId: user.id, hotelId: hotelId as Id<'hotels'> }
+      ? { hotelId: hotelId as Id<'hotels'> }
       : 'skip',
   )
 
@@ -94,7 +88,7 @@ function HotelDetailPage() {
   const handleDeleteRoom = async (roomId: Id<'rooms'>) => {
     if (!user?.id) return
     if (confirm(t('admin.hotels.confirmDeleteRoom'))) {
-      await deleteRoom({ clerkUserId: user.id, roomId })
+      await deleteRoom({ roomId })
     }
     setActiveMenu(null)
   }
@@ -102,7 +96,7 @@ function HotelDetailPage() {
   const handleDeleteRating = async (ratingId: Id<'hotelRatings'>) => {
     if (!user?.id) return
     if (confirm(t('admin.hotels.confirmDeleteRating'))) {
-      await deleteRating({ clerkUserId: user.id, ratingId })
+      await deleteRating({ ratingId })
     }
   }
 
@@ -113,7 +107,6 @@ function HotelDetailPage() {
     // Update room operational status from contextual quick actions.
     if (!user?.id) return
     await updateRoomStatus({
-      clerkUserId: user.id,
       roomId,
       operationalStatus: status,
     })
@@ -140,7 +133,6 @@ function HotelDetailPage() {
 
     try {
       await setBankAccount({
-        clerkUserId: user.id,
         hotelId: hotelId as Id<'hotels'>,
         accountNumber: trimmed,
       })

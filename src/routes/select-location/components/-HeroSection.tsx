@@ -52,7 +52,7 @@ export function HeroSection({
         {locationSupported && (
           <div className="mb-6">
             {locationLoading ? (
-              <div className="selector-location-loading inline-flex items-center gap-2 px-4 py-2 bg-slate-800/50 rounded-lg text-slate-400 text-sm">
+<div className="selector-location-loading inline-flex items-center gap-2 px-4 py-2 bg-slate-800/50 rounded-lg text-slate-400 text-sm">
                 <Loader2 className="w-4 h-4 animate-spin" />
                 {t('select.gettingLocation')}
               </div>
