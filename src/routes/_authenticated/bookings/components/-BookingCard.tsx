@@ -33,6 +33,7 @@ interface BookingCardProps {
     packageAddOn?: number | undefined
   }
   room: {
+    _id: Id<'rooms'>
     roomNumber: string
     type: string
   }
@@ -216,6 +217,7 @@ export function BookingCard({
             <Link
               to="/hotels/$hotelId"
               params={{ hotelId: hotel._id }}
+              search={{ resumeBookingId: booking._id }}
               className="px-4 py-2 bg-blue-500 text-slate-900 font-medium rounded-lg hover:bg-blue-400 transition-colors text-sm"
             >
               {t('booking.confirmBooking')}

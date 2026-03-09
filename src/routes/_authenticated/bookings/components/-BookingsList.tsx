@@ -18,6 +18,7 @@ interface BookingsListProps {
       packageAddOn?: number | undefined
     }
     room: {
+      _id: Id<'rooms'>
       roomNumber: string
       type: string
     }

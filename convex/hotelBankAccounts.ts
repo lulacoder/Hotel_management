@@ -3,6 +3,7 @@ import { mutation, query } from './_generated/server'
 import { createAuditLog } from './audit'
 import { requireHotelAccess } from './lib/auth'
 
+// this query retrieves the bank account information for a specific hotel, while the mutation allows authorized hotel staff to set or update the bank account number. Both operations include access control checks to ensure that only users with the appropriate roles can perform these actions, and they also log changes for auditing purposes. 
 export const getByHotel = query({
   args: {
     hotelId: v.id('hotels'),
@@ -29,6 +30,7 @@ export const getByHotel = query({
   },
 })
 
+// 
 export const set = mutation({
   args: {
     hotelId: v.id('hotels'),
@@ -53,6 +55,7 @@ export const set = mutation({
       })
     }
 
+    // Hotel staff must have an active assignment to update bank account info, ensuring that former employees cannot make changes.
     if (!assignment || !['hotel_admin', 'hotel_cashier'].includes(assignment.role)) {
       throw new ConvexError({
         code: 'FORBIDDEN',
@@ -60,6 +63,7 @@ export const set = mutation({
       })
     }
 
+    // Check if an account already exists for the hotel
     const existing = await ctx.db
       .query('hotelBankAccounts')
       .withIndex('by_hotel', (q) => q.eq('hotelId', args.hotelId))
@@ -67,6 +71,7 @@ export const set = mutation({
 
     const now = Date.now()
 
+    // if it exists,update the account number and log it
     if (existing) {
       await ctx.db.patch(existing._id, {
         accountNumber: trimmedAccountNumber,
@@ -86,6 +91,7 @@ export const set = mutation({
       return null
     }
 
+    // if it doesn't exist, create a new record and log it
     await ctx.db.insert('hotelBankAccounts', {
       hotelId: args.hotelId,
       accountNumber: trimmedAccountNumber,

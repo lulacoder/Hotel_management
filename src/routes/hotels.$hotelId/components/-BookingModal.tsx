@@ -25,6 +25,16 @@ interface BookingModalProps {
   checkIn: string
   checkOut: string
   nights: number
+  existingBooking?: {
+    _id: Id<'bookings'>
+    checkIn: string
+    checkOut: string
+    status: string
+    pricePerNight: number
+    totalPrice: number
+    packageType?: PackageType | undefined
+    packageAddOn?: number | undefined
+  }
   onClose: () => void
   onSuccess: () => void
 }
@@ -35,6 +45,7 @@ export function BookingModal({
   checkIn,
   checkOut,
   nights,
+  existingBooking,
   onClose,
   onSuccess,
 }: BookingModalProps) {
@@ -51,15 +62,20 @@ export function BookingModal({
   const generateUploadUrl = useMutation(api.files.generateUploadUrl)
   const trackUpload = useMutation(api.files.trackUpload)
 
-  const [step, setStep] = useState<'package' | 'details' | 'confirm'>('package')
-  const [selectedPackageType, setSelectedPackageType] =
-    useState<PackageType>('room_only')
+  const [step, setStep] = useState<'package' | 'details' | 'confirm'>(
+    existingBooking ? 'confirm' : 'package',
+  )
+  const [selectedPackageType, setSelectedPackageType] = useState<PackageType>(
+    existingBooking?.packageType ?? 'room_only',
+  )
   const [guestDetails, setGuestDetails] = useState({
     guestName: user?.fullName || '',
     guestEmail: user?.emailAddresses[0]?.emailAddress || '',
     specialRequests: '',
   })
-  const [bookingId, setBookingId] = useState<Id<'bookings'> | null>(null)
+  const [bookingId, setBookingId] = useState<Id<'bookings'> | null>(
+    existingBooking?._id ?? null,
+  )
   const [nationalIdFile, setNationalIdFile] = useState<File | null>(null)
   const [transactionId, setTransactionId] = useState('')
   const [copied, setCopied] = useState(false)
@@ -76,6 +92,14 @@ export function BookingModal({
       guestEmail: prev.guestEmail || user.emailAddresses[0]?.emailAddress || '',
     }))
   }, [user])
+
+  useEffect(() => {
+    if (!existingBooking) return
+
+    setSelectedPackageType(existingBooking.packageType ?? 'room_only')
+    setBookingId(existingBooking._id)
+    setStep('confirm')
+  }, [existingBooking])
 
   const handleHold = async (e: React.FormEvent) => {
     // Step 1 submission: place temporary hold with package + guest details.
@@ -166,9 +190,14 @@ export function BookingModal({
   }
 
   const selectedPackage = getPackageByType(selectedPackageType)
-  const roomSubtotalCents = room.basePrice * nights
-  const packageSubtotalCents = selectedPackage.addOnPerNight * nights
-  const totalPriceCents = roomSubtotalCents + packageSubtotalCents
+  const bookingCheckIn = existingBooking?.checkIn ?? checkIn
+  const bookingCheckOut = existingBooking?.checkOut ?? checkOut
+  const roomRateCents = existingBooking?.pricePerNight ?? room.basePrice
+  const packageRateCents =
+    existingBooking?.packageAddOn ?? selectedPackage.addOnPerNight
+  const roomSubtotalCents = roomRateCents * nights
+  const packageSubtotalCents = packageRateCents * nights
+  const totalPriceCents = existingBooking?.totalPrice ?? roomSubtotalCents + packageSubtotalCents
 
   return (
     <div className="booking-modal fixed inset-0 bg-black/60 backdrop-blur-sm flex items-center justify-center z-50 p-4">
@@ -210,23 +239,23 @@ export function BookingModal({
             <div className="grid grid-cols-2 gap-4 text-sm">
               <div>
                 <p className="text-slate-500">{t('booking.checkIn')}</p>
-                <p className="text-slate-200">{checkIn}</p>
+                <p className="text-slate-200">{bookingCheckIn}</p>
               </div>
               <div>
                 <p className="text-slate-500">{t('booking.checkOut')}</p>
-                <p className="text-slate-200">{checkOut}</p>
+                <p className="text-slate-200">{bookingCheckOut}</p>
               </div>
             </div>
             <div className="border-t border-slate-700 mt-4 pt-4 flex justify-between">
               <div className="text-slate-400 text-sm">
                 <p>
-                  {t('hotel.room')}: ${(room.basePrice / 100).toFixed(0)} ×{' '}
+                  {t('hotel.room')}: ${(roomRateCents / 100).toFixed(0)} ×{' '}
                   {nights} {nights !== 1 ? t('hotel.nights') : t('hotel.night')}
                 </p>
-                {selectedPackage.addOnPerNight > 0 && (
+                {packageRateCents > 0 && (
                   <p>
                     {t('booking.package')}: $
-                    {(selectedPackage.addOnPerNight / 100).toFixed(0)} ×{' '}
+                    {(packageRateCents / 100).toFixed(0)} ×{' '}
                     {nights}
                   </p>
                 )}
@@ -470,7 +499,7 @@ export function BookingModal({
                   </span>
                   <span>${(roomSubtotalCents / 100).toFixed(2)}</span>
                 </div>
-                {selectedPackage.addOnPerNight > 0 && (
+                {packageRateCents > 0 && (
                   <div className="flex items-center justify-between text-slate-300 mt-2">
                     <span>
                       {getPackageLabel(selectedPackage.type, t)}{' '}

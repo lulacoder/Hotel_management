@@ -25,7 +25,7 @@ import {
   X,
   Home,
 } from 'lucide-react'
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
 
 import { BookingModal } from './hotels.$hotelId/components/-BookingModal'
 import { LanguageSwitcher } from '../components/LanguageSwitcher'
@@ -34,6 +34,12 @@ import { useI18n } from '../lib/i18n'
 import { getHotelCategoryLabel } from '../lib/hotelCategories'
 
 export const Route = createFileRoute('/hotels/$hotelId')({
+  validateSearch: (search: Record<string, unknown>) => ({
+    resumeBookingId:
+      typeof search.resumeBookingId === 'string' && search.resumeBookingId
+        ? search.resumeBookingId
+        : undefined,
+  }),
   // Dynamic route for a single hotel's details and available rooms.
   component: HotelDetailPage,
 })
@@ -41,6 +47,7 @@ export const Route = createFileRoute('/hotels/$hotelId')({
 function HotelDetailPage() {
   // Load hotel + room availability and maintain booking date selections.
   const { hotelId } = Route.useParams()
+  const search = Route.useSearch()
   const { user, isSignedIn } = useUser()
   const { t } = useI18n()
   const navigate = useNavigate()
@@ -77,6 +84,12 @@ function HotelDetailPage() {
     selectedDates.checkIn && selectedDates.checkOut ? availableRooms : allRooms
 
   const profile = useQuery(api.users.getMe, user?.id ? {} : 'skip')
+  const resumeBooking = useQuery(
+    api.bookings.get,
+    search.resumeBookingId
+      ? { bookingId: search.resumeBookingId as Id<'bookings'> }
+      : 'skip',
+  )
 
   const roomTypeLabels: Record<string, string> = {
     budget: t('hotel.budgetRoom'),
@@ -92,6 +105,26 @@ function HotelDetailPage() {
     'Mini Bar': Coffee,
   }
 
+  useEffect(() => {
+    if (!resumeBooking) return
+    if (!['held', 'pending_payment'].includes(resumeBooking.status)) return
+
+    setSelectedDates((current) => {
+      if (
+        current.checkIn === resumeBooking.checkIn &&
+        current.checkOut === resumeBooking.checkOut
+      ) {
+        return current
+      }
+
+      return {
+        checkIn: resumeBooking.checkIn,
+        checkOut: resumeBooking.checkOut,
+      }
+    })
+    setShowBookingModal(resumeBooking.roomId)
+  }, [resumeBooking])
+
   // Calculate number of nights
   const calculateNights = () => {
     // Shared calculation used by room summary pricing labels.
@@ -104,6 +137,21 @@ function HotelDetailPage() {
 
   const nights = calculateNights()
   const redirectTarget = `/hotels/${hotelId}`
+
+  const closeBookingModal = () => {
+    setShowBookingModal(null)
+
+    if (!search.resumeBookingId) {
+      return
+    }
+
+    navigate({
+      to: '/hotels/$hotelId',
+      params: { hotelId },
+      search: {},
+      replace: true,
+    })
+  }
 
   if (hotel === undefined) {
     return (
@@ -637,7 +685,12 @@ function HotelDetailPage() {
           checkIn={selectedDates.checkIn}
           checkOut={selectedDates.checkOut}
           nights={nights}
-          onClose={() => setShowBookingModal(null)}
+          existingBooking={
+            resumeBooking && ['held', 'pending_payment'].includes(resumeBooking.status)
+              ? resumeBooking
+              : undefined
+          }
+          onClose={closeBookingModal}
           onSuccess={() => {
             setShowBookingModal(null)
             navigate({ to: '/bookings' })
