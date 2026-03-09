@@ -17,8 +17,10 @@ import { HeroSection } from './select-location/components/-HeroSection'
 import { SearchFilters } from './select-location/components/-SearchFilters'
 import { HotelGrid } from './select-location/components/-HotelGrid'
 import { RatingModal } from './select-location/components/-RatingModal'
-import type { Id } from '../../convex/_generated/dataModel'
+import { normalizeRatingFormValues } from './select-location/components/-ratingFormSchema'
 import type { SortOption } from './select-location/components/-helpers'
+import type { RatingFormValues } from './select-location/components/-ratingFormSchema'
+import type { Id } from '../../convex/_generated/dataModel'
 
 export const Route = createFileRoute('/select-location')({
   // Main discovery route where users search, filter, and rate hotels.
@@ -38,11 +40,8 @@ function SelectLocationPage() {
   const [locationRequested, setLocationRequested] = useState(false)
   const [activeRatingHotelId, setActiveRatingHotelId] =
     useState<Id<'hotels'> | null>(null)
-  const [ratingValue, setRatingValue] = useState(0)
-  const [ratingText, setRatingText] = useState('')
   const [ratingError, setRatingError] = useState('')
   const [ratingSaving, setRatingSaving] = useState(false)
-  const [ratingPrefillKey, setRatingPrefillKey] = useState<string | null>(null)
   const [autoOpenHandled, setAutoOpenHandled] = useState(false)
 
   // Primary data sources for cards and aggregated rating metadata.
@@ -58,9 +57,7 @@ function SelectLocationPage() {
 
   const myRating = useQuery(
     api.ratings.getMyRatingForHotel,
-    user?.id && activeRatingHotelId
-      ? { hotelId: activeRatingHotelId }
-      : 'skip',
+    user?.id && activeRatingHotelId ? { hotelId: activeRatingHotelId } : 'skip',
   )
 
   // Geolocation hook
@@ -102,22 +99,6 @@ function SelectLocationPage() {
     setAutoOpenHandled(true)
     navigate({ to: '/select-location', replace: true })
   }, [autoOpenHandled, hotels, location.search, navigate])
-
-  useEffect(() => {
-    if (!activeRatingHotelId || myRating === undefined) {
-      return
-    }
-
-    const prefillKey = `${activeRatingHotelId}:${myRating?._id ?? 'new'}`
-    if (prefillKey === ratingPrefillKey) {
-      return
-    }
-
-    setRatingValue(myRating?.rating ?? 0)
-    setRatingText(myRating?.review ?? '')
-    setRatingError('')
-    setRatingPrefillKey(prefillKey)
-  }, [activeRatingHotelId, myRating, ratingPrefillKey])
 
   // Compute hotels with distance
   const hotelsWithDistance = useMemo(() => {
@@ -245,20 +226,11 @@ function SelectLocationPage() {
 
   const closeRatingModal = () => {
     setActiveRatingHotelId(null)
-    setRatingValue(0)
-    setRatingText('')
     setRatingError('')
-    setRatingPrefillKey(null)
   }
 
-  const handleSubmitRating = async (event: React.FormEvent) => {
-    event.preventDefault()
+  const handleSubmitRating = async (values: RatingFormValues) => {
     if (!user?.id || !activeRatingHotelId) {
-      return
-    }
-
-    if (ratingValue < 1 || ratingValue > 5) {
-      setRatingError(t('rating.selectRating'))
       return
     }
 
@@ -266,14 +238,17 @@ function SelectLocationPage() {
     setRatingError('')
 
     try {
+      const normalizedValues = normalizeRatingFormValues(values)
       await upsertRating({
         hotelId: activeRatingHotelId,
-        rating: ratingValue,
-        review: ratingText.trim() || undefined,
+        rating: normalizedValues.rating,
+        review: normalizedValues.review,
       })
       closeRatingModal()
-    } catch (err: any) {
-      setRatingError(err.message || t('rating.saveFailed'))
+    } catch (err) {
+      setRatingError(
+        err instanceof Error ? err.message : t('rating.saveFailed'),
+      )
     } finally {
       setRatingSaving(false)
     }
@@ -328,15 +303,13 @@ function SelectLocationPage() {
           isSignedIn={Boolean(isSignedIn)}
           hotelName={activeHotel?.name || ''}
           hasExistingRating={Boolean(hasExistingRating)}
-          ratingValue={ratingValue}
-          ratingText={ratingText}
+          initialRatingValue={myRating?.rating ?? 0}
+          initialRatingText={myRating?.review ?? ''}
           ratingError={ratingError}
           ratingSaving={ratingSaving}
           ratingRedirect={ratingRedirect}
           onClose={closeRatingModal}
           onSubmit={handleSubmitRating}
-          onRatingChange={setRatingValue}
-          onRatingTextChange={setRatingText}
         />
       )}
     </div>

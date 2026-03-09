@@ -1,40 +1,73 @@
 // Modal for creating/updating a user's hotel rating and optional written review.
+import { zodResolver } from '@hookform/resolvers/zod'
 import { useNavigate } from '@tanstack/react-router'
 import { Star, X } from 'lucide-react'
+import { Controller, useForm } from 'react-hook-form'
+import { useEffect, useMemo } from 'react'
+
 import { useI18n } from '../../../lib/i18n'
+import { createRatingFormSchema } from './-ratingFormSchema'
+import type { RatingFormValues } from './-ratingFormSchema'
 
 interface RatingModalProps {
   isSignedIn: boolean
   hotelName: string
   hasExistingRating: boolean
-  ratingValue: number
-  ratingText: string
+  initialRatingValue: number
+  initialRatingText: string
   ratingError: string
   ratingSaving: boolean
   ratingRedirect: string
   onClose: () => void
-  onSubmit: (event: React.FormEvent) => void
-  onRatingChange: (value: number) => void
-  onRatingTextChange: (value: string) => void
+  onSubmit: (values: RatingFormValues) => Promise<void>
 }
 
 export function RatingModal({
   isSignedIn,
   hotelName,
   hasExistingRating,
-  ratingValue,
-  ratingText,
+  initialRatingValue,
+  initialRatingText,
   ratingError,
   ratingSaving,
   ratingRedirect,
   onClose,
   onSubmit,
-  onRatingChange,
-  onRatingTextChange,
 }: RatingModalProps) {
   // Handles both authenticated rating form flow and guest sign-in prompts.
   const navigate = useNavigate()
   const { t } = useI18n()
+  const schema = useMemo(
+    () => createRatingFormSchema(t('rating.selectRating')),
+    [t],
+  )
+  const {
+    control,
+    formState: { errors },
+    handleSubmit,
+    register,
+    reset,
+    watch,
+  } = useForm<RatingFormValues>({
+    resolver: zodResolver(schema),
+    defaultValues: {
+      rating: initialRatingValue,
+      review: initialRatingText,
+    },
+    mode: 'onSubmit',
+    reValidateMode: 'onChange',
+  })
+  const ratingValue = watch('rating')
+  const ratingText = watch('review')
+  const formError =
+    errors.rating?.message ?? errors.review?.message ?? ratingError
+
+  useEffect(() => {
+    reset({
+      rating: initialRatingValue,
+      review: initialRatingText,
+    })
+  }, [initialRatingText, initialRatingValue, reset])
 
   return (
     <div className="fixed inset-0 bg-black/60 backdrop-blur-sm flex items-center justify-center z-50 p-4">
@@ -104,10 +137,10 @@ export function RatingModal({
               </div>
             </div>
           ) : (
-            <form onSubmit={onSubmit} className="space-y-5">
-              {ratingError && (
+            <form onSubmit={handleSubmit(onSubmit)} className="space-y-5">
+              {formError && (
                 <div className="bg-red-500/10 border border-red-500/20 rounded-xl p-4 text-red-400 text-sm">
-                  {ratingError}
+                  {formError}
                 </div>
               )}
 
@@ -115,30 +148,36 @@ export function RatingModal({
                 <label className="block text-sm font-medium text-slate-300 mb-2">
                   {t('rating.yourRating')}
                 </label>
-                <div className="flex items-center gap-2">
-                  {[1, 2, 3, 4, 5].map((value) => (
-                    <button
-                      key={value}
-                      type="button"
-                      onClick={() => onRatingChange(value)}
-                      className="p-1"
-                      aria-label={t('rating.rateStar', { value })}
-                    >
-                      <Star
-                        className={`w-6 h-6 ${
-                          value <= ratingValue
-                            ? 'text-blue-400 fill-blue-400'
-                            : 'text-slate-600'
-                        }`}
-                      />
-                    </button>
-                  ))}
-                  <span className="text-sm text-slate-500 ml-2">
-                    {ratingValue > 0
-                      ? `${ratingValue}/5`
-                      : t('rating.selectRating')}
-                  </span>
-                </div>
+                <Controller
+                  control={control}
+                  name="rating"
+                  render={({ field }) => (
+                    <div className="flex items-center gap-2">
+                      {[1, 2, 3, 4, 5].map((value) => (
+                        <button
+                          key={value}
+                          type="button"
+                          onClick={() => field.onChange(value)}
+                          className="p-1"
+                          aria-label={t('rating.rateStar', { value })}
+                        >
+                          <Star
+                            className={`w-6 h-6 ${
+                              value <= field.value
+                                ? 'text-blue-400 fill-blue-400'
+                                : 'text-slate-600'
+                            }`}
+                          />
+                        </button>
+                      ))}
+                      <span className="text-sm text-slate-500 ml-2">
+                        {field.value > 0
+                          ? `${field.value}/5`
+                          : t('rating.selectRating')}
+                      </span>
+                    </div>
+                  )}
+                />
               </div>
 
               <div>
@@ -147,8 +186,7 @@ export function RatingModal({
                 </label>
                 <textarea
                   rows={4}
-                  value={ratingText}
-                  onChange={(event) => onRatingTextChange(event.target.value)}
+                  {...register('review')}
                   maxLength={500}
                   placeholder={t('rating.reviewPlaceholder')}
                   className="w-full px-4 py-3 bg-slate-800/50 border border-slate-700 rounded-xl text-slate-200 placeholder-slate-500 focus:outline-none focus:border-blue-500/50 transition-all resize-none"
