@@ -54,7 +54,7 @@ export function BookingModal({
   const { t } = useI18n()
   const room = useQuery(api.rooms.get, { roomId })
   const hotel = useQuery(api.hotels.get, { hotelId })
-  const bankAccount = useQuery((api as any).hotelBankAccounts.getByHotel, {
+  const bankAccounts = useQuery(api.hotelBankAccounts.listByHotel, {
     hotelId,
   })
   const holdRoom = useMutation(api.bookings.holdRoom)
@@ -82,6 +82,9 @@ export function BookingModal({
   const [submitted, setSubmitted] = useState(false)
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState('')
+  const [selectedBankAccountId, setSelectedBankAccountId] = useState<
+    Id<'hotelBankAccounts'> | ''
+  >('')
 
   useEffect(() => {
     if (!user) return
@@ -100,6 +103,22 @@ export function BookingModal({
     setBookingId(existingBooking._id)
     setStep('confirm')
   }, [existingBooking])
+
+  useEffect(() => {
+    if (!bankAccounts || bankAccounts.length === 0) {
+      setSelectedBankAccountId('')
+      return
+    }
+
+    if (selectedBankAccountId) {
+      const stillExists = bankAccounts.some(
+        (account) => account._id === selectedBankAccountId,
+      )
+      if (stillExists) return
+    }
+
+    setSelectedBankAccountId(bankAccounts[0]._id)
+  }, [bankAccounts, selectedBankAccountId])
 
   const handleHold = async (e: React.FormEvent) => {
     // Step 1 submission: place temporary hold with package + guest details.
@@ -177,10 +196,16 @@ export function BookingModal({
     }
   }
 
-  const handleCopyBankAccount = async () => {
-    if (!bankAccount?.accountNumber) return
+  const selectedBankAccount = bankAccounts?.find(
+    (account) => account._id === selectedBankAccountId,
+  )
 
-    await navigator.clipboard.writeText(bankAccount.accountNumber)
+  const handleCopyBankAccount = async () => {
+    if (!selectedBankAccount) return
+
+    await navigator.clipboard.writeText(
+      `${selectedBankAccount.bankName} — ${selectedBankAccount.accountNumber}`,
+    )
     setCopied(true)
     window.setTimeout(() => setCopied(false), 1800)
   }
@@ -520,26 +545,61 @@ export function BookingModal({
                 <p className="text-sm text-slate-400 mb-2">
                   {t('bookingModal.transferTo')}
                 </p>
-                <div className="flex items-center justify-between gap-2 bg-slate-800/40 border border-slate-700 rounded-xl p-3">
+                <div className="space-y-3">
                   <div>
-                    <p className="text-xs text-slate-500 mb-1">
-                      {t('bookingModal.bankAccountNumber')}
-                    </p>
-                    <p className="text-slate-100 font-semibold break-all">
-                      {bankAccount?.accountNumber ||
-                        t('bookingModal.paymentNotConfigured')}
-                    </p>
-                  </div>
-                  {bankAccount?.accountNumber && (
-                    <button
-                      type="button"
-                      onClick={handleCopyBankAccount}
-                      className="inline-flex items-center gap-2 px-3 py-2 bg-slate-800 text-slate-300 rounded-lg hover:bg-slate-700 transition-colors border border-slate-700 text-sm"
+                    <label className="block text-xs text-slate-500 mb-2">
+                      {t('bookingModal.selectBank')}
+                    </label>
+                    <select
+                      value={selectedBankAccountId}
+                      onChange={(e) =>
+                        setSelectedBankAccountId(
+                          e.target.value as Id<'hotelBankAccounts'>,
+                        )
+                      }
+                      disabled={!bankAccounts || bankAccounts.length === 0}
+                      className="w-full px-3 py-2.5 bg-slate-800/60 border border-slate-700 rounded-xl text-slate-200 focus:outline-none focus:border-blue-500/50 transition-all"
                     >
-                      {copied ? <Check className="w-4 h-4" /> : <Copy className="w-4 h-4" />}
-                      {copied ? t('common.copied') : t('common.copy')}
-                    </button>
-                  )}
+                      {bankAccounts && bankAccounts.length > 0 ? (
+                        bankAccounts.map((account) => (
+                          <option key={account._id} value={account._id}>
+                            {account.bankName} — {account.accountNumber}
+                          </option>
+                        ))
+                      ) : (
+                        <option value="">
+                          {t('bookingModal.paymentNotConfigured')}
+                        </option>
+                      )}
+                    </select>
+                  </div>
+
+                  <div className="flex items-center justify-between gap-2 bg-slate-800/40 border border-slate-700 rounded-xl p-3">
+                    <div>
+                      <p className="text-xs text-slate-500 mb-1">
+                        {t('bookingModal.bankAccountNumber')}
+                      </p>
+                      <p className="text-slate-100 font-semibold break-all">
+                        {selectedBankAccount
+                          ? `${selectedBankAccount.bankName} — ${selectedBankAccount.accountNumber}`
+                          : t('bookingModal.paymentNotConfigured')}
+                      </p>
+                    </div>
+                    {selectedBankAccount && (
+                      <button
+                        type="button"
+                        onClick={handleCopyBankAccount}
+                        className="inline-flex items-center gap-2 px-3 py-2 bg-slate-800 text-slate-300 rounded-lg hover:bg-slate-700 transition-colors border border-slate-700 text-sm"
+                      >
+                        {copied ? (
+                          <Check className="w-4 h-4" />
+                        ) : (
+                          <Copy className="w-4 h-4" />
+                        )}
+                        {copied ? t('common.copied') : t('common.copy')}
+                      </button>
+                    )}
+                  </div>
                 </div>
               </div>
 
@@ -584,7 +644,7 @@ export function BookingModal({
                     loading ||
                     !nationalIdFile ||
                     !transactionId.trim() ||
-                    !bankAccount?.accountNumber
+                    !selectedBankAccount
                   }
                   className="flex-1 px-4 py-3 bg-gradient-to-r from-emerald-500 to-emerald-600 text-white font-medium rounded-xl hover:from-emerald-600 hover:to-emerald-700 transition-all disabled:opacity-50"
                 >

@@ -24,6 +24,7 @@ import { useEffect, useState } from 'react'
 import { api } from '../../../../convex/_generated/api'
 import { RoomModal } from './$hotelId/components/-RoomModal'
 import { HotelEditModal } from './$hotelId/components/-HotelEditModal'
+import { BankAccountModal } from './$hotelId/components/-BankAccountModal'
 import type { Id } from '../../../../convex/_generated/dataModel'
 import { useI18n } from '../../../lib/i18n'
 
@@ -41,9 +42,13 @@ function HotelDetailPage() {
   const [activeMenu, setActiveMenu] = useState<Id<'rooms'> | null>(null)
   const [showEditHotel, setShowEditHotel] = useState(false)
   const [isHydrated, setIsHydrated] = useState(false)
-  const [accountNumberInput, setAccountNumberInput] = useState('')
-  const [savingAccount, setSavingAccount] = useState(false)
-  const [paymentError, setPaymentError] = useState('')
+  const [showBankAccountModal, setShowBankAccountModal] = useState(false)
+  const [editingBankAccount, setEditingBankAccount] = useState<{
+    _id: Id<'hotelBankAccounts'>
+    bankName: string
+    accountNumber: string
+  } | null>(null)
+  const [bankAccountsBackfilled, setBankAccountsBackfilled] = useState(false)
   const { t, locale } = useI18n()
   const dateLocale = locale === 'am' ? 'am-ET' : 'en-US'
 
@@ -53,8 +58,12 @@ function HotelDetailPage() {
     profile ? {} : 'skip',
   )
 
+  const canManagePaymentSettings =
+    hotelAssignment?.hotelId === (hotelId as Id<'hotels'>) &&
+    ['hotel_admin', 'hotel_cashier'].includes(hotelAssignment.role)
+
   const hotel = useQuery(api.hotels.get, { hotelId: hotelId as Id<'hotels'> })
-  const bankAccount = useQuery(api.hotelBankAccounts.getByHotel, {
+  const bankAccounts = useQuery(api.hotelBankAccounts.listByHotel, {
     hotelId: hotelId as Id<'hotels'>,
   })
   const rooms = useQuery(
@@ -75,15 +84,31 @@ function HotelDetailPage() {
   const deleteRoom = useMutation(api.rooms.softDelete)
   const updateRoomStatus = useMutation(api.rooms.updateStatus)
   const deleteRating = useMutation(api.ratings.softDeleteRating)
-  const setBankAccount = useMutation(api.hotelBankAccounts.set)
+  const deleteBankAccount = useMutation(api.hotelBankAccounts.softDelete)
+  const backfillBankAccounts = useMutation(
+    api.hotelBankAccounts.backfillDefaultName,
+  )
 
   useEffect(() => {
     setIsHydrated(true)
   }, [])
 
   useEffect(() => {
-    setAccountNumberInput(bankAccount?.accountNumber ?? '')
-  }, [bankAccount?.accountNumber])
+    if (!canManagePaymentSettings || bankAccountsBackfilled) {
+      return
+    }
+
+    backfillBankAccounts({ hotelId: hotelId as Id<'hotels'> })
+      .catch(() => {})
+      .finally(() => {
+        setBankAccountsBackfilled(true)
+      })
+  }, [
+    backfillBankAccounts,
+    bankAccountsBackfilled,
+    canManagePaymentSettings,
+    hotelId,
+  ])
 
   const handleDeleteRoom = async (roomId: Id<'rooms'>) => {
     if (!user?.id) return
@@ -113,34 +138,18 @@ function HotelDetailPage() {
     setActiveMenu(null)
   }
 
-  const canManagePaymentSettings =
-    hotelAssignment?.hotelId === (hotelId as Id<'hotels'>) &&
-    ['hotel_admin', 'hotel_cashier'].includes(hotelAssignment.role)
-
-  const handleSaveBankAccount = async () => {
+  const handleDeleteBankAccount = async (
+    account: { _id: Id<'hotelBankAccounts'> },
+  ) => {
     if (!user?.id || !canManagePaymentSettings) {
       return
     }
 
-    const trimmed = accountNumberInput.trim()
-    if (!trimmed) {
-      setPaymentError(t('admin.hotels.payment.accountRequired'))
+    if (!confirm(t('admin.hotels.payment.confirmDeleteAccount'))) {
       return
     }
 
-    setSavingAccount(true)
-    setPaymentError('')
-
-    try {
-      await setBankAccount({
-        hotelId: hotelId as Id<'hotels'>,
-        accountNumber: trimmed,
-      })
-    } catch (error: any) {
-      setPaymentError(error?.message || t('admin.hotels.payment.saveFailed'))
-    } finally {
-      setSavingAccount(false)
-    }
+    await deleteBankAccount({ accountId: account._id })
   }
 
   const statusConfig = {
@@ -270,46 +279,73 @@ function HotelDetailPage() {
 
       {canManagePaymentSettings && (
         <div className="bg-slate-900/50 border border-slate-800/50 rounded-2xl p-6 mb-8">
-          <h2 className="text-xl font-semibold text-slate-200 mb-2">
-            {t('admin.hotels.payment.title')}
-          </h2>
-          <p className="text-sm text-slate-500 mb-4">
-            {t('admin.hotels.payment.description')}
-          </p>
-
-          <div className="space-y-4">
+          <div className="flex items-start justify-between gap-4 mb-4">
             <div>
-              <label className="block text-sm font-medium text-slate-300 mb-2">
-                {t('admin.hotels.payment.accountNumber')}
-              </label>
-              <input
-                type="text"
-                value={accountNumberInput}
-                onChange={(e) => setAccountNumberInput(e.target.value)}
-                placeholder={t('admin.hotels.payment.accountPlaceholder')}
-                className="w-full px-4 py-3 bg-slate-800/50 border border-slate-700 rounded-xl text-slate-200 placeholder-slate-500 focus:outline-none focus:border-blue-500/50 transition-all"
-              />
+              <h2 className="text-xl font-semibold text-slate-200 mb-2">
+                {t('admin.hotels.payment.title')}
+              </h2>
+              <p className="text-sm text-slate-500">
+                {t('admin.hotels.payment.description')}
+              </p>
             </div>
-
-            {paymentError && (
-              <div className="bg-red-500/10 border border-red-500/20 rounded-xl p-3 text-red-400 text-sm">
-                {paymentError}
-              </div>
-            )}
-
-            <div>
-              <button
-                type="button"
-                onClick={handleSaveBankAccount}
-                disabled={savingAccount}
-                className="px-4 py-2 bg-blue-500/10 text-blue-400 font-medium rounded-xl hover:bg-blue-500/20 transition-colors border border-blue-500/20 disabled:opacity-50"
-              >
-                {savingAccount
-                  ? t('admin.hotels.payment.saving')
-                  : t('admin.hotels.payment.save')}
-              </button>
-            </div>
+            <button
+              type="button"
+              onClick={() => {
+                setEditingBankAccount(null)
+                setShowBankAccountModal(true)
+              }}
+              className="px-4 py-2 bg-blue-500/10 text-blue-400 font-medium rounded-xl hover:bg-blue-500/20 transition-colors border border-blue-500/20"
+            >
+              {t('admin.hotels.payment.addAccount')}
+            </button>
           </div>
+
+          {bankAccounts === undefined ? (
+            <div className="flex items-center justify-center py-6">
+              <div className="animate-spin rounded-full h-6 w-6 border-2 border-blue-500/20 border-t-blue-500"></div>
+            </div>
+          ) : bankAccounts.length === 0 ? (
+            <div className="bg-slate-800/40 border border-slate-700 rounded-xl p-4 text-sm text-slate-400">
+              {t('admin.hotels.payment.noAccounts')}
+            </div>
+          ) : (
+            <div className="space-y-3">
+              {bankAccounts.map((account) => (
+                <div
+                  key={account._id}
+                  className="flex items-center justify-between gap-4 bg-slate-800/40 border border-slate-700 rounded-xl p-4"
+                >
+                  <div>
+                    <p className="text-sm font-semibold text-slate-200">
+                      {account.bankName}
+                    </p>
+                    <p className="text-xs text-slate-400 break-all">
+                      {account.accountNumber}
+                    </p>
+                  </div>
+                  <div className="flex items-center gap-2">
+                    <button
+                      type="button"
+                      onClick={() => {
+                        setEditingBankAccount(account)
+                        setShowBankAccountModal(true)
+                      }}
+                      className="px-3 py-1.5 text-sm text-slate-300 bg-slate-800 border border-slate-700 rounded-lg hover:bg-slate-700 transition-colors"
+                    >
+                      {t('admin.hotels.payment.editAccount')}
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => handleDeleteBankAccount(account)}
+                      className="px-3 py-1.5 text-sm text-red-300 bg-red-500/10 border border-red-500/30 rounded-lg hover:bg-red-500/20 transition-colors"
+                    >
+                      {t('admin.hotels.payment.deleteAccount')}
+                    </button>
+                  </div>
+                </div>
+              ))}
+            </div>
+          )}
         </div>
       )}
 
@@ -578,6 +614,17 @@ function HotelDetailPage() {
         <HotelEditModal
           hotelId={hotelId as Id<'hotels'>}
           onClose={() => setShowEditHotel(false)}
+        />
+      )}
+
+      {showBankAccountModal && (
+        <BankAccountModal
+          hotelId={hotelId as Id<'hotels'>}
+          account={editingBankAccount}
+          onClose={() => {
+            setShowBankAccountModal(false)
+            setEditingBankAccount(null)
+          }}
         />
       )}
 

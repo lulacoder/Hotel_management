@@ -139,10 +139,15 @@ export default defineSchema({
 
   hotelBankAccounts: defineTable({
     hotelId: v.id('hotels'),
+    bankName: v.optional(v.string()),
     accountNumber: v.string(),
+    isDeleted: v.optional(v.boolean()),
     setBy: v.id('users'),
+    createdAt: v.optional(v.number()),
     updatedAt: v.number(),
-  }).index('by_hotel', ['hotelId']),
+  })
+    .index('by_hotel', ['hotelId'])
+    .index('by_hotel_and_is_deleted', ['hotelId', 'isDeleted']),
 
   // Bookings table
   bookings: defineTable({
