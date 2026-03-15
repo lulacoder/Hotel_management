@@ -133,6 +133,7 @@ function AdminLayout() {
 
     if (hotelAssignment?.role === 'hotel_cashier') {
       return (
+        item.to === '/admin' ||
         item.to === '/admin/bookings' ||
         item.to === '/admin/rooms' ||
         item.to === '/admin/walk-in'
