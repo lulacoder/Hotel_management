@@ -27,15 +27,25 @@ import { HotelEditModal } from './$hotelId/components/-HotelEditModal'
 import { BankAccountModal } from './$hotelId/components/-BankAccountModal'
 import type { Id } from '../../../../convex/_generated/dataModel'
 import { useI18n } from '../../../lib/i18n'
+import {
+  normalizeAnalyticsWindow,
+  normalizeRoomOperationalStatusFilter,
+} from '../../../lib/adminAnalytics'
 
 export const Route = createFileRoute('/admin/hotels/$hotelId')({
+  validateSearch: (search: Record<string, unknown>) => ({
+    operationalStatus: normalizeRoomOperationalStatusFilter(
+      search.operationalStatus,
+    ),
+    window: normalizeAnalyticsWindow(search.window),
+  }),
   // Register per-hotel admin route for rooms, ratings, and metadata updates.
   component: HotelDetailPage,
 })
 
 function HotelDetailPage() {
-  // Hydrate hotel context and track UI state for room/rating management modals.
   const { hotelId } = Route.useParams()
+  const search = Route.useSearch()
   const { user } = useUser()
   const [showCreateRoom, setShowCreateRoom] = useState(false)
   const [editingRoom, setEditingRoom] = useState<Id<'rooms'> | null>(null)
@@ -76,9 +86,7 @@ function HotelDetailPage() {
   )
   const ratings = useQuery(
     api.ratings.getHotelRatingsAdmin,
-    user?.id
-      ? { hotelId: hotelId as Id<'hotels'> }
-      : 'skip',
+    user?.id ? { hotelId: hotelId as Id<'hotels'> } : 'skip',
   )
 
   const deleteRoom = useMutation(api.rooms.softDelete)
@@ -138,9 +146,9 @@ function HotelDetailPage() {
     setActiveMenu(null)
   }
 
-  const handleDeleteBankAccount = async (
-    account: { _id: Id<'hotelBankAccounts'> },
-  ) => {
+  const handleDeleteBankAccount = async (account: {
+    _id: Id<'hotelBankAccounts'>
+  }) => {
     if (!user?.id || !canManagePaymentSettings) {
       return
     }
@@ -349,6 +357,20 @@ function HotelDetailPage() {
         </div>
       )}
 
+      {search.operationalStatus !== 'all' && (
+        <div className="mb-6 rounded-2xl border border-blue-500/20 bg-blue-500/10 px-4 py-3 text-sm text-blue-100">
+          {t('admin.rooms.analyticsFilterNotice' as never, {
+            status: t(
+              `admin.hotels.status.${
+                search.operationalStatus === 'out_of_order'
+                  ? 'outOfOrder'
+                  : search.operationalStatus
+              }` as never,
+            ),
+          })}
+        </div>
+      )}
+
       {/* Rooms Section */}
       <div className="flex items-center justify-between mb-6">
         <h2 className="text-xl font-semibold text-slate-200">
@@ -387,137 +409,165 @@ function HotelDetailPage() {
             {t('admin.hotels.addFirstRoom')}
           </button>
         </div>
+      ) : rooms.filter((room) => {
+          if (search.operationalStatus === 'all') {
+            return true
+          }
+
+          return room.operationalStatus === search.operationalStatus
+        }).length === 0 ? (
+        <div className="bg-slate-900/50 border border-slate-800/50 rounded-2xl p-12 text-center">
+          <div className="w-16 h-16 rounded-2xl bg-slate-800 flex items-center justify-center mx-auto mb-4">
+            <Building2 className="w-8 h-8 text-slate-600" />
+          </div>
+          <h3 className="text-lg font-semibold text-slate-300 mb-2">
+            {t('admin.analytics.noData' as never)}
+          </h3>
+          <p className="text-slate-500">
+            {t('admin.rooms.filteredNoRooms' as never)}
+          </p>
+        </div>
       ) : (
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-          {rooms.map((room) => {
-            const status = statusConfig[room.liveState]
-            const StatusIcon = status.icon
+          {rooms
+            .filter((room) => {
+              if (search.operationalStatus === 'all') {
+                return true
+              }
 
-            return (
-              <div
-                key={room._id}
-                className="bg-slate-900/50 border border-slate-800/50 rounded-2xl p-5 hover:border-slate-700/50 transition-all relative"
-              >
-                {/* Menu Button */}
-                <div className="absolute top-4 right-4">
-                  <button
-                    onClick={() =>
-                      setActiveMenu(activeMenu === room._id ? null : room._id)
-                    }
-                    className="p-1.5 rounded-lg hover:bg-slate-800 transition-colors"
-                  >
-                    <MoreVertical className="w-4 h-4 text-slate-500" />
-                  </button>
+              return room.operationalStatus === search.operationalStatus
+            })
+            .map((room) => {
+              const status = statusConfig[room.liveState]
+              const StatusIcon = status.icon
 
-                  {activeMenu === room._id && (
-                    <div className="absolute right-0 top-8 w-52 bg-slate-800 border border-slate-700 rounded-xl shadow-xl z-10 overflow-hidden">
-                      <button
-                        onClick={() => {
-                          setEditingRoom(room._id)
-                          setActiveMenu(null)
-                        }}
-                        className="flex items-center gap-3 px-4 py-2.5 text-slate-300 hover:bg-slate-700 transition-colors w-full text-sm"
-                      >
-                        <Pencil className="w-4 h-4" />
-                        {t('admin.hotels.editRoom')}
-                      </button>
-                      <div className="border-t border-slate-700 my-1"></div>
-                      <p className="px-4 py-2 text-xs text-slate-500 font-medium">
-                        {t('admin.hotels.setStatus')}
+              return (
+                <div
+                  key={room._id}
+                  className="bg-slate-900/50 border border-slate-800/50 rounded-2xl p-5 hover:border-slate-700/50 transition-all relative"
+                >
+                  {/* Menu Button */}
+                  <div className="absolute top-4 right-4">
+                    <button
+                      onClick={() =>
+                        setActiveMenu(activeMenu === room._id ? null : room._id)
+                      }
+                      className="p-1.5 rounded-lg hover:bg-slate-800 transition-colors"
+                    >
+                      <MoreVertical className="w-4 h-4 text-slate-500" />
+                    </button>
+
+                    {activeMenu === room._id && (
+                      <div className="absolute right-0 top-8 w-52 bg-slate-800 border border-slate-700 rounded-xl shadow-xl z-10 overflow-hidden">
+                        <button
+                          onClick={() => {
+                            setEditingRoom(room._id)
+                            setActiveMenu(null)
+                          }}
+                          className="flex items-center gap-3 px-4 py-2.5 text-slate-300 hover:bg-slate-700 transition-colors w-full text-sm"
+                        >
+                          <Pencil className="w-4 h-4" />
+                          {t('admin.hotels.editRoom')}
+                        </button>
+                        <div className="border-t border-slate-700 my-1"></div>
+                        <p className="px-4 py-2 text-xs text-slate-500 font-medium">
+                          {t('admin.hotels.setStatus')}
+                        </p>
+                        {operationalStatusOptions.map((key) => {
+                          const config = statusConfig[key]
+
+                          return (
+                            <button
+                              key={key}
+                              onClick={() => handleStatusChange(room._id, key)}
+                              className={`flex items-center gap-3 px-4 py-2 hover:bg-slate-700 transition-colors w-full text-sm ${
+                                room.operationalStatus === key
+                                  ? config.color
+                                  : 'text-slate-400'
+                              }`}
+                            >
+                              <config.icon className="w-4 h-4" />
+                              {config.label}
+                            </button>
+                          )
+                        })}
+                        <div className="border-t border-slate-700 my-1"></div>
+                        <button
+                          onClick={() => handleDeleteRoom(room._id)}
+                          className="flex items-center gap-3 px-4 py-2.5 text-red-400 hover:bg-slate-700 transition-colors w-full text-sm"
+                        >
+                          <Trash2 className="w-4 h-4" />
+                          {t('admin.hotels.deleteRoom')}
+                        </button>
+                      </div>
+                    )}
+                  </div>
+
+                  {/* Room Info */}
+                  <div className="flex items-center gap-3 mb-4">
+                    <div className="w-12 h-12 rounded-xl bg-slate-800 flex items-center justify-center">
+                      <Building2 className="w-6 h-6 text-slate-400" />
+                    </div>
+                    <div>
+                      <h3 className="font-semibold text-slate-200">
+                        {t('hotel.room')} {room.roomNumber}
+                      </h3>
+                      <p className="text-sm text-slate-500">
+                        {roomTypeLabels[room.type]}
                       </p>
-                      {operationalStatusOptions.map((key) => {
-                        const config = statusConfig[key]
+                    </div>
+                  </div>
 
-                        return (
-                          <button
-                            key={key}
-                            onClick={() => handleStatusChange(room._id, key)}
-                            className={`flex items-center gap-3 px-4 py-2 hover:bg-slate-700 transition-colors w-full text-sm ${
-                              room.operationalStatus === key
-                                ? config.color
-                                : 'text-slate-400'
-                            }`}
+                  {/* Status Badge */}
+                  <div
+                    className={`inline-flex items-center gap-2 px-3 py-1.5 rounded-lg text-sm font-medium ${status.bg} ${status.color} ${status.border} border mb-4`}
+                  >
+                    <StatusIcon className="w-3.5 h-3.5" />
+                    {status.label}
+                  </div>
+
+                  {/* Details */}
+                  <div className="grid grid-cols-2 gap-4 text-sm">
+                    <div className="flex items-center gap-2 text-slate-400">
+                      <DollarSign className="w-4 h-4" />
+                      <span>
+                        ${(room.basePrice / 100).toFixed(2)}/{t('hotel.night')}
+                      </span>
+                    </div>
+                    <div className="flex items-center gap-2 text-slate-400">
+                      <Users className="w-4 h-4" />
+                      <span>
+                        {t('admin.hotels.maxOccupancy', {
+                          count: room.maxOccupancy,
+                        })}
+                      </span>
+                    </div>
+                  </div>
+
+                  {room.amenities && room.amenities.length > 0 && (
+                    <div className="mt-4 pt-4 border-t border-slate-800">
+                      <div className="flex flex-wrap gap-2">
+                        {room.amenities.slice(0, 3).map((amenity) => (
+                          <span
+                            key={amenity}
+                            className="px-2 py-1 bg-slate-800 text-slate-400 rounded text-xs"
                           >
-                            <config.icon className="w-4 h-4" />
-                            {config.label}
-                          </button>
-                        )
-                      })}
-                      <div className="border-t border-slate-700 my-1"></div>
-                      <button
-                        onClick={() => handleDeleteRoom(room._id)}
-                        className="flex items-center gap-3 px-4 py-2.5 text-red-400 hover:bg-slate-700 transition-colors w-full text-sm"
-                      >
-                        <Trash2 className="w-4 h-4" />
-                        {t('admin.hotels.deleteRoom')}
-                      </button>
+                            {amenity}
+                          </span>
+                        ))}
+                        {room.amenities.length > 3 && (
+                          <span className="px-2 py-1 bg-slate-800 text-slate-500 rounded text-xs">
+                            {t('grid.more', {
+                              count: room.amenities.length - 3,
+                            })}
+                          </span>
+                        )}
+                      </div>
                     </div>
                   )}
                 </div>
-
-                {/* Room Info */}
-                <div className="flex items-center gap-3 mb-4">
-                  <div className="w-12 h-12 rounded-xl bg-slate-800 flex items-center justify-center">
-                    <Building2 className="w-6 h-6 text-slate-400" />
-                  </div>
-                  <div>
-                    <h3 className="font-semibold text-slate-200">
-                      {t('hotel.room')} {room.roomNumber}
-                    </h3>
-                    <p className="text-sm text-slate-500">
-                      {roomTypeLabels[room.type]}
-                    </p>
-                  </div>
-                </div>
-
-                {/* Status Badge */}
-                <div
-                  className={`inline-flex items-center gap-2 px-3 py-1.5 rounded-lg text-sm font-medium ${status.bg} ${status.color} ${status.border} border mb-4`}
-                >
-                  <StatusIcon className="w-3.5 h-3.5" />
-                  {status.label}
-                </div>
-
-                {/* Details */}
-                <div className="grid grid-cols-2 gap-4 text-sm">
-                  <div className="flex items-center gap-2 text-slate-400">
-                    <DollarSign className="w-4 h-4" />
-                    <span>
-                      ${(room.basePrice / 100).toFixed(2)}/{t('hotel.night')}
-                    </span>
-                  </div>
-                  <div className="flex items-center gap-2 text-slate-400">
-                    <Users className="w-4 h-4" />
-                    <span>
-                      {t('admin.hotels.maxOccupancy', {
-                        count: room.maxOccupancy,
-                      })}
-                    </span>
-                  </div>
-                </div>
-
-                {room.amenities && room.amenities.length > 0 && (
-                  <div className="mt-4 pt-4 border-t border-slate-800">
-                    <div className="flex flex-wrap gap-2">
-                      {room.amenities.slice(0, 3).map((amenity) => (
-                        <span
-                          key={amenity}
-                          className="px-2 py-1 bg-slate-800 text-slate-400 rounded text-xs"
-                        >
-                          {amenity}
-                        </span>
-                      ))}
-                      {room.amenities.length > 3 && (
-                        <span className="px-2 py-1 bg-slate-800 text-slate-500 rounded text-xs">
-                          {t('grid.more', { count: room.amenities.length - 3 })}
-                        </span>
-                      )}
-                    </div>
-                  </div>
-                )}
-              </div>
-            )
-          })}
+              )
+            })}
         </div>
       )}
 

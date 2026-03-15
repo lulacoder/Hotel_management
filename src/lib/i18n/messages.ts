@@ -91,7 +91,8 @@ export const messages = {
     'select.findStaySubtitle':
       'Browse our curated selection of hotels and book your next adventure.',
     'select.gettingLocation': 'Getting your location...',
-    'select.locationEnabled': 'Location enabled - showing hotels sorted by distance',
+    'select.locationEnabled':
+      'Location enabled - showing hotels sorted by distance',
     'select.tryAgain': 'Try again',
     'select.searchPlaceholder': 'Search hotels, cities, or amenities...',
     'select.allCities': 'All Cities',
@@ -141,7 +142,8 @@ export const messages = {
     'hotel.upTo': 'Up to {count}',
     'hotel.smoking': 'Smoking',
     'hotel.nonSmoking': 'Non-smoking',
-    'hotel.selectDatesFirst': 'Please select check-in and check-out dates first',
+    'hotel.selectDatesFirst':
+      'Please select check-in and check-out dates first',
     'hotel.bookNow': 'Book Now',
     'hotel.signInToBook': 'Sign In to Book',
     'hotel.selectDatesToBook': 'Select Dates to Book',
@@ -158,7 +160,8 @@ export const messages = {
     'bookings.noStatusBookings': 'No {status} bookings',
     'bookings.startSelectingLocation':
       "You haven't made any bookings. Start by selecting a location!",
-    'bookings.tryChangingFilter': 'Try changing the filter to see other bookings.',
+    'bookings.tryChangingFilter':
+      'Try changing the filter to see other bookings.',
     'bookings.browseHotels': 'Browse Hotels',
     'bookings.filter.all': 'All',
     'bookings.filter.held': 'Held',
@@ -229,9 +232,12 @@ export const messages = {
     'bookingModal.step.paymentTitle': 'Complete Payment',
     'bookingModal.step.submittedTitle': 'Payment Proof Submitted',
     'bookingModal.step.packageDescription': 'Choose the package for your stay.',
-    'bookingModal.step.detailsDescription': 'Enter guest details for the reservation.',
-    'bookingModal.step.confirmDescription': 'Submit your payment proof for verification.',
-    'bookingModal.step.paymentDescription': 'Submit your payment proof for verification.',
+    'bookingModal.step.detailsDescription':
+      'Enter guest details for the reservation.',
+    'bookingModal.step.confirmDescription':
+      'Submit your payment proof for verification.',
+    'bookingModal.step.paymentDescription':
+      'Submit your payment proof for verification.',
     'bookingModal.step.submittedDescription':
       'Your booking is awaiting verification by the hotel.',
     'bookingModal.continue': 'Continue',
@@ -239,13 +245,15 @@ export const messages = {
     'bookingModal.email': 'Email',
     'bookingModal.specialRequests': 'Special Requests',
     'bookingModal.specialRequestsPlaceholder': 'Special requests (optional)',
-    'bookingModal.holdNotice': 'This room will be held briefly while you confirm.',
+    'bookingModal.holdNotice':
+      'This room will be held briefly while you confirm.',
     'bookingModal.roomRate': 'Room rate',
     'bookingModal.addOn': 'add-on',
     'bookingModal.holding': 'Holding...',
     'bookingModal.holdRoom': 'Hold Room',
     'bookingModal.heldSuccess': 'Room held successfully',
-    'bookingModal.heldDescription': 'Confirm your booking before the hold expires.',
+    'bookingModal.heldDescription':
+      'Confirm your booking before the hold expires.',
     'bookingModal.cancelHold': 'Cancel Hold',
     'bookingModal.confirming': 'Confirming...',
     'bookingModal.transferTo': 'Transfer the total amount to:',
@@ -321,7 +329,8 @@ export const messages = {
     'admin.hotels.confirmDelete': 'Are you sure you want to delete this hotel?',
     'admin.hotels.description': 'Manage your hotel properties and locations.',
     'admin.hotels.addHotel': 'Add Hotel',
-    'admin.hotels.searchPlaceholder': 'Search hotels by name, city, or country...',
+    'admin.hotels.searchPlaceholder':
+      'Search hotels by name, city, or country...',
     'admin.hotels.noneFound': 'No hotels found',
     'admin.hotels.noneYet': 'No hotels yet',
     'admin.hotels.payment.title': 'Payment Settings',
@@ -346,13 +355,15 @@ export const messages = {
     'admin.hotels.payment.saving': 'Saving...',
     'admin.hotels.payment.saveFailed': 'Failed to save bank account number.',
     'admin.hotels.trySearchAdjust': 'Try adjusting your search terms.',
-    'admin.hotels.getStarted': 'Get started by adding your first hotel property.',
+    'admin.hotels.getStarted':
+      'Get started by adding your first hotel property.',
     'admin.hotels.addFirst': 'Add Your First Hotel',
     'admin.hotels.viewDetails': 'View Details',
     'admin.hotels.editHotel': 'Edit Hotel',
     'admin.hotels.deleteHotel': 'Delete Hotel',
     'admin.hotels.manageRooms': 'Manage Rooms',
-    'admin.hotels.confirmDeleteRoom': 'Are you sure you want to delete this room?',
+    'admin.hotels.confirmDeleteRoom':
+      'Are you sure you want to delete this room?',
     'admin.hotels.confirmDeleteRating':
       'Delete this rating? This will remove it from public view.',
     'admin.hotels.status.available': 'Available',
@@ -432,11 +443,13 @@ export const messages = {
     'admin.rooms.trySearchAdjust': 'Try adjusting your search.',
     'admin.rooms.createHotelFirst': 'Create a hotel first to manage rooms.',
     'admin.rooms.goToHotels': 'Go to Hotels',
-    'admin.users.confirmUnassign': 'Are you sure you want to unassign this user?',
+    'admin.users.confirmUnassign':
+      'Are you sure you want to unassign this user?',
     'admin.users.unassignFailed': 'Failed to unassign user.',
     'admin.users.loadingProfile': 'Loading profile...',
     'admin.users.onlyRoomAdmins': 'Only room administrators can manage users.',
-    'admin.users.description': 'Assign users to hotels and manage hotel staff roles.',
+    'admin.users.description':
+      'Assign users to hotels and manage hotel staff roles.',
     'admin.users.searchPlaceholder': 'Search users by email...',
     'admin.users.email': 'Email',
     'admin.users.globalRole': 'Global Role',
@@ -469,7 +482,8 @@ export const messages = {
     'admin.walkIn.error.contactRequired':
       'At least one contact method is required.',
     'admin.walkIn.error.createGuestFailed': 'Failed to create guest profile.',
-    'admin.walkIn.error.createBookingFailed': 'Failed to create walk-in booking.',
+    'admin.walkIn.error.createBookingFailed':
+      'Failed to create walk-in booking.',
     'admin.walkIn.accessDescription':
       'Walk-in booking is available for hotel cashiers and hotel admins.',
     'admin.walkIn.description':
@@ -500,6 +514,45 @@ export const messages = {
     'admin.dashboard.roleAccessTitle': 'Role-Based Access Active',
     'admin.dashboard.roleAccessDescription':
       "You're signed in as {email} with {role} privileges. Only administrators can access this dashboard.",
+    'admin.analytics.window.today': 'Today',
+    'admin.analytics.window.7d': '7 days',
+    'admin.analytics.window.30d': '30 days',
+    'admin.analytics.loading': 'Loading analytics',
+    'admin.analytics.loadingDescription':
+      'We are preparing the latest dashboard activity for your role.',
+    'admin.analytics.collectedRevenue': 'Collected Revenue',
+    'admin.analytics.confirmedPipeline': 'Confirmed Pipeline',
+    'admin.analytics.totalBookings': 'Total Bookings',
+    'admin.analytics.activeStays': 'Active Stays',
+    'admin.analytics.occupancy': 'Occupancy',
+    'admin.analytics.pendingPaymentBookings': 'Pending Payments',
+    'admin.analytics.arrivalsToday': 'Arrivals Today',
+    'admin.analytics.bookingTrend': 'Booking Trend',
+    'admin.analytics.revenueTrend': 'Revenue Trend',
+    'admin.analytics.bookingBreakdown': 'Booking Status',
+    'admin.analytics.paymentBreakdown': 'Payment Status',
+    'admin.analytics.roomBreakdown': 'Room Status',
+    'admin.analytics.occupancyTrend': 'Occupancy Trend',
+    'admin.analytics.topHotels': 'Top Hotels',
+    'admin.analytics.noData': 'No analytics yet',
+    'admin.analytics.noDataDescription':
+      'This section will fill in as new hotel activity comes in.',
+    'admin.analytics.hotelScopeOnly': 'Hotel-scoped view',
+    'admin.analytics.hotelScopeOnlyDescription':
+      'Top-hotel rankings are available only to room administrators.',
+    'admin.analytics.columns.hotel': 'Hotel Name',
+    'admin.analytics.columns.revenue': 'Revenue',
+    'admin.analytics.columns.bookings': 'Booking Count',
+    'admin.analytics.columns.occupancy': 'Occupancy Rate',
+    'admin.analytics.payment.all': 'All Payments',
+    'admin.analytics.payment.paid': 'Paid',
+    'admin.analytics.payment.failed': 'Failed',
+    'admin.analytics.payment.refunded': 'Refunded',
+    'admin.analytics.payment.unknown': 'Unspecified',
+    'admin.rooms.analyticsFilterNotice':
+      'Analytics drill-down is highlighting rooms with {status} status.',
+    'admin.rooms.filteredNoRooms':
+      'No rooms match the analytics status filter for this hotel.',
     'hotel.singleRoom': 'Single Room',
     'hotel.doubleRoom': 'Double Room',
     'hotel.previewAlt': '{name} preview',
@@ -510,7 +563,8 @@ export const messages = {
     'hotel.category.extendedStay': 'Extended-Stay',
     'hotel.category.suite': 'Suite',
     'package.roomOnly.label': 'Room Only',
-    'package.roomOnly.description': 'Just the essentials for a comfortable stay.',
+    'package.roomOnly.description':
+      'Just the essentials for a comfortable stay.',
     'package.withBreakfast.label': 'With Breakfast',
     'package.withBreakfast.description':
       'Start every morning right with a full breakfast included.',
@@ -569,7 +623,8 @@ export const messages = {
     'landing.premiumBadge': 'ከፍተኛ የሆቴል ቦታ ማስያዣ መድረክ',
     'landing.titleLine1': 'የማይረሱ ቦታዎች',
     'landing.titleLine2': 'ውስጥ ይቆዩ',
-    'landing.subtitle': 'የታመኑ ሆቴሎችን ይመልከቱ፣ በደቂቃዎች ውስጥ ያስይዙ እና ሁሉንም ቦታ ያዞች በአንድ ቦታ ያስተዳድሩ።',
+    'landing.subtitle':
+      'የታመኑ ሆቴሎችን ይመልከቱ፣ በደቂቃዎች ውስጥ ያስይዙ እና ሁሉንም ቦታ ያዞች በአንድ ቦታ ያስተዳድሩ።',
     'landing.browseHotels': 'ሆቴሎችን ፈልግ',
     'landing.createFreeAccount': 'ነፃ መለያ ፍጠር',
     'landing.pill1': 'በሰከንዶች ውስጥ በአካባቢ ያስይዙ',
@@ -755,16 +810,14 @@ export const messages = {
     'admin.hotels.payment.accountNumber': 'የባንክ መለያ ቁጥር',
     'admin.hotels.payment.accountPlaceholder': 'ለምሳሌ 1000234567890',
     'admin.hotels.payment.accountRequired': 'የባንክ መለያ ቁጥር ያስፈልጋል።',
-    'admin.hotels.payment.accountNumberRequired':
-      'የባንክ መለያ ቁጥር ያስፈልጋል።',
+    'admin.hotels.payment.accountNumberRequired': 'የባንክ መለያ ቁጥር ያስፈልጋል።',
     'admin.hotels.payment.bankName': 'የባንክ ስም',
     'admin.hotels.payment.bankNamePlaceholder': 'ለምሳሌ ኤቢሲ ባንክ',
     'admin.hotels.payment.bankNameRequired': 'የባንክ ስም ያስፈልጋል።',
     'admin.hotels.payment.addAccount': 'መለያ አክል',
     'admin.hotels.payment.editAccount': 'አስተካክል',
     'admin.hotels.payment.deleteAccount': 'ሰርዝ',
-    'admin.hotels.payment.confirmDeleteAccount':
-      'ይህን የባንክ መለያ ማጥፋት እርግጠኛ ነዎት?',
+    'admin.hotels.payment.confirmDeleteAccount': 'ይህን የባንክ መለያ ማጥፋት እርግጠኛ ነዎት?',
     'admin.hotels.payment.noAccounts': 'እስካሁን የባንክ መለያዎች የሉም።',
     'admin.hotels.payment.modalTitle': 'የመለያ ዝርዝር አክል',
     'admin.hotels.payment.submit': 'አስገባ',
@@ -789,20 +842,24 @@ export const messages = {
     'bookingModal.step.detailsTitle': 'Guest Details',
     'bookingModal.step.confirmTitle': 'Complete Payment',
     'bookingModal.step.packageDescription': 'Choose the package for your stay.',
-    'bookingModal.step.detailsDescription': 'Enter guest details for the reservation.',
-    'bookingModal.step.confirmDescription': 'Submit your payment proof for verification.',
+    'bookingModal.step.detailsDescription':
+      'Enter guest details for the reservation.',
+    'bookingModal.step.confirmDescription':
+      'Submit your payment proof for verification.',
     'bookingModal.continue': 'Continue',
     'bookingModal.guestName': 'Guest Name',
     'bookingModal.email': 'Email',
     'bookingModal.specialRequests': 'Special Requests',
     'bookingModal.specialRequestsPlaceholder': 'Special requests (optional)',
-    'bookingModal.holdNotice': 'This room will be held briefly while you confirm.',
+    'bookingModal.holdNotice':
+      'This room will be held briefly while you confirm.',
     'bookingModal.roomRate': 'Room rate',
     'bookingModal.addOn': 'add-on',
     'bookingModal.holding': 'Holding...',
     'bookingModal.holdRoom': 'Hold Room',
     'bookingModal.heldSuccess': 'Room held successfully',
-    'bookingModal.heldDescription': 'Confirm your booking before the hold expires.',
+    'bookingModal.heldDescription':
+      'Confirm your booking before the hold expires.',
     'bookingModal.cancelHold': 'Cancel Hold',
     'bookingModal.confirming': 'Confirming...',
     'admin.bookings.description': 'View and manage all customer reservations.',
@@ -850,17 +907,20 @@ export const messages = {
     'admin.hotels.confirmDelete': 'Are you sure you want to delete this hotel?',
     'admin.hotels.description': 'Manage your hotel properties and locations.',
     'admin.hotels.addHotel': 'Add Hotel',
-    'admin.hotels.searchPlaceholder': 'Search hotels by name, city, or country...',
+    'admin.hotels.searchPlaceholder':
+      'Search hotels by name, city, or country...',
     'admin.hotels.noneFound': 'No hotels found',
     'admin.hotels.noneYet': 'No hotels yet',
     'admin.hotels.trySearchAdjust': 'Try adjusting your search terms.',
-    'admin.hotels.getStarted': 'Get started by adding your first hotel property.',
+    'admin.hotels.getStarted':
+      'Get started by adding your first hotel property.',
     'admin.hotels.addFirst': 'Add Your First Hotel',
     'admin.hotels.viewDetails': 'View Details',
     'admin.hotels.editHotel': 'Edit Hotel',
     'admin.hotels.deleteHotel': 'Delete Hotel',
     'admin.hotels.manageRooms': 'Manage Rooms',
-    'admin.hotels.confirmDeleteRoom': 'Are you sure you want to delete this room?',
+    'admin.hotels.confirmDeleteRoom':
+      'Are you sure you want to delete this room?',
     'admin.hotels.confirmDeleteRating':
       'Delete this rating? This will remove it from public view.',
     'admin.hotels.status.available': 'Available',
@@ -940,11 +1000,13 @@ export const messages = {
     'admin.rooms.trySearchAdjust': 'Try adjusting your search.',
     'admin.rooms.createHotelFirst': 'Create a hotel first to manage rooms.',
     'admin.rooms.goToHotels': 'Go to Hotels',
-    'admin.users.confirmUnassign': 'Are you sure you want to unassign this user?',
+    'admin.users.confirmUnassign':
+      'Are you sure you want to unassign this user?',
     'admin.users.unassignFailed': 'Failed to unassign user.',
     'admin.users.loadingProfile': 'Loading profile...',
     'admin.users.onlyRoomAdmins': 'Only room administrators can manage users.',
-    'admin.users.description': 'Assign users to hotels and manage hotel staff roles.',
+    'admin.users.description':
+      'Assign users to hotels and manage hotel staff roles.',
     'admin.users.searchPlaceholder': 'Search users by email...',
     'admin.users.email': 'Email',
     'admin.users.globalRole': 'Global Role',
@@ -977,7 +1039,8 @@ export const messages = {
     'admin.walkIn.error.contactRequired':
       'At least one contact method is required.',
     'admin.walkIn.error.createGuestFailed': 'Failed to create guest profile.',
-    'admin.walkIn.error.createBookingFailed': 'Failed to create walk-in booking.',
+    'admin.walkIn.error.createBookingFailed':
+      'Failed to create walk-in booking.',
     'admin.walkIn.accessDescription':
       'Walk-in booking is available for hotel cashiers and hotel admins.',
     'admin.walkIn.description':
@@ -1008,6 +1071,44 @@ export const messages = {
     'admin.dashboard.roleAccessTitle': 'Role-Based Access Active',
     'admin.dashboard.roleAccessDescription':
       "You're signed in as {email} with {role} privileges. Only administrators can access this dashboard.",
+    'admin.analytics.window.today': 'ዛሬ',
+    'admin.analytics.window.7d': '7 ቀናት',
+    'admin.analytics.window.30d': '30 ቀናት',
+    'admin.analytics.loading': 'ትንታኔ በመጫን ላይ',
+    'admin.analytics.loadingDescription':
+      'ለእርስዎ ሚና የተስማማ የቅርብ ጊዜ የዳሽቦርድ መረጃ በመዘጋጀት ላይ ነው።',
+    'admin.analytics.collectedRevenue': 'የተሰበሰበ ገቢ',
+    'admin.analytics.confirmedPipeline': 'የተረጋገጠ የገቢ ፍሰት',
+    'admin.analytics.totalBookings': 'ጠቅላላ ማስያዣዎች',
+    'admin.analytics.activeStays': 'ንቁ ቆይታዎች',
+    'admin.analytics.occupancy': 'የመያዣ መጠን',
+    'admin.analytics.pendingPaymentBookings': 'ክፍያ በመጠበቅ ላይ',
+    'admin.analytics.arrivalsToday': 'የዛሬ መግቢያዎች',
+    'admin.analytics.bookingTrend': 'የማስያዣ አቅጣጫ',
+    'admin.analytics.revenueTrend': 'የገቢ አቅጣጫ',
+    'admin.analytics.bookingBreakdown': 'የማስያዣ ሁኔታ',
+    'admin.analytics.paymentBreakdown': 'የክፍያ ሁኔታ',
+    'admin.analytics.roomBreakdown': 'የክፍል ሁኔታ',
+    'admin.analytics.occupancyTrend': 'የመያዣ አቅጣጫ',
+    'admin.analytics.topHotels': 'ከፍተኛ ሆቴሎች',
+    'admin.analytics.noData': 'እስካሁን ትንታኔ የለም',
+    'admin.analytics.noDataDescription': 'አዲስ እንቅስቃሴ ሲኖር ይህ ክፍል መረጃ ያሳያል።',
+    'admin.analytics.hotelScopeOnly': 'በሆቴል የተገደበ እይታ',
+    'admin.analytics.hotelScopeOnlyDescription':
+      'የከፍተኛ ሆቴሎች ዝርዝር ለክፍል አስተዳዳሪዎች ብቻ ይገኛል።',
+    'admin.analytics.columns.hotel': 'የሆቴል ስም',
+    'admin.analytics.columns.revenue': 'ገቢ',
+    'admin.analytics.columns.bookings': 'የማስያዣ ብዛት',
+    'admin.analytics.columns.occupancy': 'የመያዣ መጠን',
+    'admin.analytics.payment.all': 'ሁሉም ክፍያዎች',
+    'admin.analytics.payment.paid': 'የተከፈለ',
+    'admin.analytics.payment.failed': 'ያልተሳካ',
+    'admin.analytics.payment.refunded': 'ተመላሽ የተደረገ',
+    'admin.analytics.payment.unknown': 'ያልተገለጸ',
+    'admin.rooms.analyticsFilterNotice':
+      'የትንታኔ መመሪያው {status} ሁኔታ ያላቸውን ክፍሎች እያሳየ ነው።',
+    'admin.rooms.filteredNoRooms':
+      'በዚህ ሆቴል ውስጥ ከትንታኔ ሁኔታ ማጣሪያው ጋር የሚዛመዱ ክፍሎች የሉም።',
     'hotel.singleRoom': 'Single Room',
     'hotel.doubleRoom': 'Double Room',
     'hotel.previewAlt': '{name} preview',
@@ -1018,7 +1119,8 @@ export const messages = {
     'hotel.category.extendedStay': 'Extended-Stay',
     'hotel.category.suite': 'Suite',
     'package.roomOnly.label': 'Room Only',
-    'package.roomOnly.description': 'Just the essentials for a comfortable stay.',
+    'package.roomOnly.description':
+      'Just the essentials for a comfortable stay.',
     'package.withBreakfast.label': 'With Breakfast',
     'package.withBreakfast.description':
       'Start every morning right with a full breakfast included.',

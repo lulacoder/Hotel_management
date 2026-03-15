@@ -8,6 +8,7 @@
  * @module
  */
 
+import type * as analytics from "../analytics.js";
 import type * as audit from "../audit.js";
 import type * as bookings from "../bookings.js";
 import type * as bookingsInternal from "../bookingsInternal.js";
@@ -20,6 +21,10 @@ import type * as hotelBankAccounts from "../hotelBankAccounts.js";
 import type * as hotelStaff from "../hotelStaff.js";
 import type * as hotels from "../hotels.js";
 import type * as http from "../http.js";
+import type * as lib_adminAnalyticsMetrics from "../lib/adminAnalyticsMetrics.js";
+import type * as lib_adminAnalyticsQueryBuilders from "../lib/adminAnalyticsQueryBuilders.js";
+import type * as lib_adminAnalyticsScope from "../lib/adminAnalyticsScope.js";
+import type * as lib_adminAnalyticsWindow from "../lib/adminAnalyticsWindow.js";
 import type * as lib_auth from "../lib/auth.js";
 import type * as lib_dates from "../lib/dates.js";
 import type * as ratings from "../ratings.js";
@@ -34,6 +39,7 @@ import type {
 } from "convex/server";
 
 declare const fullApi: ApiFromModules<{
+  analytics: typeof analytics;
   audit: typeof audit;
   bookings: typeof bookings;
   bookingsInternal: typeof bookingsInternal;
@@ -46,6 +52,10 @@ declare const fullApi: ApiFromModules<{
   hotelStaff: typeof hotelStaff;
   hotels: typeof hotels;
   http: typeof http;
+  "lib/adminAnalyticsMetrics": typeof lib_adminAnalyticsMetrics;
+  "lib/adminAnalyticsQueryBuilders": typeof lib_adminAnalyticsQueryBuilders;
+  "lib/adminAnalyticsScope": typeof lib_adminAnalyticsScope;
+  "lib/adminAnalyticsWindow": typeof lib_adminAnalyticsWindow;
   "lib/auth": typeof lib_auth;
   "lib/dates": typeof lib_dates;
   ratings: typeof ratings;

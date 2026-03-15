@@ -1,5 +1,5 @@
 // Admin bookings list route with filtering and booking management actions.
-import { Link, createFileRoute } from '@tanstack/react-router'
+import { Link, createFileRoute, useNavigate } from '@tanstack/react-router'
 import { useUser } from '@clerk/clerk-react'
 import {
   Ban,
@@ -14,10 +14,15 @@ import {
   X,
   XCircle,
 } from 'lucide-react'
-import { useEffect, useState } from 'react'
+import { useEffect, useMemo, useState } from 'react'
 import { useMutation, useQuery } from 'convex/react'
 import { api } from '../../../../convex/_generated/api'
 import { useI18n } from '../../../lib/i18n'
+import {
+  normalizeAnalyticsWindow,
+  normalizeBookingStatusFilter,
+  normalizePaymentStatusFilter,
+} from '../../../lib/adminAnalytics'
 import {
   formatPackageAddOn,
   getPackageLabelOrDefault,
@@ -26,15 +31,24 @@ import { OutsourceModal } from './components/-OutsourceModal'
 import type { Id } from '../../../../convex/_generated/dataModel'
 
 export const Route = createFileRoute('/admin/bookings/')({
+  validateSearch: (search: Record<string, unknown>) => ({
+    status: normalizeBookingStatusFilter(search.status),
+    paymentStatus: normalizePaymentStatusFilter(search.paymentStatus),
+    window: normalizeAnalyticsWindow(search.window),
+  }),
   // Register admin bookings list route with filtering and bulk operations.
   component: BookingsPage,
 })
 
 function BookingsPage() {
-  // Maintain page filters and selected booking state for modal/detail actions.
   const { user } = useUser()
   const { t } = useI18n()
-  const [statusFilter, setStatusFilter] = useState<string>('all')
+  const navigate = useNavigate()
+  const search = Route.useSearch()
+  const [statusFilter, setStatusFilter] = useState(search.status)
+  const [paymentStatusFilter, setPaymentStatusFilter] = useState(
+    search.paymentStatus,
+  )
   const [selectedHotel, setSelectedHotel] = useState<string>('all')
   const [selectedBookingId, setSelectedBookingId] =
     useState<Id<'bookings'> | null>(null)
@@ -58,6 +72,14 @@ function BookingsPage() {
       setSelectedHotel(hotelAssignment.hotelId)
     }
   }, [profile?.role, hotelAssignment?.hotelId])
+
+  useEffect(() => {
+    setStatusFilter(search.status)
+  }, [search.status])
+
+  useEffect(() => {
+    setPaymentStatusFilter(search.paymentStatus)
+  }, [search.paymentStatus])
 
   const bookings = useQuery(
     (api as any).bookings.getByHotel,
@@ -90,15 +112,11 @@ function BookingsPage() {
   const acceptCashPayment = useMutation(api.bookings.acceptCashPayment)
   const selectedBookingDetail = useQuery(
     api.bookings.getEnriched,
-    user?.id && selectedBookingId
-      ? { bookingId: selectedBookingId }
-      : 'skip',
+    user?.id && selectedBookingId ? { bookingId: selectedBookingId } : 'skip',
   )
   const outsourceBookingDetail = useQuery(
     api.bookings.getEnriched,
-    user?.id && outsourceBookingId
-      ? { bookingId: outsourceBookingId }
-      : 'skip',
+    user?.id && outsourceBookingId ? { bookingId: outsourceBookingId } : 'skip',
   )
 
   const handleCancel = async (bookingId: Id<'bookings'>) => {
@@ -198,17 +216,43 @@ function BookingsPage() {
     },
   }
 
-  const filteredBookings = bookings?.filter((item) => {
-    if (statusFilter !== 'all' && item.booking.status !== statusFilter) {
-      return false
-    }
-    return true
-  })
+  const filteredBookings = useMemo(() => {
+    return bookings?.filter((item) => {
+      if (statusFilter !== 'all' && item.booking.status !== statusFilter) {
+        return false
+      }
+
+      const bookingPaymentStatus =
+        item.booking.paymentStatus ?? 'unpaid_unknown'
+      if (
+        paymentStatusFilter !== 'all' &&
+        bookingPaymentStatus !== paymentStatusFilter
+      ) {
+        return false
+      }
+
+      return true
+    })
+  }, [bookings, paymentStatusFilter, statusFilter])
 
   const canManageBooking = (hotelId: Id<'hotels'>) =>
     profile?.role === 'room_admin' ||
     (hotelAssignment?.hotelId === hotelId &&
       ['hotel_admin', 'hotel_cashier'].includes(hotelAssignment.role))
+
+  const updateSearchFilters = (next: {
+    status?: typeof statusFilter
+    paymentStatus?: typeof paymentStatusFilter
+  }) => {
+    navigate({
+      to: '/admin/bookings',
+      search: {
+        status: next.status ?? statusFilter,
+        paymentStatus: next.paymentStatus ?? paymentStatusFilter,
+        window: search.window,
+      },
+    })
+  }
 
   return (
     <div className="max-w-7xl mx-auto">
@@ -244,7 +288,11 @@ function BookingsPage() {
         <div>
           <select
             value={statusFilter}
-            onChange={(e) => setStatusFilter(e.target.value)}
+            onChange={(e) => {
+              const value = normalizeBookingStatusFilter(e.target.value)
+              setStatusFilter(value)
+              updateSearchFilters({ status: value })
+            }}
             className="w-full md:w-48 px-4 py-3 bg-slate-900/50 border border-slate-800/50 rounded-xl text-slate-200 focus:outline-none focus:border-blue-500/50 transition-all"
           >
             <option value="all">{t('admin.bookings.allStatuses')}</option>
@@ -260,6 +308,35 @@ function BookingsPage() {
             <option value="cancelled">{t('booking.status.cancelled')}</option>
             <option value="expired">{t('booking.status.expired')}</option>
             <option value="outsourced">{t('booking.status.outsourced')}</option>
+          </select>
+        </div>
+
+        <div>
+          <select
+            value={paymentStatusFilter}
+            onChange={(e) => {
+              const value = normalizePaymentStatusFilter(e.target.value)
+              setPaymentStatusFilter(value)
+              updateSearchFilters({ paymentStatus: value })
+            }}
+            className="w-full md:w-48 px-4 py-3 bg-slate-900/50 border border-slate-800/50 rounded-xl text-slate-200 focus:outline-none focus:border-blue-500/50 transition-all"
+          >
+            <option value="all">
+              {t('admin.analytics.payment.all' as never)}
+            </option>
+            <option value="pending">{t('admin.bookings.pending')}</option>
+            <option value="paid">
+              {t('admin.analytics.payment.paid' as never)}
+            </option>
+            <option value="failed">
+              {t('admin.analytics.payment.failed' as never)}
+            </option>
+            <option value="refunded">
+              {t('admin.analytics.payment.refunded' as never)}
+            </option>
+            <option value="unpaid_unknown">
+              {t('admin.analytics.payment.unknown' as never)}
+            </option>
           </select>
         </div>
       </div>

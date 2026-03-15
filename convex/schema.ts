@@ -200,8 +200,12 @@ export default defineSchema({
     .index('by_room', ['roomId'])
     .index('by_user', ['userId'])
     .index('by_guest_profile', ['guestProfileId'])
+    .index('by_created_at', ['createdAt'])
     .index('by_status', ['status'])
     .index('by_hotel', ['hotelId'])
+    .index('by_hotel_and_created_at', ['hotelId', 'createdAt'])
+    .index('by_hotel_and_check_in', ['hotelId', 'checkIn'])
+    .index('by_hotel_and_check_out', ['hotelId', 'checkOut'])
     .index('by_room_and_status', ['roomId', 'status'])
     .index('by_room_and_dates', ['roomId', 'checkIn', 'checkOut'])
     .index('by_hold_expires', ['holdExpiresAt']),

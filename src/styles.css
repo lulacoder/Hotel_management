@@ -318,7 +318,9 @@ html[data-theme='light'] .hotel-date-input {
   cursor: pointer;
   filter: brightness(0) saturate(100%) invert(57%) sepia(72%) saturate(1732%)
     hue-rotate(196deg) brightness(101%) contrast(96%);
-  transition: filter 0.2s ease, transform 0.2s ease;
+  transition:
+    filter 0.2s ease,
+    transform 0.2s ease;
 }
 
 .hotel-date-input:hover::-webkit-calendar-picker-indicator {
@@ -390,6 +392,24 @@ html[data-theme='light'] ::selection {
 @media (prefers-reduced-motion: no-preference) {
   .animate-pulse {
     animation: pulse 4s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+  }
+}
+
+@keyframes shimmer {
+  0% {
+    transform: translateX(-100%);
+  }
+  100% {
+    transform: translateX(100%);
+  }
+}
+
+@keyframes statusBarGrow {
+  from {
+    transform: scaleX(0);
+  }
+  to {
+    transform: scaleX(1);
   }
 }
 
