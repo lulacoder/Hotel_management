@@ -16,8 +16,10 @@ import {
 } from 'lucide-react'
 import { useEffect, useMemo, useState } from 'react'
 import { useMutation, useQuery } from 'convex/react'
+import { motion } from 'motion/react'
 import { api } from '../../../../convex/_generated/api'
 import { useI18n } from '../../../lib/i18n'
+import { useTheme } from '@/lib/theme'
 import {
   normalizeAnalyticsWindow,
   normalizeBookingStatusFilter,
@@ -40,9 +42,25 @@ export const Route = createFileRoute('/admin/bookings/')({
   component: BookingsPage,
 })
 
+const containerVariants = {
+  hidden: {},
+  visible: { transition: { staggerChildren: 0.06 } },
+}
+
+const itemVariants = {
+  hidden: { opacity: 0, y: 14 },
+  visible: {
+    opacity: 1,
+    y: 0,
+    transition: { duration: 0.4, ease: 'easeOut' as const },
+  },
+}
+
 function BookingsPage() {
   const { user } = useUser()
   const { t } = useI18n()
+  const { theme } = useTheme()
+  const isDark = theme === 'dark'
   const navigate = useNavigate()
   const search = Route.useSearch()
   const [statusFilter, setStatusFilter] = useState(search.status)
@@ -254,24 +272,43 @@ function BookingsPage() {
     })
   }
 
+  const selectClass = `w-full px-4 py-3 rounded-xl text-sm font-medium border transition-all focus:outline-none ${
+    isDark
+      ? 'bg-slate-900/50 border-slate-800/50 text-slate-200 focus:border-amber-500/40 focus:ring-1 focus:ring-amber-500/20'
+      : 'bg-white/80 border-slate-200/80 text-slate-700 shadow-sm focus:border-amber-500/40 focus:ring-1 focus:ring-amber-500/20'
+  }`
+
   return (
-    <div className="max-w-7xl mx-auto">
+    <motion.div
+      className="max-w-7xl mx-auto"
+      variants={containerVariants}
+      initial="hidden"
+      animate="visible"
+    >
       {/* Header */}
-      <div className="mb-8">
-        <h1 className="text-3xl font-semibold text-slate-100 tracking-tight mb-2">
+      <motion.div variants={itemVariants} className="mb-8">
+        <h1
+          className={`text-3xl font-semibold tracking-tight mb-2 ${isDark ? 'text-slate-100' : 'text-slate-900'}`}
+          style={{ fontFamily: 'var(--font-heading)' }}
+        >
           {t('admin.nav.bookings')}
         </h1>
-        <p className="text-slate-400">{t('admin.bookings.description')}</p>
-      </div>
+        <p className={isDark ? 'text-slate-400' : 'text-slate-500'}>
+          {t('admin.bookings.description')}
+        </p>
+      </motion.div>
 
       {/* Filters */}
-      <div className="flex flex-col md:flex-row gap-4 mb-6">
+      <motion.div
+        variants={itemVariants}
+        className="flex flex-col md:flex-row gap-4 mb-6"
+      >
         {/* Hotel Select */}
         <div className="flex-1">
           <select
             value={selectedHotel}
             onChange={(e) => setSelectedHotel(e.target.value)}
-            className="w-full px-4 py-3 bg-slate-900/50 border border-slate-800/50 rounded-xl text-slate-200 focus:outline-none focus:border-blue-500/50 transition-all"
+            className={selectClass}
           >
             {profile?.role === 'room_admin' && (
               <option value="all">{t('admin.bookings.selectHotel')}</option>
@@ -293,7 +330,7 @@ function BookingsPage() {
               setStatusFilter(value)
               updateSearchFilters({ status: value })
             }}
-            className="w-full md:w-48 px-4 py-3 bg-slate-900/50 border border-slate-800/50 rounded-xl text-slate-200 focus:outline-none focus:border-blue-500/50 transition-all"
+            className={`${selectClass} md:w-48`}
           >
             <option value="all">{t('admin.bookings.allStatuses')}</option>
             <option value="held">{t('booking.status.held')}</option>
@@ -319,7 +356,7 @@ function BookingsPage() {
               setPaymentStatusFilter(value)
               updateSearchFilters({ paymentStatus: value })
             }}
-            className="w-full md:w-48 px-4 py-3 bg-slate-900/50 border border-slate-800/50 rounded-xl text-slate-200 focus:outline-none focus:border-blue-500/50 transition-all"
+            className={`${selectClass} md:w-48`}
           >
             <option value="all">
               {t('admin.analytics.payment.all' as never)}
@@ -339,29 +376,40 @@ function BookingsPage() {
             </option>
           </select>
         </div>
-      </div>
+      </motion.div>
 
       {/* Content */}
       {bookings === undefined ? (
         <div className="flex items-center justify-center py-20">
-          <div className="animate-spin rounded-full h-8 w-8 border-2 border-blue-500/20 border-t-blue-500"></div>
+          <div
+            className={`animate-spin rounded-full h-8 w-8 border-2 ${isDark ? 'border-blue-500/20 border-t-blue-500' : 'border-amber-500/20 border-t-amber-500'}`}
+          ></div>
         </div>
       ) : filteredBookings?.length === 0 ? (
-        <div className="bg-slate-900/50 border border-slate-800/50 rounded-2xl p-12 text-center">
-          <div className="w-16 h-16 rounded-2xl bg-slate-800 flex items-center justify-center mx-auto mb-4">
-            <Calendar className="w-8 h-8 text-slate-600" />
+        <motion.div
+          variants={itemVariants}
+          className={`border rounded-2xl p-12 text-center backdrop-blur-sm ${isDark ? 'bg-slate-900/50 border-slate-800/50' : 'bg-white/80 border-slate-200/80 shadow-sm'}`}
+        >
+          <div
+            className={`w-16 h-16 rounded-2xl flex items-center justify-center mx-auto mb-4 ${isDark ? 'bg-slate-800' : 'bg-slate-100'}`}
+          >
+            <Calendar
+              className={`w-8 h-8 ${isDark ? 'text-slate-600' : 'text-slate-400'}`}
+            />
           </div>
-          <h3 className="text-lg font-semibold text-slate-300 mb-2">
+          <h3
+            className={`text-lg font-semibold mb-2 ${isDark ? 'text-slate-300' : 'text-slate-700'}`}
+          >
             {t('admin.bookings.noneFound')}
           </h3>
-          <p className="text-slate-500">
+          <p className={isDark ? 'text-slate-500' : 'text-slate-400'}>
             {statusFilter !== 'all'
               ? t('admin.bookings.tryStatusFilter')
               : t('admin.bookings.noBookingsForHotel')}
           </p>
-        </div>
+        </motion.div>
       ) : (
-        <div className="space-y-4">
+        <motion.div className="space-y-4" variants={containerVariants}>
           {filteredBookings?.map((item) => {
             const booking = item.booking
             const status =
@@ -371,163 +419,201 @@ function BookingsPage() {
             const canManageBookings = canManageBooking(booking.hotelId)
 
             return (
-              <div
-                key={booking._id}
-                className="bg-slate-900/50 border border-slate-800/50 rounded-xl p-5"
-              >
-                <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
-                  <div className="flex-1">
-                    <div className="flex items-center gap-3 mb-2">
-                      <div
-                        className={`inline-flex items-center gap-2 px-3 py-1 rounded-lg text-sm font-medium ${status.bg} ${status.color} ${status.border} border`}
-                      >
-                        <StatusIcon className="w-3.5 h-3.5" />
-                        {status.label}
+              <motion.div key={booking._id} variants={itemVariants}>
+                <div
+                  className={`border rounded-xl p-5 backdrop-blur-sm transition-all duration-200 ${isDark ? 'bg-slate-900/50 border-slate-800/50 hover:border-slate-700/50' : 'bg-white/80 border-slate-200/80 shadow-sm hover:border-slate-300/80 hover:shadow-md'}`}
+                >
+                  <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
+                    <div className="flex-1">
+                      <div className="flex items-center gap-3 mb-2">
+                        <div
+                          className={`inline-flex items-center gap-2 px-3 py-1 rounded-lg text-sm font-medium ${status.bg} ${status.color} ${status.border} border`}
+                        >
+                          <StatusIcon className="w-3.5 h-3.5" />
+                          {status.label}
+                        </div>
+                        {booking.status === 'held' && booking.holdExpiresAt && (
+                          <span
+                            className={`text-xs ${isDark ? 'text-slate-500' : 'text-slate-400'}`}
+                          >
+                            {t('admin.bookings.expires')}:{' '}
+                            {new Date(
+                              booking.holdExpiresAt,
+                            ).toLocaleTimeString()}
+                          </span>
+                        )}
                       </div>
-                      {booking.status === 'held' && booking.holdExpiresAt && (
-                        <span className="text-xs text-slate-500">
-                          {t('admin.bookings.expires')}:{' '}
-                          {new Date(booking.holdExpiresAt).toLocaleTimeString()}
-                        </span>
-                      )}
-                    </div>
 
-                    <div className="grid grid-cols-2 md:grid-cols-4 gap-4 text-sm">
-                      <div>
-                        <p className="text-slate-500 mb-1">
-                          {t('admin.bookings.dates')}
-                        </p>
-                        <p className="text-slate-200">
-                          {booking.checkIn} → {booking.checkOut}
-                        </p>
-                      </div>
-                      <div>
-                        <p className="text-slate-500 mb-1">
-                          {t('admin.bookings.guest')}
-                        </p>
-                        <div className="flex items-center gap-2">
-                          <p className="text-slate-200">
-                            {item.guestProfile?.name ||
-                              booking.guestName ||
-                              t('admin.bookings.na')}
+                      <div className="grid grid-cols-2 md:grid-cols-4 gap-4 text-sm">
+                        <div>
+                          <p
+                            className={`mb-1 ${isDark ? 'text-slate-500' : 'text-slate-400'}`}
+                          >
+                            {t('admin.bookings.dates')}
                           </p>
-                          {item.guestProfile && (
-                            <span className="px-2 py-0.5 text-[10px] rounded-full border border-blue-500/30 bg-blue-500/10 text-blue-300 uppercase tracking-wide">
-                              {t('admin.bookings.walkIn')}
-                            </span>
-                          )}
+                          <p
+                            className={
+                              isDark ? 'text-slate-200' : 'text-slate-700'
+                            }
+                          >
+                            {booking.checkIn} → {booking.checkOut}
+                          </p>
+                        </div>
+                        <div>
+                          <p
+                            className={`mb-1 ${isDark ? 'text-slate-500' : 'text-slate-400'}`}
+                          >
+                            {t('admin.bookings.guest')}
+                          </p>
+                          <div className="flex items-center gap-2">
+                            <p
+                              className={
+                                isDark ? 'text-slate-200' : 'text-slate-700'
+                              }
+                            >
+                              {item.guestProfile?.name ||
+                                booking.guestName ||
+                                t('admin.bookings.na')}
+                            </p>
+                            {item.guestProfile && (
+                              <span className="px-2 py-0.5 text-[10px] rounded-full border border-blue-500/30 bg-blue-500/10 text-blue-300 uppercase tracking-wide">
+                                {t('admin.bookings.walkIn')}
+                              </span>
+                            )}
+                          </div>
+                        </div>
+                        <div>
+                          <p
+                            className={`mb-1 ${isDark ? 'text-slate-500' : 'text-slate-400'}`}
+                          >
+                            {t('booking.total')}
+                          </p>
+                          <p
+                            className={`font-medium ${isDark ? 'text-slate-200' : 'text-slate-700'}`}
+                          >
+                            ${(booking.totalPrice / 100).toFixed(2)}
+                          </p>
+                        </div>
+                        <div>
+                          <p
+                            className={`mb-1 ${isDark ? 'text-slate-500' : 'text-slate-400'}`}
+                          >
+                            {t('admin.bookings.payment')}
+                          </p>
+                          <p
+                            className={`capitalize ${isDark ? 'text-slate-200' : 'text-slate-700'}`}
+                          >
+                            {booking.paymentStatus || t('admin.bookings.na')}
+                          </p>
                         </div>
                       </div>
-                      <div>
-                        <p className="text-slate-500 mb-1">
-                          {t('booking.total')}
-                        </p>
-                        <p className="text-slate-200 font-medium">
-                          ${(booking.totalPrice / 100).toFixed(2)}
-                        </p>
-                      </div>
-                      <div>
-                        <p className="text-slate-500 mb-1">
-                          {t('admin.bookings.payment')}
-                        </p>
-                        <p className="text-slate-200 capitalize">
-                          {booking.paymentStatus || t('admin.bookings.na')}
-                        </p>
-                      </div>
+                    </div>
+
+                    <div className="flex flex-wrap gap-2 md:justify-end md:w-80">
+                      <button
+                        onClick={() => setSelectedBookingId(booking._id)}
+                        className={`px-3 py-2 rounded-lg transition-all text-sm font-medium border inline-flex items-center gap-2 ${isDark ? 'bg-slate-800 text-slate-200 hover:bg-slate-700 border-slate-700' : 'bg-slate-100 text-slate-700 hover:bg-slate-200 border-slate-200'}`}
+                      >
+                        <Eye className="w-4 h-4" />
+                        {t('admin.bookings.viewDetail')}
+                      </button>
+
+                      <Link
+                        to="/admin/bookings/$bookingId"
+                        params={{ bookingId: booking._id }}
+                        className={`px-3 py-2 rounded-lg transition-all text-sm font-medium border ${isDark ? 'bg-slate-800 text-slate-200 hover:bg-slate-700 border-slate-700' : 'bg-slate-100 text-slate-700 hover:bg-slate-200 border-slate-200'}`}
+                      >
+                        {t('admin.bookings.openPage')}
+                      </Link>
+
+                      {canManageBookings &&
+                        booking.paymentStatus !== 'paid' &&
+                        ['confirmed', 'checked_in'].includes(
+                          booking.status,
+                        ) && (
+                          <button
+                            onClick={() => handleAcceptCashPayment(booking._id)}
+                            className="px-3 py-2 bg-emerald-500/10 text-emerald-400 rounded-lg hover:bg-emerald-500/20 transition-all text-sm font-medium border border-emerald-500/20 inline-flex items-center gap-2"
+                          >
+                            <CircleDollarSign className="w-4 h-4" />
+                            {t('admin.bookings.acceptCash')}
+                          </button>
+                        )}
+
+                      {canManageBookings &&
+                        getAllowedTransitions(booking.status).map(
+                          (nextStatus) =>
+                            nextStatus === 'cancelled' ? (
+                              <button
+                                key={`${booking._id}-${nextStatus}`}
+                                onClick={() => handleCancel(booking._id)}
+                                className="px-3 py-2 bg-red-500/10 text-red-400 rounded-lg hover:bg-red-500/20 transition-all text-sm font-medium border border-red-500/20"
+                              >
+                                {transitionLabel[nextStatus]}
+                              </button>
+                            ) : (
+                              <button
+                                key={`${booking._id}-${nextStatus}`}
+                                onClick={() =>
+                                  handleStatusChange(booking._id, nextStatus)
+                                }
+                                className="px-3 py-2 bg-blue-500/10 text-blue-400 rounded-lg hover:bg-blue-500/20 transition-all text-sm font-medium border border-blue-500/20"
+                              >
+                                {transitionLabel[nextStatus]}
+                              </button>
+                            ),
+                        )}
+
+                      {canManageBookings &&
+                        profile?.role !== 'room_admin' &&
+                        ['confirmed', 'checked_in'].includes(
+                          booking.status,
+                        ) && (
+                          <button
+                            onClick={() => setOutsourceBookingId(booking._id)}
+                            className="px-3 py-2 bg-purple-500/10 text-purple-400 rounded-lg hover:bg-purple-500/20 transition-all text-sm font-medium border border-purple-500/20 inline-flex items-center gap-2"
+                          >
+                            <Hotel className="w-4 h-4" />
+                            {t('admin.bookings.outsource')}
+                          </button>
+                        )}
                     </div>
                   </div>
-
-                  <div className="flex flex-wrap gap-2 md:justify-end md:w-80">
-                    <button
-                      onClick={() => setSelectedBookingId(booking._id)}
-                      className="light-hover-surface px-3 py-2 bg-slate-800 text-slate-200 rounded-lg hover:bg-slate-700 transition-all text-sm font-medium border border-slate-700 inline-flex items-center gap-2"
-                    >
-                      <Eye className="w-4 h-4" />
-                      {t('admin.bookings.viewDetail')}
-                    </button>
-
-                    <Link
-                      to="/admin/bookings/$bookingId"
-                      params={{ bookingId: booking._id }}
-                      className="light-hover-surface px-3 py-2 bg-slate-800 text-slate-200 rounded-lg hover:bg-slate-700 transition-all text-sm font-medium border border-slate-700"
-                    >
-                      {t('admin.bookings.openPage')}
-                    </Link>
-
-                    {canManageBookings &&
-                      booking.paymentStatus !== 'paid' &&
-                      ['confirmed', 'checked_in'].includes(booking.status) && (
-                        <button
-                          onClick={() => handleAcceptCashPayment(booking._id)}
-                          className="light-hover-surface px-3 py-2 bg-emerald-500/10 text-emerald-400 rounded-lg hover:bg-emerald-500/20 transition-all text-sm font-medium border border-emerald-500/20 inline-flex items-center gap-2"
-                        >
-                          <CircleDollarSign className="w-4 h-4" />
-                          {t('admin.bookings.acceptCash')}
-                        </button>
-                      )}
-
-                    {canManageBookings &&
-                      getAllowedTransitions(booking.status).map((nextStatus) =>
-                        nextStatus === 'cancelled' ? (
-                          <button
-                            key={`${booking._id}-${nextStatus}`}
-                            onClick={() => handleCancel(booking._id)}
-                            className="light-hover-surface px-3 py-2 bg-red-500/10 text-red-400 rounded-lg hover:bg-red-500/20 transition-all text-sm font-medium border border-red-500/20"
-                          >
-                            {transitionLabel[nextStatus]}
-                          </button>
-                        ) : (
-                          <button
-                            key={`${booking._id}-${nextStatus}`}
-                            onClick={() =>
-                              handleStatusChange(booking._id, nextStatus)
-                            }
-                            className="light-hover-accent px-3 py-2 bg-blue-500/10 text-blue-400 rounded-lg hover:bg-blue-500/20 transition-all text-sm font-medium border border-blue-500/20"
-                          >
-                            {transitionLabel[nextStatus]}
-                          </button>
-                        ),
-                      )}
-
-                    {canManageBookings &&
-                      profile?.role !== 'room_admin' &&
-                      ['confirmed', 'checked_in'].includes(booking.status) && (
-                        <button
-                          onClick={() => setOutsourceBookingId(booking._id)}
-                          className="px-3 py-2 bg-purple-500/10 text-purple-400 rounded-lg hover:bg-purple-500/20 transition-all text-sm font-medium border border-purple-500/20 inline-flex items-center gap-2"
-                        >
-                          <Hotel className="w-4 h-4" />
-                          {t('admin.bookings.outsource')}
-                        </button>
-                      )}
-                  </div>
                 </div>
-              </div>
+              </motion.div>
             )
           })}
-        </div>
+        </motion.div>
       )}
 
+      {/* Booking Detail Modal */}
       {selectedBookingId && (
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
           <button
-            className="absolute inset-0 bg-black/70"
+            className="absolute inset-0 bg-black/70 backdrop-blur-sm"
             onClick={() => setSelectedBookingId(null)}
             aria-label={t('admin.bookings.closeDetails')}
           />
-          <div className="relative w-full max-w-2xl bg-slate-900 border border-slate-700 rounded-2xl p-6">
+          <div
+            className={`relative w-full max-w-2xl border rounded-2xl p-6 ${isDark ? 'bg-slate-900 border-slate-700' : 'bg-white border-slate-200 shadow-2xl'}`}
+          >
             <div className="flex items-start justify-between gap-4 mb-4">
               <div>
-                <h3 className="text-xl font-semibold text-slate-100">
+                <h3
+                  className={`text-xl font-semibold ${isDark ? 'text-slate-100' : 'text-slate-900'}`}
+                  style={{ fontFamily: 'var(--font-heading)' }}
+                >
                   {t('admin.bookings.detailsTitle')}
                 </h3>
-                <p className="text-slate-400 text-sm">
+                <p
+                  className={`text-sm ${isDark ? 'text-slate-400' : 'text-slate-500'}`}
+                >
                   {t('admin.bookings.detailsSubtitle')}
                 </p>
               </div>
               <button
                 onClick={() => setSelectedBookingId(null)}
-                className="p-2 rounded-lg hover:bg-slate-800 text-slate-400 hover:text-slate-200 transition-colors"
+                className={`p-2 rounded-lg transition-colors ${isDark ? 'hover:bg-slate-800 text-slate-400 hover:text-slate-200' : 'hover:bg-slate-100 text-slate-400 hover:text-slate-700'}`}
               >
                 <X className="w-5 h-5" />
               </button>
@@ -535,87 +621,127 @@ function BookingsPage() {
 
             {selectedBookingDetail === undefined ? (
               <div className="flex items-center justify-center py-12">
-                <div className="animate-spin rounded-full h-8 w-8 border-2 border-blue-500/20 border-t-blue-500"></div>
+                <div
+                  className={`animate-spin rounded-full h-8 w-8 border-2 ${isDark ? 'border-blue-500/20 border-t-blue-500' : 'border-amber-500/20 border-t-amber-500'}`}
+                ></div>
               </div>
             ) : selectedBookingDetail === null ? (
-              <div className="text-slate-400">
+              <div className={isDark ? 'text-slate-400' : 'text-slate-500'}>
                 {t('admin.bookings.notFound')}
               </div>
             ) : (
               <div className="space-y-4">
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4 text-sm">
-                  <div className="bg-slate-800/40 border border-slate-700 rounded-xl p-4">
-                    <p className="text-slate-500 mb-1">
+                  <div
+                    className={`border rounded-xl p-4 ${isDark ? 'bg-slate-800/40 border-slate-700' : 'bg-slate-50 border-slate-200'}`}
+                  >
+                    <p
+                      className={`mb-1 ${isDark ? 'text-slate-500' : 'text-slate-400'}`}
+                    >
                       {t('admin.bookings.guest')}
                     </p>
-                    <p className="text-slate-100 font-medium">
+                    <p
+                      className={`font-medium ${isDark ? 'text-slate-100' : 'text-slate-800'}`}
+                    >
                       {selectedBookingDetail.guestProfile?.name ||
                         selectedBookingDetail.booking.guestName ||
                         t('admin.bookings.na')}
                     </p>
-                    <p className="text-slate-400">
+                    <p className={isDark ? 'text-slate-400' : 'text-slate-500'}>
                       {selectedBookingDetail.guestProfile?.phone ||
                         t('admin.bookings.noPhone')}
                     </p>
-                    <p className="text-slate-400">
+                    <p className={isDark ? 'text-slate-400' : 'text-slate-500'}>
                       {selectedBookingDetail.guestProfile?.email ||
                         selectedBookingDetail.booking.guestEmail ||
                         t('admin.bookings.noEmail')}
                     </p>
                     {selectedBookingDetail.linkedUser && (
-                      <p className="text-xs text-slate-500 mt-1">
+                      <p
+                        className={`text-xs mt-1 ${isDark ? 'text-slate-500' : 'text-slate-400'}`}
+                      >
                         {t('admin.bookings.linkedAccount')}:{' '}
                         {selectedBookingDetail.linkedUser.email}
                       </p>
                     )}
                   </div>
-                  <div className="bg-slate-800/40 border border-slate-700 rounded-xl p-4">
-                    <p className="text-slate-500 mb-1">{t('hotel.room')}</p>
-                    <p className="text-slate-100 font-medium">
+                  <div
+                    className={`border rounded-xl p-4 ${isDark ? 'bg-slate-800/40 border-slate-700' : 'bg-slate-50 border-slate-200'}`}
+                  >
+                    <p
+                      className={`mb-1 ${isDark ? 'text-slate-500' : 'text-slate-400'}`}
+                    >
+                      {t('hotel.room')}
+                    </p>
+                    <p
+                      className={`font-medium ${isDark ? 'text-slate-100' : 'text-slate-800'}`}
+                    >
                       {t('hotel.room')} {selectedBookingDetail.room.roomNumber}
                     </p>
-                    <p className="text-slate-400 capitalize">
+                    <p
+                      className={`capitalize ${isDark ? 'text-slate-400' : 'text-slate-500'}`}
+                    >
                       {selectedBookingDetail.room.type}
                     </p>
                   </div>
-                  <div className="bg-slate-800/40 border border-slate-700 rounded-xl p-4">
-                    <p className="text-slate-500 mb-1">
+                  <div
+                    className={`border rounded-xl p-4 ${isDark ? 'bg-slate-800/40 border-slate-700' : 'bg-slate-50 border-slate-200'}`}
+                  >
+                    <p
+                      className={`mb-1 ${isDark ? 'text-slate-500' : 'text-slate-400'}`}
+                    >
                       {t('admin.nav.hotels')}
                     </p>
-                    <p className="text-slate-100 font-medium">
+                    <p
+                      className={`font-medium ${isDark ? 'text-slate-100' : 'text-slate-800'}`}
+                    >
                       {selectedBookingDetail.hotel.name}
                     </p>
-                    <p className="text-slate-400">
+                    <p className={isDark ? 'text-slate-400' : 'text-slate-500'}>
                       {selectedBookingDetail.hotel.city}
                     </p>
                   </div>
-                  <div className="bg-slate-800/40 border border-slate-700 rounded-xl p-4">
-                    <p className="text-slate-500 mb-1">
+                  <div
+                    className={`border rounded-xl p-4 ${isDark ? 'bg-slate-800/40 border-slate-700' : 'bg-slate-50 border-slate-200'}`}
+                  >
+                    <p
+                      className={`mb-1 ${isDark ? 'text-slate-500' : 'text-slate-400'}`}
+                    >
                       {t('admin.bookings.stay')}
                     </p>
-                    <p className="text-slate-100 font-medium">
+                    <p
+                      className={`font-medium ${isDark ? 'text-slate-100' : 'text-slate-800'}`}
+                    >
                       {selectedBookingDetail.booking.checkIn} →{' '}
                       {selectedBookingDetail.booking.checkOut}
                     </p>
-                    <p className="text-slate-400">
+                    <p className={isDark ? 'text-slate-400' : 'text-slate-500'}>
                       $
                       {(selectedBookingDetail.booking.totalPrice / 100).toFixed(
                         2,
                       )}
                     </p>
                   </div>
-                  <div className="bg-slate-800/40 border border-slate-700 rounded-xl p-4">
-                    <p className="text-slate-500 mb-1">
+                  <div
+                    className={`border rounded-xl p-4 ${isDark ? 'bg-slate-800/40 border-slate-700' : 'bg-slate-50 border-slate-200'}`}
+                  >
+                    <p
+                      className={`mb-1 ${isDark ? 'text-slate-500' : 'text-slate-400'}`}
+                    >
                       {t('booking.package')}
                     </p>
-                    <p className="text-slate-100 font-medium">
+                    <p
+                      className={`font-medium ${isDark ? 'text-slate-100' : 'text-slate-800'}`}
+                    >
                       {getPackageLabelOrDefault(
                         selectedBookingDetail.booking.packageType,
                         t,
                       )}
                     </p>
                     {selectedBookingDetail.booking.packageType && (
-                      <p className="text-slate-400">
+                      <p
+                        className={isDark ? 'text-slate-400' : 'text-slate-500'}
+                      >
                         {formatPackageAddOn(
                           selectedBookingDetail.booking.packageAddOn ?? 0,
                           t,
@@ -646,7 +772,7 @@ function BookingsPage() {
                   <Link
                     to="/admin/bookings/$bookingId"
                     params={{ bookingId: selectedBookingId }}
-                    className="px-4 py-2 bg-slate-800 text-slate-200 rounded-lg hover:bg-slate-700 transition-colors text-sm font-medium border border-slate-700"
+                    className={`px-4 py-2 rounded-lg transition-colors text-sm font-medium border ${isDark ? 'bg-slate-800 text-slate-200 hover:bg-slate-700 border-slate-700' : 'bg-slate-100 text-slate-700 hover:bg-slate-200 border-slate-200'}`}
                   >
                     {t('admin.bookings.openFullPage')}
                   </Link>
@@ -664,6 +790,6 @@ function BookingsPage() {
           onSuccess={() => setOutsourceBookingId(null)}
         />
       )}
-    </div>
+    </motion.div>
   )
 }

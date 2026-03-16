@@ -39,7 +39,15 @@ npm run check
 
 # Convex development server (run in separate terminal)
 npx convex dev
+
+# Generate Convex types once (preferred for CI/local checks)
+npx convex dev --once
 ```
+
+### Convex Codegen Rule
+
+- Never use `npx convex codegen` in this repository.
+- Always generate Convex types using `npx convex dev --once`.
 
 ## Project Structure
 

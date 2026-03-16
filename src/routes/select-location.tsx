@@ -7,6 +7,7 @@ import {
 import { useUser } from '@clerk/clerk-react'
 import { useMutation, useQuery } from 'convex/react'
 import { useEffect, useMemo, useState } from 'react'
+import { MessageSquarePlus } from 'lucide-react'
 
 import { api } from '../../convex/_generated/api'
 import { useGeolocation } from '../hooks/useGeolocation'
@@ -17,7 +18,12 @@ import { HeroSection } from './select-location/components/-HeroSection'
 import { SearchFilters } from './select-location/components/-SearchFilters'
 import { HotelGrid } from './select-location/components/-HotelGrid'
 import { RatingModal } from './select-location/components/-RatingModal'
+import { ComplaintModal } from './select-location/components/-ComplaintModal'
 import { normalizeRatingFormValues } from './select-location/components/-ratingFormSchema'
+import {
+  normalizeComplaintFormValues,
+  type ComplaintFormValues,
+} from './select-location/components/-complaintFormSchema'
 import type { SortOption } from './select-location/components/-helpers'
 import type { RatingFormValues } from './select-location/components/-ratingFormSchema'
 import type { Id } from '../../convex/_generated/dataModel'
@@ -42,6 +48,9 @@ function SelectLocationPage() {
     useState<Id<'hotels'> | null>(null)
   const [ratingError, setRatingError] = useState('')
   const [ratingSaving, setRatingSaving] = useState(false)
+  const [showComplaintModal, setShowComplaintModal] = useState(false)
+  const [complaintError, setComplaintError] = useState('')
+  const [complaintSaving, setComplaintSaving] = useState(false)
   const [autoOpenHandled, setAutoOpenHandled] = useState(false)
 
   // Primary data sources for cards and aggregated rating metadata.
@@ -54,10 +63,16 @@ function SelectLocationPage() {
       : 'skip',
   )
   const upsertRating = useMutation(api.ratings.upsertRating)
+  const submitComplaint = useMutation(api.complaints.submit)
 
   const myRating = useQuery(
     api.ratings.getMyRatingForHotel,
     user?.id && activeRatingHotelId ? { hotelId: activeRatingHotelId } : 'skip',
+  )
+
+  const myBookings = useQuery(
+    api.bookings.getMyBookingsEnriched,
+    user?.id ? {} : 'skip',
   )
 
   // Geolocation hook
@@ -218,6 +233,22 @@ function SelectLocationPage() {
     ? `/select-location?rate=${activeRatingHotelId}`
     : '/select-location'
 
+  const complaintRedirect = '/select-location'
+
+  const complaintBookingOptions = useMemo(() => {
+    if (!myBookings) {
+      return []
+    }
+
+    return myBookings.map(({ booking, hotel }) => ({
+      _id: booking._id,
+      hotelId: hotel._id,
+      checkIn: booking.checkIn,
+      checkOut: booking.checkOut,
+      status: booking.status,
+    }))
+  }, [myBookings])
+
   const openRatingModal = (hotelId: Id<'hotels'>) => {
     // Seed modal state for selected hotel and reset prior errors.
     setActiveRatingHotelId(hotelId)
@@ -227,6 +258,16 @@ function SelectLocationPage() {
   const closeRatingModal = () => {
     setActiveRatingHotelId(null)
     setRatingError('')
+  }
+
+  const openComplaintModal = () => {
+    setShowComplaintModal(true)
+    setComplaintError('')
+  }
+
+  const closeComplaintModal = () => {
+    setShowComplaintModal(false)
+    setComplaintError('')
   }
 
   const handleSubmitRating = async (values: RatingFormValues) => {
@@ -251,6 +292,36 @@ function SelectLocationPage() {
       )
     } finally {
       setRatingSaving(false)
+    }
+  }
+
+  const handleSubmitComplaint = async (values: ComplaintFormValues) => {
+    if (!user?.id) {
+      return
+    }
+
+    setComplaintSaving(true)
+    setComplaintError('')
+
+    try {
+      const normalizedValues = normalizeComplaintFormValues(values)
+
+      await submitComplaint({
+        hotelId: normalizedValues.hotelId as Id<'hotels'>,
+        subject: normalizedValues.subject,
+        description: normalizedValues.description,
+        bookingId: normalizedValues.bookingId
+          ? (normalizedValues.bookingId as Id<'bookings'>)
+          : undefined,
+      })
+
+      closeComplaintModal()
+    } catch (err) {
+      setComplaintError(
+        err instanceof Error ? err.message : t('complaint.submitFailed'),
+      )
+    } finally {
+      setComplaintSaving(false)
     }
   }
 
@@ -298,6 +369,16 @@ function SelectLocationPage() {
         />
       </main>
 
+      <button
+        type="button"
+        onClick={openComplaintModal}
+        className="fixed bottom-6 right-6 z-40 inline-flex items-center gap-2 px-4 py-3 bg-blue-500 text-slate-900 font-semibold rounded-full shadow-lg shadow-blue-500/30 hover:bg-blue-400 transition-all"
+        aria-label={t('complaint.fab')}
+      >
+        <MessageSquarePlus className="w-5 h-5" />
+        <span className="hidden sm:inline">{t('complaint.fab')}</span>
+      </button>
+
       {activeRatingHotelId && (
         <RatingModal
           isSignedIn={Boolean(isSignedIn)}
@@ -310,6 +391,26 @@ function SelectLocationPage() {
           ratingRedirect={ratingRedirect}
           onClose={closeRatingModal}
           onSubmit={handleSubmitRating}
+        />
+      )}
+
+      {showComplaintModal && (
+        <ComplaintModal
+          isSignedIn={Boolean(isSignedIn)}
+          hotels={
+            hotels?.map((hotel) => ({
+              _id: hotel._id,
+              name: hotel.name,
+              city: hotel.city,
+              country: hotel.country,
+            })) ?? []
+          }
+          bookings={complaintBookingOptions}
+          complaintError={complaintError}
+          complaintSaving={complaintSaving}
+          complaintRedirect={complaintRedirect}
+          onClose={closeComplaintModal}
+          onSubmit={handleSubmitComplaint}
         />
       )}
     </div>

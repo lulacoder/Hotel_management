@@ -14,6 +14,7 @@ import {
   Hotel,
   LayoutDashboard,
   LogOut,
+  MessageSquareText,
   Menu,
   UserPlus,
   Users,
@@ -114,6 +115,11 @@ function AdminLayout() {
     { to: '/admin/hotels', label: t('admin.nav.hotels'), icon: Hotel },
     { to: '/admin/rooms', label: t('admin.nav.rooms'), icon: Building2 },
     { to: '/admin/bookings', label: t('admin.nav.bookings'), icon: Calendar },
+    {
+      to: '/admin/complaints',
+      label: t('admin.nav.complaints'),
+      icon: MessageSquareText,
+    },
     { to: '/admin/walk-in', label: t('admin.nav.walkIn'), icon: UserPlus },
     { to: '/admin/users', label: t('admin.nav.users'), icon: Users },
   ]
@@ -128,13 +134,14 @@ function AdminLayout() {
     }
 
     if (profile?.role === 'room_admin') {
-      return true
+      return item.to !== '/admin/complaints'
     }
 
     if (hotelAssignment?.role === 'hotel_cashier') {
       return (
         item.to === '/admin' ||
         item.to === '/admin/bookings' ||
+        item.to === '/admin/complaints' ||
         item.to === '/admin/rooms' ||
         item.to === '/admin/walk-in'
       )

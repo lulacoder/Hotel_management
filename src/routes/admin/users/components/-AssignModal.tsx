@@ -6,6 +6,7 @@ import { useState } from 'react'
 import { api } from '../../../../../convex/_generated/api'
 import type { Id } from '../../../../../convex/_generated/dataModel'
 import { useI18n } from '../../../../lib/i18n'
+import { useTheme } from '../../../../lib/theme'
 
 interface AssignModalProps {
   userId: Id<'users'>
@@ -16,6 +17,8 @@ export function AssignModal({ userId, onClose }: AssignModalProps) {
   // Collect hotel + role and submit assignment for the selected user.
   const { user } = useUser()
   const { t } = useI18n()
+  const { theme } = useTheme()
+  const isDark = theme === 'dark'
   const [selectedHotelId, setSelectedHotelId] = useState<Id<'hotels'> | ''>('')
   const [role, setRole] = useState<'hotel_admin' | 'hotel_cashier'>(
     'hotel_admin',
@@ -57,24 +60,40 @@ export function AssignModal({ userId, onClose }: AssignModalProps) {
     }
   }
 
+  const inputClass = `w-full px-4 py-3 border rounded-xl focus:outline-none focus:border-blue-500/50 transition-all ${
+    isDark
+      ? 'bg-slate-950 border-slate-800 text-slate-200'
+      : 'bg-white border-slate-200 text-slate-800 shadow-sm'
+  }`
+
   return (
     <div className="fixed inset-0 z-50 bg-black/60 backdrop-blur-sm flex items-center justify-center p-4">
-      <div className="w-full max-w-xl bg-slate-900 border border-slate-800 rounded-2xl shadow-2xl">
-        <div className="flex items-center justify-between p-6 border-b border-slate-800">
+      <div
+        className={`w-full max-w-xl border rounded-2xl shadow-2xl ${isDark ? 'bg-slate-900 border-slate-800' : 'bg-white border-slate-200'}`}
+      >
+        <div
+          className={`flex items-center justify-between p-6 border-b ${isDark ? 'border-slate-800' : 'border-slate-100'}`}
+        >
           <div>
-            <h2 className="text-xl font-semibold text-slate-100">
+            <h2
+              className={`text-xl font-semibold ${isDark ? 'text-slate-100' : 'text-slate-900'}`}
+            >
               {t('admin.users.assignModal.title')}
             </h2>
-            <p className="text-sm text-slate-400 mt-1">
+            <p
+              className={`text-sm mt-1 ${isDark ? 'text-slate-400' : 'text-slate-500'}`}
+            >
               {t('admin.users.assignModal.description')}
             </p>
           </div>
           <button
             onClick={onClose}
-            className="p-2 rounded-lg hover:bg-slate-800 transition-colors"
+            className={`p-2 rounded-lg transition-colors ${isDark ? 'hover:bg-slate-800' : 'hover:bg-slate-100'}`}
             aria-label={t('common.close')}
           >
-            <X className="w-5 h-5 text-slate-400" />
+            <X
+              className={`w-5 h-5 ${isDark ? 'text-slate-400' : 'text-slate-500'}`}
+            />
           </button>
         </div>
 
@@ -86,7 +105,9 @@ export function AssignModal({ userId, onClose }: AssignModalProps) {
           )}
 
           <div>
-            <label className="block text-sm font-medium text-slate-300 mb-2">
+            <label
+              className={`block text-sm font-medium mb-2 ${isDark ? 'text-slate-300' : 'text-slate-700'}`}
+            >
               {t('admin.users.assignModal.selectHotel')}
             </label>
             <select
@@ -94,7 +115,7 @@ export function AssignModal({ userId, onClose }: AssignModalProps) {
               onChange={(e) =>
                 setSelectedHotelId(e.target.value as Id<'hotels'>)
               }
-              className="w-full px-4 py-3 bg-slate-950 border border-slate-800 rounded-xl text-slate-200 focus:outline-none focus:border-blue-500/50"
+              className={inputClass}
               required
             >
               <option value="">
@@ -109,11 +130,15 @@ export function AssignModal({ userId, onClose }: AssignModalProps) {
           </div>
 
           <div>
-            <p className="block text-sm font-medium text-slate-300 mb-3">
+            <p
+              className={`block text-sm font-medium mb-3 ${isDark ? 'text-slate-300' : 'text-slate-700'}`}
+            >
               {t('admin.users.assignModal.role')}
             </p>
             <div className="space-y-3">
-              <label className="flex items-start gap-3 p-3 rounded-xl border border-slate-800 hover:border-slate-700 cursor-pointer">
+              <label
+                className={`flex items-start gap-3 p-3 rounded-xl border cursor-pointer transition-colors ${isDark ? 'border-slate-800 hover:border-slate-700' : 'border-slate-200 hover:border-slate-300 hover:bg-slate-50'}`}
+              >
                 <input
                   type="radio"
                   name="staff-role"
@@ -123,16 +148,22 @@ export function AssignModal({ userId, onClose }: AssignModalProps) {
                   className="mt-1"
                 />
                 <div>
-                  <p className="text-slate-200 font-medium">
+                  <p
+                    className={`font-medium ${isDark ? 'text-slate-200' : 'text-slate-800'}`}
+                  >
                     {t('admin.users.assignModal.hotelAdmin')}
                   </p>
-                  <p className="text-sm text-slate-500">
+                  <p
+                    className={`text-sm ${isDark ? 'text-slate-500' : 'text-slate-500'}`}
+                  >
                     {t('admin.users.assignModal.hotelAdminDescription')}
                   </p>
                 </div>
               </label>
 
-              <label className="flex items-start gap-3 p-3 rounded-xl border border-slate-800 hover:border-slate-700 cursor-pointer">
+              <label
+                className={`flex items-start gap-3 p-3 rounded-xl border cursor-pointer transition-colors ${isDark ? 'border-slate-800 hover:border-slate-700' : 'border-slate-200 hover:border-slate-300 hover:bg-slate-50'}`}
+              >
                 <input
                   type="radio"
                   name="staff-role"
@@ -142,10 +173,14 @@ export function AssignModal({ userId, onClose }: AssignModalProps) {
                   className="mt-1"
                 />
                 <div>
-                  <p className="text-slate-200 font-medium">
+                  <p
+                    className={`font-medium ${isDark ? 'text-slate-200' : 'text-slate-800'}`}
+                  >
                     {t('admin.users.assignModal.cashier')}
                   </p>
-                  <p className="text-sm text-slate-500">
+                  <p
+                    className={`text-sm ${isDark ? 'text-slate-500' : 'text-slate-500'}`}
+                  >
                     {t('admin.users.assignModal.cashierDescription')}
                   </p>
                 </div>
@@ -157,7 +192,11 @@ export function AssignModal({ userId, onClose }: AssignModalProps) {
             <button
               type="button"
               onClick={onClose}
-              className="px-5 py-2.5 rounded-xl border border-slate-700 text-slate-300 hover:bg-slate-800 transition-colors"
+              className={`px-5 py-2.5 rounded-xl border transition-colors ${
+                isDark
+                  ? 'border-slate-700 text-slate-300 hover:bg-slate-800'
+                  : 'border-slate-200 text-slate-600 hover:bg-slate-100'
+              }`}
             >
               {t('common.cancel')}
             </button>

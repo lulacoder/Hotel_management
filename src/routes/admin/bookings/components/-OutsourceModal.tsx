@@ -6,6 +6,7 @@ import { useMutation, useQuery } from 'convex/react'
 import { api } from '../../../../../convex/_generated/api'
 import type { Id } from '../../../../../convex/_generated/dataModel'
 import { useI18n } from '../../../../lib/i18n'
+import { useTheme } from '../../../../lib/theme'
 
 interface EnrichedBooking {
   booking: {
@@ -54,17 +55,16 @@ export function OutsourceModal({
 }: OutsourceModalProps) {
   // Load destination hotels and submit outsource operation for selected target.
   const { t } = useI18n()
+  const { theme } = useTheme()
+  const isDark = theme === 'dark'
   const [destinationHotelId, setDestinationHotelId] = useState<string>('')
   const [isSubmitting, setIsSubmitting] = useState(false)
   const [isSuccess, setIsSuccess] = useState(false)
   const [errorMessage, setErrorMessage] = useState<string | null>(null)
 
-  const destinationHotels = useQuery(
-    (api as any).hotels.listForOutsource,
-    {
-      excludeHotelId: bookingDetail.hotel._id,
-    },
-  ) as
+  const destinationHotels = useQuery((api as any).hotels.listForOutsource, {
+    excludeHotelId: bookingDetail.hotel._id,
+  }) as
     | Array<{
         _id: Id<'hotels'>
         name: string
@@ -106,7 +106,10 @@ export function OutsourceModal({
       }, 1500)
     } catch (error) {
       setErrorMessage(
-        getErrorMessage(error, t('admin.bookings.outsourceModal.errorFallback')),
+        getErrorMessage(
+          error,
+          t('admin.bookings.outsourceModal.errorFallback'),
+        ),
       )
       setIsSubmitting(false)
     }
@@ -120,66 +123,96 @@ export function OutsourceModal({
         role="button"
         tabIndex={-1}
       />
-      <div className="relative bg-slate-900 border border-slate-800 rounded-2xl shadow-2xl w-full max-w-lg">
-        <div className="flex items-center justify-between p-6 border-b border-slate-800">
-          <h3 className="text-lg font-semibold text-slate-100">
+      <div
+        className={`relative border rounded-2xl shadow-2xl w-full max-w-lg ${isDark ? 'bg-slate-900 border-slate-800' : 'bg-white border-slate-200'}`}
+      >
+        <div
+          className={`flex items-center justify-between p-6 border-b ${isDark ? 'border-slate-800' : 'border-slate-100'}`}
+        >
+          <h3
+            className={`text-lg font-semibold ${isDark ? 'text-slate-100' : 'text-slate-900'}`}
+          >
             {t('admin.bookings.outsourceModal.title')}
           </h3>
           <button
             onClick={onClose}
             disabled={isSubmitting}
-            className="p-2 rounded-lg hover:bg-slate-800 text-slate-400 hover:text-slate-200 transition-colors disabled:opacity-50"
+            className={`p-2 rounded-lg transition-colors disabled:opacity-50 ${isDark ? 'hover:bg-slate-800 text-slate-400 hover:text-slate-200' : 'hover:bg-slate-100 text-slate-500 hover:text-slate-700'}`}
           >
             <X className="w-5 h-5" />
           </button>
         </div>
 
         <div className="p-6 space-y-4">
-          <div className="bg-slate-800/40 border border-slate-700 rounded-xl p-4 space-y-3">
+          <div
+            className={`border rounded-xl p-4 space-y-3 ${isDark ? 'bg-slate-800/40 border-slate-700' : 'bg-slate-50 border-slate-200'}`}
+          >
             <div>
-              <p className="text-xs uppercase tracking-wide text-slate-500 mb-1">
+              <p
+                className={`text-xs uppercase tracking-wide mb-1 ${isDark ? 'text-slate-500' : 'text-slate-400'}`}
+              >
                 {t('admin.bookings.outsourceModal.currentHotel')}
               </p>
-              <p className="text-slate-100 font-medium">
+              <p
+                className={`font-medium ${isDark ? 'text-slate-100' : 'text-slate-900'}`}
+              >
                 {bookingDetail.hotel.name} · {bookingDetail.hotel.city},{' '}
                 {bookingDetail.hotel.country}
               </p>
             </div>
 
             <div>
-              <p className="text-xs uppercase tracking-wide text-slate-500 mb-1">
+              <p
+                className={`text-xs uppercase tracking-wide mb-1 ${isDark ? 'text-slate-500' : 'text-slate-400'}`}
+              >
                 {t('admin.bookings.guest')}
               </p>
-              <p className="text-slate-100 font-medium">{guestName}</p>
+              <p
+                className={`font-medium ${isDark ? 'text-slate-100' : 'text-slate-900'}`}
+              >
+                {guestName}
+              </p>
             </div>
 
             <div>
-              <p className="text-xs uppercase tracking-wide text-slate-500 mb-1">
+              <p
+                className={`text-xs uppercase tracking-wide mb-1 ${isDark ? 'text-slate-500' : 'text-slate-400'}`}
+              >
                 {t('admin.bookings.stay')}
               </p>
-              <p className="text-slate-100 font-medium">
+              <p
+                className={`font-medium ${isDark ? 'text-slate-100' : 'text-slate-900'}`}
+              >
                 {bookingDetail.booking.checkIn} →{' '}
                 {bookingDetail.booking.checkOut}
               </p>
             </div>
 
             <div>
-              <p className="text-xs uppercase tracking-wide text-slate-500 mb-1">
+              <p
+                className={`text-xs uppercase tracking-wide mb-1 ${isDark ? 'text-slate-500' : 'text-slate-400'}`}
+              >
                 {t('admin.bookings.amountPaid')}
               </p>
-              <p className="text-slate-100 font-medium">{amountPaid}</p>
+              <p
+                className={`font-medium ${isDark ? 'text-slate-100' : 'text-slate-900'}`}
+              >
+                {amountPaid}
+              </p>
             </div>
           </div>
 
           <div>
-            <label className="block text-sm text-slate-300 mb-2">
+            <label
+              className={`block text-sm mb-2 ${isDark ? 'text-slate-300' : 'text-slate-700'}`}
+            >
               {t('admin.bookings.outsourceModal.destinationHotelRequired')}
             </label>
             <select
               value={destinationHotelId}
               onChange={(event) => setDestinationHotelId(event.target.value)}
               disabled={isSubmitting || isSuccess}
-              className="w-full px-4 py-3 bg-slate-900 border border-slate-700 rounded-xl text-slate-200 focus:outline-none focus:border-blue-500/50 transition-colors"
+              className={`w-full px-4 py-3 border rounded-xl focus:outline-none focus:border-blue-500/50 transition-colors ${isDark ? 'bg-slate-900 border-slate-700 text-slate-200' : 'bg-white border-slate-200 text-slate-800 shadow-sm'}`}
             >
               <option value="">
                 {t('admin.bookings.outsourceModal.selectHotel')}
@@ -199,7 +232,7 @@ export function OutsourceModal({
             <button
               onClick={onClose}
               disabled={isSubmitting}
-              className="px-4 py-2 bg-slate-800 text-slate-300 border border-slate-700 rounded-lg hover:bg-slate-700 transition-colors text-sm font-medium disabled:opacity-50"
+              className={`px-4 py-2 border rounded-lg transition-colors text-sm font-medium disabled:opacity-50 ${isDark ? 'bg-slate-800 text-slate-300 border-slate-700 hover:bg-slate-700' : 'bg-slate-100 text-slate-600 border-slate-200 hover:bg-slate-200'}`}
             >
               {t('common.cancel')}
             </button>

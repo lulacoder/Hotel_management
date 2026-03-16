@@ -13,6 +13,7 @@ import type * as audit from "../audit.js";
 import type * as bookings from "../bookings.js";
 import type * as bookingsInternal from "../bookingsInternal.js";
 import type * as clerk from "../clerk.js";
+import type * as complaints from "../complaints.js";
 import type * as crons from "../crons.js";
 import type * as files from "../files.js";
 import type * as filesInternal from "../filesInternal.js";
@@ -44,6 +45,7 @@ declare const fullApi: ApiFromModules<{
   bookings: typeof bookings;
   bookingsInternal: typeof bookingsInternal;
   clerk: typeof clerk;
+  complaints: typeof complaints;
   crons: typeof crons;
   files: typeof files;
   filesInternal: typeof filesInternal;

@@ -225,6 +225,20 @@ export default defineSchema({
     .index('by_user_and_hotel', ['userId', 'hotelId'])
     .index('by_hotel_and_is_deleted', ['hotelId', 'isDeleted']),
 
+  // Customer complaints table
+  complaints: defineTable({
+    userId: v.id('users'),
+    hotelId: v.id('hotels'),
+    bookingId: v.optional(v.id('bookings')),
+    subject: v.string(),
+    description: v.string(),
+    createdAt: v.number(),
+    updatedAt: v.number(),
+  })
+    .index('by_hotel_and_created_at', ['hotelId', 'createdAt'])
+    .index('by_user_and_created_at', ['userId', 'createdAt'])
+    .index('by_booking', ['bookingId']),
+
   // Audit events table for tracking changes
   auditEvents: defineTable({
     actorId: v.id('users'),

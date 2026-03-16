@@ -10,6 +10,7 @@ import {
   validateImageFile,
 } from '../../../../../lib/imageUpload'
 import { useI18n } from '../../../../../lib/i18n'
+import { useTheme } from '../../../../../lib/theme'
 
 interface RoomModalProps {
   hotelId: Id<'hotels'>
@@ -21,6 +22,8 @@ export function RoomModal({ hotelId, roomId, onClose }: RoomModalProps) {
   // Handles room create/edit flow with pricing, amenities, and image state.
   const { user } = useUser()
   const { t } = useI18n()
+  const { theme } = useTheme()
+  const isDark = theme === 'dark'
   const room = useQuery(api.rooms.get, roomId ? { roomId } : 'skip')
   const createRoom = useMutation(api.rooms.create)
   const updateRoom = useMutation(api.rooms.update)
@@ -180,11 +183,23 @@ export function RoomModal({ hotelId, roomId, onClose }: RoomModalProps) {
     }
   }
 
+  const inputClass = `w-full px-4 py-3 border rounded-xl focus:outline-none focus:border-blue-500/50 transition-all ${
+    isDark
+      ? 'bg-slate-800/50 border-slate-700 text-slate-200 placeholder-slate-500'
+      : 'bg-white border-slate-200 text-slate-800 placeholder-slate-400 shadow-sm'
+  }`
+
   return (
     <div className="fixed inset-0 bg-black/60 backdrop-blur-sm flex items-center justify-center z-50 p-4">
-      <div className="bg-slate-900 border border-slate-800 rounded-2xl shadow-2xl w-full max-w-lg">
-        <div className="p-6 border-b border-slate-800">
-          <h2 className="text-xl font-semibold text-slate-100">
+      <div
+        className={`border rounded-2xl shadow-2xl w-full max-w-lg ${isDark ? 'bg-slate-900 border-slate-800' : 'bg-white border-slate-200'}`}
+      >
+        <div
+          className={`p-6 border-b ${isDark ? 'border-slate-800' : 'border-slate-100'}`}
+        >
+          <h2
+            className={`text-xl font-semibold ${isDark ? 'text-slate-100' : 'text-slate-900'}`}
+          >
             {roomId
               ? t('admin.hotels.roomModal.editTitle')
               : t('admin.hotels.roomModal.addTitle')}
@@ -200,7 +215,9 @@ export function RoomModal({ hotelId, roomId, onClose }: RoomModalProps) {
 
           <div className="grid grid-cols-2 gap-4">
             <div>
-              <label className="block text-sm font-medium text-slate-300 mb-2">
+              <label
+                className={`block text-sm font-medium mb-2 ${isDark ? 'text-slate-300' : 'text-slate-700'}`}
+              >
                 {t('admin.hotels.roomModal.roomNumber')}
               </label>
               <input
@@ -211,11 +228,13 @@ export function RoomModal({ hotelId, roomId, onClose }: RoomModalProps) {
                   setFormData({ ...formData, roomNumber: e.target.value })
                 }
                 placeholder={t('admin.hotels.roomModal.roomNumberPlaceholder')}
-                className="w-full px-4 py-3 bg-slate-800/50 border border-slate-700 rounded-xl text-slate-200 placeholder-slate-500 focus:outline-none focus:border-blue-500/50 transition-all"
+                className={inputClass}
               />
             </div>
             <div>
-              <label className="block text-sm font-medium text-slate-300 mb-2">
+              <label
+                className={`block text-sm font-medium mb-2 ${isDark ? 'text-slate-300' : 'text-slate-700'}`}
+              >
                 {t('admin.hotels.roomModal.roomType')}
               </label>
               <select
@@ -230,7 +249,7 @@ export function RoomModal({ hotelId, roomId, onClose }: RoomModalProps) {
                       | 'deluxe',
                   })
                 }
-                className="w-full px-4 py-3 bg-slate-800/50 border border-slate-700 rounded-xl text-slate-200 focus:outline-none focus:border-blue-500/50 transition-all"
+                className={inputClass}
               >
                 <option value="budget">{t('hotel.budgetRoom')}</option>
                 <option value="standard">{t('hotel.standardRoom')}</option>
@@ -242,7 +261,9 @@ export function RoomModal({ hotelId, roomId, onClose }: RoomModalProps) {
 
           <div className="grid grid-cols-2 gap-4">
             <div>
-              <label className="block text-sm font-medium text-slate-300 mb-2">
+              <label
+                className={`block text-sm font-medium mb-2 ${isDark ? 'text-slate-300' : 'text-slate-700'}`}
+              >
                 {t('admin.hotels.roomModal.pricePerNight')}
               </label>
               <input
@@ -255,11 +276,13 @@ export function RoomModal({ hotelId, roomId, onClose }: RoomModalProps) {
                   setFormData({ ...formData, basePrice: e.target.value })
                 }
                 placeholder={t('admin.hotels.roomModal.pricePlaceholder')}
-                className="w-full px-4 py-3 bg-slate-800/50 border border-slate-700 rounded-xl text-slate-200 placeholder-slate-500 focus:outline-none focus:border-blue-500/50 transition-all"
+                className={inputClass}
               />
             </div>
             <div>
-              <label className="block text-sm font-medium text-slate-300 mb-2">
+              <label
+                className={`block text-sm font-medium mb-2 ${isDark ? 'text-slate-300' : 'text-slate-700'}`}
+              >
                 {t('admin.hotels.roomModal.maxOccupancy')}
               </label>
               <input
@@ -270,23 +293,33 @@ export function RoomModal({ hotelId, roomId, onClose }: RoomModalProps) {
                 onChange={(e) =>
                   setFormData({ ...formData, maxOccupancy: e.target.value })
                 }
-                placeholder={t('admin.hotels.roomModal.maxOccupancyPlaceholder')}
-                className="w-full px-4 py-3 bg-slate-800/50 border border-slate-700 rounded-xl text-slate-200 placeholder-slate-500 focus:outline-none focus:border-blue-500/50 transition-all"
+                placeholder={t(
+                  'admin.hotels.roomModal.maxOccupancyPlaceholder',
+                )}
+                className={inputClass}
               />
             </div>
           </div>
 
           <div>
-            <label className="block text-sm font-medium text-slate-300 mb-2">
+            <label
+              className={`block text-sm font-medium mb-2 ${isDark ? 'text-slate-300' : 'text-slate-700'}`}
+            >
               {t('admin.hotels.roomModal.roomImageOptional')}
             </label>
             <input
               type="file"
               accept="image/*"
               onChange={handleImageSelection}
-              className="w-full px-4 py-2.5 bg-slate-800/50 border border-slate-700 rounded-xl text-slate-300 file:mr-3 file:px-3 file:py-1.5 file:border-0 file:rounded-lg file:bg-blue-500/20 file:text-blue-300 file:cursor-pointer"
+              className={`w-full px-4 py-2.5 border rounded-xl file:mr-3 file:px-3 file:py-1.5 file:border-0 file:rounded-lg file:bg-blue-500/20 file:text-blue-300 file:cursor-pointer ${
+                isDark
+                  ? 'bg-slate-800/50 border-slate-700 text-slate-300'
+                  : 'bg-white border-slate-200 text-slate-600'
+              }`}
             />
-            <p className="text-xs text-slate-500 mt-2">
+            <p
+              className={`text-xs mt-2 ${isDark ? 'text-slate-500' : 'text-slate-400'}`}
+            >
               {t('common.maxSize10mb')}
             </p>
             {imagePreviewUrl && (
@@ -294,7 +327,7 @@ export function RoomModal({ hotelId, roomId, onClose }: RoomModalProps) {
                 <img
                   src={imagePreviewUrl}
                   alt={t('admin.hotels.roomModal.imagePreviewAlt')}
-                  className="w-full h-32 object-cover rounded-xl border border-slate-700"
+                  className={`w-full h-32 object-cover rounded-xl border ${isDark ? 'border-slate-700' : 'border-slate-200'}`}
                 />
                 <button
                   type="button"
@@ -314,7 +347,9 @@ export function RoomModal({ hotelId, roomId, onClose }: RoomModalProps) {
           </div>
 
           <div>
-            <label className="block text-sm font-medium text-slate-300 mb-2">
+            <label
+              className={`block text-sm font-medium mb-2 ${isDark ? 'text-slate-300' : 'text-slate-700'}`}
+            >
               {t('admin.hotels.roomModal.amenities')}
             </label>
             <input
@@ -324,7 +359,7 @@ export function RoomModal({ hotelId, roomId, onClose }: RoomModalProps) {
                 setFormData({ ...formData, amenities: e.target.value })
               }
               placeholder={t('admin.hotels.roomModal.amenitiesPlaceholder')}
-              className="w-full px-4 py-3 bg-slate-800/50 border border-slate-700 rounded-xl text-slate-200 placeholder-slate-500 focus:outline-none focus:border-blue-500/50 transition-all"
+              className={inputClass}
             />
           </div>
 
@@ -332,7 +367,11 @@ export function RoomModal({ hotelId, roomId, onClose }: RoomModalProps) {
             <button
               type="button"
               onClick={onClose}
-              className="flex-1 px-4 py-3 bg-slate-800 text-slate-300 font-medium rounded-xl hover:bg-slate-700 transition-colors border border-slate-700"
+              className={`flex-1 px-4 py-3 font-medium rounded-xl transition-colors border ${
+                isDark
+                  ? 'bg-slate-800 text-slate-300 border-slate-700 hover:bg-slate-700'
+                  : 'bg-slate-100 text-slate-600 border-slate-200 hover:bg-slate-200'
+              }`}
             >
               {t('common.cancel')}
             </button>

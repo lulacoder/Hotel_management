@@ -569,6 +569,7 @@ function AdminDashboard() {
                     navigate({
                       to: '/admin/hotels/$hotelId',
                       params: { hotelId: hotelId as any },
+                      search: { operationalStatus: 'all', window: '30d' },
                     })
                   }}
                   title={t('admin.analytics.topHotels' as never)}

@@ -5,6 +5,7 @@ import { useEffect, useState } from 'react'
 import { api } from '../../../../../../convex/_generated/api'
 import type { Id } from '../../../../../../convex/_generated/dataModel'
 import { useI18n } from '../../../../../lib/i18n'
+import { useTheme } from '../../../../../lib/theme'
 
 interface BankAccountModalProps {
   hotelId: Id<'hotels'>
@@ -22,6 +23,8 @@ export function BankAccountModal({
   onClose,
 }: BankAccountModalProps) {
   const { t } = useI18n()
+  const { theme } = useTheme()
+  const isDark = theme === 'dark'
   const createAccount = useMutation(api.hotelBankAccounts.create)
   const updateAccount = useMutation(api.hotelBankAccounts.update)
 
@@ -83,11 +86,23 @@ export function BankAccountModal({
     }
   }
 
+  const inputClass = `w-full px-4 py-3 border rounded-xl focus:outline-none focus:border-blue-500/50 transition-all ${
+    isDark
+      ? 'bg-slate-800/50 border-slate-700 text-slate-200 placeholder-slate-500'
+      : 'bg-white border-slate-200 text-slate-800 placeholder-slate-400 shadow-sm'
+  }`
+
   return (
     <div className="fixed inset-0 bg-black/60 backdrop-blur-sm flex items-center justify-center z-50 p-4">
-      <div className="bg-slate-900 border border-slate-800 rounded-2xl shadow-2xl w-full max-w-lg">
-        <div className="p-6 border-b border-slate-800">
-          <h2 className="text-xl font-semibold text-slate-100">
+      <div
+        className={`border rounded-2xl shadow-2xl w-full max-w-lg ${isDark ? 'bg-slate-900 border-slate-800' : 'bg-white border-slate-200'}`}
+      >
+        <div
+          className={`p-6 border-b ${isDark ? 'border-slate-800' : 'border-slate-100'}`}
+        >
+          <h2
+            className={`text-xl font-semibold ${isDark ? 'text-slate-100' : 'text-slate-900'}`}
+          >
             {t('admin.hotels.payment.modalTitle')}
           </h2>
         </div>
@@ -100,7 +115,9 @@ export function BankAccountModal({
           )}
 
           <div>
-            <label className="block text-sm font-medium text-slate-300 mb-2">
+            <label
+              className={`block text-sm font-medium mb-2 ${isDark ? 'text-slate-300' : 'text-slate-700'}`}
+            >
               {t('admin.hotels.payment.bankName')}
             </label>
             <input
@@ -109,12 +126,14 @@ export function BankAccountModal({
               value={bankName}
               onChange={(e) => setBankName(e.target.value)}
               placeholder={t('admin.hotels.payment.bankNamePlaceholder')}
-              className="w-full px-4 py-3 bg-slate-800/50 border border-slate-700 rounded-xl text-slate-200 placeholder-slate-500 focus:outline-none focus:border-blue-500/50 transition-all"
+              className={inputClass}
             />
           </div>
 
           <div>
-            <label className="block text-sm font-medium text-slate-300 mb-2">
+            <label
+              className={`block text-sm font-medium mb-2 ${isDark ? 'text-slate-300' : 'text-slate-700'}`}
+            >
               {t('admin.hotels.payment.accountNumber')}
             </label>
             <input
@@ -123,7 +142,7 @@ export function BankAccountModal({
               value={accountNumber}
               onChange={(e) => setAccountNumber(e.target.value)}
               placeholder={t('admin.hotels.payment.accountPlaceholder')}
-              className="w-full px-4 py-3 bg-slate-800/50 border border-slate-700 rounded-xl text-slate-200 placeholder-slate-500 focus:outline-none focus:border-blue-500/50 transition-all"
+              className={inputClass}
             />
           </div>
 
@@ -131,7 +150,11 @@ export function BankAccountModal({
             <button
               type="button"
               onClick={onClose}
-              className="flex-1 px-4 py-3 bg-slate-800 text-slate-300 font-medium rounded-xl hover:bg-slate-700 transition-colors border border-slate-700"
+              className={`flex-1 px-4 py-3 font-medium rounded-xl transition-colors border ${
+                isDark
+                  ? 'bg-slate-800 text-slate-300 border-slate-700 hover:bg-slate-700'
+                  : 'bg-slate-100 text-slate-600 border-slate-200 hover:bg-slate-200'
+              }`}
             >
               {t('common.cancel')}
             </button>

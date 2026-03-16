@@ -10,6 +10,7 @@ import {
   validateImageFile,
 } from '../../../../../lib/imageUpload'
 import { useI18n } from '../../../../../lib/i18n'
+import { useTheme } from '../../../../../lib/theme'
 
 interface HotelEditModalProps {
   hotelId: Id<'hotels'>
@@ -20,6 +21,8 @@ export function HotelEditModal({ hotelId, onClose }: HotelEditModalProps) {
   // Focused edit modal for core hotel fields and optional image updates.
   const { user } = useUser()
   const { t } = useI18n()
+  const { theme } = useTheme()
+  const isDark = theme === 'dark'
   const hotel = useQuery(api.hotels.get, { hotelId })
   const updateHotel = useMutation(api.hotels.update)
   const generateUploadUrl = useMutation(api.files.generateUploadUrl)
@@ -122,11 +125,23 @@ export function HotelEditModal({ hotelId, onClose }: HotelEditModalProps) {
     }
   }
 
+  const inputClass = `w-full px-4 py-3 border rounded-xl focus:outline-none focus:border-blue-500/50 transition-all ${
+    isDark
+      ? 'bg-slate-800/50 border-slate-700 text-slate-200 placeholder-slate-500'
+      : 'bg-white border-slate-200 text-slate-800 placeholder-slate-400 shadow-sm'
+  }`
+
   return (
     <div className="fixed inset-0 bg-black/60 backdrop-blur-sm flex items-center justify-center z-50 p-4">
-      <div className="bg-slate-900 border border-slate-800 rounded-2xl shadow-2xl w-full max-w-lg">
-        <div className="p-6 border-b border-slate-800">
-          <h2 className="text-xl font-semibold text-slate-100">
+      <div
+        className={`border rounded-2xl shadow-2xl w-full max-w-lg ${isDark ? 'bg-slate-900 border-slate-800' : 'bg-white border-slate-200'}`}
+      >
+        <div
+          className={`p-6 border-b ${isDark ? 'border-slate-800' : 'border-slate-100'}`}
+        >
+          <h2
+            className={`text-xl font-semibold ${isDark ? 'text-slate-100' : 'text-slate-900'}`}
+          >
             {t('admin.hotels.modal.editTitle')}
           </h2>
         </div>
@@ -139,7 +154,9 @@ export function HotelEditModal({ hotelId, onClose }: HotelEditModalProps) {
           )}
 
           <div>
-            <label className="block text-sm font-medium text-slate-300 mb-2">
+            <label
+              className={`block text-sm font-medium mb-2 ${isDark ? 'text-slate-300' : 'text-slate-700'}`}
+            >
               {t('admin.hotels.modal.hotelName')}
             </label>
             <input
@@ -149,12 +166,14 @@ export function HotelEditModal({ hotelId, onClose }: HotelEditModalProps) {
               onChange={(e) =>
                 setFormData({ ...formData, name: e.target.value })
               }
-              className="w-full px-4 py-3 bg-slate-800/50 border border-slate-700 rounded-xl text-slate-200 focus:outline-none focus:border-blue-500/50 transition-all"
+              className={inputClass}
             />
           </div>
 
           <div>
-            <label className="block text-sm font-medium text-slate-300 mb-2">
+            <label
+              className={`block text-sm font-medium mb-2 ${isDark ? 'text-slate-300' : 'text-slate-700'}`}
+            >
               {t('admin.hotels.modal.address')}
             </label>
             <input
@@ -164,13 +183,15 @@ export function HotelEditModal({ hotelId, onClose }: HotelEditModalProps) {
               onChange={(e) =>
                 setFormData({ ...formData, address: e.target.value })
               }
-              className="w-full px-4 py-3 bg-slate-800/50 border border-slate-700 rounded-xl text-slate-200 focus:outline-none focus:border-blue-500/50 transition-all"
+              className={inputClass}
             />
           </div>
 
           <div className="grid grid-cols-2 gap-4">
             <div>
-              <label className="block text-sm font-medium text-slate-300 mb-2">
+              <label
+                className={`block text-sm font-medium mb-2 ${isDark ? 'text-slate-300' : 'text-slate-700'}`}
+              >
                 {t('admin.hotels.modal.city')}
               </label>
               <input
@@ -180,11 +201,13 @@ export function HotelEditModal({ hotelId, onClose }: HotelEditModalProps) {
                 onChange={(e) =>
                   setFormData({ ...formData, city: e.target.value })
                 }
-                className="w-full px-4 py-3 bg-slate-800/50 border border-slate-700 rounded-xl text-slate-200 focus:outline-none focus:border-blue-500/50 transition-all"
+                className={inputClass}
               />
             </div>
             <div>
-              <label className="block text-sm font-medium text-slate-300 mb-2">
+              <label
+                className={`block text-sm font-medium mb-2 ${isDark ? 'text-slate-300' : 'text-slate-700'}`}
+              >
                 {t('admin.hotels.modal.country')}
               </label>
               <input
@@ -194,22 +217,30 @@ export function HotelEditModal({ hotelId, onClose }: HotelEditModalProps) {
                 onChange={(e) =>
                   setFormData({ ...formData, country: e.target.value })
                 }
-                className="w-full px-4 py-3 bg-slate-800/50 border border-slate-700 rounded-xl text-slate-200 focus:outline-none focus:border-blue-500/50 transition-all"
+                className={inputClass}
               />
             </div>
           </div>
 
           <div>
-            <label className="block text-sm font-medium text-slate-300 mb-2">
+            <label
+              className={`block text-sm font-medium mb-2 ${isDark ? 'text-slate-300' : 'text-slate-700'}`}
+            >
               {t('admin.hotels.modal.hotelImageOptional')}
             </label>
             <input
               type="file"
               accept="image/*"
               onChange={handleImageSelection}
-              className="w-full px-4 py-2.5 bg-slate-800/50 border border-slate-700 rounded-xl text-slate-300 file:mr-3 file:px-3 file:py-1.5 file:border-0 file:rounded-lg file:bg-blue-500/20 file:text-blue-300 file:cursor-pointer"
+              className={`w-full px-4 py-2.5 border rounded-xl file:mr-3 file:px-3 file:py-1.5 file:border-0 file:rounded-lg file:bg-blue-500/20 file:text-blue-300 file:cursor-pointer ${
+                isDark
+                  ? 'bg-slate-800/50 border-slate-700 text-slate-300'
+                  : 'bg-white border-slate-200 text-slate-600'
+              }`}
             />
-            <p className="text-xs text-slate-500 mt-2">
+            <p
+              className={`text-xs mt-2 ${isDark ? 'text-slate-500' : 'text-slate-400'}`}
+            >
               {t('common.maxSize10mb')}
             </p>
             {imagePreviewUrl && (
@@ -217,7 +248,7 @@ export function HotelEditModal({ hotelId, onClose }: HotelEditModalProps) {
                 <img
                   src={imagePreviewUrl}
                   alt={t('admin.hotels.modal.imagePreviewAlt')}
-                  className="w-full h-36 object-cover rounded-xl border border-slate-700"
+                  className={`w-full h-36 object-cover rounded-xl border ${isDark ? 'border-slate-700' : 'border-slate-200'}`}
                 />
                 <button
                   type="button"
@@ -240,7 +271,11 @@ export function HotelEditModal({ hotelId, onClose }: HotelEditModalProps) {
             <button
               type="button"
               onClick={onClose}
-              className="flex-1 px-4 py-3 bg-slate-800 text-slate-300 font-medium rounded-xl hover:bg-slate-700 transition-colors border border-slate-700"
+              className={`flex-1 px-4 py-3 font-medium rounded-xl transition-colors border ${
+                isDark
+                  ? 'bg-slate-800 text-slate-300 border-slate-700 hover:bg-slate-700'
+                  : 'bg-slate-100 text-slate-600 border-slate-200 hover:bg-slate-200'
+              }`}
             >
               {t('common.cancel')}
             </button>

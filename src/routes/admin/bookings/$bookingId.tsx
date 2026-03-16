@@ -15,9 +15,11 @@ import {
   XCircle,
 } from 'lucide-react'
 import { useState } from 'react'
+import { motion } from 'motion/react'
 
 import { api } from '../../../../convex/_generated/api'
 import { useI18n } from '../../../lib/i18n'
+import { useTheme } from '@/lib/theme'
 import {
   formatPackageAddOn,
   getPackageLabelOrDefault,
@@ -30,12 +32,28 @@ export const Route = createFileRoute('/admin/bookings/$bookingId')({
   component: BookingDetailPage,
 })
 
+const containerVariants = {
+  hidden: {},
+  visible: { transition: { staggerChildren: 0.08 } },
+}
+
+const itemVariants = {
+  hidden: { opacity: 0, y: 16 },
+  visible: {
+    opacity: 1,
+    y: 0,
+    transition: { duration: 0.45, ease: 'easeOut' as const },
+  },
+}
+
 function BookingDetailPage() {
   // Fetch booking graph + role context used for permissions and actions.
   const { bookingId } = Route.useParams()
   const typedBookingId = bookingId as Id<'bookings'>
   const { user } = useUser()
   const { t } = useI18n()
+  const { theme } = useTheme()
+  const isDark = theme === 'dark'
   const [showOutsourceModal, setShowOutsourceModal] = useState(false)
 
   const profile = useQuery(api.users.getMe, user?.id ? {} : 'skip')
@@ -192,7 +210,9 @@ function BookingDetailPage() {
   if (bookingDetail === undefined) {
     return (
       <div className="flex items-center justify-center py-20">
-        <div className="animate-spin rounded-full h-8 w-8 border-2 border-blue-500/20 border-t-blue-500"></div>
+        <div
+          className={`animate-spin rounded-full h-8 w-8 border-2 ${isDark ? 'border-blue-500/20 border-t-blue-500' : 'border-amber-500/20 border-t-amber-500'}`}
+        ></div>
       </div>
     )
   }
@@ -200,13 +220,18 @@ function BookingDetailPage() {
   if (bookingDetail === null) {
     return (
       <div className="max-w-4xl mx-auto">
-        <div className="bg-slate-900/50 border border-slate-800/50 rounded-2xl p-12 text-center">
-          <h3 className="text-lg font-semibold text-slate-300 mb-2">
+        <div
+          className={`border rounded-2xl p-12 text-center backdrop-blur-sm ${isDark ? 'bg-slate-900/50 border-slate-800/50' : 'bg-white/80 border-slate-200/80 shadow-sm'}`}
+        >
+          <h3
+            className={`text-lg font-semibold mb-2 ${isDark ? 'text-slate-300' : 'text-slate-700'}`}
+          >
             {t('admin.bookings.notFound')}
           </h3>
           <Link
             to="/admin/bookings"
-            className="inline-flex items-center gap-2 px-5 py-2.5 bg-slate-800 text-slate-200 font-medium rounded-xl hover:bg-slate-700 transition-colors"
+            search={{ status: 'all', paymentStatus: 'all', window: '30d' }}
+            className={`inline-flex items-center gap-2 px-5 py-2.5 font-medium rounded-xl transition-colors ${isDark ? 'bg-slate-800 text-slate-200 hover:bg-slate-700' : 'bg-slate-100 text-slate-700 hover:bg-slate-200'}`}
           >
             <ArrowLeft className="w-4 h-4" />
             {t('admin.bookings.backToBookings')}
@@ -220,18 +245,32 @@ function BookingDetailPage() {
   const StatusIcon = status.icon
 
   return (
-    <div className="max-w-4xl mx-auto">
-      <Link
-        to="/admin/bookings"
-        className="inline-flex items-center gap-2 text-slate-400 hover:text-slate-200 transition-colors mb-6"
-      >
-        <ArrowLeft className="w-4 h-4" />
-        {t('admin.bookings.backToBookings')}
-      </Link>
+    <motion.div
+      className="max-w-4xl mx-auto"
+      variants={containerVariants}
+      initial="hidden"
+      animate="visible"
+    >
+      <motion.div variants={itemVariants}>
+        <Link
+          to="/admin/bookings"
+          search={{ status: 'all', paymentStatus: 'all', window: '30d' }}
+          className={`inline-flex items-center gap-2 transition-colors mb-6 ${isDark ? 'text-slate-400 hover:text-slate-200' : 'text-slate-500 hover:text-slate-900'}`}
+        >
+          <ArrowLeft className="w-4 h-4" />
+          {t('admin.bookings.backToBookings')}
+        </Link>
+      </motion.div>
 
-      <div className="bg-slate-900/50 border border-slate-800/50 rounded-2xl p-6 mb-6">
+      <motion.div
+        variants={itemVariants}
+        className={`border rounded-2xl p-6 mb-6 backdrop-blur-sm ${isDark ? 'bg-slate-900/50 border-slate-800/50' : 'bg-white/80 border-slate-200/80 shadow-sm'}`}
+      >
         <div className="flex items-center justify-between gap-4 mb-4">
-          <h1 className="text-2xl font-semibold text-slate-100">
+          <h1
+            className={`text-2xl font-semibold ${isDark ? 'text-slate-100' : 'text-slate-900'}`}
+            style={{ fontFamily: 'var(--font-heading)' }}
+          >
             {t('admin.bookings.detailPageTitle')}
           </h1>
           <div
@@ -243,174 +282,264 @@ function BookingDetailPage() {
         </div>
 
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4 text-sm">
-          <div className="bg-slate-800/40 border border-slate-700 rounded-xl p-4">
-            <p className="text-slate-500 mb-1">{t('admin.bookings.guest')}</p>
-            <p className="text-slate-100 font-medium">
+          <div
+            className={`border rounded-xl p-4 ${isDark ? 'bg-slate-800/40 border-slate-700' : 'bg-slate-50 border-slate-200'}`}
+          >
+            <p
+              className={`mb-1 ${isDark ? 'text-slate-500' : 'text-slate-400'}`}
+            >
+              {t('admin.bookings.guest')}
+            </p>
+            <p
+              className={`font-medium ${isDark ? 'text-slate-100' : 'text-slate-800'}`}
+            >
               {bookingDetail.guestProfile?.name ||
                 bookingDetail.booking.guestName ||
                 t('admin.bookings.na')}
             </p>
-            <p className="text-slate-400">
+            <p className={isDark ? 'text-slate-400' : 'text-slate-500'}>
               {bookingDetail.guestProfile?.phone || t('admin.bookings.noPhone')}
             </p>
-            <p className="text-slate-400">
+            <p className={isDark ? 'text-slate-400' : 'text-slate-500'}>
               {bookingDetail.guestProfile?.email ||
                 bookingDetail.booking.guestEmail ||
                 t('admin.bookings.noEmail')}
             </p>
             {bookingDetail.linkedUser && (
-              <p className="text-xs text-slate-500 mt-1">
+              <p
+                className={`text-xs mt-1 ${isDark ? 'text-slate-500' : 'text-slate-400'}`}
+              >
                 {t('admin.bookings.linkedAccount')}:{' '}
                 {bookingDetail.linkedUser.email}
               </p>
             )}
           </div>
-          <div className="bg-slate-800/40 border border-slate-700 rounded-xl p-4">
-            <p className="text-slate-500 mb-1">{t('hotel.room')}</p>
-            <p className="text-slate-100 font-medium">
+          <div
+            className={`border rounded-xl p-4 ${isDark ? 'bg-slate-800/40 border-slate-700' : 'bg-slate-50 border-slate-200'}`}
+          >
+            <p
+              className={`mb-1 ${isDark ? 'text-slate-500' : 'text-slate-400'}`}
+            >
+              {t('hotel.room')}
+            </p>
+            <p
+              className={`font-medium ${isDark ? 'text-slate-100' : 'text-slate-800'}`}
+            >
               {t('hotel.room')} {bookingDetail.room.roomNumber}
             </p>
-            <p className="text-slate-400 capitalize">
+            <p
+              className={`capitalize ${isDark ? 'text-slate-400' : 'text-slate-500'}`}
+            >
               {bookingDetail.room.type}
             </p>
           </div>
-          <div className="bg-slate-800/40 border border-slate-700 rounded-xl p-4">
-            <p className="text-slate-500 mb-1">{t('admin.nav.hotels')}</p>
-            <p className="text-slate-100 font-medium">
+          <div
+            className={`border rounded-xl p-4 ${isDark ? 'bg-slate-800/40 border-slate-700' : 'bg-slate-50 border-slate-200'}`}
+          >
+            <p
+              className={`mb-1 ${isDark ? 'text-slate-500' : 'text-slate-400'}`}
+            >
+              {t('admin.nav.hotels')}
+            </p>
+            <p
+              className={`font-medium ${isDark ? 'text-slate-100' : 'text-slate-800'}`}
+            >
               {bookingDetail.hotel.name}
             </p>
-            <p className="text-slate-400">
+            <p className={isDark ? 'text-slate-400' : 'text-slate-500'}>
               {bookingDetail.hotel.address}, {bookingDetail.hotel.city}
             </p>
           </div>
           {bookingDetail.booking.status === 'outsourced' && (
-            <div className="bg-slate-800/40 border border-slate-700 rounded-xl p-4">
-              <p className="text-slate-500 mb-1">
+            <div
+              className={`border rounded-xl p-4 ${isDark ? 'bg-slate-800/40 border-slate-700' : 'bg-slate-50 border-slate-200'}`}
+            >
+              <p
+                className={`mb-1 ${isDark ? 'text-slate-500' : 'text-slate-400'}`}
+              >
                 {t('admin.bookings.outsourcedTo')}
               </p>
-              <p className="text-slate-100 font-medium">
+              <p
+                className={`font-medium ${isDark ? 'text-slate-100' : 'text-slate-800'}`}
+              >
                 {outsourcedToHotel?.name ||
                   t('admin.bookings.unknownDestination')}
               </p>
-              <p className="text-slate-400">
+              <p className={isDark ? 'text-slate-400' : 'text-slate-500'}>
                 {outsourcedToHotel
                   ? `${outsourcedToHotel.city}, ${outsourcedToHotel.country}`
                   : t('admin.bookings.destinationUnavailable')}
               </p>
             </div>
           )}
-          <div className="bg-slate-800/40 border border-slate-700 rounded-xl p-4">
-            <p className="text-slate-500 mb-1">{t('admin.bookings.stay')}</p>
-            <p className="text-slate-100 font-medium">
+          <div
+            className={`border rounded-xl p-4 ${isDark ? 'bg-slate-800/40 border-slate-700' : 'bg-slate-50 border-slate-200'}`}
+          >
+            <p
+              className={`mb-1 ${isDark ? 'text-slate-500' : 'text-slate-400'}`}
+            >
+              {t('admin.bookings.stay')}
+            </p>
+            <p
+              className={`font-medium ${isDark ? 'text-slate-100' : 'text-slate-800'}`}
+            >
               {bookingDetail.booking.checkIn} → {bookingDetail.booking.checkOut}
             </p>
-            <p className="text-slate-400">
+            <p className={isDark ? 'text-slate-400' : 'text-slate-500'}>
               ${(bookingDetail.booking.totalPrice / 100).toFixed(2)}
             </p>
           </div>
-          <div className="bg-slate-800/40 border border-slate-700 rounded-xl p-4">
-            <p className="text-slate-500 mb-1">{t('admin.bookings.payment')}</p>
-            <p className="text-slate-100 font-medium capitalize">
+          <div
+            className={`border rounded-xl p-4 ${isDark ? 'bg-slate-800/40 border-slate-700' : 'bg-slate-50 border-slate-200'}`}
+          >
+            <p
+              className={`mb-1 ${isDark ? 'text-slate-500' : 'text-slate-400'}`}
+            >
+              {t('admin.bookings.payment')}
+            </p>
+            <p
+              className={`font-medium capitalize ${isDark ? 'text-slate-100' : 'text-slate-800'}`}
+            >
               {bookingDetail.booking.paymentStatus ||
                 t('admin.bookings.pending')}
             </p>
           </div>
-          <div className="bg-slate-800/40 border border-slate-700 rounded-xl p-4">
-            <p className="text-slate-500 mb-1">{t('booking.package')}</p>
-            <p className="text-slate-100 font-medium">
+          <div
+            className={`border rounded-xl p-4 ${isDark ? 'bg-slate-800/40 border-slate-700' : 'bg-slate-50 border-slate-200'}`}
+          >
+            <p
+              className={`mb-1 ${isDark ? 'text-slate-500' : 'text-slate-400'}`}
+            >
+              {t('booking.package')}
+            </p>
+            <p
+              className={`font-medium ${isDark ? 'text-slate-100' : 'text-slate-800'}`}
+            >
               {getPackageLabelOrDefault(bookingDetail.booking.packageType, t)}
             </p>
             {bookingDetail.booking.packageType && (
-              <p className="text-slate-400">
+              <p className={isDark ? 'text-slate-400' : 'text-slate-500'}>
                 {formatPackageAddOn(bookingDetail.booking.packageAddOn ?? 0, t)}
               </p>
             )}
           </div>
           {bookingDetail.booking.specialRequests && (
-            <div className="bg-slate-800/40 border border-slate-700 rounded-xl p-4">
-              <p className="text-slate-500 mb-1">
+            <div
+              className={`border rounded-xl p-4 ${isDark ? 'bg-slate-800/40 border-slate-700' : 'bg-slate-50 border-slate-200'}`}
+            >
+              <p
+                className={`mb-1 ${isDark ? 'text-slate-500' : 'text-slate-400'}`}
+              >
                 {t('bookingModal.specialRequests')}
               </p>
-              <p className="text-slate-300">
+              <p className={isDark ? 'text-slate-300' : 'text-slate-600'}>
                 {bookingDetail.booking.specialRequests}
               </p>
             </div>
           )}
         </div>
-      </div>
+      </motion.div>
 
-      {canVerifyPayment && bookingDetail.booking.status === 'pending_payment' && (
-        <div className="bg-slate-900/50 border border-slate-800/50 rounded-2xl p-6 mb-6">
-          <h2 className="text-lg font-semibold text-slate-200 mb-4">
-            {t('admin.bookings.paymentVerification')}
-          </h2>
+      {canVerifyPayment &&
+        bookingDetail.booking.status === 'pending_payment' && (
+          <motion.div
+            variants={itemVariants}
+            className={`border rounded-2xl p-6 mb-6 backdrop-blur-sm ${isDark ? 'bg-slate-900/50 border-slate-800/50' : 'bg-white/80 border-slate-200/80 shadow-sm'}`}
+          >
+            <h2
+              className={`text-lg font-semibold mb-4 ${isDark ? 'text-slate-200' : 'text-slate-800'}`}
+            >
+              {t('admin.bookings.paymentVerification')}
+            </h2>
 
-          <div className="space-y-4">
-            <div className="bg-slate-800/40 border border-slate-700 rounded-xl p-4">
-              <p className="text-slate-500 mb-1">
-                {t('admin.bookings.transactionId')}
-              </p>
-              <div className="flex items-center justify-between gap-2">
-                <p className="text-slate-100 font-medium break-all">
-                  {bookingDetail.booking.transactionId || t('admin.bookings.na')}
+            <div className="space-y-4">
+              <div
+                className={`border rounded-xl p-4 ${isDark ? 'bg-slate-800/40 border-slate-700' : 'bg-slate-50 border-slate-200'}`}
+              >
+                <p
+                  className={`mb-1 ${isDark ? 'text-slate-500' : 'text-slate-400'}`}
+                >
+                  {t('admin.bookings.transactionId')}
                 </p>
-                {bookingDetail.booking.transactionId && (
-                  <button
-                    type="button"
-                    onClick={handleCopyTransactionId}
-                    className="inline-flex items-center gap-2 px-3 py-2 bg-slate-800 text-slate-300 rounded-lg hover:bg-slate-700 transition-colors border border-slate-700 text-sm"
+                <div className="flex items-center justify-between gap-2">
+                  <p
+                    className={`font-medium break-all ${isDark ? 'text-slate-100' : 'text-slate-800'}`}
                   >
-                    <Copy className="w-4 h-4" />
-                    {t('common.copy')}
-                  </button>
+                    {bookingDetail.booking.transactionId ||
+                      t('admin.bookings.na')}
+                  </p>
+                  {bookingDetail.booking.transactionId && (
+                    <button
+                      type="button"
+                      onClick={handleCopyTransactionId}
+                      className={`inline-flex items-center gap-2 px-3 py-2 rounded-lg transition-colors border text-sm ${isDark ? 'bg-slate-800 text-slate-300 hover:bg-slate-700 border-slate-700' : 'bg-slate-100 text-slate-600 hover:bg-slate-200 border-slate-200'}`}
+                    >
+                      <Copy className="w-4 h-4" />
+                      {t('common.copy')}
+                    </button>
+                  )}
+                </div>
+              </div>
+
+              <div
+                className={`border rounded-xl p-4 ${isDark ? 'bg-slate-800/40 border-slate-700' : 'bg-slate-50 border-slate-200'}`}
+              >
+                <p
+                  className={`mb-2 ${isDark ? 'text-slate-500' : 'text-slate-400'}`}
+                >
+                  {t('admin.bookings.nationalId')}
+                </p>
+                {nationalIdImageUrl ? (
+                  <img
+                    src={nationalIdImageUrl}
+                    alt={t('admin.bookings.nationalId')}
+                    className={`w-full max-h-80 object-contain rounded-lg border ${isDark ? 'border-slate-700 bg-slate-900' : 'border-slate-200 bg-slate-50'}`}
+                  />
+                ) : (
+                  <div
+                    className={`flex items-center gap-2 text-sm ${isDark ? 'text-slate-400' : 'text-slate-500'}`}
+                  >
+                    <Image className="w-4 h-4" />
+                    <span>{t('admin.bookings.nationalIdUnavailable')}</span>
+                  </div>
                 )}
               </div>
-            </div>
 
-            <div className="bg-slate-800/40 border border-slate-700 rounded-xl p-4">
-              <p className="text-slate-500 mb-2">{t('admin.bookings.nationalId')}</p>
-              {nationalIdImageUrl ? (
-                <img
-                  src={nationalIdImageUrl}
-                  alt={t('admin.bookings.nationalId')}
-                  className="w-full max-h-80 object-contain rounded-lg border border-slate-700 bg-slate-900"
-                />
-              ) : (
-                <div className="flex items-center gap-2 text-slate-400 text-sm">
-                  <Image className="w-4 h-4" />
-                  <span>{t('admin.bookings.nationalIdUnavailable')}</span>
-                </div>
-              )}
+              <div className="flex flex-wrap gap-2">
+                <button
+                  onClick={handleVerifyPayment}
+                  className="px-3 py-2 bg-emerald-500/10 text-emerald-400 rounded-lg hover:bg-emerald-500/20 transition-colors text-sm font-medium border border-emerald-500/20 inline-flex items-center gap-2"
+                >
+                  <CheckCircle className="w-4 h-4" />
+                  {t('admin.bookings.approvePayment')}
+                </button>
+                <button
+                  onClick={handleRejectPayment}
+                  className="px-3 py-2 bg-red-500/10 text-red-400 rounded-lg hover:bg-red-500/20 transition-colors text-sm font-medium border border-red-500/20 inline-flex items-center gap-2"
+                >
+                  <XCircle className="w-4 h-4" />
+                  {t('admin.bookings.rejectPayment')}
+                </button>
+              </div>
             </div>
-
-            <div className="flex flex-wrap gap-2">
-              <button
-                onClick={handleVerifyPayment}
-                className="px-3 py-2 bg-emerald-500/10 text-emerald-400 rounded-lg hover:bg-emerald-500/20 transition-colors text-sm font-medium border border-emerald-500/20 inline-flex items-center gap-2"
-              >
-                <CheckCircle className="w-4 h-4" />
-                {t('admin.bookings.approvePayment')}
-              </button>
-              <button
-                onClick={handleRejectPayment}
-                className="px-3 py-2 bg-red-500/10 text-red-400 rounded-lg hover:bg-red-500/20 transition-colors text-sm font-medium border border-red-500/20 inline-flex items-center gap-2"
-              >
-                <XCircle className="w-4 h-4" />
-                {t('admin.bookings.rejectPayment')}
-              </button>
-            </div>
-          </div>
-        </div>
-      )}
+          </motion.div>
+        )}
 
       {canManageBookings && (
-        <div className="bg-slate-900/50 border border-slate-800/50 rounded-2xl p-6">
-          <h2 className="text-lg font-semibold text-slate-200 mb-4">
+        <motion.div
+          variants={itemVariants}
+          className={`border rounded-2xl p-6 backdrop-blur-sm ${isDark ? 'bg-slate-900/50 border-slate-800/50' : 'bg-white/80 border-slate-200/80 shadow-sm'}`}
+        >
+          <h2
+            className={`text-lg font-semibold mb-4 ${isDark ? 'text-slate-200' : 'text-slate-800'}`}
+          >
             {t('admin.bookings.actions')}
           </h2>
           <div className="flex flex-wrap gap-2">
             {bookingDetail.booking.paymentStatus !== 'paid' &&
-              ['confirmed', 'checked_in'].includes(bookingDetail.booking.status) && (
+              ['confirmed', 'checked_in'].includes(
+                bookingDetail.booking.status,
+              ) && (
                 <button
                   onClick={handleAcceptCashPayment}
                   className="px-3 py-2 bg-emerald-500/10 text-emerald-400 rounded-lg hover:bg-emerald-500/20 transition-colors text-sm font-medium border border-emerald-500/20 inline-flex items-center gap-2"
@@ -449,7 +578,7 @@ function BookingDetailPage() {
               ),
             )}
           </div>
-        </div>
+        </motion.div>
       )}
 
       {showOutsourceModal && bookingDetail && (
@@ -459,6 +588,6 @@ function BookingDetailPage() {
           onSuccess={() => setShowOutsourceModal(false)}
         />
       )}
-    </div>
+    </motion.div>
   )
 }
