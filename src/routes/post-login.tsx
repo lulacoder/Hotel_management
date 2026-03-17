@@ -62,7 +62,7 @@ function PostLoginPage() {
       }
 
       if (hotelAssignment) {
-        navigate({ to: '/admin' })
+        navigate({ to: '/admin' }) // Redirect to admin dashboard if hotel assignment is found  
       } else {
         navigate({ to: redirectTarget || '/select-location' })
       }

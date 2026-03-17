@@ -20,6 +20,7 @@ export default function Header() {
   const isAuthPage =
     location.pathname.startsWith('/sign-in') ||
     location.pathname.startsWith('/sign-up')
+  const isPostLoginPage = location.pathname.startsWith('/post-login')
   const isAdminRoute = location.pathname.startsWith('/admin')
   const isCustomerAppRoute =
     location.pathname.startsWith('/select-location') ||
@@ -35,7 +36,7 @@ export default function Header() {
   }, [])
 
   // Don't render header on pages with their own navigation chrome
-  if (isAuthPage || isAdminRoute || isCustomerAppRoute) {
+  if (isAuthPage || isPostLoginPage || isAdminRoute || isCustomerAppRoute) {
     return null
   }
 
