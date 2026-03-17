@@ -3,7 +3,7 @@ import { internal } from './_generated/api'
 
 const crons = cronJobs()
 
-// Runs every 5 minutes to scan for held bookings whose holdExpiresAt timestamp
+// Runs every 15 minutes to scan for held bookings whose holdExpiresAt timestamp
 // has passed and transitions them to 'expired' status. This keeps the booking
 // state consistent so rooms are released for new customers promptly.
 crons.interval(
@@ -19,6 +19,15 @@ crons.interval(
   'cleanup orphan uploads',
   { hours: 2 },
   internal.filesInternal.cleanupOrphanUploads,
+  {},
+)
+
+// Runs once per day to delete notifications older than 10 days, keeping the
+// notifications table lean and preventing stale alerts from accumulating.
+crons.interval(
+  'cleanup old notifications',
+  { hours: 24 },
+  internal.notificationsInternal.cleanupOldNotifications,
   {},
 )
 

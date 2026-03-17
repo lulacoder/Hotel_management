@@ -1,4 +1,3 @@
-// Admin layout route with role checks, sidebar navigation, and nested outlet rendering.
 import {
   Link,
   Outlet,
@@ -24,6 +23,7 @@ import { useQuery } from 'convex/react'
 import { api } from '../../convex/_generated/api'
 import { LanguageSwitcher } from '../components/LanguageSwitcher'
 import { ThemeToggle } from '../components/ThemeToggle'
+import { NotificationBell } from '../components/NotificationBell'
 import { useI18n } from '../lib/i18n'
 
 export const Route = createFileRoute('/admin')({
@@ -258,6 +258,7 @@ function AdminLayout() {
                 {user.emailAddresses[0]?.emailAddress}
               </p>
             </div>
+            <NotificationBell dropDirection="up" />
           </div>
         </div>
       </aside>
@@ -340,6 +341,7 @@ function AdminLayout() {
                 {user.emailAddresses[0]?.emailAddress}
               </p>
             </div>
+            <NotificationBell dropDirection="up" />
           </div>
         </div>
       </aside>
@@ -354,4 +356,3 @@ function AdminLayout() {
     </div>
   )
 }
-

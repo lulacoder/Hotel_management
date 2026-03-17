@@ -5,6 +5,7 @@ import { useState } from 'react'
 import { Home, MapPin, Menu, X } from 'lucide-react'
 import { LanguageSwitcher } from '../../../components/LanguageSwitcher'
 import { ThemeToggle } from '../../../components/ThemeToggle'
+import { NotificationBell } from '../../../components/NotificationBell'
 import { useI18n } from '../../../lib/i18n'
 
 interface SelectLocationHeaderProps {
@@ -49,6 +50,7 @@ export function SelectLocationHeader({
                 >
                   {t('header.myBookings')}
                 </Link>
+                <NotificationBell />
                 <span className="text-sm text-slate-500">{userName}</span>
                 <UserButton afterSignOutUrl="/" />
               </>
@@ -135,7 +137,10 @@ export function SelectLocationHeader({
               onClick={() => setIsOpen(false)}
               className="flex items-center gap-3 px-4 py-3 rounded-xl text-slate-400 hover:text-white hover:bg-white/5 transition-all duration-300 group"
             >
-              <Home size={20} className="group-hover:text-blue-400 transition-colors" />
+              <Home
+                size={20}
+                className="group-hover:text-blue-400 transition-colors"
+              />
               <span className="font-medium">{t('header.home')}</span>
             </Link>
 
@@ -186,6 +191,7 @@ export function SelectLocationHeader({
           <div className="p-4 border-t border-slate-800/50 bg-slate-800/30">
             <div className="flex items-center gap-3">
               <UserButton afterSignOutUrl="/" />
+              <NotificationBell />
               <span className="text-sm text-slate-400">{userName}</span>
             </div>
           </div>
@@ -202,4 +208,3 @@ export function SelectLocationHeader({
     </>
   )
 }
-

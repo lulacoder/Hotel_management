@@ -1,5 +1,6 @@
 import { ConvexError, v } from 'convex/values'
 import { mutation, query } from './_generated/server'
+import { internal } from './_generated/api'
 import {
   getHotelAssignment,
   requireCustomer,
@@ -767,10 +768,7 @@ export const submitPaymentProof = mutation({
       args.bookingId,
     )
 
-    if (
-      previousStorageId &&
-      previousStorageId !== args.nationalIdStorageId
-    ) {
+    if (previousStorageId && previousStorageId !== args.nationalIdStorageId) {
       await ctx.storage.delete(previousStorageId)
       await markUploadDeleted(ctx, customer._id, previousStorageId)
     }
@@ -788,6 +786,14 @@ export const submitPaymentProof = mutation({
         paymentStatus: 'pending',
         transactionId: trimmedTransactionId,
       },
+    })
+
+    // Notify all hotel staff that a new payment proof is awaiting review.
+    await ctx.runMutation(internal.notifications.notifyHotelStaff, {
+      hotelId: booking.hotelId,
+      type: 'booking_payment_proof_submitted',
+      bookingId: args.bookingId,
+      message: `New payment proof submitted for booking #${args.bookingId.slice(-6).toUpperCase()} — awaiting your review.`,
     })
 
     return null
@@ -860,6 +866,19 @@ export const cancelBooking = mutation({
       newValue: { status: 'cancelled' },
       metadata: args.reason ? { reason: args.reason } : undefined,
     })
+
+    // Notify the booking owner only when a staff member / admin cancels on
+    // their behalf — skip the notification if the customer cancels themselves.
+    const cancelledByStaff = user.role === 'room_admin' || canCancelAsHotelStaff
+    if (cancelledByStaff && booking.userId) {
+      await ctx.runMutation(internal.notifications.createNotification, {
+        userId: booking.userId,
+        type: 'booking_cancelled',
+        bookingId: args.bookingId,
+        hotelId: booking.hotelId,
+        message: `Your booking #${args.bookingId.slice(-6).toUpperCase()} has been cancelled${args.reason ? `: ${args.reason}` : '.'}`,
+      })
+    }
 
     return null
   },
@@ -1078,6 +1097,17 @@ export const verifyPayment = mutation({
       },
     })
 
+    // Notify the customer that their booking is now confirmed.
+    if (booking.userId) {
+      await ctx.runMutation(internal.notifications.createNotification, {
+        userId: booking.userId,
+        type: 'booking_confirmed',
+        bookingId: args.bookingId,
+        hotelId: booking.hotelId,
+        message: `Your booking #${args.bookingId.slice(-6).toUpperCase()} has been confirmed! Payment verified successfully.`,
+      })
+    }
+
     return null
   },
 })
@@ -1149,6 +1179,17 @@ export const rejectPayment = mutation({
         nationalIdDeleted: Boolean(booking.nationalIdStorageId),
       },
     })
+
+    // Notify the customer that their payment was rejected.
+    if (booking.userId) {
+      await ctx.runMutation(internal.notifications.createNotification, {
+        userId: booking.userId,
+        type: 'booking_payment_rejected',
+        bookingId: args.bookingId,
+        hotelId: booking.hotelId,
+        message: `Your payment proof for booking #${args.bookingId.slice(-6).toUpperCase()} was rejected. Please re-submit with a valid proof of payment.`,
+      })
+    }
 
     return null
   },

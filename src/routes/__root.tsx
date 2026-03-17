@@ -7,6 +7,7 @@ import {
 } from '@tanstack/react-router'
 import { TanStackRouterDevtoolsPanel } from '@tanstack/react-router-devtools'
 import { TanStackDevtools } from '@tanstack/react-devtools'
+import { Toaster } from 'sonner'
 
 import Header from '../components/Header'
 
@@ -129,6 +130,17 @@ function RootDocument({ children }: { children: React.ReactNode }) {
             </ClerkProvider>
           </ThemeProvider>
         </I18nProvider>
+        <Toaster
+          position="bottom-right"
+          theme="dark"
+          toastOptions={{
+            style: {
+              background: 'rgb(15 23 42)',
+              border: '1px solid rgb(51 65 85 / 0.6)',
+              color: 'rgb(226 232 240)',
+            },
+          }}
+        />
         <Scripts />
       </body>
     </html>

@@ -28,6 +28,8 @@ import type * as lib_adminAnalyticsScope from "../lib/adminAnalyticsScope.js";
 import type * as lib_adminAnalyticsWindow from "../lib/adminAnalyticsWindow.js";
 import type * as lib_auth from "../lib/auth.js";
 import type * as lib_dates from "../lib/dates.js";
+import type * as notifications from "../notifications.js";
+import type * as notificationsInternal from "../notificationsInternal.js";
 import type * as ratings from "../ratings.js";
 import type * as rooms from "../rooms.js";
 import type * as seed from "../seed.js";
@@ -60,6 +62,8 @@ declare const fullApi: ApiFromModules<{
   "lib/adminAnalyticsWindow": typeof lib_adminAnalyticsWindow;
   "lib/auth": typeof lib_auth;
   "lib/dates": typeof lib_dates;
+  notifications: typeof notifications;
+  notificationsInternal: typeof notificationsInternal;
   ratings: typeof ratings;
   rooms: typeof rooms;
   seed: typeof seed;

@@ -5,6 +5,7 @@ import { useState } from 'react'
 import { ArrowLeft, Menu, X, Home, MapPin } from 'lucide-react'
 import { LanguageSwitcher } from '../../../../components/LanguageSwitcher'
 import { ThemeToggle } from '../../../../components/ThemeToggle'
+import { NotificationBell } from '../../../../components/NotificationBell'
 import { useI18n } from '../../../../lib/i18n'
 
 interface BookingsHeaderProps {
@@ -37,6 +38,7 @@ export function BookingsHeader({ userName }: BookingsHeaderProps) {
           <div className="hidden md:flex items-center gap-4">
             <LanguageSwitcher compact />
             <ThemeToggle compact />
+            <NotificationBell />
             <span className="text-sm text-slate-400">{userName}</span>
             <UserButton afterSignOutUrl="/" />
           </div>
@@ -96,7 +98,10 @@ export function BookingsHeader({ userName }: BookingsHeaderProps) {
               onClick={() => setIsOpen(false)}
               className="flex items-center gap-3 px-4 py-3 rounded-xl text-slate-400 hover:text-white hover:bg-white/5 transition-all duration-300 group"
             >
-              <Home size={20} className="group-hover:text-blue-400 transition-colors" />
+              <Home
+                size={20}
+                className="group-hover:text-blue-400 transition-colors"
+              />
               <span className="font-medium">{t('header.home')}</span>
             </Link>
 
@@ -105,7 +110,10 @@ export function BookingsHeader({ userName }: BookingsHeaderProps) {
               onClick={() => setIsOpen(false)}
               className="flex items-center gap-3 px-4 py-3 rounded-xl text-slate-400 hover:text-white hover:bg-white/5 transition-all duration-300 group"
             >
-              <MapPin size={20} className="group-hover:text-blue-400 transition-colors" />
+              <MapPin
+                size={20}
+                className="group-hover:text-blue-400 transition-colors"
+              />
               <span className="font-medium">{t('header.browseLocations')}</span>
             </Link>
           </div>
@@ -122,6 +130,7 @@ export function BookingsHeader({ userName }: BookingsHeaderProps) {
         <div className="p-4 border-t border-slate-800/50 bg-slate-800/30">
           <div className="flex items-center gap-3">
             <UserButton afterSignOutUrl="/" />
+            <NotificationBell />
             <span className="text-sm text-slate-400">{userName}</span>
           </div>
         </div>
@@ -137,4 +146,3 @@ export function BookingsHeader({ userName }: BookingsHeaderProps) {
     </>
   )
 }
-

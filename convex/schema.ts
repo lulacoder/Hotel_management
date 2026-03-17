@@ -239,6 +239,25 @@ export default defineSchema({
     .index('by_user_and_created_at', ['userId', 'createdAt'])
     .index('by_booking', ['bookingId']),
 
+  // In-app notifications for booking lifecycle events
+  notifications: defineTable({
+    userId: v.id('users'), // Recipient of the notification
+    type: v.union(
+      v.literal('booking_payment_proof_submitted'), // → staff: customer submitted proof
+      v.literal('booking_confirmed'), // → customer: payment verified / booking confirmed
+      v.literal('booking_cancelled'), // → customer: staff cancelled their booking
+      v.literal('booking_payment_rejected'), // → customer: payment proof was rejected
+    ),
+    bookingId: v.id('bookings'),
+    hotelId: v.id('hotels'),
+    message: v.string(), // Pre-rendered human-readable message
+    isRead: v.boolean(),
+    createdAt: v.number(),
+  })
+    .index('by_user', ['userId'])
+    .index('by_user_and_is_read', ['userId', 'isRead'])
+    .index('by_created_at', ['createdAt']),
+
   // Audit events table for tracking changes
   auditEvents: defineTable({
     actorId: v.id('users'),

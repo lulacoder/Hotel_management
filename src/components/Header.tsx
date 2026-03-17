@@ -1,12 +1,13 @@
 import { Link, useLocation } from '@tanstack/react-router'
 import { useAuth } from '@clerk/clerk-react'
 
-import { useEffect, useState} from 'react'
-import { CalendarCheck, Home, MapPin,Menu, X} from 'lucide-react'
+import { useEffect, useState } from 'react'
+import { CalendarCheck, Home, MapPin, Menu, X } from 'lucide-react'
 import ClerkHeader from '../integrations/clerk/header-user'
 import { useI18n } from '../lib/i18n'
 import { LanguageSwitcher } from './LanguageSwitcher'
 import { ThemeToggle } from './ThemeToggle'
+import { NotificationBell } from './NotificationBell'
 
 export default function Header() {
   const [isOpen, setIsOpen] = useState(false)
@@ -108,6 +109,7 @@ export default function Header() {
                 </>
               )}
               {isSignedIn && <ClerkHeader />}
+              {isSignedIn && <NotificationBell />}
             </div>
           </div>
         </div>
@@ -251,4 +253,3 @@ export default function Header() {
     </>
   )
 }
-
