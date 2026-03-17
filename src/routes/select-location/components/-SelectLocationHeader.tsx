@@ -191,7 +191,7 @@ export function SelectLocationHeader({
           <div className="p-4 border-t border-slate-800/50 bg-slate-800/30">
             <div className="flex items-center gap-3">
               <UserButton afterSignOutUrl="/" />
-              <NotificationBell />
+              <NotificationBell dropDirection="up" />
               <span className="text-sm text-slate-400">{userName}</span>
             </div>
           </div>
