@@ -165,7 +165,7 @@ function AdminLayout() {
       {/* Mobile Menu Button - Only visible on small screens */}
       <button
         onClick={() => setMobileMenuOpen(true)}
-        className="md:hidden fixed top-4 left-4 z-50 p-2.5 hover:bg-white/10 rounded-xl transition-all duration-300 group"
+        className="md:hidden fixed top-4 left-4 z-[80] p-2.5 hover:bg-white/10 rounded-xl transition-all duration-300 group"
         aria-label={t('header.openMenu')}
       >
         <Menu
@@ -176,7 +176,7 @@ function AdminLayout() {
 
       {/* Mobile Slide-out Menu */}
       <aside
-        className={`md:hidden fixed top-0 left-0 h-full w-80 bg-slate-900 border-r border-slate-800/50 shadow-2xl z-50 transform transition-transform duration-500 ease-out flex flex-col ${
+        className={`md:hidden fixed top-0 left-0 h-full w-80 bg-slate-900 border-r border-slate-800/50 shadow-2xl z-[75] transform transition-transform duration-500 ease-out flex flex-col ${
           mobileMenuOpen ? 'translate-x-0' : '-translate-x-full'
         }`}
       >
@@ -265,14 +265,14 @@ function AdminLayout() {
 
       {/* Mobile Backdrop */}
       <div
-        className={`md:hidden fixed inset-0 bg-black/60 backdrop-blur-sm z-40 transition-all duration-500 ${
+        className={`md:hidden fixed inset-0 bg-black/60 backdrop-blur-sm z-[70] transition-all duration-500 ${
           mobileMenuOpen ? 'opacity-100' : 'opacity-0 pointer-events-none'
         }`}
         onClick={() => setMobileMenuOpen(false)}
       />
 
       {/* Desktop Sidebar */}
-      <aside className="hidden md:flex md:h-dvh w-72 shrink-0 bg-slate-900/50 border-r border-slate-800/50 backdrop-blur-xl flex-col">
+      <aside className="hidden md:flex md:h-dvh w-72 shrink-0 bg-slate-900/50 border-r border-slate-800/50 backdrop-blur-xl flex-col relative z-20">
         <div className="p-6 border-b border-slate-800/50">
           <div className="flex items-center gap-3">
             <div className="h-10 rounded-xl bg-slate-950/70 border border-blue-500/30 px-1 flex items-center justify-center shadow-lg shadow-blue-500/20">
@@ -349,7 +349,7 @@ function AdminLayout() {
       {/* Main Content */}
       <div className="flex-1 flex min-h-0 flex-col">
         {/* Page Content */}
-        <main className="flex-1 min-h-0 p-4 md:p-8 overflow-y-auto overflow-x-hidden md:mt-0 mt-12">
+        <main className="relative z-0 flex-1 min-h-0 p-4 md:p-8 overflow-y-auto overflow-x-hidden md:mt-0 mt-12">
           <Outlet />
         </main>
       </div>

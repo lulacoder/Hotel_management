@@ -201,6 +201,26 @@ html[data-theme='light'] .booking-modal-panel {
     0 10px 24px -14px rgb(15 23 42 / 0.3);
 }
 
+html[data-theme='light'] .notification-bell-panel {
+  background: rgb(255 255 255 / 0.84);
+  border-color: rgb(203 213 225 / 0.85);
+  box-shadow:
+    0 22px 48px -24px rgb(15 23 42 / 0.35),
+    0 12px 30px -20px rgb(59 130 246 / 0.25);
+}
+
+html[data-theme='light'] .notification-bell-item {
+  backdrop-filter: blur(8px);
+}
+
+html[data-theme='light'] .complaint-modal-panel {
+  background: rgb(255 255 255 / 0.88);
+  border-color: rgb(203 213 225 / 0.9);
+  box-shadow:
+    0 28px 66px -26px rgb(15 23 42 / 0.38),
+    0 14px 34px -22px rgb(59 130 246 / 0.22);
+}
+
 html[data-theme='light'] .booking-package-card--selected {
   border-color: rgb(96 165 250 / 0.75);
   background: rgb(219 234 254 / 0.7);

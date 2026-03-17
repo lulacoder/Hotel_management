@@ -133,15 +133,15 @@ export function ComplaintModal({
     complaintError
 
   return (
-    <div className="fixed inset-0 bg-black/60 backdrop-blur-sm flex items-center justify-center z-50 p-4">
+    <div className="fixed inset-0 bg-black/60 backdrop-blur-sm flex items-start sm:items-center justify-center z-[70] p-3 sm:p-4 overflow-y-auto">
       <div
-        className="bg-slate-900 border border-slate-800 rounded-2xl shadow-2xl w-full max-w-lg"
+        className="complaint-modal-panel bg-slate-900 border border-slate-800 rounded-2xl shadow-2xl w-full max-w-md max-h-[calc(100vh-2rem)] overflow-y-auto my-3 sm:my-0"
         role="dialog"
         aria-modal="true"
         aria-labelledby="complaint-modal-title"
         aria-describedby="complaint-modal-description"
       >
-        <div className="p-6 border-b border-slate-800 flex items-start justify-between gap-4">
+        <div className="p-5 border-b border-slate-800 flex items-start justify-between gap-4">
           <div>
             <h2
               id="complaint-modal-title"
@@ -166,7 +166,7 @@ export function ComplaintModal({
           </button>
         </div>
 
-        <div className="p-6">
+        <div className="p-5">
           {!isSignedIn ? (
             <div className="space-y-5">
               <p className="text-slate-400">{t('complaint.signInPrompt')}</p>
@@ -198,7 +198,7 @@ export function ComplaintModal({
               </div>
             </div>
           ) : (
-            <form onSubmit={handleSubmit(onSubmit)} className="space-y-5">
+            <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
               {formError && (
                 <div className="bg-red-500/10 border border-red-500/20 rounded-xl p-4 text-red-400 text-sm">
                   {formError}
@@ -259,7 +259,7 @@ export function ComplaintModal({
                 </label>
                 <textarea
                   {...register('description')}
-                  rows={5}
+                  rows={4}
                   maxLength={2000}
                   placeholder={t('complaint.descriptionPlaceholder')}
                   className="w-full px-4 py-3 bg-slate-800/50 border border-slate-700 rounded-xl text-slate-200 placeholder-slate-500 focus:outline-none focus:border-blue-500/50 transition-all resize-none"

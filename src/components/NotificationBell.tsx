@@ -1,6 +1,7 @@
 import { useQuery, useMutation } from 'convex/react'
 import { useAuth } from '@clerk/clerk-react'
-import { useEffect, useRef, useState } from 'react'
+import { useEffect, useRef, useState, useCallback } from 'react'
+import ReactDOM from 'react-dom'
 import { Bell, BellOff, Check, CheckCheck, Trash2, X } from 'lucide-react'
 import { toast } from 'sonner'
 import { api } from '../../convex/_generated/api'
@@ -10,27 +11,27 @@ import type { Id } from '../../convex/_generated/dataModel'
 const notificationMeta = {
   booking_payment_proof_submitted: {
     label: 'New Payment Proof',
-    color: 'text-amber-400',
-    bg: 'bg-amber-400/10 border-amber-400/20',
-    dot: 'bg-amber-400',
+    color: 'text-amber-500 dark:text-amber-400',
+    bg: 'bg-amber-500/10 border-amber-500/20 dark:bg-amber-400/10 dark:border-amber-400/20',
+    dot: 'bg-amber-500 dark:bg-amber-400',
   },
   booking_confirmed: {
     label: 'Booking Confirmed',
-    color: 'text-emerald-400',
-    bg: 'bg-emerald-400/10 border-emerald-400/20',
-    dot: 'bg-emerald-400',
+    color: 'text-emerald-600 dark:text-emerald-400',
+    bg: 'bg-emerald-500/10 border-emerald-500/20 dark:bg-emerald-400/10 dark:border-emerald-400/20',
+    dot: 'bg-emerald-500 dark:bg-emerald-400',
   },
   booking_cancelled: {
     label: 'Booking Cancelled',
-    color: 'text-red-400',
-    bg: 'bg-red-400/10 border-red-400/20',
-    dot: 'bg-red-400',
+    color: 'text-red-600 dark:text-red-400',
+    bg: 'bg-red-500/10 border-red-500/20 dark:bg-red-400/10 dark:border-red-400/20',
+    dot: 'bg-red-500 dark:bg-red-400',
   },
   booking_payment_rejected: {
     label: 'Payment Rejected',
-    color: 'text-orange-400',
-    bg: 'bg-orange-400/10 border-orange-400/20',
-    dot: 'bg-orange-400',
+    color: 'text-orange-600 dark:text-orange-400',
+    bg: 'bg-orange-500/10 border-orange-500/20 dark:bg-orange-400/10 dark:border-orange-400/20',
+    dot: 'bg-orange-500 dark:bg-orange-400',
   },
 } as const
 
@@ -69,8 +70,10 @@ export function NotificationBell({
 }: NotificationBellProps) {
   const { isSignedIn } = useAuth()
   const [open, setOpen] = useState(false)
+  const buttonRef = useRef<HTMLButtonElement>(null)
   const panelRef = useRef<HTMLDivElement>(null)
   const prevCountRef = useRef<number | undefined>(undefined)
+  const [panelStyle, setPanelStyle] = useState<React.CSSProperties>({})
 
   const notifications = useQuery(
     api.notifications.getMyNotifications,
@@ -84,6 +87,52 @@ export function NotificationBell({
   const markAsRead = useMutation(api.notifications.markAsRead)
   const markAllAsRead = useMutation(api.notifications.markAllAsRead)
   const clearAll = useMutation(api.notifications.clearAll)
+
+  // Compute the portal panel position based on the bell button's DOM rect.
+  const updatePanelPosition = useCallback(() => {
+    if (!buttonRef.current) return
+    const rect = buttonRef.current.getBoundingClientRect()
+    const panelWidth = Math.min(384, window.innerWidth - 16) // w-96 = 384px
+
+    if (dropDirection === 'up') {
+      // Align left edge with button, open upward
+      let left = rect.left
+      if (left + panelWidth > window.innerWidth - 8) {
+        left = window.innerWidth - panelWidth - 8
+      }
+      setPanelStyle({
+        position: 'fixed',
+        bottom: window.innerHeight - rect.top + 8,
+        left: Math.max(8, left),
+        width: panelWidth,
+        zIndex: 2147483000,
+      })
+    } else {
+      // Align right edge with button, open downward
+      let right = window.innerWidth - rect.right
+      if (right < 8) right = 8
+      setPanelStyle({
+        position: 'fixed',
+        top: rect.bottom + 8,
+        right: Math.max(8, right),
+        width: panelWidth,
+        zIndex: 2147483000,
+      })
+    }
+  }, [dropDirection])
+
+  // Recompute position whenever the panel opens or window resizes/scrolls.
+  useEffect(() => {
+    if (!open) return
+    updatePanelPosition()
+
+    window.addEventListener('resize', updatePanelPosition)
+    window.addEventListener('scroll', updatePanelPosition, true)
+    return () => {
+      window.removeEventListener('resize', updatePanelPosition)
+      window.removeEventListener('scroll', updatePanelPosition, true)
+    }
+  }, [open, updatePanelPosition])
 
   // Fire a toast whenever unreadCount increases (real-time new notification).
   useEffect(() => {
@@ -110,7 +159,13 @@ export function NotificationBell({
     if (!open) return
 
     function handleClickOutside(e: MouseEvent) {
-      if (panelRef.current && !panelRef.current.contains(e.target as Node)) {
+      const target = e.target as Node
+      if (
+        panelRef.current &&
+        !panelRef.current.contains(target) &&
+        buttonRef.current &&
+        !buttonRef.current.contains(target)
+      ) {
         setOpen(false)
       }
     }
@@ -135,39 +190,22 @@ export function NotificationBell({
 
   const count = unreadCount ?? 0
 
-  return (
-    <div className="relative" ref={panelRef}>
-      {/* Bell Button */}
-      <button
-        onClick={() => setOpen((prev) => !prev)}
-        className="relative p-2 rounded-xl hover:bg-white/10 transition-all duration-200 group"
-        aria-label={`Notifications${count > 0 ? ` (${count} unread)` : ''}`}
-      >
-        <Bell
-          size={20}
-          className="text-slate-300 group-hover:text-white transition-colors"
-        />
-        {count > 0 && (
-          <span className="absolute -top-0.5 -right-0.5 min-w-[18px] h-[18px] flex items-center justify-center rounded-full bg-red-500 text-white text-[10px] font-bold px-1 leading-none shadow-lg shadow-red-500/40">
-            {count > 99 ? '99+' : count}
-          </span>
-        )}
-      </button>
-
-      {/* Dropdown Panel */}
-      {open && (
+  const panel = open
+    ? ReactDOM.createPortal(
         <div
-          className={`absolute w-96 max-w-[calc(100vw-1rem)] bg-slate-900 border border-slate-700/60 rounded-2xl shadow-2xl shadow-black/40 z-50 overflow-hidden ${dropDirection === 'up' ? 'bottom-full mb-2 left-0' : 'top-full mt-2 right-0'}`}
+          ref={panelRef}
+          style={panelStyle}
+          className="notification-bell-panel bg-white/85 dark:bg-slate-900 border border-slate-200/80 dark:border-slate-700/60 rounded-2xl shadow-xl shadow-slate-200/70 dark:shadow-black/40 backdrop-blur-xl overflow-hidden"
         >
           {/* Panel Header */}
-          <div className="flex items-center justify-between px-4 py-3 border-b border-slate-800/60">
+          <div className="flex items-center justify-between px-4 py-3 border-b border-slate-200/70 dark:border-slate-800/60">
             <div className="flex items-center gap-2">
-              <Bell size={16} className="text-slate-400" />
-              <span className="text-sm font-semibold text-slate-200">
+              <Bell size={16} className="text-slate-500 dark:text-slate-400" />
+              <span className="text-sm font-semibold text-slate-900 dark:text-slate-200">
                 Notifications
               </span>
               {count > 0 && (
-                <span className="text-xs font-medium text-amber-400 bg-amber-400/10 border border-amber-400/20 px-2 py-0.5 rounded-full">
+                <span className="text-xs font-medium text-amber-600 dark:text-amber-400 bg-amber-500/10 dark:bg-amber-400/10 border border-amber-500/20 dark:border-amber-400/20 px-2 py-0.5 rounded-full">
                   {count} unread
                 </span>
               )}
@@ -179,7 +217,7 @@ export function NotificationBell({
                     <button
                       onClick={handleMarkAllAsRead}
                       title="Mark all as read"
-                      className="p-1.5 rounded-lg hover:bg-slate-800 transition-colors text-slate-400 hover:text-slate-200"
+                      className="p-1.5 rounded-lg hover:bg-slate-100/80 dark:hover:bg-slate-800 transition-colors text-slate-400 hover:text-slate-700 dark:hover:text-slate-200"
                     >
                       <CheckCheck size={15} />
                     </button>
@@ -187,7 +225,7 @@ export function NotificationBell({
                   <button
                     onClick={handleClearAll}
                     title="Clear all notifications"
-                    className="p-1.5 rounded-lg hover:bg-slate-800 transition-colors text-slate-400 hover:text-red-400"
+                    className="p-1.5 rounded-lg hover:bg-slate-100/80 dark:hover:bg-slate-800 transition-colors text-slate-400 hover:text-red-500 dark:hover:text-red-400"
                   >
                     <Trash2 size={15} />
                   </button>
@@ -195,7 +233,7 @@ export function NotificationBell({
               )}
               <button
                 onClick={() => setOpen(false)}
-                className="p-1.5 rounded-lg hover:bg-slate-800 transition-colors text-slate-400 hover:text-slate-200"
+                className="p-1.5 rounded-lg hover:bg-slate-100/80 dark:hover:bg-slate-800 transition-colors text-slate-400 hover:text-slate-700 dark:hover:text-slate-200"
               >
                 <X size={15} />
               </button>
@@ -212,10 +250,13 @@ export function NotificationBell({
 
             {notifications?.length === 0 && (
               <div className="flex flex-col items-center justify-center py-10 px-4 text-center gap-3">
-                <div className="p-3 bg-slate-800/60 rounded-xl">
-                  <BellOff size={22} className="text-slate-500" />
+                <div className="p-3 bg-slate-100 dark:bg-slate-800/60 rounded-xl">
+                  <BellOff
+                    size={22}
+                    className="text-slate-400 dark:text-slate-500"
+                  />
                 </div>
-                <p className="text-sm text-slate-500 font-medium">
+                <p className="text-sm text-slate-500 dark:text-slate-500 font-medium">
                   No notifications yet
                 </p>
               </div>
@@ -230,10 +271,10 @@ export function NotificationBell({
               return (
                 <div
                   key={n._id}
-                  className={`group flex items-start gap-3 px-4 py-3.5 border-b border-slate-800/40 last:border-0 transition-colors ${
+                  className={`notification-bell-item group flex items-start gap-3 px-4 py-3.5 border-b border-slate-200/65 dark:border-slate-800/40 last:border-0 transition-colors ${
                     n.isRead
-                      ? 'hover:bg-slate-800/30'
-                      : 'bg-slate-800/20 hover:bg-slate-800/40'
+                      ? 'hover:bg-slate-50/80 dark:hover:bg-slate-800/30'
+                      : 'bg-amber-50/45 dark:bg-slate-800/20 hover:bg-amber-50/70 dark:hover:bg-slate-800/40'
                   }`}
                 >
                   {/* Unread dot */}
@@ -259,11 +300,11 @@ export function NotificationBell({
                         {meta.label}
                       </span>
                       <p
-                        className={`text-sm mt-0.5 leading-snug ${n.isRead ? 'text-slate-400' : 'text-slate-200'}`}
+                        className={`text-sm mt-0.5 leading-snug ${n.isRead ? 'text-slate-600 dark:text-slate-400' : 'text-slate-900 dark:text-slate-200'}`}
                       >
                         {n.message}
                       </p>
-                      <p className="text-xs text-slate-500 mt-1">
+                      <p className="text-xs text-slate-400 dark:text-slate-500 mt-1">
                         {timeAgo(n.createdAt)}
                       </p>
                     </a>
@@ -274,7 +315,7 @@ export function NotificationBell({
                     <button
                       onClick={() => handleMarkAsRead(n._id)}
                       title="Mark as read"
-                      className="shrink-0 p-1 rounded-lg opacity-0 group-hover:opacity-100 hover:bg-slate-700 transition-all text-slate-400 hover:text-slate-200"
+                      className="shrink-0 p-1 rounded-lg opacity-0 group-hover:opacity-100 hover:bg-slate-200/80 dark:hover:bg-slate-700 transition-all text-slate-400 hover:text-slate-700 dark:hover:text-slate-200"
                     >
                       <Check size={14} />
                     </button>
@@ -283,8 +324,32 @@ export function NotificationBell({
               )
             })}
           </div>
-        </div>
-      )}
+        </div>,
+        document.body,
+      )
+    : null
+
+  return (
+    <div className="relative z-[70]">
+      {/* Bell Button */}
+      <button
+        ref={buttonRef}
+        onClick={() => setOpen((prev) => !prev)}
+        className="relative p-2 rounded-xl border border-transparent hover:border-slate-200/80 hover:bg-slate-100/80 dark:hover:border-transparent dark:hover:bg-white/10 transition-all duration-200 group"
+        aria-label={`Notifications${count > 0 ? ` (${count} unread)` : ''}`}
+      >
+        <Bell
+          size={20}
+          className="text-slate-500 dark:text-slate-300 group-hover:text-slate-800 dark:group-hover:text-white transition-colors"
+        />
+        {count > 0 && (
+          <span className="absolute -top-0.5 -right-0.5 min-w-[18px] h-[18px] flex items-center justify-center rounded-full bg-red-500 text-white text-[10px] font-bold px-1 leading-none shadow-lg shadow-red-500/40">
+            {count > 99 ? '99+' : count}
+          </span>
+        )}
+      </button>
+
+      {panel}
     </div>
   )
 }
