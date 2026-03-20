@@ -9,6 +9,7 @@
  */
 
 import type * as analytics from "../analytics.js";
+import type * as announcements from "../announcements.js";
 import type * as audit from "../audit.js";
 import type * as bookings from "../bookings.js";
 import type * as bookingsInternal from "../bookingsInternal.js";
@@ -43,6 +44,7 @@ import type {
 
 declare const fullApi: ApiFromModules<{
   analytics: typeof analytics;
+  announcements: typeof announcements;
   audit: typeof audit;
   bookings: typeof bookings;
   bookingsInternal: typeof bookingsInternal;

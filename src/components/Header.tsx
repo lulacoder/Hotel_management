@@ -25,7 +25,8 @@ export default function Header() {
   const isCustomerAppRoute =
     location.pathname.startsWith('/select-location') ||
     location.pathname.startsWith('/hotels/') ||
-    location.pathname.startsWith('/bookings')
+    location.pathname.startsWith('/bookings') ||
+    location.pathname.startsWith('/announcements')
 
   useEffect(() => {
     const handleScroll = () => {

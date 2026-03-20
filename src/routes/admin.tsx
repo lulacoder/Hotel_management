@@ -13,8 +13,9 @@ import {
   Hotel,
   LayoutDashboard,
   LogOut,
-  MessageSquareText,
+  Megaphone,
   Menu,
+  MessageSquareText,
   UserPlus,
   Users,
   X,
@@ -122,11 +123,23 @@ function AdminLayout() {
     },
     { to: '/admin/walk-in', label: t('admin.nav.walkIn'), icon: UserPlus },
     { to: '/admin/users', label: t('admin.nav.users'), icon: Users },
+    {
+      to: '/admin/announcements',
+      label: t('admin.nav.announcements'),
+      icon: Megaphone,
+    },
   ]
 
   // Filter sidebar items by global role + hotel assignment role.
   const visibleNavItems = navItems.filter((item) => {
     if (item.to === '/admin/walk-in') {
+      return (
+        hotelAssignment?.role === 'hotel_cashier' ||
+        hotelAssignment?.role === 'hotel_admin'
+      )
+    }
+
+    if (item.to === '/admin/announcements') {
       return (
         hotelAssignment?.role === 'hotel_cashier' ||
         hotelAssignment?.role === 'hotel_admin'
@@ -143,7 +156,8 @@ function AdminLayout() {
         item.to === '/admin/bookings' ||
         item.to === '/admin/complaints' ||
         item.to === '/admin/rooms' ||
-        item.to === '/admin/walk-in'
+        item.to === '/admin/walk-in' ||
+        item.to === '/admin/announcements'
       )
     }
 
@@ -272,8 +286,8 @@ function AdminLayout() {
       />
 
       {/* Desktop Sidebar */}
-      <aside className="hidden md:flex md:h-dvh w-72 shrink-0 bg-slate-900/50 border-r border-slate-800/50 backdrop-blur-xl flex-col relative z-20">
-        <div className="p-6 border-b border-slate-800/50">
+      <aside className="hidden md:flex md:h-dvh w-[17rem] shrink-0 bg-slate-900/50 border-r border-slate-800/50 backdrop-blur-xl flex-col relative z-20">
+        <div className="p-5 border-b border-slate-800/50">
           <div className="flex items-center gap-3">
             <div className="h-10 rounded-xl bg-slate-950/70 border border-blue-500/30 px-1 flex items-center justify-center shadow-lg shadow-blue-500/20">
               <img
@@ -293,21 +307,21 @@ function AdminLayout() {
           </div>
         </div>
 
-        <div className="px-6 py-4 border-b border-slate-800/50">
+        <div className="px-5 py-3.5 border-b border-slate-800/50">
           <div className="flex items-center gap-2">
             <LanguageSwitcher className="w-full justify-center" />
             <ThemeToggle className="w-full justify-center" />
           </div>
         </div>
 
-        <nav className="p-4 space-y-1">
+        <nav className="flex-1 min-h-0 overflow-y-auto p-3 space-y-1">
           {visibleNavItems.map((item) => {
             const active = isActive(item.to, item.exact)
             return (
               <Link
                 key={item.to}
                 to={item.to}
-                className={`flex items-center gap-3 px-4 py-3 rounded-xl font-medium transition-all duration-200 ${
+                className={`flex items-center gap-3 px-3.5 py-2.5 rounded-xl font-medium transition-all duration-200 ${
                   active
                     ? 'bg-blue-500/10 text-blue-400 border border-blue-500/20'
                     : 'text-slate-400 hover:bg-slate-800/50 hover:text-slate-200 border border-transparent'
@@ -323,21 +337,21 @@ function AdminLayout() {
         </nav>
 
         {/* User section at bottom */}
-        <div className="mt-auto p-4 border-t border-slate-800/50">
-          <div className="flex items-center gap-3 px-2">
+        <div className="p-3 border-t border-slate-800/50">
+          <div className="flex items-center gap-2.5 px-1.5">
             <UserButton
               afterSignOutUrl="/"
               appearance={{
                 elements: {
-                  avatarBox: 'w-9 h-9',
+                  avatarBox: 'w-8 h-8',
                 },
               }}
             />
             <div className="flex-1 min-w-0">
-              <p className="text-sm font-medium text-slate-200 truncate">
+              <p className="text-[13px] font-medium text-slate-200 truncate">
                 {user.firstName || t('admin.defaultUserName')}
               </p>
-              <p className="text-xs text-slate-500 truncate">
+              <p className="text-[11px] text-slate-500 truncate">
                 {user.emailAddresses[0]?.emailAddress}
               </p>
             </div>

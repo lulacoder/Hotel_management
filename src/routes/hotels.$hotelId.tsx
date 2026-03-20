@@ -5,25 +5,29 @@ import { useQuery } from 'convex/react'
 import { api } from '../../convex/_generated/api'
 import { Id } from '../../convex/_generated/dataModel'
 import {
+  AlertCircle,
+  AlertTriangle,
   ArrowLeft,
-  MapPin,
+  Bed,
   Building2,
-  Users,
-  CheckCircle,
-  Star,
-  Wifi,
-  Tv,
-  Wind,
-  Coffee,
-  Car,
-  Tag,
   Calendar,
+  Car,
+  CheckCircle,
   Cigarette,
   CigaretteOff,
-  Bed,
-  Menu,
-  X,
+  Coffee,
   Home,
+  Info,
+  MapPin,
+  Megaphone,
+  Menu,
+  Star,
+  Tag,
+  Tv,
+  Users,
+  Wifi,
+  Wind,
+  X,
 } from 'lucide-react'
 import { useEffect, useState } from 'react'
 
@@ -32,6 +36,7 @@ import { LanguageSwitcher } from '../components/LanguageSwitcher'
 import { ThemeToggle } from '../components/ThemeToggle'
 import { useI18n } from '../lib/i18n'
 import { getHotelCategoryLabel } from '../lib/hotelCategories'
+import { useTheme } from '../lib/theme'
 
 export const Route = createFileRoute('/hotels/$hotelId')({
   validateSearch: (search: Record<string, unknown>) => ({
@@ -50,6 +55,8 @@ function HotelDetailPage() {
   const search = Route.useSearch()
   const { user, isSignedIn } = useUser()
   const { t } = useI18n()
+  const { theme } = useTheme()
+  const isDark = theme === 'dark'
   const navigate = useNavigate()
   const [selectedDates, setSelectedDates] = useState({
     checkIn: '',
@@ -84,6 +91,11 @@ function HotelDetailPage() {
     selectedDates.checkIn && selectedDates.checkOut ? availableRooms : allRooms
 
   const profile = useQuery(api.users.getMe, user?.id ? {} : 'skip')
+
+  const announcements = useQuery(
+    api.announcements.getActiveAnnouncementsForHotel,
+    hotelId ? { hotelId: hotelId as Id<'hotels'> } : 'skip',
+  )
   const resumeBooking = useQuery(
     api.bookings.get,
     search.resumeBookingId
@@ -148,7 +160,7 @@ function HotelDetailPage() {
     navigate({
       to: '/hotels/$hotelId',
       params: { hotelId },
-      search: {},
+      search: (prev) => ({ ...prev, resumeBookingId: undefined }),
       replace: true,
     })
   }
@@ -292,7 +304,10 @@ function HotelDetailPage() {
               onClick={() => setIsMobileMenuOpen(false)}
               className="flex items-center gap-3 px-4 py-3 rounded-xl text-slate-400 hover:text-white hover:bg-white/5 transition-all duration-300 group"
             >
-              <Home size={20} className="group-hover:text-blue-400 transition-colors" />
+              <Home
+                size={20}
+                className="group-hover:text-blue-400 transition-colors"
+              />
               <span className="font-medium">{t('header.home')}</span>
             </Link>
 
@@ -301,7 +316,10 @@ function HotelDetailPage() {
               onClick={() => setIsMobileMenuOpen(false)}
               className="flex items-center gap-3 px-4 py-3 rounded-xl text-slate-400 hover:text-white hover:bg-white/5 transition-all duration-300 group"
             >
-              <MapPin size={20} className="group-hover:text-blue-400 transition-colors" />
+              <MapPin
+                size={20}
+                className="group-hover:text-blue-400 transition-colors"
+              />
               <span className="font-medium">{t('header.browseLocations')}</span>
             </Link>
           </div>
@@ -341,7 +359,9 @@ function HotelDetailPage() {
           <div className="p-4 border-t border-slate-800/50 bg-slate-800/30">
             <div className="flex items-center gap-3">
               <UserButton afterSignOutUrl="/" />
-              <span className="text-sm text-slate-400">{user?.firstName || ''}</span>
+              <span className="text-sm text-slate-400">
+                {user?.firstName || ''}
+              </span>
             </div>
           </div>
         )}
@@ -373,25 +393,25 @@ function HotelDetailPage() {
                   </div>
                 )}
                 {hotel.category && (
-                    <span
+                  <span
                     className={`px-2 py-1 rounded-lg text-xs font-medium ${
                       hotel.category === 'Luxury'
-                      ? 'bg-blue-500/20 text-blue-600 dark:text-blue-400'
-                      : hotel.category === 'Boutique'
-                        ? 'bg-purple-500/20 text-purple-600 dark:text-purple-400'
-                        : hotel.category === 'Resort and Spa'
-                        ? 'bg-emerald-500/20 text-emerald-600 dark:text-emerald-400'
-                        : hotel.category === 'Suite'
-                          ? 'bg-blue-500/20 text-blue-600 dark:text-blue-400'
-                          : hotel.category === 'Extended-Stay'
-                          ? 'bg-cyan-500/20 text-cyan-600 dark:text-cyan-400'
-                          : hotel.category === 'Budget'
-                            ? 'bg-slate-500/20 text-slate-600 dark:text-slate-400'
-                            : 'bg-slate-200 dark:bg-slate-700 text-slate-700 dark:text-slate-300'
+                        ? 'bg-blue-500/20 text-blue-600 dark:text-blue-400'
+                        : hotel.category === 'Boutique'
+                          ? 'bg-purple-500/20 text-purple-600 dark:text-purple-400'
+                          : hotel.category === 'Resort and Spa'
+                            ? 'bg-emerald-500/20 text-emerald-600 dark:text-emerald-400'
+                            : hotel.category === 'Suite'
+                              ? 'bg-blue-500/20 text-blue-600 dark:text-blue-400'
+                              : hotel.category === 'Extended-Stay'
+                                ? 'bg-cyan-500/20 text-cyan-600 dark:text-cyan-400'
+                                : hotel.category === 'Budget'
+                                  ? 'bg-slate-500/20 text-slate-600 dark:text-slate-400'
+                                  : 'bg-slate-200 dark:bg-slate-700 text-slate-700 dark:text-slate-300'
                     }`}
-                    >
+                  >
                     {getHotelCategoryLabel(hotel.category, t)}
-                    </span>
+                  </span>
                 )}
               </div>
               <div className="flex items-center gap-2 text-slate-400 mb-2">
@@ -448,6 +468,146 @@ function HotelDetailPage() {
           </div>
         </div>
 
+        {/* Announcements Preview */}
+        {announcements && announcements.length > 0 && (
+          <div className="mb-8">
+            <div className="flex items-center justify-between mb-3">
+              <div className="flex items-center gap-2">
+                <Megaphone className="w-4 h-4 text-blue-400" />
+                <h2
+                  className={`text-base font-semibold ${
+                    isDark ? 'text-slate-200' : 'text-slate-800'
+                  }`}
+                >
+                  {t('announcements.preview')}
+                </h2>
+                <span className="text-xs font-medium text-blue-400 bg-blue-500/10 border border-blue-500/20 px-2 py-0.5 rounded-full">
+                  {announcements.length}
+                </span>
+              </div>
+              <Link
+                to="/announcements"
+                search={{ hotelId }}
+                className={`text-xs transition-colors ${
+                  isDark
+                    ? 'text-blue-400 hover:text-blue-300'
+                    : 'text-blue-600 hover:text-blue-700'
+                }`}
+              >
+                {t('announcements.viewAll')} →
+              </Link>
+            </div>
+
+            <div className="space-y-2">
+              {announcements.slice(0, 3).map((ann) => {
+                const priority = ann.priority as
+                  | 'normal'
+                  | 'important'
+                  | 'urgent'
+                const isUrgent = priority === 'urgent'
+                const isImportant = priority === 'important'
+                const Icon = isUrgent
+                  ? AlertTriangle
+                  : isImportant
+                    ? AlertCircle
+                    : Info
+                const accentBar = isUrgent
+                  ? 'bg-red-500'
+                  : isImportant
+                    ? 'bg-amber-500'
+                    : 'bg-blue-500'
+                const cardBg = isUrgent
+                  ? isDark
+                    ? 'bg-red-500/5 border-red-500/20'
+                    : 'bg-red-50/70 border-red-200'
+                  : isImportant
+                    ? isDark
+                      ? 'bg-amber-500/5 border-amber-500/20'
+                      : 'bg-amber-50/70 border-amber-200'
+                    : isDark
+                      ? 'bg-slate-800/40 border-slate-700/60'
+                      : 'bg-white/80 border-slate-200/80 shadow-sm backdrop-blur-sm'
+                const iconColor = isUrgent
+                  ? 'text-red-400'
+                  : isImportant
+                    ? 'text-amber-400'
+                    : 'text-blue-400'
+                const badgeColor = isUrgent
+                  ? isDark
+                    ? 'bg-red-500/15 text-red-400'
+                    : 'bg-red-100 text-red-600'
+                  : isImportant
+                    ? isDark
+                      ? 'bg-amber-500/15 text-amber-400'
+                      : 'bg-amber-100 text-amber-600'
+                    : isDark
+                      ? 'bg-blue-500/10 text-blue-400'
+                      : 'bg-blue-100 text-blue-600'
+                const priorityLabel = isUrgent
+                  ? t('announcements.priority.urgent')
+                  : isImportant
+                    ? t('announcements.priority.important')
+                    : t('announcements.priority.normal')
+
+                return (
+                  <div
+                    key={ann._id}
+                    className={`relative rounded-xl border overflow-hidden ${cardBg}`}
+                  >
+                    <div
+                      className={`absolute left-0 top-0 bottom-0 w-1 ${accentBar}`}
+                    />
+                    <div className="pl-4 pr-4 py-3 flex items-start gap-3">
+                      <Icon
+                        size={14}
+                        className={`mt-0.5 shrink-0 ${iconColor}`}
+                      />
+                      <div className="flex-1 min-w-0">
+                        <div className="flex items-center gap-2 mb-0.5">
+                          <span
+                            className={`text-[10px] font-bold uppercase tracking-wider px-1.5 py-0.5 rounded ${badgeColor}`}
+                          >
+                            {priorityLabel}
+                          </span>
+                        </div>
+                        <p
+                          className={`text-sm font-medium truncate ${
+                            isDark ? 'text-slate-200' : 'text-slate-800'
+                          }`}
+                        >
+                          {ann.title}
+                        </p>
+                        <p
+                          className={`text-xs mt-0.5 line-clamp-1 ${
+                            isDark ? 'text-slate-400' : 'text-slate-600'
+                          }`}
+                        >
+                          {ann.body}
+                        </p>
+                      </div>
+                    </div>
+                  </div>
+                )
+              })}
+            </div>
+
+            {announcements.length > 3 && (
+              <Link
+                to="/announcements"
+                search={{ hotelId }}
+                className={`mt-2 w-full flex items-center justify-center gap-1.5 py-2 text-xs border rounded-xl transition-all ${
+                  isDark
+                    ? 'text-slate-400 hover:text-slate-200 bg-slate-800/40 hover:bg-slate-800 border-slate-700/50'
+                    : 'text-slate-600 hover:text-slate-800 bg-slate-100 hover:bg-slate-200 border-slate-200'
+                }`}
+              >
+                <Megaphone size={12} />
+                {t('announcements.viewAll')} ({announcements.length})
+              </Link>
+            )}
+          </div>
+        )}
+
         {/* Date Selection */}
         <div className="bg-slate-900/50 border border-slate-800/50 rounded-2xl p-6 mb-8">
           <h2 className="text-lg font-semibold text-slate-200 mb-4">
@@ -498,7 +658,8 @@ function HotelDetailPage() {
               <div className="flex items-end">
                 <div className="px-4 py-3 bg-blue-500/10 border border-blue-500/20 rounded-xl">
                   <span className="text-blue-400 font-semibold">
-                    {nights} {nights !== 1 ? t('hotel.nights') : t('hotel.night')}
+                    {nights}{' '}
+                    {nights !== 1 ? t('hotel.nights') : t('hotel.night')}
                   </span>
                 </div>
               </div>
@@ -686,7 +847,8 @@ function HotelDetailPage() {
           checkOut={selectedDates.checkOut}
           nights={nights}
           existingBooking={
-            resumeBooking && ['held', 'pending_payment'].includes(resumeBooking.status)
+            resumeBooking &&
+            ['held', 'pending_payment'].includes(resumeBooking.status)
               ? resumeBooking
               : undefined
           }
@@ -700,4 +862,3 @@ function HotelDetailPage() {
     </div>
   )
 }
-

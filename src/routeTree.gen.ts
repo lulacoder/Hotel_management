@@ -21,12 +21,14 @@ import { Route as SignUpSplatRouteImport } from './routes/sign-up.$'
 import { Route as SignInSplatRouteImport } from './routes/sign-in.$'
 import { Route as HotelsHotelIdRouteImport } from './routes/hotels.$hotelId'
 import { Route as AuthenticatedBookingsRouteImport } from './routes/_authenticated/bookings'
+import { Route as AuthenticatedAnnouncementsRouteImport } from './routes/_authenticated/announcements'
 import { Route as AdminWalkInIndexRouteImport } from './routes/admin/walk-in/index'
 import { Route as AdminUsersIndexRouteImport } from './routes/admin/users/index'
 import { Route as AdminRoomsIndexRouteImport } from './routes/admin/rooms/index'
 import { Route as AdminHotelsIndexRouteImport } from './routes/admin/hotels/index'
 import { Route as AdminComplaintsIndexRouteImport } from './routes/admin/complaints/index'
 import { Route as AdminBookingsIndexRouteImport } from './routes/admin/bookings/index'
+import { Route as AdminAnnouncementsIndexRouteImport } from './routes/admin/announcements/index'
 import { Route as AdminHotelsHotelIdRouteImport } from './routes/admin/hotels/$hotelId'
 import { Route as AdminComplaintsComplaintIdRouteImport } from './routes/admin/complaints/$complaintId'
 import { Route as AdminBookingsBookingIdRouteImport } from './routes/admin/bookings/$bookingId'
@@ -90,6 +92,12 @@ const AuthenticatedBookingsRoute = AuthenticatedBookingsRouteImport.update({
   path: '/bookings',
   getParentRoute: () => AuthenticatedRoute,
 } as any)
+const AuthenticatedAnnouncementsRoute =
+  AuthenticatedAnnouncementsRouteImport.update({
+    id: '/announcements',
+    path: '/announcements',
+    getParentRoute: () => AuthenticatedRoute,
+  } as any)
 const AdminWalkInIndexRoute = AdminWalkInIndexRouteImport.update({
   id: '/walk-in/',
   path: '/walk-in/',
@@ -120,6 +128,11 @@ const AdminBookingsIndexRoute = AdminBookingsIndexRouteImport.update({
   path: '/bookings/',
   getParentRoute: () => AdminRoute,
 } as any)
+const AdminAnnouncementsIndexRoute = AdminAnnouncementsIndexRouteImport.update({
+  id: '/announcements/',
+  path: '/announcements/',
+  getParentRoute: () => AdminRoute,
+} as any)
 const AdminHotelsHotelIdRoute = AdminHotelsHotelIdRouteImport.update({
   id: '/hotels/$hotelId',
   path: '/hotels/$hotelId',
@@ -144,6 +157,7 @@ export interface FileRoutesByFullPath {
   '/select-location': typeof SelectLocationRoute
   '/sign-in': typeof SignInRouteWithChildren
   '/sign-up': typeof SignUpRouteWithChildren
+  '/announcements': typeof AuthenticatedAnnouncementsRoute
   '/bookings': typeof AuthenticatedBookingsRoute
   '/hotels/$hotelId': typeof HotelsHotelIdRoute
   '/sign-in/$': typeof SignInSplatRoute
@@ -152,6 +166,7 @@ export interface FileRoutesByFullPath {
   '/admin/bookings/$bookingId': typeof AdminBookingsBookingIdRoute
   '/admin/complaints/$complaintId': typeof AdminComplaintsComplaintIdRoute
   '/admin/hotels/$hotelId': typeof AdminHotelsHotelIdRoute
+  '/admin/announcements/': typeof AdminAnnouncementsIndexRoute
   '/admin/bookings/': typeof AdminBookingsIndexRoute
   '/admin/complaints/': typeof AdminComplaintsIndexRoute
   '/admin/hotels/': typeof AdminHotelsIndexRoute
@@ -165,6 +180,7 @@ export interface FileRoutesByTo {
   '/select-location': typeof SelectLocationRoute
   '/sign-in': typeof SignInRouteWithChildren
   '/sign-up': typeof SignUpRouteWithChildren
+  '/announcements': typeof AuthenticatedAnnouncementsRoute
   '/bookings': typeof AuthenticatedBookingsRoute
   '/hotels/$hotelId': typeof HotelsHotelIdRoute
   '/sign-in/$': typeof SignInSplatRoute
@@ -173,6 +189,7 @@ export interface FileRoutesByTo {
   '/admin/bookings/$bookingId': typeof AdminBookingsBookingIdRoute
   '/admin/complaints/$complaintId': typeof AdminComplaintsComplaintIdRoute
   '/admin/hotels/$hotelId': typeof AdminHotelsHotelIdRoute
+  '/admin/announcements': typeof AdminAnnouncementsIndexRoute
   '/admin/bookings': typeof AdminBookingsIndexRoute
   '/admin/complaints': typeof AdminComplaintsIndexRoute
   '/admin/hotels': typeof AdminHotelsIndexRoute
@@ -189,6 +206,7 @@ export interface FileRoutesById {
   '/select-location': typeof SelectLocationRoute
   '/sign-in': typeof SignInRouteWithChildren
   '/sign-up': typeof SignUpRouteWithChildren
+  '/_authenticated/announcements': typeof AuthenticatedAnnouncementsRoute
   '/_authenticated/bookings': typeof AuthenticatedBookingsRoute
   '/hotels/$hotelId': typeof HotelsHotelIdRoute
   '/sign-in/$': typeof SignInSplatRoute
@@ -197,6 +215,7 @@ export interface FileRoutesById {
   '/admin/bookings/$bookingId': typeof AdminBookingsBookingIdRoute
   '/admin/complaints/$complaintId': typeof AdminComplaintsComplaintIdRoute
   '/admin/hotels/$hotelId': typeof AdminHotelsHotelIdRoute
+  '/admin/announcements/': typeof AdminAnnouncementsIndexRoute
   '/admin/bookings/': typeof AdminBookingsIndexRoute
   '/admin/complaints/': typeof AdminComplaintsIndexRoute
   '/admin/hotels/': typeof AdminHotelsIndexRoute
@@ -213,6 +232,7 @@ export interface FileRouteTypes {
     | '/select-location'
     | '/sign-in'
     | '/sign-up'
+    | '/announcements'
     | '/bookings'
     | '/hotels/$hotelId'
     | '/sign-in/$'
@@ -221,6 +241,7 @@ export interface FileRouteTypes {
     | '/admin/bookings/$bookingId'
     | '/admin/complaints/$complaintId'
     | '/admin/hotels/$hotelId'
+    | '/admin/announcements/'
     | '/admin/bookings/'
     | '/admin/complaints/'
     | '/admin/hotels/'
@@ -234,6 +255,7 @@ export interface FileRouteTypes {
     | '/select-location'
     | '/sign-in'
     | '/sign-up'
+    | '/announcements'
     | '/bookings'
     | '/hotels/$hotelId'
     | '/sign-in/$'
@@ -242,6 +264,7 @@ export interface FileRouteTypes {
     | '/admin/bookings/$bookingId'
     | '/admin/complaints/$complaintId'
     | '/admin/hotels/$hotelId'
+    | '/admin/announcements'
     | '/admin/bookings'
     | '/admin/complaints'
     | '/admin/hotels'
@@ -257,6 +280,7 @@ export interface FileRouteTypes {
     | '/select-location'
     | '/sign-in'
     | '/sign-up'
+    | '/_authenticated/announcements'
     | '/_authenticated/bookings'
     | '/hotels/$hotelId'
     | '/sign-in/$'
@@ -265,6 +289,7 @@ export interface FileRouteTypes {
     | '/admin/bookings/$bookingId'
     | '/admin/complaints/$complaintId'
     | '/admin/hotels/$hotelId'
+    | '/admin/announcements/'
     | '/admin/bookings/'
     | '/admin/complaints/'
     | '/admin/hotels/'
@@ -370,6 +395,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedBookingsRouteImport
       parentRoute: typeof AuthenticatedRoute
     }
+    '/_authenticated/announcements': {
+      id: '/_authenticated/announcements'
+      path: '/announcements'
+      fullPath: '/announcements'
+      preLoaderRoute: typeof AuthenticatedAnnouncementsRouteImport
+      parentRoute: typeof AuthenticatedRoute
+    }
     '/admin/walk-in/': {
       id: '/admin/walk-in/'
       path: '/walk-in'
@@ -412,6 +444,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AdminBookingsIndexRouteImport
       parentRoute: typeof AdminRoute
     }
+    '/admin/announcements/': {
+      id: '/admin/announcements/'
+      path: '/announcements'
+      fullPath: '/admin/announcements/'
+      preLoaderRoute: typeof AdminAnnouncementsIndexRouteImport
+      parentRoute: typeof AdminRoute
+    }
     '/admin/hotels/$hotelId': {
       id: '/admin/hotels/$hotelId'
       path: '/hotels/$hotelId'
@@ -437,10 +476,12 @@ declare module '@tanstack/react-router' {
 }
 
 interface AuthenticatedRouteChildren {
+  AuthenticatedAnnouncementsRoute: typeof AuthenticatedAnnouncementsRoute
   AuthenticatedBookingsRoute: typeof AuthenticatedBookingsRoute
 }
 
 const AuthenticatedRouteChildren: AuthenticatedRouteChildren = {
+  AuthenticatedAnnouncementsRoute: AuthenticatedAnnouncementsRoute,
   AuthenticatedBookingsRoute: AuthenticatedBookingsRoute,
 }
 
@@ -453,6 +494,7 @@ interface AdminRouteChildren {
   AdminBookingsBookingIdRoute: typeof AdminBookingsBookingIdRoute
   AdminComplaintsComplaintIdRoute: typeof AdminComplaintsComplaintIdRoute
   AdminHotelsHotelIdRoute: typeof AdminHotelsHotelIdRoute
+  AdminAnnouncementsIndexRoute: typeof AdminAnnouncementsIndexRoute
   AdminBookingsIndexRoute: typeof AdminBookingsIndexRoute
   AdminComplaintsIndexRoute: typeof AdminComplaintsIndexRoute
   AdminHotelsIndexRoute: typeof AdminHotelsIndexRoute
@@ -466,6 +508,7 @@ const AdminRouteChildren: AdminRouteChildren = {
   AdminBookingsBookingIdRoute: AdminBookingsBookingIdRoute,
   AdminComplaintsComplaintIdRoute: AdminComplaintsComplaintIdRoute,
   AdminHotelsHotelIdRoute: AdminHotelsHotelIdRoute,
+  AdminAnnouncementsIndexRoute: AdminAnnouncementsIndexRoute,
   AdminBookingsIndexRoute: AdminBookingsIndexRoute,
   AdminComplaintsIndexRoute: AdminComplaintsIndexRoute,
   AdminHotelsIndexRoute: AdminHotelsIndexRoute,

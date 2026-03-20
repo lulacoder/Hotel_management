@@ -278,4 +278,23 @@ export default defineSchema({
     .index('by_actor', ['actorId'])
     .index('by_target', ['targetType', 'targetId'])
     .index('by_timestamp', ['timestamp']),
+
+  announcements: defineTable({
+    hotelId: v.id('hotels'),
+    createdBy: v.id('users'),
+    title: v.string(),
+    body: v.string(),
+    priority: v.union(
+      v.literal('normal'),
+      v.literal('important'),
+      v.literal('urgent'),
+    ),
+    isActive: v.boolean(),
+    createdAt: v.number(),
+    updatedAt: v.number(),
+    updatedBy: v.optional(v.id('users')),
+  })
+    .index('by_hotel', ['hotelId'])
+    .index('by_hotel_and_is_active', ['hotelId', 'isActive'])
+    .index('by_hotel_and_created_at', ['hotelId', 'createdAt']),
 })
