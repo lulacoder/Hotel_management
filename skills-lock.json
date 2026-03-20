@@ -5,6 +5,11 @@
       "source": "waynesutton/convexskills",
       "sourceType": "github",
       "computedHash": "e16eef2a7d57532ceeb4b696b072a3638b1c9e047544a1312796abd3554c3ac0"
+    },
+    "vercel-composition-patterns": {
+      "source": "vercel-labs/agent-skills",
+      "sourceType": "github",
+      "computedHash": "10eb4ec94577b79ae98c63ce3e7f35f8a6a06436a4011bff083b397de6960eeb"
     }
   }
 }
