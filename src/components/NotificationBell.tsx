@@ -195,10 +195,10 @@ export function NotificationBell({
         <div
           ref={panelRef}
           style={panelStyle}
-          className="notification-bell-panel bg-white/85 dark:bg-slate-900 border border-slate-200/80 dark:border-slate-700/60 rounded-2xl shadow-xl shadow-slate-200/70 dark:shadow-black/40 backdrop-blur-xl overflow-hidden"
+          className="notification-bell-panel bg-white/80 dark:bg-slate-900 border border-slate-200/80 dark:border-slate-700/60 rounded-2xl shadow-sm dark:shadow-black/40 backdrop-blur-sm overflow-hidden"
         >
           {/* Panel Header */}
-          <div className="flex items-center justify-between px-4 py-3 border-b border-slate-200/70 dark:border-slate-800/60">
+          <div className="flex items-center justify-between px-4 py-3 border-b border-slate-200/80 dark:border-slate-800/60">
             <div className="flex items-center gap-2">
               <Bell size={16} className="text-slate-500 dark:text-slate-400" />
               <span className="text-sm font-semibold text-slate-900 dark:text-slate-200">
@@ -217,7 +217,7 @@ export function NotificationBell({
                     <button
                       onClick={handleMarkAllAsRead}
                       title="Mark all as read"
-                      className="p-1.5 rounded-lg hover:bg-slate-100/80 dark:hover:bg-slate-800 transition-colors text-slate-400 hover:text-slate-700 dark:hover:text-slate-200"
+                      className="p-1.5 rounded-lg hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors text-slate-400 hover:text-slate-700 dark:hover:text-slate-200"
                     >
                       <CheckCheck size={15} />
                     </button>
@@ -225,7 +225,7 @@ export function NotificationBell({
                   <button
                     onClick={handleClearAll}
                     title="Clear all notifications"
-                    className="p-1.5 rounded-lg hover:bg-slate-100/80 dark:hover:bg-slate-800 transition-colors text-slate-400 hover:text-red-500 dark:hover:text-red-400"
+                    className="p-1.5 rounded-lg hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors text-slate-400 hover:text-red-500 dark:hover:text-red-400"
                   >
                     <Trash2 size={15} />
                   </button>
@@ -233,7 +233,7 @@ export function NotificationBell({
               )}
               <button
                 onClick={() => setOpen(false)}
-                className="p-1.5 rounded-lg hover:bg-slate-100/80 dark:hover:bg-slate-800 transition-colors text-slate-400 hover:text-slate-700 dark:hover:text-slate-200"
+                className="p-1.5 rounded-lg hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors text-slate-400 hover:text-slate-700 dark:hover:text-slate-200"
               >
                 <X size={15} />
               </button>
@@ -271,10 +271,10 @@ export function NotificationBell({
               return (
                 <div
                   key={n._id}
-                  className={`notification-bell-item group flex items-start gap-3 px-4 py-3.5 border-b border-slate-200/65 dark:border-slate-800/40 last:border-0 transition-colors ${
+                  className={`notification-bell-item group flex items-start gap-3 px-4 py-3.5 border-b border-slate-200/80 dark:border-slate-800/40 last:border-0 transition-colors ${
                     n.isRead
-                      ? 'hover:bg-slate-50/80 dark:hover:bg-slate-800/30'
-                      : 'bg-amber-50/45 dark:bg-slate-800/20 hover:bg-amber-50/70 dark:hover:bg-slate-800/40'
+                      ? 'hover:bg-slate-50 dark:hover:bg-slate-800/30'
+                      : 'bg-amber-50/60 dark:bg-slate-800/20 hover:bg-amber-50/80 dark:hover:bg-slate-800/40'
                   }`}
                 >
                   {/* Unread dot */}
@@ -335,7 +335,7 @@ export function NotificationBell({
       <button
         ref={buttonRef}
         onClick={() => setOpen((prev) => !prev)}
-        className="relative p-2 rounded-xl border border-transparent hover:border-slate-200/80 hover:bg-slate-100/80 dark:hover:border-transparent dark:hover:bg-white/10 transition-all duration-200 group"
+        className="relative p-2 rounded-xl border border-transparent hover:border-slate-300/80 hover:bg-white/80 dark:hover:border-transparent dark:hover:bg-white/10 transition-all duration-200 group"
         aria-label={`Notifications${count > 0 ? ` (${count} unread)` : ''}`}
       >
         <Bell
