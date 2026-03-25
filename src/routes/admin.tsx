@@ -4,6 +4,7 @@ import {
   Outlet,
   createFileRoute,
   redirect,
+  useLocation,
 } from '@tanstack/react-router'
 import { UserButton, useUser } from '@clerk/clerk-react'
 import { useState } from 'react'
@@ -108,6 +109,7 @@ const ADMIN_NAV_ITEMS: Array<AdminNavItem> = [
 
 function AdminLayout() {
   const { user, isLoaded, isSignedIn } = useUser()
+  const location = useLocation()
   const { t } = useI18n()
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false)
 
@@ -134,7 +136,7 @@ function AdminLayout() {
   }
 
   if (!isSignedIn) {
-    return <Navigate to="/sign-in" search={buildRedirectSearch('/admin')} />
+    return <Navigate to="/sign-in" search={buildRedirectSearch(location.href)} />
   }
 
   if (!isRoomAdmin && hotelAssignment === undefined) {
@@ -184,8 +186,13 @@ function AdminLayout() {
           hotelAssignmentRole === 'hotel_admin'
         )
       case '/admin/complaints':
-        return !isRoomAdmin && hotelAssignmentRole === 'hotel_cashier'
+        return (
+          isRoomAdmin ||
+          hotelAssignmentRole === 'hotel_cashier' ||
+          hotelAssignmentRole === 'hotel_admin'
+        )
       case '/admin/hotels':
+        return isRoomAdmin || hotelAssignmentRole === 'hotel_admin'
       case '/admin/users':
         return isRoomAdmin
       case '/admin':

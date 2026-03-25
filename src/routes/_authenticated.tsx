@@ -48,7 +48,7 @@ function AuthenticatedLayout() {
   )
 
   // Keep a neutral loader while profile query resolves.
-  if (!isLoaded || profile === undefined || profile === null) {
+  if (!isLoaded || profile === undefined) {
     return (
       <div className="flex min-h-screen items-center justify-center">
         <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600"></div>
@@ -62,6 +62,25 @@ function AuthenticatedLayout() {
         to="/sign-in"
         search={buildRedirectSearch(location.href)}
       />
+    )
+  }
+
+  if (profile === null) {
+    return (
+      <div className="flex min-h-screen items-center justify-center px-4">
+        <div className="w-full max-w-md rounded-xl border border-red-200 bg-red-50 p-6 text-center">
+          <p className="mb-4 text-sm text-red-700">
+            We couldn&apos;t load your account profile. Please try again.
+          </p>
+          <button
+            type="button"
+            onClick={() => window.location.reload()}
+            className="rounded-md bg-red-600 px-4 py-2 text-sm font-medium text-white hover:bg-red-700"
+          >
+            Retry
+          </button>
+        </div>
+      </div>
     )
   }
 

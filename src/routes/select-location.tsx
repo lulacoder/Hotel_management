@@ -116,10 +116,10 @@ function SelectLocationPage() {
     setActiveRatingHotelId(matchedHotel._id)
     navigate({
       replace: true,
-      search: {
-        ...search,
+      search: (prev) => ({
+        ...prev,
         rate: undefined,
-      },
+      }),
       to: '/select-location',
     })
   }, [hotels, navigate, search.rate])
@@ -146,7 +146,7 @@ function SelectLocationPage() {
   }, [hotels, userLat, userLng])
 
   const ratingSummaryByHotelId = useMemo(() => {
-    const map: Record<string, { average: number; count: number }> = {}
+    const map: Partial<Record<string, { average: number; count: number }>> = {}
 
     if (!ratingSummaries) {
       return map
