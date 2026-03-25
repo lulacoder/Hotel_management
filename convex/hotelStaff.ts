@@ -7,6 +7,7 @@ import {
   requireHotelAccess,
   requireUser,
 } from './lib/auth'
+import { uniqueIds } from './lib/arrays'
 
 const hotelStaffRoleValidator = v.union(
   v.literal('hotel_admin'),
@@ -22,10 +23,6 @@ const hotelAssignmentValidator = v.object({
   assignedAt: v.number(),
   assignedBy: v.id('users'),
 })
-
-function uniqueIds<T>(ids: Array<T | undefined | null>): Array<T> {
-  return Array.from(new Set(ids.filter(Boolean) as Array<T>))
-}
 
 // Returns the authenticated user's own hotel staff assignment, if any.
 // Identity is derived from the Clerk JWT — no arguments needed.

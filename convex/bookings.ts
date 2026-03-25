@@ -7,6 +7,7 @@ import {
   requireHotelAccess,
   requireUser,
 } from './lib/auth'
+import { uniqueIds } from './lib/arrays'
 import { createAuditLog } from './audit'
 import {
   datesOverlap,
@@ -157,10 +158,6 @@ const linkedUserSummaryValidator = v.object({
   _id: v.id('users'),
   email: v.string(),
 })
-
-function uniqueIds<T>(ids: Array<T | undefined | null>): Array<T> {
-  return Array.from(new Set(ids.filter(Boolean) as Array<T>))
-}
 
 // Fetches a single booking by its ID.
 // Customers can only view their own bookings unless they are hotel staff
