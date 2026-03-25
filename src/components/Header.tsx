@@ -5,6 +5,10 @@ import { useEffect, useState } from 'react'
 import { CalendarCheck, Home, MapPin, Menu, X } from 'lucide-react'
 import ClerkHeader from '../integrations/clerk/header-user'
 import { useI18n } from '../lib/i18n'
+import {
+  DEFAULT_AUTH_SEARCH,
+  DEFAULT_SELECT_LOCATION_SEARCH,
+} from '../lib/navigationSearch'
 import { LanguageSwitcher } from './LanguageSwitcher'
 import { ThemeToggle } from './ThemeToggle'
 import { NotificationBell } from './NotificationBell'
@@ -98,12 +102,14 @@ export default function Header() {
                 <>
                   <Link
                     to="/sign-in"
+                    search={DEFAULT_AUTH_SEARCH}
                     className="px-4 py-2 text-sm font-medium text-slate-300 hover:text-white transition-colors hidden sm:block"
                   >
                     {t('header.signIn')}
                   </Link>
                   <Link
                     to="/sign-up"
+                    search={DEFAULT_AUTH_SEARCH}
                     className="px-5 py-2.5 text-sm font-semibold bg-gradient-to-r from-blue-500 to-indigo-500 hover:from-blue-400 hover:to-indigo-400 text-white rounded-xl transition-all duration-300 shadow-lg shadow-blue-500/25 hover:shadow-blue-500/40 hover:scale-105"
                   >
                     {t('header.getStarted')}
@@ -175,6 +181,7 @@ export default function Header() {
 
             <Link
               to="/select-location"
+              search={DEFAULT_SELECT_LOCATION_SEARCH}
               onClick={() => setIsOpen(false)}
               className="flex items-center gap-3 px-4 py-3 rounded-xl text-slate-400 hover:text-white hover:bg-white/5 transition-all duration-300 group"
               activeProps={{
@@ -220,6 +227,7 @@ export default function Header() {
               <div className="space-y-2">
                 <Link
                   to="/sign-in"
+                  search={DEFAULT_AUTH_SEARCH}
                   onClick={() => setIsOpen(false)}
                   className="flex items-center justify-center gap-2 px-4 py-3 rounded-xl text-slate-300 border border-slate-700 hover:border-slate-600 hover:bg-white/5 transition-all duration-300 font-medium"
                 >
@@ -227,6 +235,7 @@ export default function Header() {
                 </Link>
                 <Link
                   to="/sign-up"
+                  search={DEFAULT_AUTH_SEARCH}
                   onClick={() => setIsOpen(false)}
                   className="flex items-center justify-center gap-2 px-4 py-3 rounded-xl bg-gradient-to-r from-blue-500 to-indigo-500 hover:from-blue-400 hover:to-indigo-400 text-white font-semibold transition-all duration-300 shadow-lg shadow-blue-500/25"
                 >

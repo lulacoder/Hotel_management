@@ -2,20 +2,27 @@ import { createRouter } from '@tanstack/react-router'
 
 // Generated from file-based routes in `src/routes`.
 import { routeTree } from './routeTree.gen'
+import { createRouterContext } from './lib/routerContext'
 
 // Factory keeps router creation SSR-safe and test-friendly.
 export const getRouter = () => {
   const router = createRouter({
     // Full route graph TanStack Router uses for matching/navigation.
     routeTree,
-    // Reserved for typed context injection if needed later.
-    context: {},
+    context: createRouterContext(),
 
     // Restore scroll position between navigations where possible.
     scrollRestoration: true,
-    // Always re-evaluate route data on navigation.
+    defaultPreload: 'intent',
+    // Let Convex/query freshness drive route data instead of the router cache.
     defaultPreloadStaleTime: 0,
   })
 
   return router
+}
+
+declare module '@tanstack/react-router' {
+  interface Register {
+    router: Awaited<ReturnType<typeof getRouter>>
+  }
 }

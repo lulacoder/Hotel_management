@@ -3,7 +3,7 @@ import {
   HeadContent,
   Link,
   Scripts,
-  createRootRoute,
+  createRootRouteWithContext,
 } from '@tanstack/react-router'
 import { TanStackRouterDevtoolsPanel } from '@tanstack/react-router-devtools'
 import { TanStackDevtools } from '@tanstack/react-devtools'
@@ -18,8 +18,9 @@ import { I18nProvider, localeBootstrapScript, useI18n } from '../lib/i18n'
 import { ThemeProvider, themeBootstrapScript } from '../lib/theme'
 
 import appCss from '../styles.css?url'
+import type { AppRouterContext } from '../lib/routerContext'
 
-export const Route = createRootRoute({
+export const Route = createRootRouteWithContext<AppRouterContext>()({
   // Define document-level metadata and assets once for the whole app.
   // Static document metadata shared by every route.
   head: () => ({

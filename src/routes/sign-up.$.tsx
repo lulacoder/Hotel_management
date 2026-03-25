@@ -1,21 +1,45 @@
 // Catch-all sign-up route variant for Clerk callback/path compatibility.
-import { Link, createFileRoute } from '@tanstack/react-router'
+import { Link, createFileRoute, redirect } from '@tanstack/react-router'
 import { SignUp } from '@clerk/clerk-react'
 import { ArrowLeft } from 'lucide-react'
 import { ThemeToggle } from '../components/ThemeToggle'
+import { buildRedirectSearch, sanitizeRedirect } from '../lib/authRouting'
 import { useI18n } from '../lib/i18n'
 import { getClerkAuthAppearance } from '../lib/clerkAppearance'
 import { useTheme } from '../lib/theme'
 
 export const Route = createFileRoute('/sign-up/$')({
+  beforeLoad: ({ context, search }) => {
+    const auth = context.auth.getClientSnapshot()
+
+    if (auth.isLoaded && auth.isSignedIn) {
+      throw redirect({
+        to: '/post-login',
+        search: buildRedirectSearch(search.redirect),
+      })
+    }
+  },
+  validateSearch: (search: Record<string, unknown>) => ({
+    redirect: sanitizeRedirect(search.redirect),
+  }),
   // Handles alternate Clerk sign-up paths using shared registration UI.
   component: SignUpCatchAll,
 })
 
 function SignUpCatchAll() {
   // Minimal wrapper around Clerk SignUp with app branding/theming.
+  const search = Route.useSearch()
   const { theme } = useTheme()
   const { t } = useI18n()
+  const encodedRedirect = search.redirect
+    ? encodeURIComponent(search.redirect)
+    : null
+  const postLoginUrl = encodedRedirect
+    ? `/post-login?redirect=${encodedRedirect}`
+    : '/post-login'
+  const signInUrl = encodedRedirect
+    ? `/sign-in?redirect=${encodedRedirect}`
+    : '/sign-in'
 
   return (
     <div className="min-h-screen bg-slate-950 flex">
@@ -82,8 +106,8 @@ function SignUpCatchAll() {
             <SignUp
               routing="path"
               path="/sign-up"
-              signInUrl="/sign-in"
-              forceRedirectUrl="/post-login"
+              signInUrl={signInUrl}
+              forceRedirectUrl={postLoginUrl}
               appearance={getClerkAuthAppearance(theme)}
             />
           </div>

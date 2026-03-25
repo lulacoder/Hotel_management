@@ -1,15 +1,15 @@
 // Search and filter controls for city/category selection and sorting.
-import { SortOption } from './-helpers'
 import { useI18n } from '../../../lib/i18n'
 import { getHotelCategoryLabel } from '../../../lib/hotelCategories'
+import type { SortOption } from './-helpers'
 
 interface SearchFiltersProps {
   selectedCity: string
   onCityChange: (value: string) => void
-  cities: string[]
+  cities: Array<string>
   selectedCategory: string
   onCategoryChange: (value: string) => void
-  categories: string[]
+  categories: Array<string>
   sortBy: SortOption
   onSortChange: (value: SortOption) => void
   hasUserLocation: boolean

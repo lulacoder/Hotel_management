@@ -7,6 +7,7 @@ import { useState } from 'react'
 
 import { api } from '../../../convex/_generated/api'
 import { useI18n } from '../../lib/i18n'
+import { DEFAULT_SELECT_LOCATION_SEARCH } from '../../lib/navigationSearch'
 
 import { BookingsHeader } from './bookings/components/-BookingsHeader'
 import { BookingsFilters } from './bookings/components/-BookingsFilters'
@@ -99,6 +100,7 @@ function BookingsPage() {
             </p>
             <Link
               to="/select-location"
+              search={DEFAULT_SELECT_LOCATION_SEARCH}
               className="inline-flex items-center px-6 py-3 bg-blue-500 text-slate-900 font-semibold rounded-xl hover:bg-blue-400 transition-colors"
             >
               {t('bookings.browseHotels')}

@@ -57,7 +57,6 @@ export function RatingModal({
     mode: 'onSubmit',
     reValidateMode: 'onChange',
   })
-  const ratingValue = watch('rating')
   const ratingText = watch('review')
   const formError =
     errors.rating?.message ?? errors.review?.message ?? ratingError

@@ -286,3 +286,34 @@ await requireHotelAccess(ctx, args.hotelId)
 4. Audit logging: Use `createAuditLog()` for admin mutations
 5. Soft deletes: Use `isDeleted` boolean, never hard delete
 6. **NEVER pass `clerkUserId` as an argument** to any public Convex function — identity MUST be derived from the JWT via `ctx.auth.getUserIdentity()` inside the handler
+
+
+# Agent guidance for this repo
+
+When working in this repository, use the skills below as context triggers.
+
+- Match the task to the closest description.
+- Load the linked `SKILL.md` before making changes in that area.
+- Keep the block below as the source of truth for skill-to-task mappings.
+
+<!-- intent-skills:start -->
+# Skill mappings — when working in these areas, load the linked skill file into context.
+skills:
+  - task: "working with routes, pages, layouts, or navigation"
+    load: "node_modules/@tanstack/router-core/skills/router-core/navigation/SKILL.md"
+
+  - task: "protecting routes, authentication, or role-based access"
+    load: "node_modules/@tanstack/router-core/skills/router-core/auth-and-guards/SKILL.md"
+
+  - task: "loading data, caching, loaders, search params, or route data"
+    load: "node_modules/@tanstack/router-core/skills/router-core/data-loading/SKILL.md"
+
+  - task: "writing server functions, backend actions, or form submissions"
+    load: "node_modules/@tanstack/start-client-core/skills/start-core/server-functions/SKILL.md"
+
+  - task: "building API routes or HTTP handlers in TanStack Start"
+    load: "node_modules/@tanstack/start-client-core/skills/start-core/server-routes/SKILL.md"
+
+  - task: "understanding the overall TanStack Start app structure"
+    load: "node_modules/@tanstack/start-client-core/skills/start-core/SKILL.md"
+<!-- intent-skills:end -->

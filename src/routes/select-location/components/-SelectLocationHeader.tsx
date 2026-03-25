@@ -7,6 +7,10 @@ import { LanguageSwitcher } from '../../../components/LanguageSwitcher'
 import { ThemeToggle } from '../../../components/ThemeToggle'
 import { NotificationBell } from '../../../components/NotificationBell'
 import { useI18n } from '../../../lib/i18n'
+import {
+  DEFAULT_AUTH_SEARCH,
+  DEFAULT_SELECT_LOCATION_SEARCH,
+} from '../../../lib/navigationSearch'
 
 interface SelectLocationHeaderProps {
   isSignedIn: boolean
@@ -58,12 +62,14 @@ export function SelectLocationHeader({
               <>
                 <Link
                   to="/sign-in"
+                  search={DEFAULT_AUTH_SEARCH}
                   className="text-slate-400 hover:text-blue-400 transition-colors font-medium"
                 >
                   {t('header.signIn')}
                 </Link>
                 <Link
                   to="/sign-up"
+                  search={DEFAULT_AUTH_SEARCH}
                   className="px-3 py-1.5 bg-blue-500 text-slate-900 font-semibold rounded-lg hover:bg-blue-400 transition-colors"
                 >
                   {t('header.signUp')}
@@ -146,6 +152,7 @@ export function SelectLocationHeader({
 
             <Link
               to="/select-location"
+              search={DEFAULT_SELECT_LOCATION_SEARCH}
               onClick={() => setIsOpen(false)}
               className="flex items-center gap-3 px-4 py-3 rounded-xl bg-blue-500/10 text-blue-400 border border-blue-500/20 transition-all duration-300"
             >
@@ -169,6 +176,7 @@ export function SelectLocationHeader({
               <div className="space-y-2">
                 <Link
                   to="/sign-in"
+                  search={DEFAULT_AUTH_SEARCH}
                   onClick={() => setIsOpen(false)}
                   className="flex items-center justify-center gap-2 px-4 py-3 rounded-xl text-slate-300 border border-slate-700 hover:border-slate-600 hover:bg-white/5 transition-all duration-300 font-medium"
                 >
@@ -176,6 +184,7 @@ export function SelectLocationHeader({
                 </Link>
                 <Link
                   to="/sign-up"
+                  search={DEFAULT_AUTH_SEARCH}
                   onClick={() => setIsOpen(false)}
                   className="flex items-center justify-center gap-2 px-4 py-3 rounded-xl bg-gradient-to-r from-blue-500 to-indigo-500 hover:from-blue-400 hover:to-indigo-400 text-white font-semibold transition-all duration-300 shadow-lg shadow-blue-500/25"
                 >

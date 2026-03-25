@@ -158,6 +158,10 @@ const linkedUserSummaryValidator = v.object({
   email: v.string(),
 })
 
+function uniqueIds<T>(ids: Array<T | undefined | null>): Array<T> {
+  return Array.from(new Set(ids.filter(Boolean) as Array<T>))
+}
+
 // Fetches a single booking by its ID.
 // Customers can only view their own bookings unless they are hotel staff
 // assigned to the hotel where the booking was made.
@@ -273,17 +277,34 @@ export const getByHotel = query({
       bookings = bookings.filter((b) => b.status === args.status)
     }
 
-    const result = []
-    for (const booking of bookings) {
+    const guestProfileIds = uniqueIds(bookings.map((booking) => booking.guestProfileId))
+    const linkedUserIds = uniqueIds(bookings.map((booking) => booking.userId))
+
+    const [guestProfiles, linkedUsers] = await Promise.all([
+      Promise.all(guestProfileIds.map((guestProfileId) => ctx.db.get(guestProfileId))),
+      Promise.all(linkedUserIds.map((linkedUserId) => ctx.db.get(linkedUserId))),
+    ])
+
+    const guestProfileMap = new Map(
+      guestProfiles
+        .filter((guestProfile) => guestProfile !== null)
+        .map((guestProfile) => [guestProfile._id, guestProfile]),
+    )
+    const linkedUserMap = new Map(
+      linkedUsers
+        .filter((linkedUser) => linkedUser !== null)
+        .map((linkedUser) => [linkedUser._id, linkedUser]),
+    )
+
+    return bookings.map((booking) => {
       const guestProfile = booking.guestProfileId
-        ? await ctx.db.get(booking.guestProfileId)
+        ? guestProfileMap.get(booking.guestProfileId)
         : null
-
       const linkedUser = booking.userId
-        ? await ctx.db.get(booking.userId)
+        ? linkedUserMap.get(booking.userId)
         : null
 
-      result.push({
+      return {
         booking,
         guestProfile: guestProfile
           ? {
@@ -300,10 +321,8 @@ export const getByHotel = query({
               email: linkedUser.email,
             }
           : undefined,
-      })
-    }
-
-    return result
+      }
+    })
   },
 })
 
@@ -1341,12 +1360,12 @@ export const getEnriched = query({
       }
     }
 
-    const room = await ctx.db.get(booking.roomId)
-    const hotel = await ctx.db.get(booking.hotelId)
-    const guestProfile = booking.guestProfileId
-      ? await ctx.db.get(booking.guestProfileId)
-      : null
-    const linkedUser = booking.userId ? await ctx.db.get(booking.userId) : null
+    const [room, hotel, guestProfile, linkedUser] = await Promise.all([
+      ctx.db.get(booking.roomId),
+      ctx.db.get(booking.hotelId),
+      booking.guestProfileId ? ctx.db.get(booking.guestProfileId) : null,
+      booking.userId ? ctx.db.get(booking.userId) : null,
+    ])
 
     if (!room || !hotel) {
       return null
@@ -1429,14 +1448,31 @@ export const getMyBookingsEnriched = query({
     }
 
     // Enrich with room and hotel data
-    const enrichedBookings = []
+    const roomIds = uniqueIds(bookings.map((booking) => booking.roomId))
+    const hotelIds = uniqueIds(bookings.map((booking) => booking.hotelId))
 
-    for (const booking of bookings) {
-      const room = await ctx.db.get(booking.roomId)
-      const hotel = await ctx.db.get(booking.hotelId)
+    const [rooms, hotels] = await Promise.all([
+      Promise.all(roomIds.map((roomId) => ctx.db.get(roomId))),
+      Promise.all(hotelIds.map((hotelId) => ctx.db.get(hotelId))),
+    ])
 
-      if (room && hotel) {
-        enrichedBookings.push({
+    const roomMap = new Map(
+      rooms.filter((room) => room !== null).map((room) => [room._id, room]),
+    )
+    const hotelMap = new Map(
+      hotels.filter((hotel) => hotel !== null).map((hotel) => [hotel._id, hotel]),
+    )
+
+    return bookings.flatMap((booking) => {
+      const room = roomMap.get(booking.roomId)
+      const hotel = hotelMap.get(booking.hotelId)
+
+      if (!room || !hotel) {
+        return []
+      }
+
+      return [
+        {
           booking,
           room: {
             _id: room._id,
@@ -1449,10 +1485,8 @@ export const getMyBookingsEnriched = query({
             address: hotel.address,
             city: hotel.city,
           },
-        })
-      }
-    }
-
-    return enrichedBookings
+        },
+      ]
+    })
   },
 })

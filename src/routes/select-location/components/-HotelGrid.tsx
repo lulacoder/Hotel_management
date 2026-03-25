@@ -10,11 +10,13 @@ import {
   Tag,
 } from 'lucide-react'
 
-import type { Id } from '../../../../convex/_generated/dataModel'
 import { formatDistance } from '../../../lib/distance'
-import { useI18n } from '../../../lib/i18n'
 import { getHotelCategoryLabel } from '../../../lib/hotelCategories'
-import { categoryColors, SortOption } from './-helpers'
+import { useI18n } from '../../../lib/i18n'
+import { DEFAULT_HOTEL_DETAIL_SEARCH } from '../../../lib/navigationSearch'
+import { categoryColors } from './-helpers'
+import type { SortOption } from './-helpers'
+import type { Id } from '../../../../convex/_generated/dataModel'
 
 interface HotelGridProps {
   hotels: Array<{
@@ -24,7 +26,7 @@ interface HotelGridProps {
     stateProvince?: string | undefined
     country: string
     description?: string | undefined
-    tags?: string[] | undefined
+    tags?: Array<string> | undefined
     category?: string | undefined
     rating?: number | undefined
     parkingIncluded?: boolean | undefined
@@ -109,7 +111,7 @@ export function HotelGrid({
             ratingSummary && ratingSummary.count > 0
               ? ratingSummary.average
               : hotel.rating
-          const displayCount = ratingSummary?.count ?? 0
+          const displayCount = ratingSummary ? ratingSummary.count : 0
 
           return (
             <div
@@ -119,6 +121,7 @@ export function HotelGrid({
               <Link
                 to="/hotels/$hotelId"
                 params={{ hotelId: hotel._id }}
+                search={DEFAULT_HOTEL_DETAIL_SEARCH}
                 className="block"
               >
                 <div className="h-48 bg-gradient-to-br from-slate-800 to-slate-900 relative overflow-hidden">
@@ -223,6 +226,7 @@ export function HotelGrid({
                 <Link
                   to="/hotels/$hotelId"
                   params={{ hotelId: hotel._id }}
+                  search={DEFAULT_HOTEL_DETAIL_SEARCH}
                   className="text-blue-400 font-semibold group-hover:translate-x-1 transition-transform"
                 >
                   {t('grid.viewRooms')}

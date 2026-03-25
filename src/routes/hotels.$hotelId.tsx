@@ -1,42 +1,20 @@
-// Hotel detail route showing rooms, amenities, and booking entry flow.
 import { createFileRoute, Link, useNavigate } from '@tanstack/react-router'
-import { useUser, UserButton } from '@clerk/clerk-react'
+import { useUser } from '@clerk/clerk-react'
 import { useQuery } from 'convex/react'
-import { api } from '../../convex/_generated/api'
-import { Id } from '../../convex/_generated/dataModel'
-import {
-  AlertCircle,
-  AlertTriangle,
-  ArrowLeft,
-  Bed,
-  Building2,
-  Calendar,
-  Car,
-  CheckCircle,
-  Cigarette,
-  CigaretteOff,
-  Coffee,
-  Home,
-  Info,
-  MapPin,
-  Megaphone,
-  Menu,
-  Star,
-  Tag,
-  Tv,
-  Users,
-  Wifi,
-  Wind,
-  X,
-} from 'lucide-react'
-import { useEffect, useState } from 'react'
+import { Calendar, Car, Star, Tag } from 'lucide-react'
+import { useState } from 'react'
 
-import { BookingModal } from './hotels.$hotelId/components/-BookingModal'
-import { LanguageSwitcher } from '../components/LanguageSwitcher'
-import { ThemeToggle } from '../components/ThemeToggle'
+import { api } from '../../convex/_generated/api'
 import { useI18n } from '../lib/i18n'
 import { getHotelCategoryLabel } from '../lib/hotelCategories'
-import { useTheme } from '../lib/theme'
+import { DEFAULT_SELECT_LOCATION_SEARCH } from '../lib/navigationSearch'
+import { BookingModal } from './hotels.$hotelId/components/-BookingModal'
+import { HotelAnnouncementsPreview } from './hotels.$hotelId/components/-HotelAnnouncementsPreview'
+import { HotelDateSelection } from './hotels.$hotelId/components/-HotelDateSelection'
+import { HotelPageChrome } from './hotels.$hotelId/components/-HotelPageChrome'
+import { HotelRoomsGrid } from './hotels.$hotelId/components/-HotelRoomsGrid'
+import { useHotelBookingState } from './hotels.$hotelId/components/-useHotelBookingState'
+import type { Id } from '../../convex/_generated/dataModel'
 
 export const Route = createFileRoute('/hotels/$hotelId')({
   validateSearch: (search: Record<string, unknown>) => ({
@@ -45,56 +23,43 @@ export const Route = createFileRoute('/hotels/$hotelId')({
         ? search.resumeBookingId
         : undefined,
   }),
-  // Dynamic route for a single hotel's details and available rooms.
   component: HotelDetailPage,
 })
 
+function getHotelCategoryBadgeClass(category: string): string {
+  switch (category) {
+    case 'Luxury':
+      return 'bg-blue-500/20 text-blue-600 dark:text-blue-400'
+    case 'Boutique':
+      return 'bg-purple-500/20 text-purple-600 dark:text-purple-400'
+    case 'Resort and Spa':
+      return 'bg-emerald-500/20 text-emerald-600 dark:text-emerald-400'
+    case 'Suite':
+      return 'bg-blue-500/20 text-blue-600 dark:text-blue-400'
+    case 'Extended-Stay':
+      return 'bg-cyan-500/20 text-cyan-600 dark:text-cyan-400'
+    case 'Budget':
+      return 'bg-slate-500/20 text-slate-600 dark:text-slate-400'
+    default:
+      return 'bg-slate-200 text-slate-700 dark:bg-slate-700 dark:text-slate-300'
+  }
+}
+
 function HotelDetailPage() {
-  // Load hotel + room availability and maintain booking date selections.
   const { hotelId } = Route.useParams()
   const search = Route.useSearch()
   const { user, isSignedIn } = useUser()
   const { t } = useI18n()
-  const { theme } = useTheme()
-  const isDark = theme === 'dark'
   const navigate = useNavigate()
-  const [selectedDates, setSelectedDates] = useState({
-    checkIn: '',
-    checkOut: '',
-  })
-  const [showBookingModal, setShowBookingModal] = useState<Id<'rooms'> | null>(
-    null,
-  )
-  const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false)
+  const [dateValidationError, setDateValidationError] = useState(false)
 
-  const hotel = useQuery(api.hotels.get, { hotelId: hotelId as Id<'hotels'> })
-
-  // Get available rooms if dates are selected
-  const availableRooms = useQuery(
-    api.rooms.getAvailableRooms,
-    selectedDates.checkIn && selectedDates.checkOut
-      ? {
-          hotelId: hotelId as Id<'hotels'>,
-          checkIn: selectedDates.checkIn,
-          checkOut: selectedDates.checkOut,
-        }
-      : 'skip',
-  )
-
-  // Get all rooms if no dates selected
-  const allRooms = useQuery(api.rooms.getByHotel, {
+  const hotel = useQuery(api.hotels.get, {
     hotelId: hotelId as Id<'hotels'>,
-    status: 'available',
   })
-
-  const rooms =
-    selectedDates.checkIn && selectedDates.checkOut ? availableRooms : allRooms
-
   const profile = useQuery(api.users.getMe, user?.id ? {} : 'skip')
-
   const announcements = useQuery(
     api.announcements.getActiveAnnouncementsForHotel,
-    hotelId ? { hotelId: hotelId as Id<'hotels'> } : 'skip',
+    { hotelId: hotelId as Id<'hotels'> },
   )
   const resumeBooking = useQuery(
     api.bookings.get,
@@ -103,91 +68,65 @@ function HotelDetailPage() {
       : 'skip',
   )
 
-  const roomTypeLabels: Record<string, string> = {
-    budget: t('hotel.budgetRoom'),
-    standard: t('hotel.standardRoom'),
-    suite: t('hotel.suiteRoom'),
-    deluxe: t('hotel.deluxeRoom'),
-  }
+  const {
+    closeBookingModal,
+    nights,
+    selectedDates,
+    setSelectedDates,
+    setShowBookingModal,
+    showBookingModal,
+  } = useHotelBookingState({
+    hasResumeBookingSearch: Boolean(search.resumeBookingId),
+    onClearResumeBooking: () =>
+      navigate({
+        params: { hotelId },
+        replace: true,
+        search: (prev) => ({ ...prev, resumeBookingId: undefined }),
+        to: '/hotels/$hotelId',
+      }),
+    resumeBooking,
+  })
 
-  const amenityIcons: Record<string, typeof Wifi> = {
-    WiFi: Wifi,
-    TV: Tv,
-    'Air Conditioning': Wind,
-    'Mini Bar': Coffee,
-  }
+  const availableRooms = useQuery(
+    api.rooms.getAvailableRooms,
+    selectedDates.checkIn && selectedDates.checkOut
+      ? {
+          checkIn: selectedDates.checkIn,
+          checkOut: selectedDates.checkOut,
+          hotelId: hotelId as Id<'hotels'>,
+        }
+      : 'skip',
+  )
+  const allRooms = useQuery(api.rooms.getByHotel, {
+    hotelId: hotelId as Id<'hotels'>,
+    status: 'available',
+  })
 
-  useEffect(() => {
-    if (!resumeBooking) return
-    if (!['held', 'pending_payment'].includes(resumeBooking.status)) return
-
-    setSelectedDates((current) => {
-      if (
-        current.checkIn === resumeBooking.checkIn &&
-        current.checkOut === resumeBooking.checkOut
-      ) {
-        return current
-      }
-
-      return {
-        checkIn: resumeBooking.checkIn,
-        checkOut: resumeBooking.checkOut,
-      }
-    })
-    setShowBookingModal(resumeBooking.roomId)
-  }, [resumeBooking])
-
-  // Calculate number of nights
-  const calculateNights = () => {
-    // Shared calculation used by room summary pricing labels.
-    if (!selectedDates.checkIn || !selectedDates.checkOut) return 0
-    const checkIn = new Date(selectedDates.checkIn)
-    const checkOut = new Date(selectedDates.checkOut)
-    const diff = checkOut.getTime() - checkIn.getTime()
-    return Math.ceil(diff / (1000 * 60 * 60 * 24))
-  }
-
-  const nights = calculateNights()
+  const rooms =
+    selectedDates.checkIn && selectedDates.checkOut ? availableRooms : allRooms
   const redirectTarget = `/hotels/${hotelId}`
-
-  const closeBookingModal = () => {
-    setShowBookingModal(null)
-
-    if (!search.resumeBookingId) {
-      return
-    }
-
-    navigate({
-      to: '/hotels/$hotelId',
-      params: { hotelId },
-      search: (prev) => ({ ...prev, resumeBookingId: undefined }),
-      replace: true,
-    })
-  }
 
   if (hotel === undefined) {
     return (
-      <div className="min-h-screen bg-slate-950 flex items-center justify-center">
-        <div className="animate-spin rounded-full h-10 w-10 border-2 border-blue-500/20 border-t-blue-500"></div>
+      <div className="flex min-h-screen items-center justify-center bg-slate-950">
+        <div className="h-10 w-10 animate-spin rounded-full border-2 border-blue-500/20 border-t-blue-500"></div>
       </div>
     )
   }
 
   if (hotel === null) {
     return (
-      <div className="min-h-screen bg-slate-950 flex items-center justify-center">
-        <div className="bg-slate-900/50 border border-slate-800/50 rounded-2xl p-12 text-center max-w-md">
-          <h2 className="text-xl font-semibold text-slate-300 mb-2">
+      <div className="flex min-h-screen items-center justify-center bg-slate-950">
+        <div className="max-w-md rounded-2xl border border-slate-800/50 bg-slate-900/50 p-12 text-center">
+          <h2 className="mb-2 text-xl font-semibold text-slate-300">
             {t('hotel.notFoundTitle')}
           </h2>
-          <p className="text-slate-500 mb-6">
-            {t('hotel.notFoundDescription')}
-          </p>
+          <p className="mb-6 text-slate-500">{t('hotel.notFoundDescription')}</p>
           <Link
             to="/select-location"
-            className="inline-flex items-center gap-2 px-5 py-2.5 bg-slate-800 text-slate-200 font-medium rounded-xl hover:bg-slate-700 transition-colors"
+            search={DEFAULT_SELECT_LOCATION_SEARCH}
+            className="inline-flex items-center gap-2 rounded-xl bg-slate-800 px-5 py-2.5 font-medium text-slate-200 transition-colors hover:bg-slate-700"
           >
-            <ArrowLeft className="w-5 h-5" />
             {t('hotel.backToHotels')}
           </Link>
         </div>
@@ -197,252 +136,59 @@ function HotelDetailPage() {
 
   return (
     <div className="min-h-screen bg-gradient-to-b from-slate-950 via-slate-900 to-slate-950">
-      {/* Header */}
-      <header className="bg-slate-900/80 backdrop-blur-xl border-b border-slate-800/50 sticky top-0 z-50">
-        <div className="max-w-7xl mx-auto px-4 py-4 flex justify-between items-center">
-          {/* Left: back link (all sizes) */}
-          <Link
-            to="/select-location"
-            className="flex items-center gap-2 text-slate-400 hover:text-slate-200 transition-colors"
-          >
-            <ArrowLeft className="w-5 h-5" />
-            <span className="hidden md:inline">{t('hotel.backToHotels')}</span>
-          </Link>
-
-          {/* Desktop right-side actions */}
-          <div className="hidden md:flex items-center gap-4">
-            <LanguageSwitcher compact />
-            <ThemeToggle compact />
-            {isSignedIn ? (
-              <>
-                <Link
-                  to="/bookings"
-                  className="px-3 py-1.5 text-sm font-semibold text-slate-900 bg-blue-500 hover:bg-blue-400 rounded-lg transition-colors"
-                >
-                  {t('header.myBookings')}
-                </Link>
-                <UserButton afterSignOutUrl="/" />
-              </>
-            ) : (
-              <>
-                <Link
-                  to="/sign-in"
-                  className="text-slate-400 hover:text-blue-400 transition-colors font-medium"
-                >
-                  {t('header.signIn')}
-                </Link>
-                <Link
-                  to="/sign-up"
-                  className="px-3 py-1.5 bg-blue-500 text-slate-900 font-semibold rounded-lg hover:bg-blue-400 transition-colors"
-                >
-                  {t('header.signUp')}
-                </Link>
-              </>
-            )}
-          </div>
-
-          {/* Mobile right-side: LanguageSwitcher + My Bookings + hamburger */}
-          <div className="flex md:hidden items-center gap-3">
-            <LanguageSwitcher compact />
-            {isSignedIn && (
-              <Link
-                to="/bookings"
-                className="px-3 py-1.5 text-sm font-semibold text-slate-900 bg-blue-500 hover:bg-blue-400 rounded-lg transition-colors"
-              >
-                {t('header.myBookings')}
-              </Link>
-            )}
-            <button
-              onClick={() => setIsMobileMenuOpen(true)}
-              className="p-2.5 hover:bg-white/10 rounded-xl transition-all duration-300 group"
-              aria-label={t('header.openMenu')}
-            >
-              <Menu
-                size={22}
-                className="text-slate-300 group-hover:text-blue-400 transition-colors"
-              />
-            </button>
-          </div>
-        </div>
-      </header>
-
-      {/* Mobile Slide-out Menu */}
-      <aside
-        className={`fixed top-0 left-0 h-full w-80 bg-slate-900 border-r border-slate-800/50 shadow-2xl z-[60] transform transition-transform duration-500 ease-out flex flex-col ${
-          isMobileMenuOpen ? 'translate-x-0' : '-translate-x-full'
-        }`}
-      >
-        <div className="flex items-center justify-between p-5 border-b border-slate-800/50">
-          <div className="flex items-center gap-3">
-            <div className="h-10 rounded-xl bg-slate-950/70 border border-blue-500/30 px-1 flex items-center justify-center shadow-lg shadow-blue-500/20">
-              <img
-                src="/logo.png"
-                alt="Luxe Hotels"
-                className="h-8 w-auto object-contain logo-tight"
-              />
-            </div>
-            <p className="text-xs text-slate-500 font-medium">
-              {t('header.navigationMenu')}
-            </p>
-          </div>
-          <button
-            onClick={() => setIsMobileMenuOpen(false)}
-            className="p-2.5 hover:bg-white/5 rounded-xl transition-all duration-300 group"
-            aria-label={t('header.closeMenu')}
-          >
-            <X
-              size={22}
-              className="text-slate-400 group-hover:text-white transition-colors"
-            />
-          </button>
-        </div>
-
-        <nav className="flex-1 p-4 overflow-y-auto">
-          <div className="space-y-1">
-            <Link
-              to="/"
-              onClick={() => setIsMobileMenuOpen(false)}
-              className="flex items-center gap-3 px-4 py-3 rounded-xl text-slate-400 hover:text-white hover:bg-white/5 transition-all duration-300 group"
-            >
-              <Home
-                size={20}
-                className="group-hover:text-blue-400 transition-colors"
-              />
-              <span className="font-medium">{t('header.home')}</span>
-            </Link>
-
-            <Link
-              to="/select-location"
-              onClick={() => setIsMobileMenuOpen(false)}
-              className="flex items-center gap-3 px-4 py-3 rounded-xl text-slate-400 hover:text-white hover:bg-white/5 transition-all duration-300 group"
-            >
-              <MapPin
-                size={20}
-                className="group-hover:text-blue-400 transition-colors"
-              />
-              <span className="font-medium">{t('header.browseLocations')}</span>
-            </Link>
-          </div>
-
-          <div className="mt-6 pt-6 border-t border-slate-800/50">
-            <div className="flex items-center gap-3 px-4 py-3">
-              <ThemeToggle />
-            </div>
-          </div>
-
-          {!isSignedIn && (
-            <div className="mt-6 pt-6 border-t border-slate-800/50">
-              <p className="text-xs text-slate-500 font-medium uppercase tracking-wider mb-3 px-4">
-                {t('header.account')}
-              </p>
-              <div className="space-y-2">
-                <Link
-                  to="/sign-in"
-                  onClick={() => setIsMobileMenuOpen(false)}
-                  className="flex items-center justify-center gap-2 px-4 py-3 rounded-xl text-slate-300 border border-slate-700 hover:border-slate-600 hover:bg-white/5 transition-all duration-300 font-medium"
-                >
-                  {t('header.signIn')}
-                </Link>
-                <Link
-                  to="/sign-up"
-                  onClick={() => setIsMobileMenuOpen(false)}
-                  className="flex items-center justify-center gap-2 px-4 py-3 rounded-xl bg-gradient-to-r from-blue-500 to-indigo-500 hover:from-blue-400 hover:to-indigo-400 text-white font-semibold transition-all duration-300 shadow-lg shadow-blue-500/25"
-                >
-                  {t('header.createAccount')}
-                </Link>
-              </div>
-            </div>
-          )}
-        </nav>
-
-        {isSignedIn && (
-          <div className="p-4 border-t border-slate-800/50 bg-slate-800/30">
-            <div className="flex items-center gap-3">
-              <UserButton afterSignOutUrl="/" />
-              <span className="text-sm text-slate-400">
-                {user?.firstName || ''}
-              </span>
-            </div>
-          </div>
-        )}
-      </aside>
-
-      {/* Backdrop Overlay */}
-      <div
-        className={`fixed inset-0 bg-black/60 backdrop-blur-sm z-[55] transition-all duration-500 ${
-          isMobileMenuOpen ? 'opacity-100' : 'opacity-0 pointer-events-none'
-        }`}
-        onClick={() => setIsMobileMenuOpen(false)}
+      <HotelPageChrome
+        isSignedIn={Boolean(isSignedIn)}
+        userFirstName={user?.firstName ?? undefined}
       />
 
-      <main className="max-w-7xl mx-auto px-4 py-8">
-        {/* Hotel Header */}
-        <div className="bg-slate-900/50 border border-slate-800/50 rounded-2xl p-6 mb-8">
-          <div className="flex flex-col md:flex-row md:items-start justify-between gap-4">
+      <main className="mx-auto max-w-7xl px-4 py-8">
+        <div className="mb-8 rounded-2xl border border-slate-800/50 bg-slate-900/50 p-6">
+          <div className="flex flex-col justify-between gap-4 md:flex-row md:items-start">
             <div className="flex-1">
-              <div className="flex items-center gap-3 mb-2 flex-wrap">
-                <h1 className="text-3xl font-bold text-slate-100">
-                  {hotel.name}
-                </h1>
-                {hotel.rating && (
-                  <div className="flex items-center gap-1 bg-slate-800 px-2 py-1 rounded-lg">
-                    <Star className="w-4 h-4 text-blue-400 fill-blue-400" />
-                    <span className="text-sm text-slate-200 font-medium">
+              <div className="mb-2 flex flex-wrap items-center gap-3">
+                <h1 className="text-3xl font-bold text-slate-100">{hotel.name}</h1>
+                {hotel.rating !== undefined && (
+                  <div className="flex items-center gap-1 rounded-lg bg-slate-800 px-2 py-1">
+                    <Star className="h-4 w-4 fill-blue-400 text-blue-400" />
+                    <span className="text-sm font-medium text-slate-200">
                       {hotel.rating.toFixed(1)}
                     </span>
                   </div>
                 )}
                 {hotel.category && (
                   <span
-                    className={`px-2 py-1 rounded-lg text-xs font-medium ${
-                      hotel.category === 'Luxury'
-                        ? 'bg-blue-500/20 text-blue-600 dark:text-blue-400'
-                        : hotel.category === 'Boutique'
-                          ? 'bg-purple-500/20 text-purple-600 dark:text-purple-400'
-                          : hotel.category === 'Resort and Spa'
-                            ? 'bg-emerald-500/20 text-emerald-600 dark:text-emerald-400'
-                            : hotel.category === 'Suite'
-                              ? 'bg-blue-500/20 text-blue-600 dark:text-blue-400'
-                              : hotel.category === 'Extended-Stay'
-                                ? 'bg-cyan-500/20 text-cyan-600 dark:text-cyan-400'
-                                : hotel.category === 'Budget'
-                                  ? 'bg-slate-500/20 text-slate-600 dark:text-slate-400'
-                                  : 'bg-slate-200 dark:bg-slate-700 text-slate-700 dark:text-slate-300'
-                    }`}
+                    className={`rounded-lg px-2 py-1 text-xs font-medium ${getHotelCategoryBadgeClass(
+                      hotel.category,
+                    )}`}
                   >
                     {getHotelCategoryLabel(hotel.category, t)}
                   </span>
                 )}
               </div>
-              <div className="flex items-center gap-2 text-slate-400 mb-2">
-                <MapPin className="w-4 h-4" />
-                <span>{hotel.address}</span>
-              </div>
-              <p className="text-slate-500 mb-3">
+
+              <p className="mb-2 text-slate-400">{hotel.address}</p>
+              <p className="mb-3 text-slate-500">
                 {hotel.city}
                 {hotel.stateProvince ? `, ${hotel.stateProvince}` : ''}
-                {hotel.postalCode ? ` ${hotel.postalCode}` : ''},{' '}
-                {hotel.country}
+                {hotel.postalCode ? ` ${hotel.postalCode}` : ''}, {hotel.country}
               </p>
 
-              {/* Hotel Description */}
               {hotel.description && (
-                <p className="text-slate-400 text-sm mb-4 max-w-2xl">
+                <p className="mb-4 max-w-2xl text-sm text-slate-400">
                   {hotel.description}
                 </p>
               )}
 
-              {/* Hotel Features */}
-              <div className="flex flex-wrap gap-2 mb-4">
+              <div className="mb-4 flex flex-wrap gap-2">
                 {hotel.parkingIncluded && (
-                  <div className="flex items-center gap-1 px-2 py-1 bg-emerald-500/10 border border-emerald-500/20 rounded-lg text-emerald-400 text-xs">
-                    <Car className="w-3 h-3" />
+                  <div className="flex items-center gap-1 rounded-lg border border-emerald-500/20 bg-emerald-500/10 px-2 py-1 text-xs text-emerald-400">
+                    <Car className="h-3 w-3" />
                     {t('hotel.freeParking')}
                   </div>
                 )}
                 {hotel.lastRenovationDate && (
-                  <div className="flex items-center gap-1 px-2 py-1 bg-slate-800 rounded-lg text-slate-400 text-xs">
-                    <Calendar className="w-3 h-3" />
+                  <div className="flex items-center gap-1 rounded-lg bg-slate-800 px-2 py-1 text-xs text-slate-400">
+                    <Calendar className="h-3 w-3" />
                     {t('hotel.renovated', {
                       year: hotel.lastRenovationDate.split('-')[0],
                     })}
@@ -450,15 +196,14 @@ function HotelDetailPage() {
                 )}
               </div>
 
-              {/* Tags */}
               {hotel.tags && hotel.tags.length > 0 && (
                 <div className="flex flex-wrap gap-2">
                   {hotel.tags.map((tag) => (
                     <span
                       key={tag}
-                      className="flex items-center gap-1 px-2 py-1 bg-slate-800 rounded text-xs text-slate-400"
+                      className="flex items-center gap-1 rounded bg-slate-800 px-2 py-1 text-xs text-slate-400"
                     >
-                      <Tag className="w-3 h-3" />
+                      <Tag className="h-3 w-3" />
                       {tag}
                     </span>
                   ))}
@@ -468,377 +213,62 @@ function HotelDetailPage() {
           </div>
         </div>
 
-        {/* Announcements Preview */}
-        {announcements && announcements.length > 0 && (
-          <div className="mb-8">
-            <div className="flex items-center justify-between mb-3">
-              <div className="flex items-center gap-2">
-                <Megaphone className="w-4 h-4 text-blue-400" />
-                <h2
-                  className={`text-base font-semibold ${
-                    isDark ? 'text-slate-200' : 'text-slate-800'
-                  }`}
-                >
-                  {t('announcements.preview')}
-                </h2>
-                <span className="text-xs font-medium text-blue-400 bg-blue-500/10 border border-blue-500/20 px-2 py-0.5 rounded-full">
-                  {announcements.length}
-                </span>
-              </div>
-              <Link
-                to="/announcements"
-                search={{ hotelId }}
-                className={`text-xs transition-colors ${
-                  isDark
-                    ? 'text-blue-400 hover:text-blue-300'
-                    : 'text-blue-600 hover:text-blue-700'
-                }`}
-              >
-                {t('announcements.viewAll')} →
-              </Link>
-            </div>
+        <HotelAnnouncementsPreview
+          announcements={
+            announcements?.map((announcement) => ({
+              _id: announcement._id,
+              body: announcement.body,
+              priority: announcement.priority as 'normal' | 'important' | 'urgent',
+              title: announcement.title,
+            })) ?? []
+          }
+          hotelId={hotelId}
+        />
 
-            <div className="space-y-2">
-              {announcements.slice(0, 3).map((ann) => {
-                const priority = ann.priority as
-                  | 'normal'
-                  | 'important'
-                  | 'urgent'
-                const isUrgent = priority === 'urgent'
-                const isImportant = priority === 'important'
-                const Icon = isUrgent
-                  ? AlertTriangle
-                  : isImportant
-                    ? AlertCircle
-                    : Info
-                const accentBar = isUrgent
-                  ? 'bg-red-500'
-                  : isImportant
-                    ? 'bg-amber-500'
-                    : 'bg-blue-500'
-                const cardBg = isUrgent
-                  ? isDark
-                    ? 'bg-red-500/5 border-red-500/20'
-                    : 'bg-red-50/70 border-red-200'
-                  : isImportant
-                    ? isDark
-                      ? 'bg-amber-500/5 border-amber-500/20'
-                      : 'bg-amber-50/70 border-amber-200'
-                    : isDark
-                      ? 'bg-slate-800/40 border-slate-700/60'
-                      : 'bg-white/80 border-slate-200/80 shadow-sm backdrop-blur-sm'
-                const iconColor = isUrgent
-                  ? 'text-red-400'
-                  : isImportant
-                    ? 'text-amber-400'
-                    : 'text-blue-400'
-                const badgeColor = isUrgent
-                  ? isDark
-                    ? 'bg-red-500/15 text-red-400'
-                    : 'bg-red-100 text-red-600'
-                  : isImportant
-                    ? isDark
-                      ? 'bg-amber-500/15 text-amber-400'
-                      : 'bg-amber-100 text-amber-600'
-                    : isDark
-                      ? 'bg-blue-500/10 text-blue-400'
-                      : 'bg-blue-100 text-blue-600'
-                const priorityLabel = isUrgent
-                  ? t('announcements.priority.urgent')
-                  : isImportant
-                    ? t('announcements.priority.important')
-                    : t('announcements.priority.normal')
+        <HotelDateSelection
+          checkIn={selectedDates.checkIn}
+          checkOut={selectedDates.checkOut}
+          nights={nights}
+          onCheckInChange={(checkIn) => {
+            setDateValidationError(false)
+            setSelectedDates((current) => ({ ...current, checkIn }))
+          }}
+          onCheckOutChange={(checkOut) => {
+            setDateValidationError(false)
+            setSelectedDates((current) => ({ ...current, checkOut }))
+          }}
+        />
 
-                return (
-                  <div
-                    key={ann._id}
-                    className={`relative rounded-xl border overflow-hidden ${cardBg}`}
-                  >
-                    <div
-                      className={`absolute left-0 top-0 bottom-0 w-1 ${accentBar}`}
-                    />
-                    <div className="pl-4 pr-4 py-3 flex items-start gap-3">
-                      <Icon
-                        size={14}
-                        className={`mt-0.5 shrink-0 ${iconColor}`}
-                      />
-                      <div className="flex-1 min-w-0">
-                        <div className="flex items-center gap-2 mb-0.5">
-                          <span
-                            className={`text-[10px] font-bold uppercase tracking-wider px-1.5 py-0.5 rounded ${badgeColor}`}
-                          >
-                            {priorityLabel}
-                          </span>
-                        </div>
-                        <p
-                          className={`text-sm font-medium truncate ${
-                            isDark ? 'text-slate-200' : 'text-slate-800'
-                          }`}
-                        >
-                          {ann.title}
-                        </p>
-                        <p
-                          className={`text-xs mt-0.5 line-clamp-1 ${
-                            isDark ? 'text-slate-400' : 'text-slate-600'
-                          }`}
-                        >
-                          {ann.body}
-                        </p>
-                      </div>
-                    </div>
-                  </div>
-                )
-              })}
-            </div>
-
-            {announcements.length > 3 && (
-              <Link
-                to="/announcements"
-                search={{ hotelId }}
-                className={`mt-2 w-full flex items-center justify-center gap-1.5 py-2 text-xs border rounded-xl transition-all ${
-                  isDark
-                    ? 'text-slate-400 hover:text-slate-200 bg-slate-800/40 hover:bg-slate-800 border-slate-700/50'
-                    : 'text-slate-600 hover:text-slate-800 bg-slate-100 hover:bg-slate-200 border-slate-200'
-                }`}
-              >
-                <Megaphone size={12} />
-                {t('announcements.viewAll')} ({announcements.length})
-              </Link>
-            )}
+        {dateValidationError && (
+          <div className="mb-4 rounded-xl border border-amber-500/20 bg-amber-500/10 px-4 py-3 text-sm text-amber-300">
+            {t('hotel.selectDatesFirst')}
           </div>
         )}
 
-        {/* Date Selection */}
-        <div className="bg-slate-900/50 border border-slate-800/50 rounded-2xl p-6 mb-8">
-          <h2 className="text-lg font-semibold text-slate-200 mb-4">
-            {t('hotel.selectDates')}
-          </h2>
-          <p className="text-sm text-slate-400 mb-4">
-            {t('hotel.selectDatesDescription')}
-          </p>
-          <div className="flex flex-col md:flex-row gap-4">
-            <div className="flex-1">
-              <label className="block text-sm text-slate-400 mb-2">
-                {t('booking.checkIn')}
-              </label>
-              <input
-                type="date"
-                value={selectedDates.checkIn}
-                min={new Date().toISOString().split('T')[0]}
-                onChange={(e) =>
-                  setSelectedDates({
-                    ...selectedDates,
-                    checkIn: e.target.value,
-                  })
-                }
-                className="hotel-date-input w-full px-4 py-3 bg-slate-800/50 border border-slate-700 rounded-xl text-slate-200 focus:outline-none focus:border-blue-500/50 transition-all"
-              />
-            </div>
-            <div className="flex-1">
-              <label className="block text-sm text-slate-400 mb-2">
-                {t('booking.checkOut')}
-              </label>
-              <input
-                type="date"
-                value={selectedDates.checkOut}
-                min={
-                  selectedDates.checkIn ||
-                  new Date().toISOString().split('T')[0]
-                }
-                onChange={(e) =>
-                  setSelectedDates({
-                    ...selectedDates,
-                    checkOut: e.target.value,
-                  })
-                }
-                className="hotel-date-input w-full px-4 py-3 bg-slate-800/50 border border-slate-700 rounded-xl text-slate-200 focus:outline-none focus:border-blue-500/50 transition-all"
-              />
-            </div>
-            {nights > 0 && (
-              <div className="flex items-end">
-                <div className="px-4 py-3 bg-blue-500/10 border border-blue-500/20 rounded-xl">
-                  <span className="text-blue-400 font-semibold">
-                    {nights}{' '}
-                    {nights !== 1 ? t('hotel.nights') : t('hotel.night')}
-                  </span>
-                </div>
-              </div>
-            )}
-          </div>
-        </div>
+        <HotelRoomsGrid
+          isSignedIn={Boolean(isSignedIn)}
+          nights={nights}
+          onBookRoom={(roomId) => {
+            if (!selectedDates.checkIn || !selectedDates.checkOut) {
+              setDateValidationError(true)
+              return
+            }
 
-        {/* Rooms Grid */}
-        <h2 className="text-xl font-semibold text-slate-200 mb-4">
-          {selectedDates.checkIn && selectedDates.checkOut
-            ? t('hotel.availableRooms')
-            : t('hotel.allRooms')}
-        </h2>
+            if (!isSignedIn) {
+              navigate({
+                search: { redirect: redirectTarget },
+                to: '/sign-in',
+              })
+              return
+            }
 
-        {rooms === undefined ? (
-          <div className="flex items-center justify-center py-12">
-            <div className="animate-spin rounded-full h-8 w-8 border-2 border-blue-500/20 border-t-blue-500"></div>
-          </div>
-        ) : rooms.length === 0 ? (
-          <div className="bg-slate-900/50 border border-slate-800/50 rounded-2xl p-12 text-center">
-            <div className="w-16 h-16 rounded-2xl bg-slate-800 flex items-center justify-center mx-auto mb-4">
-              <Building2 className="w-8 h-8 text-slate-600" />
-            </div>
-            <h3 className="text-lg font-semibold text-slate-300 mb-2">
-              {t('hotel.noRoomsAvailable')}
-            </h3>
-            <p className="text-slate-500">
-              {selectedDates.checkIn && selectedDates.checkOut
-                ? t('hotel.tryDifferentDates')
-                : t('hotel.noAvailableRooms')}
-            </p>
-          </div>
-        ) : (
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-            {rooms.map((room) => (
-              <div
-                key={room._id}
-                className="bg-slate-900/50 border border-slate-800/50 rounded-2xl overflow-hidden hover:border-slate-700/50 transition-all"
-              >
-                {/* Room Image Placeholder */}
-                <div className="h-40 bg-gradient-to-br from-slate-800 to-slate-900 flex items-center justify-center relative overflow-hidden">
-                  {room.imageUrl ? (
-                    <img
-                      src={room.imageUrl}
-                      alt={`${t('hotel.room')} ${room.roomNumber}`}
-                      className="absolute inset-0 w-full h-full object-cover"
-                    />
-                  ) : (
-                    <Building2 className="w-12 h-12 text-slate-700" />
-                  )}
-                </div>
-
-                <div className="p-5">
-                  <div className="flex items-start justify-between mb-3">
-                    <div>
-                      <h3 className="text-lg font-semibold text-slate-200">
-                        {t('hotel.room')} {room.roomNumber}
-                      </h3>
-                      <p className="text-slate-400">
-                        {roomTypeLabels[room.type]}
-                      </p>
-                      {/* Room Description */}
-                      {room.description && (
-                        <p className="text-slate-500 text-sm mt-1">
-                          {room.description}
-                        </p>
-                      )}
-                    </div>
-                    <div className="text-right">
-                      <p className="text-2xl font-bold text-blue-400">
-                        ${(room.basePrice / 100).toFixed(0)}
-                      </p>
-                      <p className="text-sm text-slate-500">
-                        {t('hotel.perNight')}
-                      </p>
-                    </div>
-                  </div>
-
-                  {/* Room Details */}
-                  <div className="flex items-center gap-4 text-sm text-slate-400 mb-4 flex-wrap">
-                    <div className="flex items-center gap-1">
-                      <Users className="w-4 h-4" />
-                      <span>
-                        {t('hotel.upTo', { count: room.maxOccupancy })}
-                      </span>
-                    </div>
-                    {room.bedOptions && (
-                      <div className="flex items-center gap-1">
-                        <Bed className="w-4 h-4" />
-                        <span>{room.bedOptions}</span>
-                      </div>
-                    )}
-                    {room.smokingAllowed !== undefined && (
-                      <div className="flex items-center gap-1">
-                        {room.smokingAllowed ? (
-                          <>
-                            <Cigarette className="w-4 h-4 text-blue-500" />
-                            <span className="text-blue-500">
-                              {t('hotel.smoking')}
-                            </span>
-                          </>
-                        ) : (
-                          <>
-                            <CigaretteOff className="w-4 h-4 text-emerald-500" />
-                            <span className="text-emerald-500">
-                              {t('hotel.nonSmoking')}
-                            </span>
-                          </>
-                        )}
-                      </div>
-                    )}
-                  </div>
-
-                  {/* Amenities */}
-                  {room.amenities && room.amenities.length > 0 && (
-                    <div className="flex flex-wrap gap-2 mb-4">
-                      {room.amenities.slice(0, 4).map((amenity) => {
-                        const Icon = amenityIcons[amenity] || CheckCircle
-                        return (
-                          <div
-                            key={amenity}
-                            className="flex items-center gap-1 px-2 py-1 bg-slate-800 rounded text-xs text-slate-400"
-                          >
-                            <Icon className="w-3 h-3" />
-                            {amenity}
-                          </div>
-                        )
-                      })}
-                    </div>
-                  )}
-
-                  {/* Total Price */}
-                  {nights > 0 && (
-                    <div className="bg-slate-800/50 rounded-xl p-3 mb-4">
-                      <div className="flex justify-between text-sm">
-                        <span className="text-slate-400">
-                          ${(room.basePrice / 100).toFixed(0)} x {nights}{' '}
-                          {nights !== 1 ? t('hotel.nights') : t('hotel.night')}
-                        </span>
-                        <span className="text-slate-200 font-semibold">
-                          ${((room.basePrice * nights) / 100).toFixed(2)}
-                        </span>
-                      </div>
-                    </div>
-                  )}
-
-                  {/* Book Button */}
-                  <button
-                    onClick={() => {
-                      if (!selectedDates.checkIn || !selectedDates.checkOut) {
-                        alert(t('hotel.selectDatesFirst'))
-                        return
-                      }
-                      if (!isSignedIn) {
-                        navigate({
-                          to: '/sign-in',
-                          search: { redirect: redirectTarget },
-                        })
-                        return
-                      }
-                      setShowBookingModal(room._id)
-                    }}
-                    disabled={!selectedDates.checkIn || !selectedDates.checkOut}
-                    className="w-full py-3 bg-gradient-to-r from-blue-500 to-blue-600 text-white font-semibold rounded-xl hover:from-blue-600 hover:to-blue-700 transition-all disabled:opacity-50 disabled:cursor-not-allowed"
-                  >
-                    {selectedDates.checkIn && selectedDates.checkOut
-                      ? isSignedIn
-                        ? t('hotel.bookNow')
-                        : t('hotel.signInToBook')
-                      : t('hotel.selectDatesToBook')}
-                  </button>
-                </div>
-              </div>
-            ))}
-          </div>
-        )}
+            setShowBookingModal(roomId)
+          }}
+          rooms={rooms}
+          selectedDates={selectedDates}
+        />
       </main>
 
-      {/* Booking Modal */}
       {showBookingModal && isSignedIn && profile && (
         <BookingModal
           roomId={showBookingModal}
