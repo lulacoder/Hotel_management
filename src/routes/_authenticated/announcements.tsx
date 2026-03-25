@@ -19,6 +19,10 @@ import { api } from '../../../convex/_generated/api'
 import { LanguageSwitcher } from '../../components/LanguageSwitcher'
 import { ThemeToggle } from '../../components/ThemeToggle'
 import { useI18n } from '../../lib/i18n'
+import {
+  DEFAULT_AUTH_SEARCH,
+  DEFAULT_SELECT_LOCATION_SEARCH,
+} from '../../lib/navigationSearch'
 import { useTheme } from '../../lib/theme'
 import type { Id } from '../../../convex/_generated/dataModel'
 
@@ -174,6 +178,7 @@ function CustomerAnnouncementsPage() {
               <>
                 <Link
                   to="/sign-in"
+                  search={DEFAULT_AUTH_SEARCH}
                   className={`transition-colors font-medium ${
                     isDark
                       ? 'text-slate-400 hover:text-blue-400'
@@ -184,6 +189,7 @@ function CustomerAnnouncementsPage() {
                 </Link>
                 <Link
                   to="/sign-up"
+                  search={DEFAULT_AUTH_SEARCH}
                   className="px-3 py-1.5 bg-blue-500 text-slate-900 font-semibold rounded-lg hover:bg-blue-400 transition-colors"
                 >
                   {t('header.signUp')}
@@ -286,6 +292,7 @@ function CustomerAnnouncementsPage() {
 
             <Link
               to="/select-location"
+              search={DEFAULT_SELECT_LOCATION_SEARCH}
               onClick={() => setIsMobileMenuOpen(false)}
               className={`flex items-center gap-3 px-4 py-3 rounded-xl transition-all duration-300 group ${
                 isDark
@@ -327,6 +334,7 @@ function CustomerAnnouncementsPage() {
               <div className="space-y-2">
                 <Link
                   to="/sign-in"
+                  search={DEFAULT_AUTH_SEARCH}
                   onClick={() => setIsMobileMenuOpen(false)}
                   className={`flex items-center justify-center gap-2 px-4 py-3 rounded-xl border transition-all duration-300 font-medium ${
                     isDark
@@ -338,6 +346,7 @@ function CustomerAnnouncementsPage() {
                 </Link>
                 <Link
                   to="/sign-up"
+                  search={DEFAULT_AUTH_SEARCH}
                   onClick={() => setIsMobileMenuOpen(false)}
                   className="flex items-center justify-center gap-2 px-4 py-3 rounded-xl bg-gradient-to-r from-blue-500 to-indigo-500 hover:from-blue-400 hover:to-indigo-400 text-white font-semibold transition-all duration-300 shadow-lg shadow-blue-500/25"
                 >

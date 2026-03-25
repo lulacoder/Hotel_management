@@ -1,32 +1,38 @@
 // Canonical sign-up route with optional post-registration redirect support.
-import { Link, createFileRoute, useLocation } from '@tanstack/react-router'
+import { Link, createFileRoute, redirect } from '@tanstack/react-router'
 import { SignUp } from '@clerk/clerk-react'
 import { ArrowLeft } from 'lucide-react'
 import { ThemeToggle } from '../components/ThemeToggle'
+import { buildRedirectSearch, sanitizeRedirect } from '../lib/authRouting'
 import { useI18n } from '../lib/i18n'
 import { getClerkAuthAppearance } from '../lib/clerkAppearance'
 import { useTheme } from '../lib/theme'
 
 export const Route = createFileRoute('/sign-up')({
+  beforeLoad: ({ context, search }) => {
+    const auth = context.auth.getClientSnapshot()
+
+    if (auth.isLoaded && auth.isSignedIn) {
+      throw redirect({
+        to: '/post-login',
+        search: buildRedirectSearch(search.redirect),
+      })
+    }
+  },
+  validateSearch: (search: Record<string, unknown>) => ({
+    redirect: sanitizeRedirect(search.redirect),
+  }),
   // Primary sign-up route entry for new accounts.
   component: SignUpPage,
 })
 
 function SignUpPage() {
   // Keep redirect context when users came from a protected route.
+  const search = Route.useSearch()
   const { theme } = useTheme()
   const { t } = useI18n()
-  const location = useLocation()
-  const params = new URLSearchParams(location.search)
-  const redirectParam = params.get('redirect')
-  const redirectTarget =
-    redirectParam &&
-    redirectParam.startsWith('/') &&
-    !redirectParam.startsWith('//')
-      ? redirectParam
-      : null
-  const encodedRedirect = redirectTarget
-    ? encodeURIComponent(redirectTarget)
+  const encodedRedirect = search.redirect
+    ? encodeURIComponent(search.redirect)
     : null
   const postLoginUrl = encodedRedirect
     ? `/post-login?redirect=${encodedRedirect}`
@@ -144,6 +150,7 @@ function SignUpPage() {
               {t('signUp.haveAccount')}{' '}
               <Link
                 to="/sign-in"
+                search={search}
                 className="text-blue-400 hover:text-blue-300 font-medium transition-colors"
               >
                 {t('header.signIn')}

@@ -7,6 +7,7 @@ import {
   requireHotelAccess,
   requireUser,
 } from './lib/auth'
+import { uniqueIds } from './lib/arrays'
 
 const hotelStaffRoleValidator = v.union(
   v.literal('hotel_admin'),
@@ -78,27 +79,36 @@ export const listAllUsers = query({
     await requireAdmin(ctx)
 
     const users = await ctx.db.query('users').collect()
-    const result = []
+    const assignments = await Promise.all(
+      users.map((user) =>
+        ctx.db
+          .query('hotelStaff')
+          .withIndex('by_user', (q) => q.eq('userId', user._id))
+          .unique(),
+      ),
+    )
+    const hotelIds = uniqueIds(assignments.map((assignment) => assignment?.hotelId))
+    const hotels = await Promise.all(hotelIds.map((hotelId) => ctx.db.get(hotelId)))
+    const hotelMap = new Map(
+      hotels.filter((hotel) => hotel !== null).map((hotel) => [hotel._id, hotel]),
+    )
 
-    for (const user of users) {
-      const assignment = await ctx.db
-        .query('hotelStaff')
-        .withIndex('by_user', (q) => q.eq('userId', user._id))
-        .unique()
+    return users.map((user, index) => {
+      const assignment = assignments[index]
 
       if (!assignment) {
-        result.push({
+        return {
           _id: user._id,
           clerkUserId: user.clerkUserId,
           email: user.email,
           role: user.role,
           createdAt: user.createdAt,
-        })
-        continue
+        }
       }
 
-      const hotel = await ctx.db.get(assignment.hotelId)
-      result.push({
+      const hotel = hotelMap.get(assignment.hotelId)
+
+      return {
         _id: user._id,
         clerkUserId: user.clerkUserId,
         email: user.email,
@@ -112,10 +122,8 @@ export const listAllUsers = query({
           hotelName: hotel?.name ?? 'Unknown hotel',
           hotelCity: hotel?.city ?? 'Unknown city',
         },
-      })
-    }
-
-    return result
+      }
+    })
   },
 })
 
@@ -173,17 +181,20 @@ export const getByHotelId = query({
       .query('hotelStaff')
       .withIndex('by_hotel', (q) => q.eq('hotelId', args.hotelId))
       .collect()
+    const assignedUsers = await Promise.all(
+      assignments.map((assignment) => ctx.db.get(assignment.userId)),
+    )
+    const assignedUserMap = new Map(
+      assignedUsers
+        .filter((assignedUser) => assignedUser !== null)
+        .map((assignedUser) => [assignedUser._id, assignedUser]),
+    )
 
-    const result = []
-    for (const assignment of assignments) {
-      const assignedUser = await ctx.db.get(assignment.userId)
-      result.push({
-        assignment,
-        userEmail: assignedUser?.email ?? 'Unknown user',
-      })
-    }
-
-    return result
+    return assignments.map((assignment) => ({
+      assignment,
+      userEmail:
+        assignedUserMap.get(assignment.userId)?.email ?? 'Unknown user',
+    }))
   },
 })
 

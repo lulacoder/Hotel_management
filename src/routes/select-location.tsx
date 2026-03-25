@@ -1,7 +1,6 @@
 // Hotel discovery route with geolocation, search filters, sorting, and rating workflow.
 import {
   createFileRoute,
-  useLocation,
   useNavigate,
 } from '@tanstack/react-router'
 import { useUser } from '@clerk/clerk-react'
@@ -13,6 +12,7 @@ import { api } from '../../convex/_generated/api'
 import { useGeolocation } from '../hooks/useGeolocation'
 import { calculateDistance } from '../lib/distance'
 import { useI18n } from '../lib/i18n'
+import { DEFAULT_SELECT_LOCATION_SEARCH } from '../lib/navigationSearch'
 import { SelectLocationHeader } from './select-location/components/-SelectLocationHeader'
 import { HeroSection } from './select-location/components/-HeroSection'
 import { SearchFilters } from './select-location/components/-SearchFilters'
@@ -20,15 +20,25 @@ import { HotelGrid } from './select-location/components/-HotelGrid'
 import { RatingModal } from './select-location/components/-RatingModal'
 import { ComplaintModal } from './select-location/components/-ComplaintModal'
 import { normalizeRatingFormValues } from './select-location/components/-ratingFormSchema'
+import { normalizeComplaintFormValues } from './select-location/components/-complaintFormSchema'
 import {
-  normalizeComplaintFormValues,
-  type ComplaintFormValues,
-} from './select-location/components/-complaintFormSchema'
+  normalizeFilterValue,
+  normalizeSearchTerm,
+  normalizeSortOption,
+} from './select-location/components/-helpers'
+import type { ComplaintFormValues } from './select-location/components/-complaintFormSchema'
 import type { SortOption } from './select-location/components/-helpers'
 import type { RatingFormValues } from './select-location/components/-ratingFormSchema'
 import type { Id } from '../../convex/_generated/dataModel'
 
 export const Route = createFileRoute('/select-location')({
+  validateSearch: (search: Record<string, unknown>) => ({
+    category: normalizeFilterValue(search.category),
+    city: normalizeFilterValue(search.city),
+    q: normalizeSearchTerm(search.q),
+    rate: typeof search.rate === 'string' ? search.rate : undefined,
+    sort: normalizeSortOption(search.sort),
+  }),
   // Main discovery route where users search, filter, and rate hotels.
   component: SelectLocationPage,
 })
@@ -36,13 +46,9 @@ export const Route = createFileRoute('/select-location')({
 function SelectLocationPage() {
   // Local UI state for filters, geolocation state, and rating modal flow.
   const { user, isSignedIn } = useUser()
+  const search = Route.useSearch()
   const { t } = useI18n()
   const navigate = useNavigate()
-  const location = useLocation()
-  const [searchTerm, setSearchTerm] = useState('')
-  const [selectedCity, setSelectedCity] = useState<string>('all')
-  const [selectedCategory, setSelectedCategory] = useState<string>('all')
-  const [sortBy, setSortBy] = useState<SortOption>('name')
   const [locationRequested, setLocationRequested] = useState(false)
   const [activeRatingHotelId, setActiveRatingHotelId] =
     useState<Id<'hotels'> | null>(null)
@@ -51,7 +57,11 @@ function SelectLocationPage() {
   const [showComplaintModal, setShowComplaintModal] = useState(false)
   const [complaintError, setComplaintError] = useState('')
   const [complaintSaving, setComplaintSaving] = useState(false)
-  const [autoOpenHandled, setAutoOpenHandled] = useState(false)
+
+  const searchTerm = search.q
+  const selectedCity = search.city
+  const selectedCategory = search.category
+  const sortBy = search.sort
 
   // Primary data sources for cards and aggregated rating metadata.
   const hotels = useQuery(api.hotels.list, {})
@@ -94,26 +104,25 @@ function SelectLocationPage() {
   }, [locationSupported, locationRequested, requestLocation])
 
   useEffect(() => {
-    if (autoOpenHandled || !hotels) {
+    if (!hotels || !search.rate) {
       return
     }
 
-    const params = new URLSearchParams(location.search)
-    const rateHotelId = params.get('rate')
-
-    if (!rateHotelId) {
-      return
-    }
-
-    const matchedHotel = hotels.find((hotel) => hotel._id === rateHotelId)
+    const matchedHotel = hotels.find((hotel) => hotel._id === search.rate)
     if (!matchedHotel) {
       return
     }
 
     setActiveRatingHotelId(matchedHotel._id)
-    setAutoOpenHandled(true)
-    navigate({ to: '/select-location', replace: true })
-  }, [autoOpenHandled, hotels, location.search, navigate])
+    navigate({
+      replace: true,
+      search: (prev) => ({
+        ...prev,
+        rate: undefined,
+      }),
+      to: '/select-location',
+    })
+  }, [hotels, navigate, search.rate])
 
   // Compute hotels with distance
   const hotelsWithDistance = useMemo(() => {
@@ -137,7 +146,7 @@ function SelectLocationPage() {
   }, [hotels, userLat, userLng])
 
   const ratingSummaryByHotelId = useMemo(() => {
-    const map: Record<string, { average: number; count: number }> = {}
+    const map: Partial<Record<string, { average: number; count: number }>> = {}
 
     if (!ratingSummaries) {
       return map
@@ -193,9 +202,11 @@ function SelectLocationPage() {
           return a.distance - b.distance
         case 'rating': {
           const ratingA =
-            ratingSummaryByHotelId[a._id]?.average ?? a.rating ?? 0
+            ratingSummaryByHotelId[a._id]?.average ??
+            (a.rating !== undefined ? a.rating : 0)
           const ratingB =
-            ratingSummaryByHotelId[b._id]?.average ?? b.rating ?? 0
+            ratingSummaryByHotelId[b._id]?.average ??
+            (b.rating !== undefined ? b.rating : 0)
           return ratingB - ratingA // Higher rating first
         }
         case 'name':
@@ -218,10 +229,18 @@ function SelectLocationPage() {
 
   // Auto-switch to distance sort when location becomes available
   useEffect(() => {
-    if (hasUserLocation && sortBy !== 'distance') {
-      setSortBy('distance')
+    if (hasUserLocation && sortBy === 'name') {
+      navigate({
+        replace: true,
+        search: {
+          ...search,
+          sort: 'distance',
+        },
+        to: '/select-location',
+      })
     }
-  }, [hasUserLocation, sortBy])
+  }, [hasUserLocation, navigate, search, sortBy])
+
   const activeHotel = useMemo(() => {
     if (!activeRatingHotelId || !hotels) {
       return null
@@ -248,6 +267,23 @@ function SelectLocationPage() {
       status: booking.status,
     }))
   }, [myBookings])
+
+  const updateSearch = (nextSearch: Partial<{
+    category: string
+    city: string
+    q: string
+    sort: SortOption
+  }>) => {
+    navigate({
+      replace: true,
+      search: {
+        ...DEFAULT_SELECT_LOCATION_SEARCH,
+        ...search,
+        ...nextSearch,
+      },
+      to: '/select-location',
+    })
+  }
 
   const openRatingModal = (hotelId: Id<'hotels'>) => {
     // Seed modal state for selected hotel and reset prior errors.
@@ -341,17 +377,17 @@ function SelectLocationPage() {
         locationError={locationError}
         requestLocation={requestLocation}
         searchTerm={searchTerm}
-        onSearchTermChange={setSearchTerm}
+        onSearchTermChange={(value) => updateSearch({ q: value })}
       >
         <SearchFilters
           selectedCity={selectedCity}
-          onCityChange={setSelectedCity}
+          onCityChange={(value) => updateSearch({ city: value })}
           cities={cities ?? []}
           selectedCategory={selectedCategory}
-          onCategoryChange={setSelectedCategory}
+          onCategoryChange={(value) => updateSearch({ category: value })}
           categories={categories}
           sortBy={sortBy}
-          onSortChange={setSortBy}
+          onSortChange={(value) => updateSearch({ sort: value })}
           hasUserLocation={hasUserLocation}
         />
       </HeroSection>

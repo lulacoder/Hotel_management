@@ -1,6 +1,18 @@
 // Shared types/constants for select-location filtering and sort behavior.
 export type SortOption = 'name' | 'rating' | 'distance'
 
+export function normalizeSortOption(value: unknown): SortOption {
+  return value === 'rating' || value === 'distance' ? value : 'name'
+}
+
+export function normalizeFilterValue(value: unknown): string {
+  return typeof value === 'string' && value.length > 0 ? value : 'all'
+}
+
+export function normalizeSearchTerm(value: unknown): string {
+  return typeof value === 'string' ? value : ''
+}
+
 // Category badge styles used by hotel cards.
 export const categoryColors: Record<string, string> = {
   Boutique: 'bg-violet-500/20 text-violet-300 border-violet-500/30',

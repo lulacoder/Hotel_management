@@ -1,32 +1,38 @@
 // Catch-all sign-in route variant to support Clerk callback/path patterns.
-import { Link, createFileRoute, useLocation } from '@tanstack/react-router'
+import { Link, createFileRoute, redirect } from '@tanstack/react-router'
 import { SignIn } from '@clerk/clerk-react'
 import { ArrowLeft } from 'lucide-react'
 import { ThemeToggle } from '../components/ThemeToggle'
+import { buildRedirectSearch, sanitizeRedirect } from '../lib/authRouting'
 import { useI18n } from '../lib/i18n'
 import { getClerkAuthAppearance } from '../lib/clerkAppearance'
 import { useTheme } from '../lib/theme'
 
 export const Route = createFileRoute('/sign-in/$')({
+  beforeLoad: ({ context, search }) => {
+    const auth = context.auth.getClientSnapshot()
+
+    if (auth.isLoaded && auth.isSignedIn) {
+      throw redirect({
+        to: '/post-login',
+        search: buildRedirectSearch(search.redirect),
+      })
+    }
+  },
+  validateSearch: (search: Record<string, unknown>) => ({
+    redirect: sanitizeRedirect(search.redirect),
+  }),
   // Handles Clerk path/callback variants while reusing sign-in UX.
   component: SignInCatchAll,
 })
 
 function SignInCatchAll() {
   // Keep redirect intent when this fallback route is used.
+  const search = Route.useSearch()
   const { theme } = useTheme()
   const { t } = useI18n()
-  const location = useLocation()
-  const params = new URLSearchParams(location.search)
-  const redirectParam = params.get('redirect')
-  const redirectTarget =
-    redirectParam &&
-    redirectParam.startsWith('/') &&
-    !redirectParam.startsWith('//')
-      ? redirectParam
-      : null
-  const encodedRedirect = redirectTarget
-    ? encodeURIComponent(redirectTarget)
+  const encodedRedirect = search.redirect
+    ? encodeURIComponent(search.redirect)
     : null
   const postLoginUrl = encodedRedirect
     ? `/post-login?redirect=${encodedRedirect}`

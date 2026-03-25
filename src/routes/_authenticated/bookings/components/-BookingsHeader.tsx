@@ -7,6 +7,7 @@ import { LanguageSwitcher } from '../../../../components/LanguageSwitcher'
 import { ThemeToggle } from '../../../../components/ThemeToggle'
 import { NotificationBell } from '../../../../components/NotificationBell'
 import { useI18n } from '../../../../lib/i18n'
+import { DEFAULT_SELECT_LOCATION_SEARCH } from '../../../../lib/navigationSearch'
 
 interface BookingsHeaderProps {
   userName: string
@@ -25,6 +26,7 @@ export function BookingsHeader({ userName }: BookingsHeaderProps) {
             {/* Back arrow (all sizes) */}
             <Link
               to="/select-location"
+              search={DEFAULT_SELECT_LOCATION_SEARCH}
               className="p-2 text-slate-400 hover:text-blue-400 hover:bg-slate-800 rounded-lg transition-colors"
             >
               <ArrowLeft className="w-5 h-5" />
@@ -107,6 +109,7 @@ export function BookingsHeader({ userName }: BookingsHeaderProps) {
 
             <Link
               to="/select-location"
+              search={DEFAULT_SELECT_LOCATION_SEARCH}
               onClick={() => setIsOpen(false)}
               className="flex items-center gap-3 px-4 py-3 rounded-xl text-slate-400 hover:text-white hover:bg-white/5 transition-all duration-300 group"
             >

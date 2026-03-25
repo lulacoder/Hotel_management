@@ -10,6 +10,10 @@ import {
   Sparkles,
 } from 'lucide-react'
 import { useI18n } from '../lib/i18n'
+import {
+  DEFAULT_AUTH_SEARCH,
+  DEFAULT_SELECT_LOCATION_SEARCH,
+} from '../lib/navigationSearch'
 
 export const Route = createFileRoute('/')({
   // Route definition for public landing experience.
@@ -34,6 +38,7 @@ function LandingPage() {
           <p className="text-slate-400 mb-2">{t('landing.redirecting')}</p>
           <Link
             to="/post-login"
+            search={DEFAULT_AUTH_SEARCH}
             className="text-blue-400 hover:text-blue-300 text-sm transition-colors"
           >
             {t('landing.clickIfNotRedirected')}
@@ -81,6 +86,7 @@ function LandingPage() {
               <div className="flex flex-col sm:flex-row items-start gap-4">
                 <Link
                   to="/select-location"
+                  search={DEFAULT_SELECT_LOCATION_SEARCH}
                   className="landing-primary-cta group inline-flex items-center gap-3 rounded-xl bg-gradient-to-r from-blue-500 to-indigo-500 px-8 py-4 font-semibold text-slate-950 shadow-lg shadow-blue-500/30 transition-all duration-300 hover:from-blue-400 hover:to-indigo-400 hover:shadow-blue-500/45"
                 >
                   <MapPin size={20} />
@@ -92,6 +98,7 @@ function LandingPage() {
                 </Link>
                 <Link
                   to="/sign-up"
+                  search={DEFAULT_AUTH_SEARCH}
                   className="landing-secondary-cta inline-flex items-center gap-2 rounded-xl border border-slate-700 bg-slate-900/60 px-8 py-4 font-semibold text-slate-100 transition-colors hover:border-slate-500 hover:bg-slate-900"
                 >
                   {t('landing.createFreeAccount')}
@@ -142,6 +149,7 @@ function LandingPage() {
                   </div>
                   <Link
                     to="/sign-in"
+                    search={DEFAULT_AUTH_SEARCH}
                     className="landing-signin-link inline-flex items-center gap-2 text-sm font-semibold text-blue-400 hover:text-blue-300 transition-colors"
                   >
                     {t('landing.alreadyHaveAccount')}
