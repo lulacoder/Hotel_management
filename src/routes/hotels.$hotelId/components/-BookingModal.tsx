@@ -227,8 +227,8 @@ export function BookingModal({
   return (
     <div className="booking-modal fixed inset-0 bg-black/60 backdrop-blur-sm flex items-center justify-center z-50 p-4">
       <div className="booking-modal-panel bg-slate-900 border border-slate-800 rounded-2xl shadow-2xl w-full max-w-lg max-h-[92vh] overflow-hidden flex flex-col">
-        <div className="p-4 sm:p-5 border-b border-slate-800 shrink-0">
-          <h2 className="text-xl font-semibold text-slate-100">
+        <div className="booking-modal-header p-4 sm:p-5 border-b border-slate-800 shrink-0">
+          <h2 className="booking-modal-title text-xl font-semibold text-slate-100">
             {step === 'package'
               ? t('bookingModal.step.packageTitle')
               : step === 'details'
@@ -237,7 +237,7 @@ export function BookingModal({
                   ? t('bookingModal.step.submittedTitle')
                   : t('bookingModal.step.paymentTitle')}
           </h2>
-          <p className="text-sm text-slate-500 mt-1">
+          <p className="booking-modal-subtitle text-sm text-slate-500 mt-1">
             {step === 'package'
               ? t('bookingModal.step.packageDescription')
               : step === 'details'
@@ -249,29 +249,29 @@ export function BookingModal({
         </div>
 
         <div className="p-4 sm:p-5 flex-1 overflow-y-auto overscroll-contain scroll-smooth">
-          <div className="bg-slate-800/50 rounded-xl p-4 mb-4">
+          <div className="booking-summary-card bg-slate-800/50 rounded-xl p-4 mb-4">
             <div className="flex items-center gap-3 mb-3">
-              <div className="w-12 h-12 rounded-lg bg-slate-700 flex items-center justify-center">
-                <Building2 className="w-6 h-6 text-slate-400" />
+              <div className="booking-summary-icon-wrap w-12 h-12 rounded-lg bg-slate-700 flex items-center justify-center">
+                <Building2 className="booking-summary-icon w-6 h-6 text-slate-400" />
               </div>
               <div>
-                <p className="font-semibold text-slate-200">{hotel.name}</p>
-                <p className="text-sm text-slate-400">
+                <p className="booking-summary-hotel font-semibold text-slate-200">{hotel.name}</p>
+                <p className="booking-summary-room text-sm text-slate-400">
                   {t('hotel.room')} {room.roomNumber} - {room.type}
                 </p>
               </div>
             </div>
             <div className="grid grid-cols-2 gap-4 text-sm">
               <div>
-                <p className="text-slate-500">{t('booking.checkIn')}</p>
-                <p className="text-slate-200">{bookingCheckIn}</p>
+                <p className="booking-summary-label text-slate-500">{t('booking.checkIn')}</p>
+                <p className="booking-summary-value text-slate-200">{bookingCheckIn}</p>
               </div>
               <div>
-                <p className="text-slate-500">{t('booking.checkOut')}</p>
-                <p className="text-slate-200">{bookingCheckOut}</p>
+                <p className="booking-summary-label text-slate-500">{t('booking.checkOut')}</p>
+                <p className="booking-summary-value text-slate-200">{bookingCheckOut}</p>
               </div>
             </div>
-            <div className="border-t border-slate-700 mt-4 pt-4 flex justify-between">
+            <div className="booking-summary-total border-t border-slate-700 mt-4 pt-4 flex justify-between">
               <div className="text-slate-400 text-sm">
                 <p>
                   {t('hotel.room')}: ${(roomRateCents / 100).toFixed(0)} ×{' '}
@@ -285,14 +285,14 @@ export function BookingModal({
                   </p>
                 )}
               </div>
-              <span className="text-xl font-bold text-blue-400">
+              <span className="booking-summary-total-amount text-xl font-bold text-blue-400">
                 ${(totalPriceCents / 100).toFixed(2)}
               </span>
             </div>
           </div>
 
           {error && (
-            <div className="bg-red-500/10 border border-red-500/20 rounded-xl p-4 text-red-400 text-sm mb-4">
+            <div className="booking-modal-error bg-red-500/10 border border-red-500/20 rounded-xl p-4 text-red-400 text-sm mb-4">
               {error}
             </div>
           )}
@@ -346,14 +346,14 @@ export function BookingModal({
                 <button
                   type="button"
                   onClick={onClose}
-                  className="flex-1 px-4 py-3 bg-slate-800 text-slate-300 font-medium rounded-xl hover:bg-slate-700 transition-colors border border-slate-700"
+                  className="booking-action-secondary flex-1 px-4 py-3 bg-slate-800 text-slate-300 font-medium rounded-xl hover:bg-slate-700 transition-colors border border-slate-700"
                 >
                   {t('common.cancel')}
                 </button>
                 <button
                   type="button"
                   onClick={() => setStep('details')}
-                  className="flex-1 px-4 py-3 bg-gradient-to-r from-blue-500 to-blue-600 text-white font-medium rounded-xl hover:from-blue-600 hover:to-blue-700 transition-all"
+                  className="booking-action-primary flex-1 px-4 py-3 bg-gradient-to-r from-blue-500 to-blue-600 text-white font-medium rounded-xl hover:from-blue-600 hover:to-blue-700 transition-all"
                 >
                   {t('bookingModal.continue')}
                 </button>
@@ -362,7 +362,7 @@ export function BookingModal({
           ) : step === 'details' ? (
             <form onSubmit={handleHold} className="space-y-4">
               <div>
-                <label className="block text-sm font-medium text-slate-300 mb-2">
+                <label className="booking-field-label block text-sm font-medium text-slate-300 mb-2">
                   {t('bookingModal.guestName')}
                 </label>
                 <input
@@ -375,12 +375,12 @@ export function BookingModal({
                       guestName: e.target.value,
                     })
                   }
-                  className="w-full px-4 py-3 bg-slate-800/50 border border-slate-700 rounded-xl text-slate-200 focus:outline-none focus:border-blue-500/50 transition-all"
+                  className="booking-input w-full px-4 py-3 bg-slate-800/50 border border-slate-700 rounded-xl text-slate-200 focus:outline-none focus:border-blue-500/50 transition-all"
                 />
               </div>
 
               <div>
-                <label className="block text-sm font-medium text-slate-300 mb-2">
+                <label className="booking-field-label block text-sm font-medium text-slate-300 mb-2">
                   {t('bookingModal.email')}
                 </label>
                 <input
@@ -393,12 +393,12 @@ export function BookingModal({
                       guestEmail: e.target.value,
                     })
                   }
-                  className="w-full px-4 py-3 bg-slate-800/50 border border-slate-700 rounded-xl text-slate-200 focus:outline-none focus:border-blue-500/50 transition-all"
+                  className="booking-input w-full px-4 py-3 bg-slate-800/50 border border-slate-700 rounded-xl text-slate-200 focus:outline-none focus:border-blue-500/50 transition-all"
                 />
               </div>
 
               <div>
-                <label className="block text-sm font-medium text-slate-300 mb-2">
+                <label className="booking-field-label block text-sm font-medium text-slate-300 mb-2">
                   {t('bookingModal.specialRequests')}
                 </label>
                 <textarea
@@ -411,7 +411,7 @@ export function BookingModal({
                     })
                   }
                   placeholder={t('bookingModal.specialRequestsPlaceholder')}
-                  className="w-full px-4 py-3 bg-slate-800/50 border border-slate-700 rounded-xl text-slate-200 placeholder-slate-500 focus:outline-none focus:border-blue-500/50 transition-all resize-none"
+                  className="booking-input booking-textarea w-full px-4 py-3 bg-slate-800/50 border border-slate-700 rounded-xl text-slate-200 placeholder-slate-500 focus:outline-none focus:border-blue-500/50 transition-all resize-none"
                 />
               </div>
 
@@ -421,7 +421,7 @@ export function BookingModal({
                 </p>
               </div>
 
-              <div className="bg-slate-800/40 border border-slate-700 rounded-xl p-4 text-sm">
+              <div className="booking-price-card bg-slate-800/40 border border-slate-700 rounded-xl p-4 text-sm">
                 <div className="flex items-center justify-between text-slate-300">
                   <span>
                     {t('bookingModal.roomRate')} ({nights}{' '}
@@ -450,14 +450,14 @@ export function BookingModal({
                 <button
                   type="button"
                   onClick={() => setStep('package')}
-                  className="flex-1 px-4 py-3 bg-slate-800 text-slate-300 font-medium rounded-xl hover:bg-slate-700 transition-colors border border-slate-700"
+                  className="booking-action-secondary flex-1 px-4 py-3 bg-slate-800 text-slate-300 font-medium rounded-xl hover:bg-slate-700 transition-colors border border-slate-700"
                 >
                   {t('signIn.back')}
                 </button>
                 <button
                   type="submit"
                   disabled={loading}
-                  className="flex-1 px-4 py-3 bg-gradient-to-r from-blue-500 to-blue-600 text-white font-medium rounded-xl hover:from-blue-600 hover:to-blue-700 transition-all disabled:opacity-50"
+                  className="booking-action-primary flex-1 px-4 py-3 bg-gradient-to-r from-blue-500 to-blue-600 text-white font-medium rounded-xl hover:from-blue-600 hover:to-blue-700 transition-all disabled:opacity-50"
                 >
                   {loading
                     ? t('bookingModal.holding')
@@ -467,7 +467,7 @@ export function BookingModal({
             </form>
           ) : submitted ? (
             <div className="space-y-4">
-              <div className="bg-emerald-500/10 border border-emerald-500/20 rounded-xl p-4">
+              <div className="booking-success-card bg-emerald-500/10 border border-emerald-500/20 rounded-xl p-4">
                 <div className="flex items-center gap-2 text-emerald-400 mb-2">
                   <CheckCircle className="w-5 h-5" />
                   <span className="font-semibold">
@@ -489,14 +489,14 @@ export function BookingModal({
               <div className="flex gap-3">
                 <button
                   onClick={onClose}
-                  className="flex-1 px-4 py-3 bg-slate-800 text-slate-300 font-medium rounded-xl hover:bg-slate-700 transition-colors border border-slate-700"
+                  className="booking-action-secondary flex-1 px-4 py-3 bg-slate-800 text-slate-300 font-medium rounded-xl hover:bg-slate-700 transition-colors border border-slate-700"
                 >
                   {t('common.close')}
                 </button>
                 <Link
                   to="/bookings"
                   onClick={onSuccess}
-                  className="flex-1 px-4 py-3 text-center bg-gradient-to-r from-emerald-500 to-emerald-600 text-white font-medium rounded-xl hover:from-emerald-600 hover:to-emerald-700 transition-all"
+                  className="booking-action-success flex-1 px-4 py-3 text-center bg-gradient-to-r from-emerald-500 to-emerald-600 text-white font-medium rounded-xl hover:from-emerald-600 hover:to-emerald-700 transition-all"
                 >
                   {t('bookingModal.viewMyBookings')}
                 </Link>
@@ -504,7 +504,7 @@ export function BookingModal({
             </div>
           ) : (
             <div className="space-y-4">
-              <div className="bg-emerald-500/10 border border-emerald-500/20 rounded-xl p-4">
+              <div className="booking-success-card bg-emerald-500/10 border border-emerald-500/20 rounded-xl p-4">
                 <div className="flex items-center gap-2 text-emerald-400 mb-2">
                   <CheckCircle className="w-5 h-5" />
                   <span className="font-semibold">
@@ -516,7 +516,7 @@ export function BookingModal({
                 </p>
               </div>
 
-              <div className="bg-slate-800/40 border border-slate-700 rounded-xl p-4 text-sm">
+              <div className="booking-price-card bg-slate-800/40 border border-slate-700 rounded-xl p-4 text-sm">
                 <div className="flex items-center justify-between text-slate-300">
                   <span>
                     {t('bookingModal.roomRate')} ({nights}{' '}
@@ -547,7 +547,7 @@ export function BookingModal({
                 </p>
                 <div className="space-y-3">
                   <div>
-                    <label className="block text-xs text-slate-500 mb-2">
+                    <label className="booking-field-label block text-xs text-slate-500 mb-2">
                       {t('bookingModal.selectBank')}
                     </label>
                     <select
@@ -558,7 +558,7 @@ export function BookingModal({
                         )
                       }
                       disabled={!bankAccounts || bankAccounts.length === 0}
-                      className="w-full px-3 py-2.5 bg-slate-800/60 border border-slate-700 rounded-xl text-slate-200 focus:outline-none focus:border-blue-500/50 transition-all"
+                      className="booking-input booking-select w-full px-3 py-2.5 bg-slate-800/60 border border-slate-700 rounded-xl text-slate-200 focus:outline-none focus:border-blue-500/50 transition-all"
                     >
                       {bankAccounts && bankAccounts.length > 0 ? (
                         bankAccounts.map((account) => (
@@ -574,7 +574,7 @@ export function BookingModal({
                     </select>
                   </div>
 
-                  <div className="flex items-center justify-between gap-2 bg-slate-800/40 border border-slate-700 rounded-xl p-3">
+                  <div className="booking-bank-card flex items-center justify-between gap-2 bg-slate-800/40 border border-slate-700 rounded-xl p-3">
                     <div>
                       <p className="text-xs text-slate-500 mb-1">
                         {t('bookingModal.bankAccountNumber')}
@@ -589,7 +589,7 @@ export function BookingModal({
                       <button
                         type="button"
                         onClick={handleCopyBankAccount}
-                        className="inline-flex items-center gap-2 px-3 py-2 bg-slate-800 text-slate-300 rounded-lg hover:bg-slate-700 transition-colors border border-slate-700 text-sm"
+                        className="booking-copy-button inline-flex items-center gap-2 px-3 py-2 bg-slate-800 text-slate-300 rounded-lg hover:bg-slate-700 transition-colors border border-slate-700 text-sm"
                       >
                         {copied ? (
                           <Check className="w-4 h-4" />
@@ -604,7 +604,7 @@ export function BookingModal({
               </div>
 
               <div>
-                <label className="block text-sm font-medium text-slate-300 mb-2">
+                <label className="booking-field-label block text-sm font-medium text-slate-300 mb-2">
                   {t('bookingModal.uploadNationalId')}
                 </label>
                 <input
@@ -614,12 +614,12 @@ export function BookingModal({
                     const file = e.target.files?.[0] ?? null
                     setNationalIdFile(file)
                   }}
-                  className="w-full px-4 py-3 bg-slate-800/50 border border-slate-700 rounded-xl text-slate-200 focus:outline-none focus:border-blue-500/50 transition-all file:mr-3 file:px-3 file:py-1.5 file:rounded-md file:border-0 file:bg-slate-700 file:text-slate-100 hover:file:bg-slate-600"
+                  className="booking-input booking-file-input w-full px-4 py-3 bg-slate-800/50 border border-slate-700 rounded-xl text-slate-200 focus:outline-none focus:border-blue-500/50 transition-all file:mr-3 file:px-3 file:py-1.5 file:rounded-md file:border-0 file:bg-slate-700 file:text-slate-100 hover:file:bg-slate-600"
                 />
               </div>
 
               <div>
-                <label className="block text-sm font-medium text-slate-300 mb-2">
+                <label className="booking-field-label block text-sm font-medium text-slate-300 mb-2">
                   {t('bookingModal.transactionId')}
                 </label>
                 <input
@@ -627,14 +627,14 @@ export function BookingModal({
                   value={transactionId}
                   onChange={(e) => setTransactionId(e.target.value)}
                   placeholder={t('bookingModal.transactionIdPlaceholder')}
-                  className="w-full px-4 py-3 bg-slate-800/50 border border-slate-700 rounded-xl text-slate-200 placeholder-slate-500 focus:outline-none focus:border-blue-500/50 transition-all"
+                  className="booking-input w-full px-4 py-3 bg-slate-800/50 border border-slate-700 rounded-xl text-slate-200 placeholder-slate-500 focus:outline-none focus:border-blue-500/50 transition-all"
                 />
               </div>
 
               <div className="flex gap-3">
                 <button
                   onClick={onClose}
-                  className="flex-1 px-4 py-3 bg-slate-800 text-slate-300 font-medium rounded-xl hover:bg-slate-700 transition-colors border border-slate-700"
+                  className="booking-action-secondary flex-1 px-4 py-3 bg-slate-800 text-slate-300 font-medium rounded-xl hover:bg-slate-700 transition-colors border border-slate-700"
                 >
                   {t('bookingModal.cancelHold')}
                 </button>
@@ -646,7 +646,7 @@ export function BookingModal({
                     !transactionId.trim() ||
                     !selectedBankAccount
                   }
-                  className="flex-1 px-4 py-3 bg-gradient-to-r from-emerald-500 to-emerald-600 text-white font-medium rounded-xl hover:from-emerald-600 hover:to-emerald-700 transition-all disabled:opacity-50"
+                  className="booking-action-success flex-1 px-4 py-3 bg-gradient-to-r from-emerald-500 to-emerald-600 text-white font-medium rounded-xl hover:from-emerald-600 hover:to-emerald-700 transition-all disabled:opacity-50"
                 >
                   {loading
                     ? t('bookingModal.submittingPaymentProof')

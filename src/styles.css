@@ -202,15 +202,61 @@ html[data-theme='light'] .booking-modal-panel {
 }
 
 html[data-theme='light'] .notification-bell-panel {
-  background: rgb(255 255 255 / 0.84);
-  border-color: rgb(203 213 225 / 0.85);
+  background: rgb(255 255 255 / 0.9);
+  border-color: rgb(203 213 225 / 0.92);
   box-shadow:
     0 22px 48px -24px rgb(15 23 42 / 0.35),
     0 12px 30px -20px rgb(59 130 246 / 0.25);
 }
 
+html[data-theme='light'] .notification-bell-panel--sidebar {
+  background: rgb(255 255 255 / 0.97);
+  border-color: rgb(203 213 225 / 0.96);
+  box-shadow:
+    0 30px 58px -28px rgb(15 23 42 / 0.38),
+    0 14px 34px -22px rgb(59 130 246 / 0.28);
+}
+
 html[data-theme='light'] .notification-bell-item {
   backdrop-filter: blur(8px);
+}
+
+html[data-theme='light'] .notification-bell-item--read {
+  background: rgb(248 250 252 / 0.68);
+}
+
+html[data-theme='light'] .notification-bell-item--read:hover {
+  background: rgb(241 245 249 / 0.94);
+}
+
+html[data-theme='light'] .notification-bell-item--unread {
+  background:
+    linear-gradient(180deg, rgb(255 251 235 / 0.92) 0%, rgb(255 247 237 / 0.86) 100%);
+}
+
+html[data-theme='light'] .notification-bell-item--unread:hover {
+  background:
+    linear-gradient(180deg, rgb(254 243 199 / 0.86) 0%, rgb(255 237 213 / 0.82) 100%);
+}
+
+html[data-theme='light'] .notification-bell-title {
+  color: rgb(15 23 42);
+}
+
+html[data-theme='light'] .notification-bell-label {
+  letter-spacing: 0.055em;
+}
+
+html[data-theme='light'] .notification-bell-message {
+  color: rgb(30 41 59);
+}
+
+html[data-theme='light'] .notification-bell-item--read .notification-bell-message {
+  color: rgb(71 85 105);
+}
+
+html[data-theme='light'] .notification-bell-time {
+  color: rgb(100 116 139);
 }
 
 html[data-theme='light'] .complaint-modal-panel {
@@ -224,6 +270,129 @@ html[data-theme='light'] .complaint-modal-panel {
 html[data-theme='light'] .booking-package-card--selected {
   border-color: rgb(96 165 250 / 0.75);
   background: rgb(219 234 254 / 0.7);
+}
+
+html[data-theme='light'] .booking-modal {
+  background: rgb(15 23 42 / 0.42);
+}
+
+html[data-theme='light'] .booking-modal-panel {
+  background:
+    radial-gradient(circle at 20% -10%, rgb(219 234 254 / 0.42), transparent 55%),
+    linear-gradient(180deg, rgb(255 255 255 / 0.96) 0%, rgb(248 250 252 / 0.92) 100%);
+  border-color: rgb(203 213 225 / 0.95);
+  box-shadow:
+    0 32px 68px -30px rgb(15 23 42 / 0.42),
+    0 16px 38px -26px rgb(59 130 246 / 0.24);
+}
+
+html[data-theme='light'] .booking-modal-header {
+  border-color: rgb(226 232 240 / 0.95);
+  background: linear-gradient(180deg, rgb(255 255 255 / 0.76) 0%, rgb(248 250 252 / 0.5) 100%);
+}
+
+html[data-theme='light'] .booking-modal-title {
+  color: rgb(15 23 42);
+}
+
+html[data-theme='light'] .booking-modal-subtitle {
+  color: rgb(100 116 139);
+}
+
+html[data-theme='light'] .booking-summary-card,
+html[data-theme='light'] .booking-price-card,
+html[data-theme='light'] .booking-bank-card {
+  background: rgb(255 255 255 / 0.8);
+  border-color: rgb(203 213 225 / 0.9);
+}
+
+html[data-theme='light'] .booking-summary-icon-wrap {
+  background: rgb(239 246 255 / 0.9);
+  border: 1px solid rgb(191 219 254 / 0.8);
+}
+
+html[data-theme='light'] .booking-summary-icon {
+  color: rgb(37 99 235);
+}
+
+html[data-theme='light'] .booking-summary-hotel,
+html[data-theme='light'] .booking-summary-value {
+  color: rgb(15 23 42);
+}
+
+html[data-theme='light'] .booking-summary-room,
+html[data-theme='light'] .booking-summary-label {
+  color: rgb(100 116 139);
+}
+
+html[data-theme='light'] .booking-summary-total {
+  border-color: rgb(226 232 240);
+}
+
+html[data-theme='light'] .booking-summary-total-amount {
+  color: rgb(37 99 235);
+}
+
+html[data-theme='light'] .booking-modal-error {
+  background: rgb(254 242 242 / 0.86);
+  border-color: rgb(252 165 165 / 0.55);
+  color: rgb(185 28 28);
+}
+
+html[data-theme='light'] .booking-field-label {
+  color: rgb(51 65 85);
+}
+
+html[data-theme='light'] .booking-input {
+  background: rgb(255 255 255 / 0.86);
+  border-color: rgb(203 213 225 / 0.95);
+  color: rgb(15 23 42);
+  box-shadow: inset 0 1px 0 rgb(255 255 255 / 0.8);
+}
+
+html[data-theme='light'] .booking-input::placeholder {
+  color: rgb(148 163 184);
+}
+
+html[data-theme='light'] .booking-input:focus {
+  border-color: rgb(96 165 250 / 0.85);
+  box-shadow: 0 0 0 3px rgb(59 130 246 / 0.16);
+}
+
+html[data-theme='light'] .booking-file-input::file-selector-button {
+  background: rgb(241 245 249);
+  color: rgb(30 41 59);
+  border: 1px solid rgb(203 213 225);
+}
+
+html[data-theme='light'] .booking-file-input:hover::file-selector-button {
+  background: rgb(226 232 240);
+}
+
+html[data-theme='light'] .booking-action-secondary,
+html[data-theme='light'] .booking-copy-button {
+  background: rgb(255 255 255 / 0.82);
+  border-color: rgb(203 213 225 / 0.95);
+  color: rgb(30 41 59);
+}
+
+html[data-theme='light'] .booking-action-secondary:hover,
+html[data-theme='light'] .booking-copy-button:hover {
+  background: rgb(248 250 252);
+  border-color: rgb(148 163 184);
+}
+
+html[data-theme='light'] .booking-action-primary {
+  box-shadow: 0 14px 30px -16px rgb(59 130 246 / 0.55);
+}
+
+html[data-theme='light'] .booking-action-success {
+  box-shadow: 0 14px 30px -16px rgb(16 185 129 / 0.48);
+}
+
+html[data-theme='light'] .booking-success-card {
+  background: rgb(220 252 231 / 0.72);
+  border-color: rgb(16 185 129 / 0.4);
 }
 
 html[data-theme='light'] .booking-package-badge {

@@ -1,6 +1,6 @@
-import { useQuery, useMutation } from 'convex/react'
+import { useMutation, useQuery } from 'convex/react'
 import { useAuth } from '@clerk/clerk-react'
-import { useEffect, useRef, useState, useCallback } from 'react'
+import { useCallback, useEffect, useRef, useState } from 'react'
 import ReactDOM from 'react-dom'
 import { Bell, BellOff, Check, CheckCheck, Trash2, X } from 'lucide-react'
 import { toast } from 'sonner'
@@ -189,19 +189,20 @@ export function NotificationBell({
   }
 
   const count = unreadCount ?? 0
+  const isSidebarPanel = dropDirection === 'up'
 
   const panel = open
     ? ReactDOM.createPortal(
         <div
           ref={panelRef}
           style={panelStyle}
-          className="notification-bell-panel bg-white/80 dark:bg-slate-900 border border-slate-200/80 dark:border-slate-700/60 rounded-2xl shadow-sm dark:shadow-black/40 backdrop-blur-sm overflow-hidden"
+          className={`notification-bell-panel ${isSidebarPanel ? 'notification-bell-panel--sidebar' : ''} bg-white/80 dark:bg-slate-900 border border-slate-200/80 dark:border-slate-700/60 rounded-2xl shadow-sm dark:shadow-black/40 backdrop-blur-sm overflow-hidden`}
         >
           {/* Panel Header */}
           <div className="flex items-center justify-between px-4 py-3 border-b border-slate-200/80 dark:border-slate-800/60">
             <div className="flex items-center gap-2">
               <Bell size={16} className="text-slate-500 dark:text-slate-400" />
-              <span className="text-sm font-semibold text-slate-900 dark:text-slate-200">
+              <span className="notification-bell-title text-sm font-semibold text-slate-900 dark:text-slate-200">
                 Notifications
               </span>
               {count > 0 && (
@@ -263,18 +264,16 @@ export function NotificationBell({
             )}
 
             {notifications?.map((n) => {
-              const meta =
-                notificationMeta[n.type as NotificationType] ??
-                notificationMeta.booking_confirmed
-              const link = bookingLink(n.type as NotificationType, n.bookingId)
+              const meta = notificationMeta[n.type]
+              const link = bookingLink(n.type, n.bookingId)
 
               return (
                 <div
                   key={n._id}
                   className={`notification-bell-item group flex items-start gap-3 px-4 py-3.5 border-b border-slate-200/80 dark:border-slate-800/40 last:border-0 transition-colors ${
                     n.isRead
-                      ? 'hover:bg-slate-50 dark:hover:bg-slate-800/30'
-                      : 'bg-amber-50/60 dark:bg-slate-800/20 hover:bg-amber-50/80 dark:hover:bg-slate-800/40'
+                      ? 'notification-bell-item--read hover:bg-slate-50 dark:hover:bg-slate-800/30'
+                      : 'notification-bell-item--unread bg-amber-50/60 dark:bg-slate-800/20 hover:bg-amber-50/80 dark:hover:bg-slate-800/40'
                   }`}
                 >
                   {/* Unread dot */}
@@ -295,16 +294,16 @@ export function NotificationBell({
                       className="block"
                     >
                       <span
-                        className={`text-xs font-semibold uppercase tracking-wide ${meta.color}`}
+                        className={`notification-bell-label text-xs font-semibold uppercase tracking-wide ${meta.color}`}
                       >
                         {meta.label}
                       </span>
                       <p
-                        className={`text-sm mt-0.5 leading-snug ${n.isRead ? 'text-slate-600 dark:text-slate-400' : 'text-slate-900 dark:text-slate-200'}`}
+                        className={`notification-bell-message text-sm mt-0.5 leading-snug ${n.isRead ? 'text-slate-600 dark:text-slate-400' : 'text-slate-900 dark:text-slate-200'}`}
                       >
                         {n.message}
                       </p>
-                      <p className="text-xs text-slate-400 dark:text-slate-500 mt-1">
+                      <p className="notification-bell-time text-xs text-slate-400 dark:text-slate-500 mt-1">
                         {timeAgo(n.createdAt)}
                       </p>
                     </a>

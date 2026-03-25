@@ -27,6 +27,7 @@ import type * as lib_adminAnalyticsMetrics from "../lib/adminAnalyticsMetrics.js
 import type * as lib_adminAnalyticsQueryBuilders from "../lib/adminAnalyticsQueryBuilders.js";
 import type * as lib_adminAnalyticsScope from "../lib/adminAnalyticsScope.js";
 import type * as lib_adminAnalyticsWindow from "../lib/adminAnalyticsWindow.js";
+import type * as lib_arrays from "../lib/arrays.js";
 import type * as lib_auth from "../lib/auth.js";
 import type * as lib_dates from "../lib/dates.js";
 import type * as notifications from "../notifications.js";
@@ -62,6 +63,7 @@ declare const fullApi: ApiFromModules<{
   "lib/adminAnalyticsQueryBuilders": typeof lib_adminAnalyticsQueryBuilders;
   "lib/adminAnalyticsScope": typeof lib_adminAnalyticsScope;
   "lib/adminAnalyticsWindow": typeof lib_adminAnalyticsWindow;
+  "lib/arrays": typeof lib_arrays;
   "lib/auth": typeof lib_auth;
   "lib/dates": typeof lib_dates;
   notifications: typeof notifications;
