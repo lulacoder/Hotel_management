@@ -35,4 +35,41 @@ http.route({
   }),
 })
 
+http.route({
+  path: '/chapa/webhook',
+  method: 'POST',
+  handler: httpAction(async (ctx, request) => {
+    const body = await request.text()
+
+    const result = await ctx.runAction(internal.chapaActions.processWebhook, {
+      body,
+      chapaSignature: request.headers.get('chapa-signature') ?? undefined,
+      xChapaSignature: request.headers.get('x-chapa-signature') ?? undefined,
+    })
+
+    return new Response(result.body, { status: result.statusCode })
+  }),
+})
+
+http.route({
+  path: '/chapa/callback',
+  method: 'GET',
+  handler: httpAction(async (ctx, request) => {
+    const url = new URL(request.url)
+    const txRef = url.searchParams.get('tx_ref') ?? url.searchParams.get('trx_ref')
+
+    if (!txRef) {
+      return new Response('Missing tx_ref', { status: 400 })
+    }
+
+    const result = await ctx.runAction(internal.chapaActions.processCallback, {
+      refId: url.searchParams.get('ref_id') ?? undefined,
+      status: url.searchParams.get('status') ?? undefined,
+      txRef,
+    })
+
+    return new Response(result.body, { status: result.statusCode })
+  }),
+})
+
 export default http

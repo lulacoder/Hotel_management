@@ -56,6 +56,15 @@ const itemVariants = {
   },
 }
 
+const etbCurrencyFormatter = new Intl.NumberFormat('en-ET', {
+  currency: 'ETB',
+  style: 'currency',
+})
+
+function formatEtbAmount(amountMinor: number) {
+  return etbCurrencyFormatter.format(amountMinor / 100)
+}
+
 function BookingsPage() {
   const { user } = useUser()
   const { t } = useI18n()
@@ -130,6 +139,10 @@ function BookingsPage() {
   const acceptCashPayment = useMutation(api.bookings.acceptCashPayment)
   const selectedBookingDetail = useQuery(
     api.bookings.getEnriched,
+    user?.id && selectedBookingId ? { bookingId: selectedBookingId } : 'skip',
+  )
+  const selectedChapaPayment = useQuery(
+    api.chapaQueries.getPaymentForBooking,
     user?.id && selectedBookingId ? { bookingId: selectedBookingId } : 'skip',
   )
   const outsourceBookingDetail = useQuery(
@@ -750,6 +763,72 @@ function BookingsPage() {
                     )}
                   </div>
                 </div>
+
+                {selectedChapaPayment && (
+                  <div
+                    className={`border rounded-xl p-4 text-sm ${isDark ? 'bg-slate-800/40 border-slate-700' : 'bg-slate-50 border-slate-200'}`}
+                  >
+                    <p
+                      className={`mb-2 font-medium ${isDark ? 'text-slate-200' : 'text-slate-800'}`}
+                    >
+                      {t('admin.bookings.chapaPayment')}
+                    </p>
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+                      <div>
+                        <p
+                          className={`mb-1 ${isDark ? 'text-slate-500' : 'text-slate-400'}`}
+                        >
+                          {t('admin.bookings.providerStatus')}
+                        </p>
+                        <p
+                          className={isDark ? 'text-slate-100' : 'text-slate-800'}
+                        >
+                          {selectedChapaPayment.status.replaceAll('_', ' ')}
+                        </p>
+                      </div>
+                      <div>
+                        <p
+                          className={`mb-1 ${isDark ? 'text-slate-500' : 'text-slate-400'}`}
+                        >
+                          {t('admin.bookings.checkoutReference')}
+                        </p>
+                        <p
+                          className={`break-all ${isDark ? 'text-slate-100' : 'text-slate-800'}`}
+                        >
+                          {selectedChapaPayment.chapaReference ||
+                            selectedChapaPayment.txRef}
+                        </p>
+                      </div>
+                      <div>
+                        <p
+                          className={`mb-1 ${isDark ? 'text-slate-500' : 'text-slate-400'}`}
+                        >
+                          {t('admin.bookings.chargedAmount')}
+                        </p>
+                        <p
+                          className={isDark ? 'text-slate-100' : 'text-slate-800'}
+                        >
+                          {formatEtbAmount(selectedChapaPayment.chargedAmountMinor)}
+                        </p>
+                      </div>
+                      <div>
+                        <p
+                          className={`mb-1 ${isDark ? 'text-slate-500' : 'text-slate-400'}`}
+                        >
+                          {t('admin.bookings.paymentProvider')}
+                        </p>
+                        <p
+                          className={isDark ? 'text-slate-100' : 'text-slate-800'}
+                        >
+                          Chapa
+                          {selectedChapaPayment.paymentMethod
+                            ? ` - ${selectedChapaPayment.paymentMethod}`
+                            : ''}
+                        </p>
+                      </div>
+                    </div>
+                  </div>
+                )}
 
                 <div className="flex flex-wrap justify-end gap-2 pt-2">
                   {profile?.role !== 'room_admin' &&

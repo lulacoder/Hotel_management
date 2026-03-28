@@ -280,8 +280,23 @@ export const messages = {
     'bookingModal.heldSuccess': 'Room held successfully',
     'bookingModal.heldDescription':
       'Confirm your booking before the hold expires.',
+    'bookingModal.selectPaymentMethod': 'Select payment method',
+    'bookingModal.payWithChapa': 'Pay online with Chapa',
+    'bookingModal.chapaDescription':
+      'Complete payment securely using Chapa hosted checkout.',
+    'bookingModal.payWithBank': 'Pay by bank transfer',
+    'bookingModal.bankDescription':
+      'Transfer manually and submit your payment proof for hotel review.',
     'bookingModal.cancelHold': 'Cancel Hold',
     'bookingModal.confirming': 'Confirming...',
+    'bookingModal.chapaRedirectNotice':
+      'You will be redirected to Chapa to complete your payment securely.',
+    'bookingModal.chapaProcessingNotice':
+      'After payment, we will verify the transaction on the server before confirming your booking.',
+    'bookingModal.proceedToChapa': 'Proceed to Chapa',
+    'bookingModal.redirectingToChapa': 'Redirecting...',
+    'bookingModal.chapaError':
+      'Unable to start Chapa checkout. Please try again.',
     'bookingModal.transferTo': 'Transfer the total amount to:',
     'bookingModal.selectBank': 'Select bank',
     'bookingModal.bankAccountNumber': 'Bank Account Number',
@@ -299,6 +314,24 @@ export const messages = {
       'Your payment proof has been submitted. Your booking is awaiting verification by the hotel.',
     'bookingModal.bookingId': 'Booking ID',
     'bookingModal.viewMyBookings': 'View My Bookings',
+    'bookingModal.paymentProcessingTitle': 'Payment processing',
+    'bookingModal.paymentProcessingMessage':
+      'We are waiting for Chapa confirmation. This page updates automatically.',
+    'bookingModal.paymentSuccessTitle': 'Payment confirmed',
+    'bookingModal.paymentSuccessMessage':
+      'Your Chapa payment was verified and your booking is now confirmed.',
+    'bookingModal.paymentFailedTitle': 'Payment not completed',
+    'bookingModal.paymentFailedMessage':
+      'Your Chapa payment was not completed. You can try again from the booking flow.',
+    'bookingModal.paymentRefundRequiredTitle': 'Payment requires refund review',
+    'bookingModal.paymentRefundRequiredMessage':
+      'The payment succeeded after the booking could no longer be confirmed. Please review this payment with support or hotel staff.',
+    'bookingModal.paymentRefundedTitle': 'Payment refunded',
+    'bookingModal.paymentRefundedMessage':
+      'This Chapa payment was refunded.',
+    'bookingModal.paymentReversedTitle': 'Payment reversed',
+    'bookingModal.paymentReversedMessage':
+      'This Chapa payment was reversed and needs staff review.',
     'admin.bookings.description': 'View and manage all customer reservations.',
     'admin.bookings.selectHotel': 'Select a hotel...',
     'admin.bookings.allStatuses': 'All Statuses',
@@ -334,6 +367,12 @@ export const messages = {
     'admin.bookings.actions': 'Actions',
     'admin.bookings.acceptCashPayment': 'Accept Cash Payment',
     'admin.bookings.paymentVerification': 'Payment Verification',
+    'admin.bookings.chapaPayment': 'Chapa Payment',
+    'admin.bookings.paymentProvider': 'Payment Provider',
+    'admin.bookings.checkoutReference': 'Checkout Reference',
+    'admin.bookings.chargedAmount': 'Charged Amount',
+    'admin.bookings.fxRate': 'FX Rate',
+    'admin.bookings.providerStatus': 'Provider Status',
     'admin.bookings.transactionId': 'Transaction ID',
     'admin.bookings.nationalId': 'National ID',
     'admin.bookings.nationalIdUnavailable':
@@ -906,6 +945,21 @@ export const messages = {
     'bookingModal.transactionIdPlaceholder': 'TXN-20260225-XXXXXXX',
     'bookingModal.nationalIdRequired': 'የመታወቂያ ፎቶ ያስፈልጋል።',
     'bookingModal.transactionIdRequired': 'የግብይት መለያ ያስፈልጋል።',
+    'bookingModal.selectPaymentMethod': 'የክፍያ ዘዴ ይምረጡ',
+    'bookingModal.payWithChapa': 'በቻፓ መስመር ላይ ይክፈሉ',
+    'bookingModal.chapaDescription':
+      'በቻፓ የተስተናገደ የክፍያ ገጽ ላይ በደህና ክፍያዎን ያጠናቅቁ።',
+    'bookingModal.payWithBank': 'በባንክ ዝውውር ይክፈሉ',
+    'bookingModal.bankDescription':
+      'በእጅ ያስተላልፉ እና ሆቴሉ እንዲያረጋግጥ የክፍያ ማስረጃዎን ያስገቡ።',
+    'bookingModal.chapaRedirectNotice':
+      'ክፍያዎን በደህና ለማጠናቀቅ ወደ ቻፓ ይመራሉ።',
+    'bookingModal.chapaProcessingNotice':
+      'ክፍያው ከተጠናቀቀ በኋላ ማስያዣዎን ከማረጋገጥ በፊት ግብይቱን በአገልጋይ ላይ እናረጋግጣለን።',
+    'bookingModal.proceedToChapa': 'ወደ ቻፓ ቀጥል',
+    'bookingModal.redirectingToChapa': 'በማዛወር ላይ...',
+    'bookingModal.chapaError':
+      'የቻፓ ክፍያ ሂደትን ማስጀመር አልተቻለም። እባክዎ እንደገና ይሞክሩ።',
     'bookingModal.submittingPaymentProof': 'የክፍያ ማስረጃ በመላክ ላይ...',
     'bookingModal.submitPaymentProof': 'የክፍያ ማስረጃ አስገባ',
     'bookingModal.paymentProofSubmitted': 'የክፍያ ማስረጃ ተልኳል',
@@ -913,7 +967,31 @@ export const messages = {
       'የክፍያ ማስረጃዎ ተልኳል። ማስያዣዎ በሆቴሉ ማረጋገጫ በመጠበቅ ላይ ነው።',
     'bookingModal.bookingId': 'የማስያዣ መለያ',
     'bookingModal.viewMyBookings': 'ማስያዣዎቼን ይመልከቱ',
+    'bookingModal.paymentProcessingTitle': 'ክፍያ በሂደት ላይ ነው',
+    'bookingModal.paymentProcessingMessage':
+      'ከቻፓ ማረጋገጫ እየጠበቅን ነው። ይህ ገጽ በራሱ ይዘምናል።',
+    'bookingModal.paymentSuccessTitle': 'ክፍያ ተረጋግጧል',
+    'bookingModal.paymentSuccessMessage':
+      'የቻፓ ክፍያዎ ተረጋግጧል እና ማስያዣዎ አሁን ተረጋግጧል።',
+    'bookingModal.paymentFailedTitle': 'ክፍያው አልተጠናቀቀም',
+    'bookingModal.paymentFailedMessage':
+      'የቻፓ ክፍያዎ አልተጠናቀቀም። ከማስያዣ ሂደቱ ውስጥ እንደገና መሞከር ይችላሉ።',
+    'bookingModal.paymentRefundRequiredTitle': 'ክፍያው የተመላሽ ግምገማ ይፈልጋል',
+    'bookingModal.paymentRefundRequiredMessage':
+      'ክፍያው ማስያዣው መረጋገጥ ካልቻለ በኋላ ተሳክቷል። እባክዎ ይህን ክፍያ ከድጋፍ ቡድን ወይም ከሆቴል ሰራተኞች ጋር ይገምግሙ።',
+    'bookingModal.paymentRefundedTitle': 'ክፍያው ተመልሷል',
+    'bookingModal.paymentRefundedMessage':
+      'ይህ የቻፓ ክፍያ ተመልሷል።',
+    'bookingModal.paymentReversedTitle': 'ክፍያው ተመልሷል',
+    'bookingModal.paymentReversedMessage':
+      'ይህ የቻፓ ክፍያ ተመልሷል እና የሰራተኛ ግምገማ ይፈልጋል።',
     'admin.bookings.paymentVerification': 'የክፍያ ማረጋገጫ',
+    'admin.bookings.chapaPayment': 'የቻፓ ክፍያ',
+    'admin.bookings.paymentProvider': 'የክፍያ አቅራቢ',
+    'admin.bookings.checkoutReference': 'የመክፈያ ማጣቀሻ',
+    'admin.bookings.chargedAmount': 'የተከፈለ መጠን',
+    'admin.bookings.fxRate': 'የምንዛሬ መጠን',
+    'admin.bookings.providerStatus': 'የአቅራቢ ሁኔታ',
     'admin.bookings.transactionId': 'የግብይት መለያ',
     'admin.bookings.nationalId': 'መታወቂያ',
     'admin.bookings.nationalIdUnavailable': 'የመታወቂያ ምስል አይገኝም ወይም ተወግዷል።',

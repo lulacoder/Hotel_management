@@ -21,6 +21,7 @@ export const getRouter = () => {
   return router
 }
 
+// This is required to make the router type available globally in the app.
 declare module '@tanstack/react-router' {
   interface Register {
     router: Awaited<ReturnType<typeof getRouter>>

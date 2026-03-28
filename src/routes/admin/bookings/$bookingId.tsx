@@ -46,6 +46,15 @@ const itemVariants = {
   },
 }
 
+const etbCurrencyFormatter = new Intl.NumberFormat('en-ET', {
+  currency: 'ETB',
+  style: 'currency',
+})
+
+function formatEtbAmount(amountMinor: number) {
+  return etbCurrencyFormatter.format(amountMinor / 100)
+}
+
 function BookingDetailPage() {
   // Fetch booking graph + role context used for permissions and actions.
   const { bookingId } = Route.useParams()
@@ -65,6 +74,10 @@ function BookingDetailPage() {
 
   const bookingDetail = useQuery(
     api.bookings.getEnriched,
+    user?.id ? { bookingId: typedBookingId } : 'skip',
+  )
+  const chapaPayment = useQuery(
+    api.chapaQueries.getPaymentForBooking,
     user?.id ? { bookingId: typedBookingId } : 'skip',
   )
   const outsourcedToHotel = useQuery(
@@ -439,6 +452,93 @@ function BookingDetailPage() {
           )}
         </div>
       </motion.div>
+
+      {chapaPayment && (
+        <motion.div
+          variants={itemVariants}
+          className={`border rounded-2xl p-6 mb-6 backdrop-blur-sm ${isDark ? 'bg-slate-900/50 border-slate-800/50' : 'bg-white/80 border-slate-200/80 shadow-sm'}`}
+        >
+          <h2
+            className={`text-lg font-semibold mb-4 ${isDark ? 'text-slate-200' : 'text-slate-800'}`}
+          >
+            {t('admin.bookings.chapaPayment')}
+          </h2>
+
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4 text-sm">
+            <div
+              className={`border rounded-xl p-4 ${isDark ? 'bg-slate-800/40 border-slate-700' : 'bg-slate-50 border-slate-200'}`}
+            >
+              <p
+                className={`mb-1 ${isDark ? 'text-slate-500' : 'text-slate-400'}`}
+              >
+                {t('admin.bookings.paymentProvider')}
+              </p>
+              <p
+                className={`font-medium ${isDark ? 'text-slate-100' : 'text-slate-800'}`}
+              >
+                Chapa
+              </p>
+              <p className={isDark ? 'text-slate-400' : 'text-slate-500'}>
+                {chapaPayment.paymentMethod || t('admin.bookings.na')}
+              </p>
+            </div>
+
+            <div
+              className={`border rounded-xl p-4 ${isDark ? 'bg-slate-800/40 border-slate-700' : 'bg-slate-50 border-slate-200'}`}
+            >
+              <p
+                className={`mb-1 ${isDark ? 'text-slate-500' : 'text-slate-400'}`}
+              >
+                {t('admin.bookings.providerStatus')}
+              </p>
+              <p
+                className={`font-medium capitalize ${isDark ? 'text-slate-100' : 'text-slate-800'}`}
+              >
+                {chapaPayment.status.replaceAll('_', ' ')}
+              </p>
+              <p className={isDark ? 'text-slate-400' : 'text-slate-500'}>
+                {chapaPayment.providerMode || t('admin.bookings.na')}
+              </p>
+            </div>
+
+            <div
+              className={`border rounded-xl p-4 ${isDark ? 'bg-slate-800/40 border-slate-700' : 'bg-slate-50 border-slate-200'}`}
+            >
+              <p
+                className={`mb-1 ${isDark ? 'text-slate-500' : 'text-slate-400'}`}
+              >
+                {t('admin.bookings.checkoutReference')}
+              </p>
+              <p
+                className={`font-medium break-all ${isDark ? 'text-slate-100' : 'text-slate-800'}`}
+              >
+                {chapaPayment.chapaReference || chapaPayment.txRef}
+              </p>
+              <p className={isDark ? 'text-slate-400' : 'text-slate-500'}>
+                tx_ref: {chapaPayment.txRef}
+              </p>
+            </div>
+
+            <div
+              className={`border rounded-xl p-4 ${isDark ? 'bg-slate-800/40 border-slate-700' : 'bg-slate-50 border-slate-200'}`}
+            >
+              <p
+                className={`mb-1 ${isDark ? 'text-slate-500' : 'text-slate-400'}`}
+              >
+                {t('admin.bookings.chargedAmount')}
+              </p>
+              <p
+                className={`font-medium ${isDark ? 'text-slate-100' : 'text-slate-800'}`}
+              >
+                {formatEtbAmount(chapaPayment.chargedAmountMinor)}
+              </p>
+              <p className={isDark ? 'text-slate-400' : 'text-slate-500'}>
+                {t('admin.bookings.fxRate')}: {chapaPayment.fxRateEtbPerUsd} ETB/USD
+              </p>
+            </div>
+          </div>
+        </motion.div>
+      )}
 
       {canVerifyPayment &&
         bookingDetail.booking.status === 'pending_payment' && (

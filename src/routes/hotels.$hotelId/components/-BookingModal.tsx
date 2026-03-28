@@ -1,8 +1,15 @@
 // Booking confirmation modal for selecting guest details and creating reservations.
 import { Link } from '@tanstack/react-router'
 import { useUser } from '@clerk/clerk-react'
-import { useMutation, useQuery } from 'convex/react'
-import { Building2, Check, CheckCircle, Copy } from 'lucide-react'
+import { useAction, useMutation, useQuery } from 'convex/react'
+import {
+  Building2,
+  Check,
+  CheckCircle,
+  Copy,
+  CreditCard,
+  Landmark,
+} from 'lucide-react'
 import { useEffect, useState } from 'react'
 
 import { api } from '../../../../convex/_generated/api'
@@ -57,6 +64,9 @@ export function BookingModal({
   const bankAccounts = useQuery(api.hotelBankAccounts.listByHotel, {
     hotelId,
   })
+  const initializeChapaCheckout = useAction(
+    api.chapaActions.initializeHostedCheckout,
+  )
   const holdRoom = useMutation(api.bookings.holdRoom)
   const submitPaymentProof = useMutation(api.bookings.submitPaymentProof)
   const generateUploadUrl = useMutation(api.files.generateUploadUrl)
@@ -76,11 +86,15 @@ export function BookingModal({
   const [bookingId, setBookingId] = useState<Id<'bookings'> | null>(
     existingBooking?._id ?? null,
   )
+  const [paymentMethod, setPaymentMethod] = useState<'chapa' | 'bank' | null>(
+    existingBooking?.status === 'pending_payment' ? 'bank' : null,
+  )
   const [nationalIdFile, setNationalIdFile] = useState<File | null>(null)
   const [transactionId, setTransactionId] = useState('')
   const [copied, setCopied] = useState(false)
   const [submitted, setSubmitted] = useState(false)
   const [loading, setLoading] = useState(false)
+  const [chapaLoading, setChapaLoading] = useState(false)
   const [error, setError] = useState('')
   const [selectedBankAccountId, setSelectedBankAccountId] = useState<
     Id<'hotelBankAccounts'> | ''
@@ -101,6 +115,7 @@ export function BookingModal({
 
     setSelectedPackageType(existingBooking.packageType ?? 'room_only')
     setBookingId(existingBooking._id)
+    setPaymentMethod(existingBooking.status === 'pending_payment' ? 'bank' : null)
     setStep('confirm')
   }, [existingBooking])
 
@@ -140,6 +155,7 @@ export function BookingModal({
         specialRequests: guestDetails.specialRequests || undefined,
       })
       setBookingId(id)
+      setPaymentMethod(null)
       setStep('confirm')
     } catch (err: any) {
       setError(err.message || t('bookingModal.failedHold'))
@@ -193,6 +209,28 @@ export function BookingModal({
       }
     } finally {
       setLoading(false)
+    }
+  }
+
+  const handleChapaCheckout = async () => {
+    if (!bookingId) return
+
+    setChapaLoading(true)
+    setError('')
+
+    try {
+      const result = await initializeChapaCheckout({ bookingId })
+
+      if (!result.success || !result.checkoutUrl) {
+        setError(result.error || t('bookingModal.chapaError'))
+        return
+      }
+
+      window.location.assign(result.checkoutUrl)
+    } catch (err: any) {
+      setError(err.message || t('bookingModal.chapaError'))
+    } finally {
+      setChapaLoading(false)
     }
   }
 
@@ -541,118 +579,204 @@ export function BookingModal({
                 </div>
               </div>
 
-              <div>
-                <p className="text-sm text-slate-400 mb-2">
-                  {t('bookingModal.transferTo')}
-                </p>
+              {!paymentMethod && (
                 <div className="space-y-3">
-                  <div>
-                    <label className="booking-field-label block text-xs text-slate-500 mb-2">
-                      {t('bookingModal.selectBank')}
-                    </label>
-                    <select
-                      value={selectedBankAccountId}
-                      onChange={(e) =>
-                        setSelectedBankAccountId(
-                          e.target.value as Id<'hotelBankAccounts'>,
-                        )
-                      }
-                      disabled={!bankAccounts || bankAccounts.length === 0}
-                      className="booking-input booking-select w-full px-3 py-2.5 bg-slate-800/60 border border-slate-700 rounded-xl text-slate-200 focus:outline-none focus:border-blue-500/50 transition-all"
-                    >
-                      {bankAccounts && bankAccounts.length > 0 ? (
-                        bankAccounts.map((account) => (
-                          <option key={account._id} value={account._id}>
-                            {account.bankName} — {account.accountNumber}
-                          </option>
-                        ))
-                      ) : (
-                        <option value="">
-                          {t('bookingModal.paymentNotConfigured')}
-                        </option>
-                      )}
-                    </select>
+                  <p className="text-sm font-medium text-slate-300">
+                    {t('bookingModal.selectPaymentMethod')}
+                  </p>
+
+                  <button
+                    type="button"
+                    onClick={() => setPaymentMethod('chapa')}
+                    className="w-full rounded-xl border border-slate-700 bg-slate-800/40 p-4 text-left transition-colors hover:border-blue-500/40 hover:bg-blue-500/10"
+                  >
+                    <div className="mb-1 flex items-center gap-3 text-slate-100">
+                      <CreditCard className="h-5 w-5 text-blue-400" />
+                      <span className="font-semibold">
+                        {t('bookingModal.payWithChapa')}
+                      </span>
+                    </div>
+                    <p className="text-sm text-slate-400">
+                      {t('bookingModal.chapaDescription')}
+                    </p>
+                  </button>
+
+                  <button
+                    type="button"
+                    onClick={() => setPaymentMethod('bank')}
+                    className="w-full rounded-xl border border-slate-700 bg-slate-800/40 p-4 text-left transition-colors hover:border-emerald-500/40 hover:bg-emerald-500/10"
+                  >
+                    <div className="mb-1 flex items-center gap-3 text-slate-100">
+                      <Landmark className="h-5 w-5 text-emerald-400" />
+                      <span className="font-semibold">
+                        {t('bookingModal.payWithBank')}
+                      </span>
+                    </div>
+                    <p className="text-sm text-slate-400">
+                      {t('bookingModal.bankDescription')}
+                    </p>
+                  </button>
+
+                  <button
+                    onClick={onClose}
+                    className="booking-action-secondary w-full px-4 py-3 bg-slate-800 text-slate-300 font-medium rounded-xl hover:bg-slate-700 transition-colors border border-slate-700"
+                  >
+                    {t('bookingModal.cancelHold')}
+                  </button>
+                </div>
+              )}
+
+              {paymentMethod === 'chapa' && (
+                <div className="space-y-4">
+                  <div className="rounded-xl border border-blue-500/20 bg-blue-500/10 p-4">
+                    <p className="text-sm font-medium text-blue-300">
+                      {t('bookingModal.chapaRedirectNotice')}
+                    </p>
+                    <p className="mt-2 text-xs text-blue-200/80">
+                      {t('bookingModal.chapaProcessingNotice')}
+                    </p>
                   </div>
 
-                  <div className="booking-bank-card flex items-center justify-between gap-2 bg-slate-800/40 border border-slate-700 rounded-xl p-3">
-                    <div>
-                      <p className="text-xs text-slate-500 mb-1">
-                        {t('bookingModal.bankAccountNumber')}
-                      </p>
-                      <p className="text-slate-100 font-semibold break-all">
-                        {selectedBankAccount
-                          ? `${selectedBankAccount.bankName} — ${selectedBankAccount.accountNumber}`
-                          : t('bookingModal.paymentNotConfigured')}
-                      </p>
-                    </div>
-                    {selectedBankAccount && (
-                      <button
-                        type="button"
-                        onClick={handleCopyBankAccount}
-                        className="booking-copy-button inline-flex items-center gap-2 px-3 py-2 bg-slate-800 text-slate-300 rounded-lg hover:bg-slate-700 transition-colors border border-slate-700 text-sm"
-                      >
-                        {copied ? (
-                          <Check className="w-4 h-4" />
-                        ) : (
-                          <Copy className="w-4 h-4" />
-                        )}
-                        {copied ? t('common.copied') : t('common.copy')}
-                      </button>
-                    )}
+                  <div className="flex gap-3">
+                    <button
+                      type="button"
+                      onClick={() => setPaymentMethod(null)}
+                      className="booking-action-secondary flex-1 px-4 py-3 bg-slate-800 text-slate-300 font-medium rounded-xl hover:bg-slate-700 transition-colors border border-slate-700"
+                    >
+                      {t('signIn.back')}
+                    </button>
+                    <button
+                      type="button"
+                      onClick={handleChapaCheckout}
+                      disabled={chapaLoading}
+                      className="booking-action-primary flex-1 px-4 py-3 bg-gradient-to-r from-blue-500 to-blue-600 text-white font-medium rounded-xl hover:from-blue-600 hover:to-blue-700 transition-all disabled:opacity-50"
+                    >
+                      {chapaLoading
+                        ? t('bookingModal.redirectingToChapa')
+                        : t('bookingModal.proceedToChapa')}
+                    </button>
                   </div>
                 </div>
-              </div>
+              )}
 
-              <div>
-                <label className="booking-field-label block text-sm font-medium text-slate-300 mb-2">
-                  {t('bookingModal.uploadNationalId')}
-                </label>
-                <input
-                  type="file"
-                  accept="image/*"
-                  onChange={(e) => {
-                    const file = e.target.files?.[0] ?? null
-                    setNationalIdFile(file)
-                  }}
-                  className="booking-input booking-file-input w-full px-4 py-3 bg-slate-800/50 border border-slate-700 rounded-xl text-slate-200 focus:outline-none focus:border-blue-500/50 transition-all file:mr-3 file:px-3 file:py-1.5 file:rounded-md file:border-0 file:bg-slate-700 file:text-slate-100 hover:file:bg-slate-600"
-                />
-              </div>
+              {paymentMethod === 'bank' && (
+                <div className="space-y-4">
+                  <div>
+                    <p className="text-sm text-slate-400 mb-2">
+                      {t('bookingModal.transferTo')}
+                    </p>
+                    <div className="space-y-3">
+                      <div>
+                        <label className="booking-field-label block text-xs text-slate-500 mb-2">
+                          {t('bookingModal.selectBank')}
+                        </label>
+                        <select
+                          value={selectedBankAccountId}
+                          onChange={(e) =>
+                            setSelectedBankAccountId(
+                              e.target.value as Id<'hotelBankAccounts'>,
+                            )
+                          }
+                          disabled={!bankAccounts || bankAccounts.length === 0}
+                          className="booking-input booking-select w-full px-3 py-2.5 bg-slate-800/60 border border-slate-700 rounded-xl text-slate-200 focus:outline-none focus:border-blue-500/50 transition-all"
+                        >
+                          {bankAccounts && bankAccounts.length > 0 ? (
+                            bankAccounts.map((account) => (
+                              <option key={account._id} value={account._id}>
+                                {account.bankName} — {account.accountNumber}
+                              </option>
+                            ))
+                          ) : (
+                            <option value="">
+                              {t('bookingModal.paymentNotConfigured')}
+                            </option>
+                          )}
+                        </select>
+                      </div>
 
-              <div>
-                <label className="booking-field-label block text-sm font-medium text-slate-300 mb-2">
-                  {t('bookingModal.transactionId')}
-                </label>
-                <input
-                  type="text"
-                  value={transactionId}
-                  onChange={(e) => setTransactionId(e.target.value)}
-                  placeholder={t('bookingModal.transactionIdPlaceholder')}
-                  className="booking-input w-full px-4 py-3 bg-slate-800/50 border border-slate-700 rounded-xl text-slate-200 placeholder-slate-500 focus:outline-none focus:border-blue-500/50 transition-all"
-                />
-              </div>
+                      <div className="booking-bank-card flex items-center justify-between gap-2 bg-slate-800/40 border border-slate-700 rounded-xl p-3">
+                        <div>
+                          <p className="text-xs text-slate-500 mb-1">
+                            {t('bookingModal.bankAccountNumber')}
+                          </p>
+                          <p className="text-slate-100 font-semibold break-all">
+                            {selectedBankAccount
+                              ? `${selectedBankAccount.bankName} — ${selectedBankAccount.accountNumber}`
+                              : t('bookingModal.paymentNotConfigured')}
+                          </p>
+                        </div>
+                        {selectedBankAccount && (
+                          <button
+                            type="button"
+                            onClick={handleCopyBankAccount}
+                            className="booking-copy-button inline-flex items-center gap-2 px-3 py-2 bg-slate-800 text-slate-300 rounded-lg hover:bg-slate-700 transition-colors border border-slate-700 text-sm"
+                          >
+                            {copied ? (
+                              <Check className="w-4 h-4" />
+                            ) : (
+                              <Copy className="w-4 h-4" />
+                            )}
+                            {copied ? t('common.copied') : t('common.copy')}
+                          </button>
+                        )}
+                      </div>
+                    </div>
+                  </div>
 
-              <div className="flex gap-3">
-                <button
-                  onClick={onClose}
-                  className="booking-action-secondary flex-1 px-4 py-3 bg-slate-800 text-slate-300 font-medium rounded-xl hover:bg-slate-700 transition-colors border border-slate-700"
-                >
-                  {t('bookingModal.cancelHold')}
-                </button>
-                <button
-                  onClick={handleSubmitPaymentProof}
-                  disabled={
-                    loading ||
-                    !nationalIdFile ||
-                    !transactionId.trim() ||
-                    !selectedBankAccount
-                  }
-                  className="booking-action-success flex-1 px-4 py-3 bg-gradient-to-r from-emerald-500 to-emerald-600 text-white font-medium rounded-xl hover:from-emerald-600 hover:to-emerald-700 transition-all disabled:opacity-50"
-                >
-                  {loading
-                    ? t('bookingModal.submittingPaymentProof')
-                    : t('bookingModal.submitPaymentProof')}
-                </button>
-              </div>
+                  <div>
+                    <label className="booking-field-label block text-sm font-medium text-slate-300 mb-2">
+                      {t('bookingModal.uploadNationalId')}
+                    </label>
+                    <input
+                      type="file"
+                      accept="image/*"
+                      onChange={(e) => {
+                        const file = e.target.files?.[0] ?? null
+                        setNationalIdFile(file)
+                      }}
+                      className="booking-input booking-file-input w-full px-4 py-3 bg-slate-800/50 border border-slate-700 rounded-xl text-slate-200 focus:outline-none focus:border-blue-500/50 transition-all file:mr-3 file:px-3 file:py-1.5 file:rounded-md file:border-0 file:bg-slate-700 file:text-slate-100 hover:file:bg-slate-600"
+                    />
+                  </div>
+
+                  <div>
+                    <label className="booking-field-label block text-sm font-medium text-slate-300 mb-2">
+                      {t('bookingModal.transactionId')}
+                    </label>
+                    <input
+                      type="text"
+                      value={transactionId}
+                      onChange={(e) => setTransactionId(e.target.value)}
+                      placeholder={t('bookingModal.transactionIdPlaceholder')}
+                      className="booking-input w-full px-4 py-3 bg-slate-800/50 border border-slate-700 rounded-xl text-slate-200 placeholder-slate-500 focus:outline-none focus:border-blue-500/50 transition-all"
+                    />
+                  </div>
+
+                  <div className="flex gap-3">
+                    <button
+                      type="button"
+                      onClick={() => setPaymentMethod(null)}
+                      className="booking-action-secondary flex-1 px-4 py-3 bg-slate-800 text-slate-300 font-medium rounded-xl hover:bg-slate-700 transition-colors border border-slate-700"
+                    >
+                      {t('signIn.back')}
+                    </button>
+                    <button
+                      type="button"
+                      onClick={handleSubmitPaymentProof}
+                      disabled={
+                        loading ||
+                        !nationalIdFile ||
+                        !transactionId.trim() ||
+                        !selectedBankAccount
+                      }
+                      className="booking-action-success flex-1 px-4 py-3 bg-gradient-to-r from-emerald-500 to-emerald-600 text-white font-medium rounded-xl hover:from-emerald-600 hover:to-emerald-700 transition-all disabled:opacity-50"
+                    >
+                      {loading
+                        ? t('bookingModal.submittingPaymentProof')
+                        : t('bookingModal.submitPaymentProof')}
+                    </button>
+                  </div>
+                </div>
+              )}
             </div>
           )}
         </div>
