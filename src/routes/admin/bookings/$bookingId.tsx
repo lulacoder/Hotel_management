@@ -46,11 +46,13 @@ const itemVariants = {
   },
 }
 
+const etbCurrencyFormatter = new Intl.NumberFormat('en-ET', {
+  currency: 'ETB',
+  style: 'currency',
+})
+
 function formatEtbAmount(amountMinor: number) {
-  return new Intl.NumberFormat('en-ET', {
-    currency: 'ETB',
-    style: 'currency',
-  }).format(amountMinor / 100)
+  return etbCurrencyFormatter.format(amountMinor / 100)
 }
 
 function BookingDetailPage() {
