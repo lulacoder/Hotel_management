@@ -1,5 +1,5 @@
 import { ConvexError, v } from 'convex/values'
-import { mutation, query } from './_generated/server'
+import { internalMutation, internalQuery, mutation, query } from './_generated/server'
 import { internal } from './_generated/api'
 import {
   getHotelAssignment,
@@ -1299,6 +1299,132 @@ export const outsourceBooking = mutation({
       metadata: {
         sourceHotelId: booking.hotelId,
       },
+    })
+
+    return null
+  },
+})
+
+export const getBookingById = internalQuery({
+  args: {
+    bookingId: v.id('bookings'),
+  },
+  returns: v.union(bookingValidator, v.null()),
+  handler: async (ctx, args) => {
+    return await ctx.db.get(args.bookingId)
+  },
+})
+
+export const confirmChapaPayment = internalMutation({
+  args: {
+    bookingId: v.id('bookings'),
+    chapaReference: v.string(),
+  },
+  returns: v.union(
+    v.literal('confirmed'),
+    v.literal('already_confirmed'),
+    v.literal('synchronized'),
+    v.literal('booking_missing'),
+    v.literal('invalid_state'),
+    v.literal('expired'),
+  ),
+  handler: async (ctx, args) => {
+    const booking = await ctx.db.get(args.bookingId)
+    if (!booking) {
+      return 'booking_missing'
+    }
+
+    if (booking.status === 'confirmed' && booking.paymentStatus === 'paid') {
+      return 'already_confirmed'
+    }
+
+    if (booking.status === 'confirmed') {
+      await ctx.db.patch(args.bookingId, {
+        paymentStatus: 'paid',
+        transactionId: args.chapaReference,
+        updatedAt: Date.now(),
+        updatedBy: booking.userId,
+      })
+
+      return 'synchronized'
+    }
+
+    if (booking.status !== 'held') {
+      return 'invalid_state'
+    }
+
+    if (isHoldExpired(booking.holdExpiresAt)) {
+      return 'expired'
+    }
+
+    const now = Date.now()
+
+    await ctx.db.patch(args.bookingId, {
+      status: 'confirmed',
+      paymentStatus: 'paid',
+      transactionId: args.chapaReference,
+      holdExpiresAt: undefined,
+      updatedAt: now,
+      updatedBy: booking.userId,
+    })
+
+    if (booking.userId) {
+      await createAuditLog(ctx, {
+        actorId: booking.userId,
+        action: 'booking_payment_verified',
+        targetType: 'booking',
+        targetId: args.bookingId,
+        previousValue: {
+          status: booking.status,
+          paymentStatus: booking.paymentStatus ?? 'pending',
+        },
+        newValue: {
+          status: 'confirmed',
+          paymentStatus: 'paid',
+          transactionId: args.chapaReference,
+        },
+        metadata: {
+          system: true,
+          provider: 'chapa',
+        },
+      })
+
+      await ctx.runMutation(internal.notifications.createNotification, {
+        userId: booking.userId,
+        type: 'booking_confirmed',
+        bookingId: args.bookingId,
+        hotelId: booking.hotelId,
+        message: `Your booking #${args.bookingId.slice(-6).toUpperCase()} has been confirmed! Payment received successfully via Chapa.`,
+      })
+    }
+
+    return 'confirmed'
+  },
+})
+
+export const applyChapaPaymentStatus = internalMutation({
+  args: {
+    bookingId: v.id('bookings'),
+    paymentStatus: v.union(
+      v.literal('paid'),
+      v.literal('failed'),
+      v.literal('refunded'),
+    ),
+  },
+  returns: v.null(),
+  handler: async (ctx, args) => {
+    const booking = await ctx.db.get(args.bookingId)
+    if (!booking) {
+      return null
+    }
+
+    if (booking.paymentStatus === args.paymentStatus) {
+      return null
+    }
+
+    await ctx.db.patch(args.bookingId, {
+      paymentStatus: args.paymentStatus,
+      updatedAt: Date.now(),
     })
 
     return null

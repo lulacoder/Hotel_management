@@ -149,6 +149,43 @@ export default defineSchema({
     .index('by_hotel', ['hotelId'])
     .index('by_hotel_and_is_deleted', ['hotelId', 'isDeleted']),
 
+  chapaPayments: defineTable({
+    bookingId: v.id('bookings'),
+    txRef: v.string(),
+    chapaReference: v.optional(v.string()),
+    bookingAmountCents: v.number(),
+    bookingCurrency: v.literal('USD'),
+    chargedAmountMinor: v.number(),
+    chargedCurrency: v.literal('ETB'),
+    fxRateEtbPerUsd: v.number(),
+    status: v.union(
+      v.literal('initialized'),
+      v.literal('paid'),
+      v.literal('failed'),
+      v.literal('cancelled'),
+      v.literal('refund_required'),
+      v.literal('refund_initiated'),
+      v.literal('refunded'),
+      v.literal('reversed'),
+    ),
+    checkoutUrl: v.string(),
+    providerMode: v.optional(v.union(v.literal('test'), v.literal('live'))),
+    paymentMethod: v.optional(v.string()),
+    lastEvent: v.optional(v.string()),
+    lastStatus: v.optional(v.string()),
+    lastError: v.optional(v.string()),
+    lastPayload: v.optional(v.any()),
+    callbackReceivedAt: v.optional(v.number()),
+    webhookReceivedAt: v.optional(v.number()),
+    verifiedAt: v.optional(v.number()),
+    refundedAt: v.optional(v.number()),
+    createdAt: v.number(),
+    updatedAt: v.number(),
+  })
+    .index('by_booking', ['bookingId'])
+    .index('by_tx_ref', ['txRef'])
+    .index('by_status', ['status']),
+
   // Bookings table
   bookings: defineTable({
     userId: v.optional(v.id('users')),

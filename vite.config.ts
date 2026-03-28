@@ -17,8 +17,8 @@ const config = defineConfig({
   plugins: [
     devtools({
       eventBusConfig: {
-        // Use a dedicated, high, non-privileged port for the devtools event bus to avoid conflicts with common services.
-        port: 42070,
+        // Prevent startup crashes when the devtools internal event-bus port is already occupied.
+        enabled: false,
       },
     }),
     nitro(),
