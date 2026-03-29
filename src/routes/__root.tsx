@@ -5,8 +5,7 @@ import {
   Scripts,
   createRootRouteWithContext,
 } from '@tanstack/react-router'
-import { TanStackRouterDevtoolsPanel } from '@tanstack/react-router-devtools'
-import { TanStackDevtools } from '@tanstack/react-devtools'
+import { Suspense, lazy } from 'react'
 import { Toaster } from 'sonner'
 
 import Header from '../components/Header'
@@ -19,6 +18,14 @@ import { ThemeProvider, themeBootstrapScript } from '../lib/theme'
 
 import appCss from '../styles.css?url'
 import type { AppRouterContext } from '../lib/routerContext'
+
+const RootDevtools = import.meta.env.DEV
+  ? lazy(() =>
+      import('../lib/rootDevtools').then((module) => ({
+        default: module.RootDevtools,
+      })),
+    )
+  : null
 
 export const Route = createRootRouteWithContext<AppRouterContext>()({
   // Define document-level metadata and assets once for the whole app.
@@ -40,6 +47,19 @@ export const Route = createRootRouteWithContext<AppRouterContext>()({
       {
         rel: 'stylesheet',
         href: appCss,
+      },
+      {
+        rel: 'preconnect',
+        href: 'https://fonts.googleapis.com',
+      },
+      {
+        rel: 'preconnect',
+        href: 'https://fonts.gstatic.com',
+        crossOrigin: 'anonymous',
+      },
+      {
+        rel: 'stylesheet',
+        href: 'https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&family=Outfit:wght@400;500;600;700;800&display=swap',
       },
       {
         rel: 'icon',
@@ -115,18 +135,11 @@ function RootDocument({ children }: { children: React.ReactNode }) {
               <ConvexProvider>
                 <Header />
                 {children}
-                {/* Devtools are mounted once at the root for route inspection. */}
-                <TanStackDevtools
-                  config={{
-                    position: 'bottom-right',
-                  }}
-                  plugins={[
-                    {
-                      name: 'Tanstack Router',
-                      render: <TanStackRouterDevtoolsPanel />,
-                    },
-                  ]}
-                />
+                {RootDevtools ? (
+                  <Suspense fallback={null}>
+                    <RootDevtools />
+                  </Suspense>
+                ) : null}
               </ConvexProvider>
             </ClerkProvider>
           </ThemeProvider>

@@ -102,6 +102,11 @@ export function HotelRoomsGrid({
                     <img
                       src={room.imageUrl}
                       alt={`${t('hotel.room')} ${room.roomNumber}`}
+                      loading="lazy"
+                      decoding="async"
+                      fetchPriority="low"
+                      width={640}
+                      height={360}
                       className="absolute inset-0 h-full w-full object-cover"
                     />
                   ) : (

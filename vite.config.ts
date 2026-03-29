@@ -14,6 +14,20 @@ const config = defineConfig({
       '@': fileURLToPath(new URL('./src', import.meta.url)),
     },
   },
+  build: {
+    rollupOptions: {
+      output: {
+        // Keep auth UI/runtime separated from the app entry chunk.
+        manualChunks(id) {
+          if (id.includes('node_modules/@clerk/')) {
+            return 'vendor-clerk'
+          }
+
+          return undefined
+        },
+      },
+    },
+  },
   plugins: [
     devtools({
       eventBusConfig: {

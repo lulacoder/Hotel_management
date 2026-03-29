@@ -409,7 +409,9 @@ export const holdRoom = mutation({
     // Check for overlapping bookings (atomic check)
     const existingBookings = await ctx.db
       .query('bookings')
-      .withIndex('by_room', (q) => q.eq('roomId', args.roomId))
+      .withIndex('by_room_and_dates', (q) =>
+        q.eq('roomId', args.roomId).lt('checkIn', args.checkOut),
+      )
       .collect()
 
     const requestedRange = { checkIn: args.checkIn, checkOut: args.checkOut }
@@ -564,7 +566,9 @@ export const walkInBooking = mutation({
 
     const existingBookings = await ctx.db
       .query('bookings')
-      .withIndex('by_room', (q) => q.eq('roomId', args.roomId))
+      .withIndex('by_room_and_dates', (q) =>
+        q.eq('roomId', args.roomId).lt('checkIn', args.checkOut),
+      )
       .collect()
 
     const requestedRange = { checkIn: args.checkIn, checkOut: args.checkOut }

@@ -2,6 +2,7 @@
 import { createFileRoute, Link, useNavigate } from '@tanstack/react-router'
 import { useUser } from '@clerk/clerk-react'
 import { useQuery } from 'convex/react'
+import { Suspense, lazy } from 'react'
 import { api } from '../../../convex/_generated/api'
 import {
   Building2,
@@ -26,13 +27,39 @@ import {
   normalizeAnalyticsWindow,
 } from '@/lib/adminAnalytics'
 import { AnalyticsMetricCard } from '@/components/admin-analytics/AnalyticsMetricCard'
-import { AnalyticsOccupancyCard } from '@/components/admin-analytics/AnalyticsOccupancyCard'
-import { AnalyticsStatusBreakdown } from '@/components/admin-analytics/AnalyticsStatusBreakdown'
 import { AnalyticsTimeWindowTabs } from '@/components/admin-analytics/AnalyticsTimeWindowTabs'
 import { AnalyticsTopHotelsTable } from '@/components/admin-analytics/AnalyticsTopHotelsTable'
-import { AnalyticsTrendChart } from '@/components/admin-analytics/AnalyticsTrendChart'
-import { CashierAnalyticsPanel } from '@/components/admin-analytics/CashierAnalyticsPanel'
 import { AnalyticsEmptyState } from '@/components/admin-analytics/AnalyticsEmptyState'
+
+const LazyAnalyticsTrendChart = lazy(() =>
+  import('@/components/admin-analytics/AnalyticsTrendChart').then((module) => ({
+    default: module.AnalyticsTrendChart,
+  })),
+)
+
+const LazyAnalyticsStatusBreakdown = lazy(() =>
+  import('@/components/admin-analytics/AnalyticsStatusBreakdown').then(
+    (module) => ({
+      default: module.AnalyticsStatusBreakdown,
+    }),
+  ),
+)
+
+const LazyAnalyticsOccupancyCard = lazy(() =>
+  import('@/components/admin-analytics/AnalyticsOccupancyCard').then(
+    (module) => ({
+      default: module.AnalyticsOccupancyCard,
+    }),
+  ),
+)
+
+const LazyCashierAnalyticsPanel = lazy(() =>
+  import('@/components/admin-analytics/CashierAnalyticsPanel').then(
+    (module) => ({
+      default: module.CashierAnalyticsPanel,
+    }),
+  ),
+)
 
 export const Route = createFileRoute('/admin/')({
   validateSearch: (search: Record<string, unknown>) => ({
@@ -59,6 +86,24 @@ const itemVariants = {
     y: 0,
     transition: { duration: 0.45, ease: 'easeOut' as const },
   },
+}
+
+function AnalyticsLoadingCard({
+  className,
+  isDark,
+}: {
+  className: string
+  isDark: boolean
+}) {
+  return (
+    <div
+      className={`animate-pulse rounded-2xl border ${className} ${
+        isDark
+          ? 'border-slate-800/60 bg-slate-900/55'
+          : 'border-slate-200/80 bg-white/80'
+      }`}
+    />
+  )
 }
 
 /* ------------------------------------------------------------------ */
@@ -345,56 +390,67 @@ function AdminDashboard() {
         />
       ) : isCashier ? (
         <motion.div variants={itemVariants} className="mb-8">
-          <CashierAnalyticsPanel
-            locale={locale}
-            metrics={
-              (summary?.primaryKpis ?? []).filter(
-                (metric) => metric.format === 'count',
-              ) as Array<{
-                key:
-                  | 'pendingPaymentBookings'
-                  | 'totalBookings'
-                  | 'arrivalsToday'
-                  | 'activeStays'
-                value: number
-                format: 'count'
-              }>
+          <Suspense
+            fallback={
+              <AnalyticsLoadingCard
+                className="h-[24rem]"
+                isDark={isDark}
+              />
             }
-            bookingTrend={bookingTrend?.points}
-            paymentStatuses={statusBreakdowns?.paymentStatuses}
-            bookingStatuses={statusBreakdowns?.bookingStatuses}
-            labels={metricLabels}
-            onMetricClick={(metricKey) => {
-              if (metricKey === 'pendingPaymentBookings') {
-                navigateToBookings({ paymentStatus: 'pending' })
-                return
+          >
+            <LazyCashierAnalyticsPanel
+              locale={locale}
+              metrics={
+                (summary?.primaryKpis ?? []).filter(
+                  (metric) => metric.format === 'count',
+                ) as Array<{
+                  key:
+                    | 'pendingPaymentBookings'
+                    | 'totalBookings'
+                    | 'arrivalsToday'
+                    | 'activeStays'
+                  value: number
+                  format: 'count'
+                }>
               }
+              bookingTrend={bookingTrend?.points}
+              paymentStatuses={statusBreakdowns?.paymentStatuses}
+              bookingStatuses={statusBreakdowns?.bookingStatuses}
+              labels={metricLabels}
+              onMetricClick={(metricKey) => {
+                if (metricKey === 'pendingPaymentBookings') {
+                  navigateToBookings({ paymentStatus: 'pending' })
+                  return
+                }
 
-              if (metricKey === 'arrivalsToday') {
-                navigateToBookings({ status: 'confirmed' })
-                return
-              }
+                if (metricKey === 'arrivalsToday') {
+                  navigateToBookings({ status: 'confirmed' })
+                  return
+                }
 
-              navigateToBookings({})
-            }}
-            onStatusClick={(statusKey, type) => {
-              if (type === 'payment') {
-                navigateToBookings({ paymentStatus: statusKey })
-                return
-              }
+                navigateToBookings({})
+              }}
+              onStatusClick={(statusKey, type) => {
+                if (type === 'payment') {
+                  navigateToBookings({ paymentStatus: statusKey })
+                  return
+                }
 
-              navigateToBookings({ status: statusKey })
-            }}
-            emptyTitle={t('admin.analytics.noData' as never)}
-            emptyDescription={t('admin.analytics.noDataDescription' as never)}
-            bookingTrendTitle={t('admin.analytics.bookingTrend' as never)}
-            paymentBreakdownTitle={t(
-              'admin.analytics.paymentBreakdown' as never,
-            )}
-            bookingBreakdownTitle={t(
-              'admin.analytics.bookingBreakdown' as never,
-            )}
-          />
+                navigateToBookings({ status: statusKey })
+              }}
+              emptyTitle={t('admin.analytics.noData' as never)}
+              emptyDescription={t(
+                'admin.analytics.noDataDescription' as never,
+              )}
+              bookingTrendTitle={t('admin.analytics.bookingTrend' as never)}
+              paymentBreakdownTitle={t(
+                'admin.analytics.paymentBreakdown' as never,
+              )}
+              bookingBreakdownTitle={t(
+                'admin.analytics.bookingBreakdown' as never,
+              )}
+            />
+          </Suspense>
         </motion.div>
       ) : (
         <div className="mb-10 space-y-8">
@@ -461,29 +517,37 @@ function AdminDashboard() {
             className="grid grid-cols-1 gap-6 xl:grid-cols-2"
           >
             <motion.div variants={itemVariants}>
-              <AnalyticsTrendChart
-                title={t('admin.analytics.bookingTrend' as never)}
-                points={bookingTrend?.points}
-                locale={locale}
-                format="count"
-                onPointClick={() => navigateToBookings({})}
-                emptyTitle={t('admin.analytics.noData' as never)}
-                emptyDescription={t(
-                  'admin.analytics.noDataDescription' as never,
-                )}
-              />
+              <Suspense
+                fallback={<AnalyticsLoadingCard className="h-80" isDark={isDark} />}
+              >
+                <LazyAnalyticsTrendChart
+                  title={t('admin.analytics.bookingTrend' as never)}
+                  points={bookingTrend?.points}
+                  locale={locale}
+                  format="count"
+                  onPointClick={() => navigateToBookings({})}
+                  emptyTitle={t('admin.analytics.noData' as never)}
+                  emptyDescription={t(
+                    'admin.analytics.noDataDescription' as never,
+                  )}
+                />
+              </Suspense>
             </motion.div>
             <motion.div variants={itemVariants}>
-              <AnalyticsTrendChart
-                title={t('admin.analytics.revenueTrend' as never)}
-                points={revenueTrend?.points}
-                locale={locale}
-                format="currency"
-                emptyTitle={t('admin.analytics.noData' as never)}
-                emptyDescription={t(
-                  'admin.analytics.noDataDescription' as never,
-                )}
-              />
+              <Suspense
+                fallback={<AnalyticsLoadingCard className="h-80" isDark={isDark} />}
+              >
+                <LazyAnalyticsTrendChart
+                  title={t('admin.analytics.revenueTrend' as never)}
+                  points={revenueTrend?.points}
+                  locale={locale}
+                  format="currency"
+                  emptyTitle={t('admin.analytics.noData' as never)}
+                  emptyDescription={t(
+                    'admin.analytics.noDataDescription' as never,
+                  )}
+                />
+              </Suspense>
             </motion.div>
           </motion.div>
 
@@ -498,42 +562,54 @@ function AdminDashboard() {
             className="grid grid-cols-1 gap-6 xl:grid-cols-3"
           >
             <motion.div variants={itemVariants}>
-              <AnalyticsStatusBreakdown
-                title={t('admin.analytics.bookingBreakdown' as never)}
-                items={statusBreakdowns?.bookingStatuses}
-                labels={metricLabels}
-                onItemClick={(item) => navigateToBookings({ status: item.key })}
-                emptyTitle={t('admin.analytics.noData' as never)}
-                emptyDescription={t(
-                  'admin.analytics.noDataDescription' as never,
-                )}
-              />
+              <Suspense
+                fallback={<AnalyticsLoadingCard className="h-80" isDark={isDark} />}
+              >
+                <LazyAnalyticsStatusBreakdown
+                  title={t('admin.analytics.bookingBreakdown' as never)}
+                  items={statusBreakdowns?.bookingStatuses}
+                  labels={metricLabels}
+                  onItemClick={(item) => navigateToBookings({ status: item.key })}
+                  emptyTitle={t('admin.analytics.noData' as never)}
+                  emptyDescription={t(
+                    'admin.analytics.noDataDescription' as never,
+                  )}
+                />
+              </Suspense>
             </motion.div>
             <motion.div variants={itemVariants}>
-              <AnalyticsStatusBreakdown
-                title={t('admin.analytics.paymentBreakdown' as never)}
-                items={statusBreakdowns?.paymentStatuses}
-                labels={metricLabels}
-                onItemClick={(item) =>
-                  navigateToBookings({ paymentStatus: item.key })
-                }
-                emptyTitle={t('admin.analytics.noData' as never)}
-                emptyDescription={t(
-                  'admin.analytics.noDataDescription' as never,
-                )}
-              />
+              <Suspense
+                fallback={<AnalyticsLoadingCard className="h-80" isDark={isDark} />}
+              >
+                <LazyAnalyticsStatusBreakdown
+                  title={t('admin.analytics.paymentBreakdown' as never)}
+                  items={statusBreakdowns?.paymentStatuses}
+                  labels={metricLabels}
+                  onItemClick={(item) =>
+                    navigateToBookings({ paymentStatus: item.key })
+                  }
+                  emptyTitle={t('admin.analytics.noData' as never)}
+                  emptyDescription={t(
+                    'admin.analytics.noDataDescription' as never,
+                  )}
+                />
+              </Suspense>
             </motion.div>
             <motion.div variants={itemVariants}>
-              <AnalyticsStatusBreakdown
-                title={t('admin.analytics.roomBreakdown' as never)}
-                items={statusBreakdowns?.roomStatuses}
-                labels={metricLabels}
-                onItemClick={(item) => navigateToRooms(item.key)}
-                emptyTitle={t('admin.analytics.noData' as never)}
-                emptyDescription={t(
-                  'admin.analytics.noDataDescription' as never,
-                )}
-              />
+              <Suspense
+                fallback={<AnalyticsLoadingCard className="h-80" isDark={isDark} />}
+              >
+                <LazyAnalyticsStatusBreakdown
+                  title={t('admin.analytics.roomBreakdown' as never)}
+                  items={statusBreakdowns?.roomStatuses}
+                  labels={metricLabels}
+                  onItemClick={(item) => navigateToRooms(item.key)}
+                  emptyTitle={t('admin.analytics.noData' as never)}
+                  emptyDescription={t(
+                    'admin.analytics.noDataDescription' as never,
+                  )}
+                />
+              </Suspense>
             </motion.div>
           </motion.div>
 
@@ -548,14 +624,18 @@ function AdminDashboard() {
             className="grid grid-cols-1 gap-6 xl:grid-cols-[1.1fr_1fr]"
           >
             <motion.div variants={itemVariants}>
-              <AnalyticsOccupancyCard
-                title={t('admin.analytics.occupancyTrend' as never)}
-                points={occupancyTrend?.points}
-                emptyTitle={t('admin.analytics.noData' as never)}
-                emptyDescription={t(
-                  'admin.analytics.noDataDescription' as never,
-                )}
-              />
+              <Suspense
+                fallback={<AnalyticsLoadingCard className="h-96" isDark={isDark} />}
+              >
+                <LazyAnalyticsOccupancyCard
+                  title={t('admin.analytics.occupancyTrend' as never)}
+                  points={occupancyTrend?.points}
+                  emptyTitle={t('admin.analytics.noData' as never)}
+                  emptyDescription={t(
+                    'admin.analytics.noDataDescription' as never,
+                  )}
+                />
+              </Suspense>
             </motion.div>
             <motion.div variants={itemVariants}>
               {profile?.role === 'room_admin' ? (

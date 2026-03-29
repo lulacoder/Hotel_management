@@ -14,8 +14,8 @@ export const getRouter = () => {
     // Restore scroll position between navigations where possible.
     scrollRestoration: true,
     defaultPreload: 'intent',
-    // Let Convex/query freshness drive route data instead of the router cache.
-    defaultPreloadStaleTime: 0,
+    // Keep preload results warm briefly to avoid repeated hover/focus refetches.
+    defaultPreloadStaleTime: 30_000,
   })
 
   return router

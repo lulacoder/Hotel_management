@@ -129,6 +129,11 @@ export function HotelGrid({
                     <img
                       src={hotel.imageUrl}
                       alt={t('hotel.previewAlt', { name: hotel.name })}
+                      loading="lazy"
+                      decoding="async"
+                      fetchPriority="low"
+                      width={640}
+                      height={360}
                       className="absolute inset-0 w-full h-full object-cover"
                     />
                   )}

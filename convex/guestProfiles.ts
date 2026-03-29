@@ -133,32 +133,49 @@ export const search = query({
 
     const phoneTerm = normalizePhone(rawTerm)
     const emailTerm = rawTerm.toLowerCase()
+    const matchedById = new Map<string, any>()
 
-    const profiles = await ctx.db.query('guestProfiles').collect()
-    const matched = profiles.filter((profile) => {
-      const byPhone = phoneTerm
-        ? (profile.phone ?? '').includes(phoneTerm)
-        : false
-      const byEmail = (profile.email ?? '').toLowerCase().includes(emailTerm)
-      return byPhone || byEmail
-    })
-
-    const result = []
-    for (const profile of matched.slice(0, 10)) {
-      const bookings = await ctx.db
-        .query('bookings')
-        .withIndex('by_guest_profile', (q: any) =>
-          q.eq('guestProfileId', profile._id),
+    if (phoneTerm) {
+      const byPhone = await ctx.db
+        .query('guestProfiles')
+        .withIndex('by_phone', (q: any) =>
+          q.gte('phone', phoneTerm).lt('phone', `${phoneTerm}\uffff`),
         )
-        .collect()
+        .take(10)
 
-      result.push({
-        profile,
-        bookingCount: bookings.length,
-      })
+      for (const profile of byPhone) {
+        matchedById.set(String(profile._id), profile)
+      }
     }
 
-    return result
+    const byEmail = await ctx.db
+      .query('guestProfiles')
+      .withIndex('by_email', (q: any) =>
+        q.gte('email', emailTerm).lt('email', `${emailTerm}\uffff`),
+      )
+      .take(10)
+
+    for (const profile of byEmail) {
+      matchedById.set(String(profile._id), profile)
+    }
+
+    const matchedProfiles = Array.from(matchedById.values()).slice(0, 10)
+
+    return await Promise.all(
+      matchedProfiles.map(async (profile) => {
+        const bookings = await ctx.db
+          .query('bookings')
+          .withIndex('by_guest_profile', (q: any) =>
+            q.eq('guestProfileId', profile._id),
+          )
+          .collect()
+
+        return {
+          profile,
+          bookingCount: bookings.length,
+        }
+      }),
+    )
   },
 })
 

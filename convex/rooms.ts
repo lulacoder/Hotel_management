@@ -233,6 +233,34 @@ export const getByHotelWithLiveState = query({
       .withIndex('by_hotel', (q) => q.eq('hotelId', args.hotelId))
       .collect()
 
+    const hotelBookings = await ctx.db
+      .query('bookings')
+      .withIndex('by_hotel', (q) => q.eq('hotelId', args.hotelId))
+      .collect()
+
+    const bookingsByRoomId = new Map<
+      Id<'rooms'>,
+      Array<{ status: string; holdExpiresAt?: number }>
+    >()
+
+    for (const booking of hotelBookings) {
+      if (['cancelled', 'expired', 'checked_out'].includes(booking.status)) {
+        continue
+      }
+
+      const roomBookings = bookingsByRoomId.get(booking.roomId)
+      const liveBooking = {
+        status: booking.status,
+        holdExpiresAt: booking.holdExpiresAt,
+      }
+
+      if (roomBookings) {
+        roomBookings.push(liveBooking)
+      } else {
+        bookingsByRoomId.set(booking.roomId, [liveBooking])
+      }
+    }
+
     if (!args.includeDeleted) {
       rooms = rooms.filter((room) => !room.isDeleted)
     }
@@ -241,15 +269,7 @@ export const getByHotelWithLiveState = query({
 
     for (const room of rooms) {
       const roomWithImage = await attachRoomImageUrl(ctx, room)
-      const bookings = await ctx.db
-        .query('bookings')
-        .withIndex('by_room', (q) => q.eq('roomId', room._id))
-        .collect()
-
-      const activeBookings = bookings.filter(
-        (booking) =>
-          !['cancelled', 'expired', 'checked_out'].includes(booking.status),
-      )
+      const activeBookings = bookingsByRoomId.get(room._id) ?? []
 
       roomsWithLiveState.push({
         ...roomWithImage,
@@ -307,7 +327,9 @@ export const checkAvailability = query({
     // Get all bookings for this room that could overlap
     const bookings = await ctx.db
       .query('bookings')
-      .withIndex('by_room', (q) => q.eq('roomId', args.roomId))
+      .withIndex('by_room_and_dates', (q) =>
+        q.eq('roomId', args.roomId).lt('checkIn', args.checkOut),
+      )
       .collect()
 
     // Check for overlapping active bookings
@@ -376,44 +398,48 @@ export const getAvailableRooms = query({
       rooms = rooms.filter((room) => room.maxOccupancy >= args.minOccupancy!)
     }
 
-    // Get all bookings for these rooms
+    if (rooms.length === 0) {
+      return []
+    }
+
+    // Fetch potentially overlapping bookings once per hotel, then group in-memory.
     const requestedRange = { checkIn: args.checkIn, checkOut: args.checkOut }
-    const availableRooms = []
+    const roomIds = new Set(rooms.map((room) => room._id))
+    const blockedRoomIds = new Set<Id<'rooms'>>()
 
-    for (const room of rooms) {
-      const bookings = await ctx.db
-        .query('bookings')
-        .withIndex('by_room', (q) => q.eq('roomId', room._id))
-        .collect()
+    const candidateBookings = await ctx.db
+      .query('bookings')
+      .withIndex('by_hotel_and_check_in', (q) =>
+        q.eq('hotelId', args.hotelId).lt('checkIn', args.checkOut),
+      )
+      .collect()
 
-      let isAvailable = true
-
-      for (const booking of bookings) {
-        // Skip cancelled, expired, or checked_out bookings
-        if (['cancelled', 'expired', 'checked_out'].includes(booking.status)) {
-          continue
-        }
-
-        // Skip expired holds
-        if (booking.status === 'held' && isHoldExpired(booking.holdExpiresAt)) {
-          continue
-        }
-
-        const bookingRange = {
-          checkIn: booking.checkIn,
-          checkOut: booking.checkOut,
-        }
-
-        if (datesOverlap(requestedRange, bookingRange)) {
-          isAvailable = false
-          break
-        }
+    for (const booking of candidateBookings) {
+      if (!roomIds.has(booking.roomId)) {
+        continue
       }
 
-      if (isAvailable) {
-        availableRooms.push(room)
+      // Skip cancelled, expired, or checked_out bookings
+      if (['cancelled', 'expired', 'checked_out'].includes(booking.status)) {
+        continue
+      }
+
+      // Skip expired holds
+      if (booking.status === 'held' && isHoldExpired(booking.holdExpiresAt)) {
+        continue
+      }
+
+      const bookingRange = {
+        checkIn: booking.checkIn,
+        checkOut: booking.checkOut,
+      }
+
+      if (datesOverlap(requestedRange, bookingRange)) {
+        blockedRoomIds.add(booking.roomId)
       }
     }
+
+    const availableRooms = rooms.filter((room) => !blockedRoomIds.has(room._id))
 
     return await Promise.all(
       availableRooms.map((room) => attachRoomImageUrl(ctx, room)),

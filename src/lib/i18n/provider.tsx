@@ -14,8 +14,10 @@ import {
 } from 'react'
 import {
   LOCALE_STORAGE_KEY,
+  enMessages,
   locales,
-  messages,
+  loadLocaleMessages,
+  type LocaleMessages,
   type Locale,
   type TranslationKey,
 } from './messages'
@@ -83,12 +85,42 @@ const I18nContext = createContext<I18nContextValue | null>(null)
  */
 export function I18nProvider({ children }: { children: React.ReactNode }) {
   const [locale, setLocaleState] = useState<Locale>(readInitialLocale)
+  const [activeMessages, setActiveMessages] =
+    useState<LocaleMessages>(enMessages)
 
   // Sync locale changes to localStorage and DOM
   useEffect(() => {
     if (typeof window === 'undefined') return
     window.localStorage.setItem(LOCALE_STORAGE_KEY, locale)
     document.documentElement.lang = locale
+  }, [locale])
+
+  // Load only the active locale dictionary (English stays in the initial bundle).
+  useEffect(() => {
+    let isActive = true
+
+    if (locale === 'en') {
+      setActiveMessages(enMessages)
+      return () => {
+        isActive = false
+      }
+    }
+
+    void loadLocaleMessages(locale)
+      .then((messagesForLocale) => {
+        if (isActive) {
+          setActiveMessages(messagesForLocale)
+        }
+      })
+      .catch(() => {
+        if (isActive) {
+          setActiveMessages(enMessages)
+        }
+      })
+
+    return () => {
+      isActive = false
+    }
   }, [locale])
 
   /** Updates the state with a new locale */
@@ -102,11 +134,10 @@ export function I18nProvider({ children }: { children: React.ReactNode }) {
    */
   const t = useCallback(
     (key: TranslationKey, params?: Record<string, string | number>) => {
-      const localeMessages = messages[locale] as Record<TranslationKey, string>
-      const localized = localeMessages[key] ?? messages.en[key] ?? key
+      const localized = activeMessages[key] ?? enMessages[key] ?? key
       return interpolate(localized, params)
     },
-    [locale],
+    [activeMessages],
   )
 
   const value = useMemo(

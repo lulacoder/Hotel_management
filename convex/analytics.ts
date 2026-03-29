@@ -179,8 +179,20 @@ async function listScopedRooms(
   ctx: QueryCtx,
   hotelIds: Set<Id<'hotels'>>,
 ): Promise<ActiveRoomDoc[]> {
-  const rooms = await ctx.db.query('rooms').collect()
-  return rooms.filter((room: Doc<'rooms'>) => hotelIds.has(room.hotelId))
+  if (hotelIds.size === 0) {
+    return []
+  }
+
+  const roomBatches = await Promise.all(
+    Array.from(hotelIds).map((hotelId) =>
+      ctx.db
+        .query('rooms')
+        .withIndex('by_hotel', (q) => q.eq('hotelId', hotelId))
+        .collect(),
+    ),
+  )
+
+  return roomBatches.flat()
 }
 
 async function listWindowedBookings(
@@ -189,6 +201,10 @@ async function listWindowedBookings(
   window: 'today' | '7d' | '30d',
 ): Promise<Doc<'bookings'>[]> {
   const range = getAnalyticsWindowRange(window)
+
+  if (hotelIds.size === 0) {
+    return []
+  }
 
   if (hotelIds.size === 1) {
     const [hotelId] = Array.from(hotelIds)
@@ -204,14 +220,21 @@ async function listWindowedBookings(
     )
   }
 
-  const bookings = await ctx.db
-    .query('bookings')
-    .withIndex('by_created_at', (q) => q.gte('createdAt', range.startMs))
-    .collect()
+  const bookingBatches = await Promise.all(
+    Array.from(hotelIds).map((hotelId) =>
+      ctx.db
+        .query('bookings')
+        .withIndex('by_hotel_and_created_at', (q) =>
+          q.eq('hotelId', hotelId).gte('createdAt', range.startMs),
+        )
+        .collect(),
+    ),
+  )
+
+  const bookings = bookingBatches.flat()
 
   return bookings.filter(
-    (booking: Doc<'bookings'>) =>
-      booking.createdAt <= range.endMs && hotelIds.has(booking.hotelId),
+    (booking: Doc<'bookings'>) => booking.createdAt <= range.endMs,
   )
 }
 
@@ -219,10 +242,20 @@ async function listOccupancyBookings(
   ctx: QueryCtx,
   hotelIds: Set<Id<'hotels'>>,
 ): Promise<Doc<'bookings'>[]> {
-  const bookings = await ctx.db.query('bookings').collect()
-  return bookings.filter((booking: Doc<'bookings'>) =>
-    hotelIds.has(booking.hotelId),
+  if (hotelIds.size === 0) {
+    return []
+  }
+
+  const bookingBatches = await Promise.all(
+    Array.from(hotelIds).map((hotelId) =>
+      ctx.db
+        .query('bookings')
+        .withIndex('by_hotel', (q) => q.eq('hotelId', hotelId))
+        .collect(),
+    ),
   )
+
+  return bookingBatches.flat()
 }
 
 function filterOccupancyBookingsByActiveRooms(
