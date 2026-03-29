@@ -1,8 +1,5 @@
 // Hotel discovery route with geolocation, search filters, sorting, and rating workflow.
-import {
-  createFileRoute,
-  useNavigate,
-} from '@tanstack/react-router'
+import { createFileRoute, useNavigate } from '@tanstack/react-router'
 import { useUser } from '@clerk/clerk-react'
 import { useMutation, useQuery } from 'convex/react'
 import { useEffect, useMemo, useState } from 'react'
@@ -268,12 +265,14 @@ function SelectLocationPage() {
     }))
   }, [myBookings])
 
-  const updateSearch = (nextSearch: Partial<{
-    category: string
-    city: string
-    q: string
-    sort: SortOption
-  }>) => {
+  const updateSearch = (
+    nextSearch: Partial<{
+      category: string
+      city: string
+      q: string
+      sort: SortOption
+    }>,
+  ) => {
     navigate({
       replace: true,
       search: {
@@ -408,7 +407,7 @@ function SelectLocationPage() {
       <button
         type="button"
         onClick={openComplaintModal}
-        className="fixed bottom-6 right-6 z-40 inline-flex items-center gap-2 px-4 py-3 bg-blue-500 text-slate-900 font-semibold rounded-full shadow-lg shadow-blue-500/30 hover:bg-blue-400 transition-all"
+        className="fixed bottom-6 right-6 z-40 inline-flex items-center gap-2 px-4 py-3 bg-white text-slate-900 font-semibold rounded-full shadow-lg shadow-white/20 hover:bg-slate-100 transition-all"
         aria-label={t('complaint.fab')}
       >
         <MessageSquarePlus className="w-5 h-5" />

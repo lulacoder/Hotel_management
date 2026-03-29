@@ -29,13 +29,13 @@ export const Route = createFileRoute('/hotels/$hotelId')({
 function getHotelCategoryBadgeClass(category: string): string {
   switch (category) {
     case 'Luxury':
-      return 'bg-blue-500/20 text-blue-600 dark:text-blue-400'
+      return 'bg-violet-500/20 text-violet-600 dark:text-violet-400'
     case 'Boutique':
       return 'bg-purple-500/20 text-purple-600 dark:text-purple-400'
     case 'Resort and Spa':
       return 'bg-emerald-500/20 text-emerald-600 dark:text-emerald-400'
     case 'Suite':
-      return 'bg-blue-500/20 text-blue-600 dark:text-blue-400'
+      return 'bg-violet-500/20 text-violet-600 dark:text-violet-400'
     case 'Extended-Stay':
       return 'bg-cyan-500/20 text-cyan-600 dark:text-cyan-400'
     case 'Budget':
@@ -109,7 +109,7 @@ function HotelDetailPage() {
   if (hotel === undefined) {
     return (
       <div className="flex min-h-screen items-center justify-center bg-slate-950">
-        <div className="h-10 w-10 animate-spin rounded-full border-2 border-blue-500/20 border-t-blue-500"></div>
+        <div className="h-10 w-10 animate-spin rounded-full border-2 border-violet-500/20 border-t-violet-500"></div>
       </div>
     )
   }
@@ -121,7 +121,9 @@ function HotelDetailPage() {
           <h2 className="mb-2 text-xl font-semibold text-slate-300">
             {t('hotel.notFoundTitle')}
           </h2>
-          <p className="mb-6 text-slate-500">{t('hotel.notFoundDescription')}</p>
+          <p className="mb-6 text-slate-500">
+            {t('hotel.notFoundDescription')}
+          </p>
           <Link
             to="/select-location"
             search={DEFAULT_SELECT_LOCATION_SEARCH}
@@ -142,14 +144,16 @@ function HotelDetailPage() {
       />
 
       <main className="mx-auto max-w-7xl px-4 py-8">
-        <div className="mb-8 rounded-2xl border border-slate-800/50 bg-slate-900/50 p-6">
+        <div className="mb-6 rounded-2xl border border-slate-800/50 bg-slate-900/50 p-5">
           <div className="flex flex-col justify-between gap-4 md:flex-row md:items-start">
             <div className="flex-1">
               <div className="mb-2 flex flex-wrap items-center gap-3">
-                <h1 className="text-3xl font-bold text-slate-100">{hotel.name}</h1>
+                <h1 className="text-3xl font-bold text-slate-100">
+                  {hotel.name}
+                </h1>
                 {hotel.rating !== undefined && (
                   <div className="flex items-center gap-1 rounded-lg bg-slate-800 px-2 py-1">
-                    <Star className="h-4 w-4 fill-blue-400 text-blue-400" />
+                    <Star className="h-4 w-4 fill-amber-400 text-amber-400" />
                     <span className="text-sm font-medium text-slate-200">
                       {hotel.rating.toFixed(1)}
                     </span>
@@ -167,19 +171,14 @@ function HotelDetailPage() {
               </div>
 
               <p className="mb-2 text-slate-400">{hotel.address}</p>
-              <p className="mb-3 text-slate-500">
+              <p className="text-slate-500">
                 {hotel.city}
                 {hotel.stateProvince ? `, ${hotel.stateProvince}` : ''}
-                {hotel.postalCode ? ` ${hotel.postalCode}` : ''}, {hotel.country}
+                {hotel.postalCode ? ` ${hotel.postalCode}` : ''},{' '}
+                {hotel.country}
               </p>
 
-              {hotel.description && (
-                <p className="mb-4 max-w-2xl text-sm text-slate-400">
-                  {hotel.description}
-                </p>
-              )}
-
-              <div className="mb-4 flex flex-wrap gap-2">
+              <div className="mt-3 flex flex-wrap gap-2">
                 {hotel.parkingIncluded && (
                   <div className="flex items-center gap-1 rounded-lg border border-emerald-500/20 bg-emerald-500/10 px-2 py-1 text-xs text-emerald-400">
                     <Car className="h-3 w-3" />
@@ -195,20 +194,6 @@ function HotelDetailPage() {
                   </div>
                 )}
               </div>
-
-              {hotel.tags && hotel.tags.length > 0 && (
-                <div className="flex flex-wrap gap-2">
-                  {hotel.tags.map((tag) => (
-                    <span
-                      key={tag}
-                      className="flex items-center gap-1 rounded bg-slate-800 px-2 py-1 text-xs text-slate-400"
-                    >
-                      <Tag className="h-3 w-3" />
-                      {tag}
-                    </span>
-                  ))}
-                </div>
-              )}
             </div>
           </div>
         </div>
@@ -218,7 +203,10 @@ function HotelDetailPage() {
             announcements?.map((announcement) => ({
               _id: announcement._id,
               body: announcement.body,
-              priority: announcement.priority as 'normal' | 'important' | 'urgent',
+              priority: announcement.priority as
+                | 'normal'
+                | 'important'
+                | 'urgent',
               title: announcement.title,
             })) ?? []
           }
@@ -267,6 +255,30 @@ function HotelDetailPage() {
           rooms={rooms}
           selectedDates={selectedDates}
         />
+
+        {(hotel.description || (hotel.tags && hotel.tags.length > 0)) && (
+          <div className="mt-8 rounded-2xl border border-slate-800/50 bg-slate-900/40 p-5">
+            {hotel.description && (
+              <p className="text-sm leading-relaxed text-slate-400">
+                {hotel.description}
+              </p>
+            )}
+
+            {hotel.tags && hotel.tags.length > 0 && (
+              <div className="mt-4 flex flex-wrap gap-2">
+                {hotel.tags.map((tag) => (
+                  <span
+                    key={tag}
+                    className="flex items-center gap-1 rounded bg-slate-800 px-2 py-1 text-xs text-slate-400"
+                  >
+                    <Tag className="h-3 w-3" />
+                    {tag}
+                  </span>
+                ))}
+              </div>
+            )}
+          </div>
+        )}
       </main>
 
       {showBookingModal && isSignedIn && profile && (

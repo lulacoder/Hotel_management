@@ -149,8 +149,8 @@ export function AnnouncementForm({ editing, onClose }: AnnouncementFormProps) {
           }`}
         >
           <div className="flex items-center gap-3">
-            <div className="w-9 h-9 rounded-xl bg-blue-500/10 border border-blue-500/20 flex items-center justify-center">
-              <Megaphone className="w-4 h-4 text-blue-400" />
+            <div className="w-9 h-9 rounded-xl bg-violet-500/10 border border-violet-500/20 flex items-center justify-center">
+              <Megaphone className="w-4 h-4 text-violet-400" />
             </div>
             <div>
               <h2
@@ -255,8 +255,8 @@ export function AnnouncementForm({ editing, onClose }: AnnouncementFormProps) {
                 errors.title
                   ? 'border-red-500/60 focus:border-red-500/80'
                   : isDark
-                    ? 'border-slate-700 focus:border-blue-500/50'
-                    : 'border-slate-200 focus:border-blue-500/50'
+                    ? 'border-slate-700 focus:border-violet-500/50 focus:ring-1 focus:ring-violet-500/20'
+                    : 'border-slate-200 focus:border-violet-500/50 focus:ring-1 focus:ring-violet-500/20'
               }`}
             />
             <div className="flex items-start justify-between mt-1.5 gap-2">
@@ -304,8 +304,8 @@ export function AnnouncementForm({ editing, onClose }: AnnouncementFormProps) {
                 errors.body
                   ? 'border-red-500/60 focus:border-red-500/80'
                   : isDark
-                    ? 'border-slate-700 focus:border-blue-500/50'
-                    : 'border-slate-200 focus:border-blue-500/50'
+                    ? 'border-slate-700 focus:border-violet-500/50 focus:ring-1 focus:ring-violet-500/20'
+                    : 'border-slate-200 focus:border-violet-500/50 focus:ring-1 focus:ring-violet-500/20'
               }`}
             />
             <div className="flex items-start justify-between mt-1.5 gap-2">

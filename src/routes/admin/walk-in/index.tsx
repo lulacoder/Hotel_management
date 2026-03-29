@@ -205,8 +205,8 @@ function WalkInBookingPage() {
 
   // Shared input class helper
   const inputClass = isDark
-    ? 'bg-slate-800/50 border border-slate-700 text-slate-200 placeholder-slate-500 focus:border-blue-500/50'
-    : 'bg-white border border-slate-200 text-slate-800 placeholder-slate-400 focus:border-amber-400/60 shadow-sm'
+    ? 'bg-slate-800/50 border border-slate-700 text-slate-200 placeholder-slate-500 focus:border-violet-500/50 focus:ring-1 focus:ring-violet-500/20'
+    : 'bg-white border border-slate-200 text-slate-800 placeholder-slate-400 focus:border-violet-500/50 focus:ring-1 focus:ring-violet-500/20 shadow-sm'
 
   const sectionCardClass = isDark
     ? 'bg-slate-900/50 border border-slate-800/50 rounded-2xl p-6'
@@ -215,8 +215,8 @@ function WalkInBookingPage() {
   const selectableCardBase =
     'walkin-selectable-card text-left p-3 rounded-xl border transition-all'
   const selectableCardSelected = isDark
-    ? 'border-blue-500/40 bg-blue-500/10'
-    : 'border-amber-500/40 bg-amber-50'
+    ? 'border-violet-500/40 bg-violet-500/10'
+    : 'border-violet-500/40 bg-violet-50'
   const selectableCardIdle = isDark
     ? 'border-slate-700 bg-slate-800/30 hover:border-slate-600'
     : 'border-slate-200 bg-white hover:border-slate-300 hover:shadow-sm'
@@ -225,7 +225,7 @@ function WalkInBookingPage() {
     return (
       <div className="flex items-center justify-center py-20">
         <div
-          className={`animate-spin rounded-full h-8 w-8 border-2 ${isDark ? 'border-blue-500/20 border-t-blue-500' : 'border-amber-500/20 border-t-amber-500'}`}
+          className={`animate-spin rounded-full h-8 w-8 border-2 ${isDark ? 'border-violet-500/20 border-t-violet-500' : 'border-violet-500/20 border-t-violet-500'}`}
         ></div>
       </div>
     )
@@ -283,7 +283,7 @@ function WalkInBookingPage() {
       >
         <div className="flex items-center gap-2 mb-4">
           <Search
-            className={`w-5 h-5 ${isDark ? 'text-blue-400' : 'text-amber-500'}`}
+            className={`w-5 h-5 ${isDark ? 'text-violet-400' : 'text-violet-500'}`}
           />
           <h2
             className={`text-lg font-semibold ${isDark ? 'text-slate-100' : 'text-slate-900'}`}
@@ -375,8 +375,8 @@ function WalkInBookingPage() {
               onClick={handleCreateOrUseGuest}
               className={`md:col-span-3 px-4 py-3 rounded-xl border transition-colors ${
                 isDark
-                  ? 'bg-blue-500/15 text-blue-300 border-blue-500/30 hover:bg-blue-500/20'
-                  : 'bg-amber-500/10 text-amber-700 border-amber-400/30 hover:bg-amber-500/15'
+                  ? 'bg-violet-500/15 text-violet-300 border-violet-500/30 hover:bg-violet-500/20'
+                  : 'bg-violet-500/10 text-violet-700 border-violet-400/30 hover:bg-violet-500/15'
               }`}
             >
               {t('admin.walkIn.createOrReuseGuest')}
@@ -409,7 +409,7 @@ function WalkInBookingPage() {
       >
         <div className="flex items-center gap-2 mb-4">
           <Calendar
-            className={`w-5 h-5 ${isDark ? 'text-blue-400' : 'text-amber-500'}`}
+            className={`w-5 h-5 ${isDark ? 'text-violet-400' : 'text-violet-500'}`}
           />
           <h2
             className={`text-lg font-semibold ${isDark ? 'text-slate-100' : 'text-slate-900'}`}
@@ -440,7 +440,7 @@ function WalkInBookingPage() {
         ) : availableRooms === undefined ? (
           <div className="flex items-center justify-center py-8">
             <div
-              className={`animate-spin rounded-full h-7 w-7 border-2 ${isDark ? 'border-blue-500/20 border-t-blue-500' : 'border-amber-500/20 border-t-amber-500'}`}
+              className={`animate-spin rounded-full h-7 w-7 border-2 ${isDark ? 'border-violet-500/20 border-t-violet-500' : 'border-violet-500/20 border-t-violet-500'}`}
             ></div>
           </div>
         ) : availableRooms.length === 0 ? (
@@ -471,7 +471,7 @@ function WalkInBookingPage() {
                   {room.type}
                 </p>
                 <p
-                  className={`text-sm mt-2 ${isDark ? 'text-blue-300' : 'text-amber-600'}`}
+                  className={`text-sm mt-2 ${isDark ? 'text-violet-300' : 'text-violet-600'}`}
                 >
                   ${(room.basePrice / 100).toFixed(2)} / {t('hotel.night')}
                 </p>
@@ -490,7 +490,7 @@ function WalkInBookingPage() {
       >
         <div className="flex items-center gap-2 mb-4">
           <CheckCircle
-            className={`w-5 h-5 ${isDark ? 'text-blue-400' : 'text-amber-500'}`}
+            className={`w-5 h-5 ${isDark ? 'text-violet-400' : 'text-violet-500'}`}
           />
           <h2
             className={`text-lg font-semibold ${isDark ? 'text-slate-100' : 'text-slate-900'}`}
@@ -552,7 +552,7 @@ function WalkInBookingPage() {
             {t('admin.walkIn.nights')}: {nights}
           </p>
           <p
-            className={`font-semibold mt-2 ${isDark ? 'text-blue-300' : 'text-amber-600'}`}
+            className={`font-semibold mt-2 ${isDark ? 'text-violet-300' : 'text-violet-600'}`}
           >
             {t('booking.total')}: ${(totalPrice / 100).toFixed(2)}
           </p>
@@ -564,8 +564,8 @@ function WalkInBookingPage() {
           onClick={handleConfirmBooking}
           className={`px-5 py-3 font-medium rounded-xl transition-all disabled:opacity-50 disabled:cursor-not-allowed ${
             isDark
-              ? 'bg-gradient-to-r from-blue-500 to-blue-600 text-white hover:from-blue-600 hover:to-blue-700'
-              : 'bg-gradient-to-r from-amber-500 to-amber-600 text-white hover:from-amber-600 hover:to-amber-700'
+              ? 'bg-white text-slate-900 hover:bg-slate-100'
+              : 'bg-slate-900 text-white hover:bg-slate-800'
           }`}
         >
           {submitting

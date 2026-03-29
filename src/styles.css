@@ -7,6 +7,195 @@
   --font-body: 'DM Sans', system-ui, sans-serif;
 }
 
+.header-primary-btn {
+  background: linear-gradient(
+    135deg,
+    rgb(139 92 246) 0%,
+    rgb(124 58 237) 100%
+  );
+  border: 1px solid rgb(167 139 250 / 0.45);
+  color: rgb(255 255 255);
+  box-shadow: 0 12px 24px -16px rgb(139 92 246 / 0.7);
+  cursor: pointer;
+  transition:
+    background 0.2s ease,
+    border-color 0.2s ease,
+    box-shadow 0.2s ease,
+    transform 0.2s ease;
+}
+
+.header-primary-btn:hover {
+  background: linear-gradient(
+    135deg,
+    rgb(124 58 237) 0%,
+    rgb(109 40 217) 100%
+  );
+  border-color: rgb(196 181 253 / 0.65);
+  box-shadow: 0 16px 30px -18px rgb(109 40 217 / 0.85);
+  transform: translateY(-1px);
+}
+
+.header-primary-btn:active {
+  transform: translateY(0);
+}
+
+.header-primary-btn:focus-visible {
+  outline: 2px solid rgb(196 181 253);
+  outline-offset: 2px;
+}
+
+.header-secondary-btn {
+  border: 1px solid rgb(148 163 184 / 0.45);
+  color: rgb(226 232 240);
+  background: rgb(15 23 42 / 0.25);
+  cursor: pointer;
+  transition:
+    background 0.2s ease,
+    border-color 0.2s ease,
+    color 0.2s ease,
+    box-shadow 0.2s ease,
+    transform 0.2s ease;
+}
+
+.header-secondary-btn:hover {
+  background: rgb(30 41 59 / 0.65);
+  border-color: rgb(167 139 250 / 0.55);
+  color: rgb(255 255 255);
+  box-shadow: 0 12px 24px -16px rgb(139 92 246 / 0.5);
+  transform: translateY(-1px);
+}
+
+.header-inline-link {
+  color: rgb(148 163 184);
+  transition:
+    color 0.2s ease,
+    text-shadow 0.2s ease;
+}
+
+.header-inline-link:hover {
+  color: rgb(196 181 253);
+  text-shadow: 0 0 20px rgb(167 139 250 / 0.35);
+}
+
+.brand-logo-shell {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 0.8rem;
+  border: 1px solid rgb(167 139 250 / 0.38);
+  background: rgb(2 6 23 / 0.72);
+  box-shadow:
+    0 14px 24px -20px rgb(139 92 246 / 0.6),
+    0 6px 16px -16px rgb(15 23 42 / 0.9);
+  backdrop-filter: blur(8px);
+  transition:
+    border-color 0.25s ease,
+    box-shadow 0.25s ease,
+    transform 0.25s ease,
+    background 0.25s ease;
+}
+
+.brand-logo-shell:hover {
+  border-color: rgb(196 181 253 / 0.58);
+  box-shadow:
+    0 16px 26px -18px rgb(139 92 246 / 0.72),
+    0 10px 20px -16px rgb(15 23 42 / 0.9);
+  transform: translateY(-1px);
+}
+
+.room-book-button {
+  cursor: pointer;
+  box-shadow: 0 10px 20px -16px rgb(15 23 42 / 0.45);
+}
+
+.room-book-button:hover {
+  transform: translateY(-1px);
+}
+
+html[data-theme='light'] .header-primary-btn {
+  border-color: rgb(139 92 246 / 0.48);
+  box-shadow:
+    0 10px 24px -16px rgb(109 40 217 / 0.65),
+    0 2px 8px rgb(15 23 42 / 0.08);
+}
+
+html[data-theme='light'] .header-primary-btn:hover {
+  box-shadow:
+    0 14px 28px -16px rgb(109 40 217 / 0.78),
+    0 4px 12px rgb(15 23 42 / 0.1);
+}
+
+html[data-theme='light'] .header-secondary-btn {
+  border-color: rgb(203 213 225);
+  color: rgb(51 65 85);
+  background: rgb(255 255 255 / 0.9);
+}
+
+html[data-theme='light'] .header-secondary-btn:hover {
+  background: rgb(245 243 255);
+  border-color: rgb(139 92 246 / 0.45);
+  color: rgb(88 28 135);
+  box-shadow:
+    0 12px 24px -18px rgb(139 92 246 / 0.6),
+    0 2px 8px rgb(15 23 42 / 0.08);
+}
+
+html[data-theme='light'] .header-inline-link {
+  color: rgb(71 85 105);
+}
+
+html[data-theme='light'] .header-inline-link:hover {
+  color: rgb(109 40 217);
+  text-shadow: none;
+}
+
+html[data-theme='light'] .brand-logo-shell {
+  border-color: rgb(226 232 240 / 0.95);
+  background: linear-gradient(
+    180deg,
+    rgb(255 255 255 / 0.98) 0%,
+    rgb(248 250 252 / 0.95) 100%
+  );
+  box-shadow:
+    0 18px 28px -24px rgb(15 23 42 / 0.4),
+    0 10px 22px -20px rgb(139 92 246 / 0.42),
+    inset 0 1px 0 rgb(255 255 255 / 0.95);
+}
+
+html[data-theme='light'] .brand-logo-shell:hover {
+  border-color: rgb(196 181 253 / 0.85);
+  background: linear-gradient(
+    180deg,
+    rgb(255 255 255) 0%,
+    rgb(241 245 249 / 0.98) 100%
+  );
+  box-shadow:
+    0 20px 30px -24px rgb(15 23 42 / 0.45),
+    0 12px 24px -20px rgb(139 92 246 / 0.5),
+    inset 0 1px 0 rgb(255 255 255);
+}
+
+html[data-theme='light'] .room-book-button {
+  background: rgb(15 23 42);
+  border-color: rgb(15 23 42 / 0.92);
+  color: rgb(255 255 255);
+  box-shadow:
+    0 14px 28px -18px rgb(15 23 42 / 0.48),
+    0 3px 8px rgb(15 23 42 / 0.08);
+}
+
+html[data-theme='light'] .room-book-button:hover {
+  background: rgb(30 41 59);
+  border-color: rgb(30 41 59 / 0.96);
+}
+
+html[data-theme='light'] .room-book-button:disabled {
+  background: rgb(226 232 240);
+  border-color: rgb(203 213 225);
+  color: rgb(100 116 139);
+  box-shadow: none;
+}
+
 html[data-theme='light'] body {
   background: rgb(248 250 252);
   color: rgb(15 23 42);
@@ -74,16 +263,16 @@ html[data-theme='light'] .border-slate-700 {
 }
 
 html[data-theme='light'] .light-hover-surface:hover {
-  border-color: rgb(59 130 246 / 0.45);
+  border-color: rgb(139 92 246 / 0.45);
   box-shadow:
-    0 10px 30px rgb(59 130 246 / 0.18),
+    0 10px 30px rgb(139 92 246 / 0.18),
     0 2px 8px rgb(15 23 42 / 0.08);
   transform: translateY(-1px);
 }
 
 html[data-theme='light'] .light-hover-accent:hover {
-  border-color: rgb(59 130 246 / 0.6);
-  box-shadow: 0 8px 24px rgb(59 130 246 / 0.28);
+  border-color: rgb(139 92 246 / 0.6);
+  box-shadow: 0 8px 24px rgb(139 92 246 / 0.28);
   transform: translateY(-1px);
 }
 
@@ -139,8 +328,13 @@ html[data-theme='light'] .landing-subtitle {
 }
 
 html[data-theme='light'] .landing-primary-cta {
+  background: rgb(15 23 42);
   color: rgb(255 255 255);
-  box-shadow: 0 14px 34px rgb(139 92 246 / 0.34);
+  box-shadow: 0 14px 34px rgb(15 23 42 / 0.2);
+}
+
+html[data-theme='light'] .landing-primary-cta:hover {
+  background: rgb(30 41 59);
 }
 
 html[data-theme='light'] .landing-secondary-cta {
@@ -231,7 +425,7 @@ html[data-theme='light'] .notification-bell-panel {
   border-color: rgb(203 213 225 / 0.92);
   box-shadow:
     0 22px 48px -24px rgb(15 23 42 / 0.35),
-    0 12px 30px -20px rgb(59 130 246 / 0.25);
+    0 12px 30px -20px rgb(139 92 246 / 0.25);
 }
 
 html[data-theme='light'] .notification-bell-panel--sidebar {
@@ -239,7 +433,7 @@ html[data-theme='light'] .notification-bell-panel--sidebar {
   border-color: rgb(203 213 225 / 0.96);
   box-shadow:
     0 30px 58px -28px rgb(15 23 42 / 0.38),
-    0 14px 34px -22px rgb(59 130 246 / 0.28);
+    0 14px 34px -22px rgb(139 92 246 / 0.28);
 }
 
 html[data-theme='light'] .notification-bell-item {
@@ -297,12 +491,50 @@ html[data-theme='light'] .complaint-modal-panel {
   border-color: rgb(203 213 225 / 0.9);
   box-shadow:
     0 28px 66px -26px rgb(15 23 42 / 0.38),
-    0 14px 34px -22px rgb(59 130 246 / 0.22);
+    0 14px 34px -22px rgb(139 92 246 / 0.22);
 }
 
 html[data-theme='light'] .booking-package-card--selected {
-  border-color: rgb(96 165 250 / 0.75);
-  background: rgb(219 234 254 / 0.7);
+  border-color: rgb(139 92 246 / 0.75);
+  background: rgb(245 243 255 / 0.7);
+}
+
+html[data-theme='light'] .booking-package-card--idle {
+  background: linear-gradient(
+    180deg,
+    rgb(248 250 252 / 0.94) 0%,
+    rgb(241 245 249 / 0.9) 100%
+  );
+  border-color: rgb(203 213 225 / 0.95);
+  box-shadow: 0 12px 24px -22px rgb(15 23 42 / 0.28);
+}
+
+html[data-theme='light'] .booking-package-card--idle:hover {
+  background: linear-gradient(
+    180deg,
+    rgb(255 255 255 / 0.97) 0%,
+    rgb(248 250 252 / 0.94) 100%
+  );
+  border-color: rgb(148 163 184 / 0.85);
+}
+
+html[data-theme='light'] .booking-package-title {
+  color: rgb(15 23 42);
+}
+
+html[data-theme='light'] .booking-package-description,
+html[data-theme='light'] .booking-package-inclusions {
+  color: rgb(71 85 105);
+}
+
+html[data-theme='light'] .booking-package-card--selected .booking-package-title {
+  color: rgb(46 16 101);
+}
+
+html[data-theme='light']
+  .booking-package-card--selected
+  .booking-package-description {
+  color: rgb(88 28 135);
 }
 
 html[data-theme='light'] .booking-modal {
@@ -313,7 +545,7 @@ html[data-theme='light'] .booking-modal-panel {
   background:
     radial-gradient(
       circle at 20% -10%,
-      rgb(219 234 254 / 0.42),
+      rgb(245 243 255 / 0.42),
       transparent 55%
     ),
     linear-gradient(
@@ -324,7 +556,7 @@ html[data-theme='light'] .booking-modal-panel {
   border-color: rgb(203 213 225 / 0.95);
   box-shadow:
     0 32px 68px -30px rgb(15 23 42 / 0.42),
-    0 16px 38px -26px rgb(59 130 246 / 0.24);
+    0 16px 38px -26px rgb(139 92 246 / 0.24);
 }
 
 html[data-theme='light'] .booking-modal-header {
@@ -352,12 +584,12 @@ html[data-theme='light'] .booking-bank-card {
 }
 
 html[data-theme='light'] .booking-summary-icon-wrap {
-  background: rgb(239 246 255 / 0.9);
-  border: 1px solid rgb(191 219 254 / 0.8);
+  background: rgb(245 243 255 / 0.9);
+  border: 1px solid rgb(221 214 254 / 0.8);
 }
 
 html[data-theme='light'] .booking-summary-icon {
-  color: rgb(37 99 235);
+  color: rgb(109 40 217);
 }
 
 html[data-theme='light'] .booking-summary-hotel,
@@ -375,7 +607,7 @@ html[data-theme='light'] .booking-summary-total {
 }
 
 html[data-theme='light'] .booking-summary-total-amount {
-  color: rgb(37 99 235);
+  color: rgb(109 40 217);
 }
 
 html[data-theme='light'] .booking-modal-error {
@@ -400,8 +632,8 @@ html[data-theme='light'] .booking-input::placeholder {
 }
 
 html[data-theme='light'] .booking-input:focus {
-  border-color: rgb(96 165 250 / 0.85);
-  box-shadow: 0 0 0 3px rgb(59 130 246 / 0.16);
+  border-color: rgb(139 92 246 / 0.85);
+  box-shadow: 0 0 0 3px rgb(139 92 246 / 0.16);
 }
 
 html[data-theme='light'] .booking-file-input::file-selector-button {
@@ -428,7 +660,15 @@ html[data-theme='light'] .booking-copy-button:hover {
 }
 
 html[data-theme='light'] .booking-action-primary {
-  box-shadow: 0 14px 30px -16px rgb(59 130 246 / 0.55);
+  background: rgb(15 23 42);
+  border: 1px solid rgb(15 23 42 / 0.92);
+  color: rgb(255 255 255);
+  box-shadow: 0 14px 30px -16px rgb(15 23 42 / 0.35);
+}
+
+html[data-theme='light'] .booking-action-primary:hover {
+  background: rgb(30 41 59);
+  border-color: rgb(30 41 59 / 0.95);
 }
 
 html[data-theme='light'] .booking-action-success {
@@ -447,9 +687,9 @@ html[data-theme='light'] .booking-package-badge {
 }
 
 html[data-theme='light'] .booking-package-badge--selected {
-  color: rgb(30 64 175);
-  border-color: rgb(96 165 250 / 0.7);
-  background: rgb(191 219 254 / 0.9);
+  color: rgb(91 33 182);
+  border-color: rgb(139 92 246 / 0.7);
+  background: rgb(237 233 254 / 0.9);
 }
 
 html[data-theme='light']
@@ -459,20 +699,69 @@ html[data-theme='light']
 }
 
 html[data-theme='light'] .booking-hold-notice-card {
-  border-color: rgb(96 165 250 / 0.45);
-  background: rgb(219 234 254 / 0.62);
+  border-color: rgb(139 92 246 / 0.45);
+  background: rgb(245 243 255 / 0.62);
 }
 
 html[data-theme='light'] .booking-hold-notice-text {
-  color: rgb(37 99 235);
+  color: rgb(109 40 217);
 }
 
 html[data-theme='light'] .booking-details-total {
-  color: rgb(37 99 235);
+  color: rgb(109 40 217);
 }
 
 html[data-theme='light'] .booking-details-total span:last-child {
-  color: rgb(29 78 216);
+  color: rgb(91 33 182);
+}
+
+html[data-theme='light'] .booking-payment-option {
+  background: rgb(248 250 252 / 0.9);
+  border-color: rgb(203 213 225 / 0.95);
+  box-shadow: 0 12px 24px -22px rgb(15 23 42 / 0.22);
+}
+
+html[data-theme='light'] .booking-payment-option-title {
+  color: rgb(15 23 42);
+}
+
+html[data-theme='light'] .booking-payment-option-description {
+  color: rgb(71 85 105);
+}
+
+html[data-theme='light'] .booking-payment-option--chapa .booking-payment-option-icon {
+  color: rgb(109 40 217);
+}
+
+html[data-theme='light'] .booking-payment-option--chapa:hover {
+  background: rgb(245 243 255 / 0.92);
+  border-color: rgb(139 92 246 / 0.52);
+}
+
+html[data-theme='light'] .booking-payment-option--bank .booking-payment-option-icon {
+  color: rgb(5 150 105);
+}
+
+html[data-theme='light'] .booking-payment-option--bank:hover {
+  background: rgb(236 253 245 / 0.92);
+  border-color: rgb(16 185 129 / 0.46);
+}
+
+html[data-theme='light'] .booking-chapa-notice {
+  background: linear-gradient(
+    180deg,
+    rgb(245 243 255 / 0.95) 0%,
+    rgb(237 233 254 / 0.9) 100%
+  );
+  border-color: rgb(139 92 246 / 0.42);
+}
+
+html[data-theme='light'] .booking-chapa-notice-title {
+  color: rgb(91 33 182);
+}
+
+html[data-theme='light'] .booking-chapa-notice-body {
+  color: rgb(76 29 149 / 0.9);
 }
 
 html[data-theme='light'] .walkin-section-card {
@@ -484,9 +773,9 @@ html[data-theme='light'] .walkin-selectable-card {
   background: rgb(248 250 252 / 0.86);
 }
 
-html[data-theme='light'] .walkin-selectable-card p.text-blue-300,
+html[data-theme='light'] .walkin-selectable-card p.text-violet-300,
 html[data-theme='light'] .walkin-total-text {
-  color: rgb(37 99 235);
+  color: rgb(109 40 217);
 }
 
 html[data-theme='light'] .selector-location-loading {
@@ -510,7 +799,7 @@ html[data-theme='light'] .selector-location-retry:hover {
 }
 
 html[data-theme='light'] .selector-location-retry-link {
-  color: rgb(29 78 216);
+  color: rgb(109 40 217);
 }
 
 html {
@@ -550,28 +839,28 @@ html[data-theme='light'] .hotel-date-input {
 .hotel-date-input::-webkit-calendar-picker-indicator {
   opacity: 0.95;
   cursor: pointer;
-  filter: brightness(0) saturate(100%) invert(57%) sepia(72%) saturate(1732%)
-    hue-rotate(196deg) brightness(101%) contrast(96%);
+  filter: brightness(0) saturate(100%) invert(47%) sepia(94%) saturate(2932%)
+    hue-rotate(246deg) brightness(97%) contrast(93%);
   transition:
     filter 0.2s ease,
     transform 0.2s ease;
 }
 
 .hotel-date-input:hover::-webkit-calendar-picker-indicator {
-  filter: brightness(0) saturate(100%) invert(76%) sepia(39%) saturate(1498%)
-    hue-rotate(184deg) brightness(104%) contrast(98%);
+  filter: brightness(0) saturate(100%) invert(67%) sepia(58%) saturate(2124%)
+    hue-rotate(232deg) brightness(100%) contrast(95%);
   transform: scale(1.08);
 }
 
 html[data-theme='light'] .hotel-date-input::-webkit-calendar-picker-indicator {
-  filter: brightness(0) saturate(100%) invert(42%) sepia(78%) saturate(1608%)
-    hue-rotate(199deg) brightness(97%) contrast(91%);
+  filter: brightness(0) saturate(100%) invert(30%) sepia(98%) saturate(3568%)
+    hue-rotate(258deg) brightness(87%) contrast(96%);
 }
 
 html[data-theme='light']
   .hotel-date-input:hover::-webkit-calendar-picker-indicator {
-  filter: brightness(0) saturate(100%) invert(34%) sepia(84%) saturate(1820%)
-    hue-rotate(208deg) brightness(101%) contrast(95%);
+  filter: brightness(0) saturate(100%) invert(22%) sepia(100%) saturate(4152%)
+    hue-rotate(264deg) brightness(93%) contrast(103%);
 }
 
 /* Custom scrollbar */
@@ -607,18 +896,18 @@ html[data-theme='light'] ::-webkit-scrollbar-thumb:hover {
 
 /* Selection */
 ::selection {
-  background: rgba(96, 165, 250, 0.3);
+  background: rgba(139, 92, 246, 0.3);
   color: white;
 }
 
 html[data-theme='light'] ::selection {
-  background: rgba(59, 130, 246, 0.28);
+  background: rgba(139, 92, 246, 0.28);
   color: rgb(15 23 42);
 }
 
 /* Focus styles */
 :focus-visible {
-  outline: 2px solid rgb(96 165 250);
+  outline: 2px solid rgb(139 92 246);
   outline-offset: 2px;
 }
 
@@ -649,7 +938,7 @@ html[data-theme='light'] ::selection {
 
 /* Clerk component overrides for dark theme */
 .cl-rootBox {
-  --clerk-color-primary: rgb(59, 130, 246);
+  --clerk-color-primary: rgb(139, 92, 246);
 }
 
 .logo-tight {

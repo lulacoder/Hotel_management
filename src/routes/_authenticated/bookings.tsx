@@ -2,7 +2,14 @@
 import { Link, createFileRoute, useNavigate } from '@tanstack/react-router'
 import { useUser } from '@clerk/clerk-react'
 import { useMutation, useQuery } from 'convex/react'
-import { AlertTriangle, Calendar, CheckCircle, Loader2, X, XCircle } from 'lucide-react'
+import {
+  AlertTriangle,
+  Calendar,
+  CheckCircle,
+  Loader2,
+  X,
+  XCircle,
+} from 'lucide-react'
 import { useEffect, useState } from 'react'
 
 import { api } from '../../../convex/_generated/api'
@@ -106,9 +113,8 @@ function BookingsPage() {
       ? {
           Icon: Loader2,
           body: t('bookingModal.paymentProcessingMessage'),
-          className:
-            'bg-blue-500/10 border-blue-500/20 text-blue-300',
-          iconClassName: 'text-blue-400 animate-spin',
+          className: 'bg-violet-500/10 border-violet-500/20 text-violet-300',
+          iconClassName: 'text-violet-400 animate-spin',
           title: t('bookingModal.paymentProcessingTitle'),
         }
       : trackedPayment.status === 'paid'
@@ -125,8 +131,7 @@ function BookingsPage() {
           ? {
               Icon: AlertTriangle,
               body: t('bookingModal.paymentRefundRequiredMessage'),
-              className:
-                'bg-amber-500/10 border-amber-500/20 text-amber-100',
+              className: 'bg-amber-500/10 border-amber-500/20 text-amber-100',
               iconClassName: 'text-amber-400',
               title: t('bookingModal.paymentRefundRequiredTitle'),
             }
@@ -134,8 +139,7 @@ function BookingsPage() {
             ? {
                 Icon: AlertTriangle,
                 body: t('bookingModal.paymentRefundedMessage'),
-                className:
-                  'bg-slate-800 border-slate-700 text-slate-200',
+                className: 'bg-slate-800 border-slate-700 text-slate-200',
                 iconClassName: 'text-slate-300',
                 title: t('bookingModal.paymentRefundedTitle'),
               }
@@ -151,8 +155,7 @@ function BookingsPage() {
               : {
                   Icon: XCircle,
                   body: t('bookingModal.paymentFailedMessage'),
-                  className:
-                    'bg-red-500/10 border-red-500/20 text-red-200',
+                  className: 'bg-red-500/10 border-red-500/20 text-red-200',
                   iconClassName: 'text-red-400',
                   title: t('bookingModal.paymentFailedTitle'),
                 }
@@ -179,7 +182,9 @@ function BookingsPage() {
                 />
                 <div>
                   <p className="font-semibold">{paymentBanner.title}</p>
-                  <p className="mt-1 text-sm opacity-90">{paymentBanner.body}</p>
+                  <p className="mt-1 text-sm opacity-90">
+                    {paymentBanner.body}
+                  </p>
                 </div>
               </div>
               <button
@@ -202,7 +207,7 @@ function BookingsPage() {
         {/* Loading State */}
         {isLoading && (
           <div className="flex items-center justify-center py-20">
-            <Loader2 className="w-8 h-8 text-blue-400 animate-spin" />
+            <Loader2 className="w-8 h-8 text-violet-400 animate-spin" />
           </div>
         )}
 
@@ -225,7 +230,7 @@ function BookingsPage() {
             <Link
               to="/select-location"
               search={DEFAULT_SELECT_LOCATION_SEARCH}
-              className="inline-flex items-center px-6 py-3 bg-blue-500 text-slate-900 font-semibold rounded-xl hover:bg-blue-400 transition-colors"
+              className="inline-flex items-center px-6 py-3 bg-white text-slate-900 font-semibold rounded-xl hover:bg-slate-100 transition-colors"
             >
               {t('bookings.browseHotels')}
             </Link>

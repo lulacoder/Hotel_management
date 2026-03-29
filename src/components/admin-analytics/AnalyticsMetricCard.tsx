@@ -40,7 +40,7 @@ export function AnalyticsMetricCard({
   value,
   format,
   locale,
-  accentClassName = 'from-blue-500/15 to-sky-500/10 text-blue-300 border-blue-500/20',
+  accentClassName = 'from-violet-500/15 to-purple-500/10 text-violet-300 border-violet-500/20',
   secondaryLabel,
   secondaryValue,
   onClick,
@@ -101,8 +101,8 @@ export function AnalyticsMetricCard({
                   : accentClassName
                       .replace('/15', '/10')
                       .replace('/10', '/8')
-                      .replace('text-blue-300', 'text-blue-700')
-                      .replace('text-sky-300', 'text-sky-700')
+                      .replace('text-violet-300', 'text-violet-700')
+                      .replace('text-purple-300', 'text-purple-700')
                       .replace('text-violet-300', 'text-violet-700')
                       .replace('text-indigo-300', 'text-indigo-700')
                       .replace('text-amber-300', 'text-amber-700')

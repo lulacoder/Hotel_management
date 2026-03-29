@@ -60,7 +60,7 @@ export function AssignModal({ userId, onClose }: AssignModalProps) {
     }
   }
 
-  const inputClass = `w-full px-4 py-3 border rounded-xl focus:outline-none focus:border-blue-500/50 transition-all ${
+  const inputClass = `w-full px-4 py-3 border rounded-xl focus:outline-none focus:border-violet-500/50 focus:ring-1 focus:ring-violet-500/20 transition-all ${
     isDark
       ? 'bg-slate-950 border-slate-800 text-slate-200'
       : 'bg-white border-slate-200 text-slate-800 shadow-sm'
@@ -203,7 +203,11 @@ export function AssignModal({ userId, onClose }: AssignModalProps) {
             <button
               type="submit"
               disabled={!selectedHotelId || isSubmitting}
-              className="px-5 py-2.5 rounded-xl bg-gradient-to-r from-blue-500 to-blue-600 text-white font-medium disabled:opacity-50 disabled:cursor-not-allowed"
+              className={`px-5 py-2.5 rounded-xl font-medium disabled:opacity-50 disabled:cursor-not-allowed transition-colors ${
+                isDark
+                  ? 'bg-white text-slate-900 hover:bg-slate-100'
+                  : 'bg-slate-900 text-white hover:bg-slate-800'
+              }`}
             >
               {isSubmitting
                 ? t('admin.users.assignModal.assigning')

@@ -23,7 +23,7 @@ function AdminComplaintsPage() {
 
   const canViewComplaints = Boolean(
     hotelAssignment &&
-      ['hotel_admin', 'hotel_cashier'].includes(hotelAssignment.role),
+    ['hotel_admin', 'hotel_cashier'].includes(hotelAssignment.role),
   )
 
   const assignedHotel = useQuery(
@@ -39,7 +39,7 @@ function AdminComplaintsPage() {
   if (profile === undefined || hotelAssignment === undefined) {
     return (
       <div className="flex items-center justify-center py-20">
-        <div className="animate-spin rounded-full h-8 w-8 border-2 border-blue-500/20 border-t-blue-500"></div>
+        <div className="animate-spin rounded-full h-8 w-8 border-2 border-violet-500/20 border-t-violet-500"></div>
       </div>
     )
   }
@@ -78,7 +78,7 @@ function AdminComplaintsPage() {
 
       {complaints === undefined ? (
         <div className="flex items-center justify-center py-12">
-          <div className="animate-spin rounded-full h-8 w-8 border-2 border-blue-500/20 border-t-blue-500"></div>
+          <div className="animate-spin rounded-full h-8 w-8 border-2 border-violet-500/20 border-t-violet-500"></div>
         </div>
       ) : complaints.length === 0 ? (
         <div className="bg-slate-900/50 border border-slate-800/50 rounded-2xl p-12 text-center">
@@ -88,7 +88,9 @@ function AdminComplaintsPage() {
           <h2 className="text-lg font-semibold text-slate-200 mb-2">
             {t('admin.complaints.noneFound')}
           </h2>
-          <p className="text-slate-500">{t('admin.complaints.noneFoundHint')}</p>
+          <p className="text-slate-500">
+            {t('admin.complaints.noneFoundHint')}
+          </p>
         </div>
       ) : (
         <div className="space-y-4">
@@ -117,7 +119,7 @@ function AdminComplaintsPage() {
                         },
                       )}
                     </span>
-                    <span className="text-xs text-blue-400 mt-1 inline-block">
+                    <span className="text-xs text-violet-400 mt-1 inline-block">
                       {t('admin.complaints.openDetails')}
                     </span>
                   </div>
@@ -152,7 +154,9 @@ function AdminComplaintsPage() {
                         </p>
                       </div>
                     ) : (
-                      <p className="text-slate-400">{t('admin.complaints.noBooking')}</p>
+                      <p className="text-slate-400">
+                        {t('admin.complaints.noBooking')}
+                      </p>
                     )}
                   </div>
                 </div>

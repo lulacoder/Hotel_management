@@ -245,7 +245,7 @@ export function NotificationBell({
           <div className="max-h-[420px] overflow-y-auto">
             {notifications === undefined && (
               <div className="flex items-center justify-center py-10">
-                <div className="animate-spin rounded-full h-6 w-6 border-2 border-blue-500/20 border-t-blue-500" />
+                <div className="animate-spin rounded-full h-6 w-6 border-2 border-violet-500/20 border-t-violet-500" />
               </div>
             )}
 

@@ -128,23 +128,25 @@ function AdminLayout() {
     return (
       <div className="flex min-h-screen items-center justify-center bg-slate-950">
         <div className="relative">
-          <div className="animate-spin rounded-full h-12 w-12 border-2 border-blue-500/20 border-t-blue-500"></div>
-          <div className="absolute inset-0 animate-ping rounded-full h-12 w-12 border border-blue-500/10"></div>
+          <div className="animate-spin rounded-full h-12 w-12 border-2 border-violet-500/20 border-t-violet-500"></div>
+          <div className="absolute inset-0 animate-ping rounded-full h-12 w-12 border border-violet-500/10"></div>
         </div>
       </div>
     )
   }
 
   if (!isSignedIn) {
-    return <Navigate to="/sign-in" search={buildRedirectSearch(location.href)} />
+    return (
+      <Navigate to="/sign-in" search={buildRedirectSearch(location.href)} />
+    )
   }
 
   if (!isRoomAdmin && hotelAssignment === undefined) {
     return (
       <div className="flex min-h-screen items-center justify-center bg-slate-950">
         <div className="relative">
-          <div className="animate-spin rounded-full h-12 w-12 border-2 border-blue-500/20 border-t-blue-500"></div>
-          <div className="absolute inset-0 animate-ping rounded-full h-12 w-12 border border-blue-500/10"></div>
+          <div className="animate-spin rounded-full h-12 w-12 border-2 border-violet-500/20 border-t-violet-500"></div>
+          <div className="absolute inset-0 animate-ping rounded-full h-12 w-12 border border-violet-500/10"></div>
         </div>
       </div>
     )
@@ -218,7 +220,7 @@ function AdminLayout() {
       >
         <Menu
           size={22}
-          className="text-slate-300 group-hover:text-blue-400 transition-colors"
+          className="text-slate-300 group-hover:text-violet-400 transition-colors"
         />
       </button>
 
@@ -230,7 +232,7 @@ function AdminLayout() {
       >
         <div className="flex items-center justify-between p-5 border-b border-slate-800/50">
           <div className="flex items-center gap-3">
-            <div className="h-10 rounded-xl bg-slate-950/70 border border-blue-500/30 px-1 flex items-center justify-center shadow-lg shadow-blue-500/20">
+            <div className="brand-logo-shell h-10 px-1 flex items-center justify-center">
               <img
                 src="/logo.png"
                 alt="Luxe Hotels"
@@ -280,7 +282,7 @@ function AdminLayout() {
                 activeOptions={{ exact: item.exact }}
                 activeProps={{
                   className:
-                    'flex items-center gap-3 px-4 py-3 rounded-xl font-medium transition-all duration-200 bg-blue-500/10 text-blue-400 border border-blue-500/20',
+                    'flex items-center gap-3 px-4 py-3 rounded-xl font-medium transition-all duration-200 bg-violet-500/10 text-violet-400 border border-violet-500/20',
                 }}
                 inactiveProps={{
                   className:
@@ -290,7 +292,7 @@ function AdminLayout() {
                 {({ isActive }) => (
                   <>
                     <item.icon
-                      className={`h-5 w-5 ${isActive ? 'text-blue-400' : ''}`}
+                      className={`h-5 w-5 ${isActive ? 'text-violet-400' : ''}`}
                     />
                     {t(`admin.nav.${item.key}` as never)}
                   </>
@@ -335,7 +337,7 @@ function AdminLayout() {
       <aside className="hidden md:flex md:h-dvh w-[17rem] shrink-0 bg-slate-900/50 border-r border-slate-800/50 backdrop-blur-xl flex-col relative z-20">
         <div className="p-5 border-b border-slate-800/50">
           <div className="flex items-center gap-3">
-            <div className="h-10 rounded-xl bg-slate-950/70 border border-blue-500/30 px-1 flex items-center justify-center shadow-lg shadow-blue-500/20">
+            <div className="brand-logo-shell h-10 px-1 flex items-center justify-center">
               <img
                 src="/logo.png"
                 alt="Luxe Hotels"
@@ -374,7 +376,7 @@ function AdminLayout() {
                 activeOptions={{ exact: item.exact }}
                 activeProps={{
                   className:
-                    'flex items-center gap-3 px-3.5 py-2.5 rounded-xl font-medium transition-all duration-200 bg-blue-500/10 text-blue-400 border border-blue-500/20',
+                    'flex items-center gap-3 px-3.5 py-2.5 rounded-xl font-medium transition-all duration-200 bg-violet-500/10 text-violet-400 border border-violet-500/20',
                 }}
                 inactiveProps={{
                   className:
@@ -384,7 +386,7 @@ function AdminLayout() {
                 {({ isActive }) => (
                   <>
                     <item.icon
-                      className={`h-5 w-5 ${isActive ? 'text-blue-400' : ''}`}
+                      className={`h-5 w-5 ${isActive ? 'text-violet-400' : ''}`}
                     />
                     {t(`admin.nav.${item.key}` as never)}
                   </>

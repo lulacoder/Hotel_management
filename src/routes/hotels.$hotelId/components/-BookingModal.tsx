@@ -13,7 +13,10 @@ import {
 import { useEffect, useState } from 'react'
 
 import { api } from '../../../../convex/_generated/api'
-import { uploadImageToConvex, validateImageFile } from '../../../lib/imageUpload'
+import {
+  uploadImageToConvex,
+  validateImageFile,
+} from '../../../lib/imageUpload'
 import {
   PACKAGES,
   formatPackageAddOn,
@@ -115,7 +118,9 @@ export function BookingModal({
 
     setSelectedPackageType(existingBooking.packageType ?? 'room_only')
     setBookingId(existingBooking._id)
-    setPaymentMethod(existingBooking.status === 'pending_payment' ? 'bank' : null)
+    setPaymentMethod(
+      existingBooking.status === 'pending_payment' ? 'bank' : null,
+    )
     setStep('confirm')
   }, [existingBooking])
 
@@ -260,7 +265,8 @@ export function BookingModal({
     existingBooking?.packageAddOn ?? selectedPackage.addOnPerNight
   const roomSubtotalCents = roomRateCents * nights
   const packageSubtotalCents = packageRateCents * nights
-  const totalPriceCents = existingBooking?.totalPrice ?? roomSubtotalCents + packageSubtotalCents
+  const totalPriceCents =
+    existingBooking?.totalPrice ?? roomSubtotalCents + packageSubtotalCents
 
   return (
     <div className="booking-modal fixed inset-0 bg-black/60 backdrop-blur-sm flex items-center justify-center z-50 p-4">
@@ -293,7 +299,9 @@ export function BookingModal({
                 <Building2 className="booking-summary-icon w-6 h-6 text-slate-400" />
               </div>
               <div>
-                <p className="booking-summary-hotel font-semibold text-slate-200">{hotel.name}</p>
+                <p className="booking-summary-hotel font-semibold text-slate-200">
+                  {hotel.name}
+                </p>
                 <p className="booking-summary-room text-sm text-slate-400">
                   {t('hotel.room')} {room.roomNumber} - {room.type}
                 </p>
@@ -301,12 +309,20 @@ export function BookingModal({
             </div>
             <div className="grid grid-cols-2 gap-4 text-sm">
               <div>
-                <p className="booking-summary-label text-slate-500">{t('booking.checkIn')}</p>
-                <p className="booking-summary-value text-slate-200">{bookingCheckIn}</p>
+                <p className="booking-summary-label text-slate-500">
+                  {t('booking.checkIn')}
+                </p>
+                <p className="booking-summary-value text-slate-200">
+                  {bookingCheckIn}
+                </p>
               </div>
               <div>
-                <p className="booking-summary-label text-slate-500">{t('booking.checkOut')}</p>
-                <p className="booking-summary-value text-slate-200">{bookingCheckOut}</p>
+                <p className="booking-summary-label text-slate-500">
+                  {t('booking.checkOut')}
+                </p>
+                <p className="booking-summary-value text-slate-200">
+                  {bookingCheckOut}
+                </p>
               </div>
             </div>
             <div className="booking-summary-total border-t border-slate-700 mt-4 pt-4 flex justify-between">
@@ -318,12 +334,11 @@ export function BookingModal({
                 {packageRateCents > 0 && (
                   <p>
                     {t('booking.package')}: $
-                    {(packageRateCents / 100).toFixed(0)} ×{' '}
-                    {nights}
+                    {(packageRateCents / 100).toFixed(0)} × {nights}
                   </p>
                 )}
               </div>
-              <span className="booking-summary-total-amount text-xl font-bold text-blue-400">
+              <span className="booking-summary-total-amount text-xl font-bold text-violet-400">
                 ${(totalPriceCents / 100).toFixed(2)}
               </span>
             </div>
@@ -347,23 +362,23 @@ export function BookingModal({
                     onClick={() => setSelectedPackageType(pkg.type)}
                     className={`booking-package-card light-hover-surface w-full text-left rounded-xl border p-4 transition-all ${
                       isSelected
-                        ? 'booking-package-card--selected border-blue-500/50 bg-blue-500/10'
-                        : 'border-slate-700 bg-slate-800/40 hover:border-slate-600'
+                        ? 'booking-package-card--selected border-violet-500/50 bg-violet-500/10'
+                        : 'booking-package-card--idle border-slate-700 bg-slate-800/40 hover:border-slate-600'
                     }`}
                   >
                     <div className="flex items-start justify-between gap-3 mb-2">
                       <div>
-                        <p className="text-slate-100 font-semibold">
+                        <p className="booking-package-title text-slate-100 font-semibold">
                           {getPackageLabel(pkg.type, t)}
                         </p>
-                        <p className="text-slate-400 text-sm">
+                        <p className="booking-package-description text-slate-400 text-sm">
                           {getPackageDescription(pkg.type, t)}
                         </p>
                       </div>
                       <span
                         className={`booking-package-badge text-xs font-medium px-2.5 py-1 rounded-full border ${
                           isSelected
-                            ? 'booking-package-badge--selected text-blue-300 border-blue-500/40 bg-blue-500/10'
+                            ? 'booking-package-badge--selected text-violet-300 border-violet-500/40 bg-violet-500/10'
                             : 'text-slate-300 border-slate-600 bg-slate-700/40'
                         }`}
                       >
@@ -391,7 +406,7 @@ export function BookingModal({
                 <button
                   type="button"
                   onClick={() => setStep('details')}
-                  className="booking-action-primary flex-1 px-4 py-3 bg-gradient-to-r from-blue-500 to-blue-600 text-white font-medium rounded-xl hover:from-blue-600 hover:to-blue-700 transition-all"
+                  className="booking-action-primary flex-1 px-4 py-3 bg-white text-slate-900 font-medium rounded-xl hover:bg-slate-100 transition-all"
                 >
                   {t('bookingModal.continue')}
                 </button>
@@ -413,7 +428,7 @@ export function BookingModal({
                       guestName: e.target.value,
                     })
                   }
-                  className="booking-input w-full px-4 py-3 bg-slate-800/50 border border-slate-700 rounded-xl text-slate-200 focus:outline-none focus:border-blue-500/50 transition-all"
+                  className="booking-input w-full px-4 py-3 bg-slate-800/50 border border-slate-700 rounded-xl text-slate-200 focus:outline-none focus:border-violet-500/50 transition-all"
                 />
               </div>
 
@@ -431,7 +446,7 @@ export function BookingModal({
                       guestEmail: e.target.value,
                     })
                   }
-                  className="booking-input w-full px-4 py-3 bg-slate-800/50 border border-slate-700 rounded-xl text-slate-200 focus:outline-none focus:border-blue-500/50 transition-all"
+                  className="booking-input w-full px-4 py-3 bg-slate-800/50 border border-slate-700 rounded-xl text-slate-200 focus:outline-none focus:border-violet-500/50 transition-all"
                 />
               </div>
 
@@ -449,12 +464,12 @@ export function BookingModal({
                     })
                   }
                   placeholder={t('bookingModal.specialRequestsPlaceholder')}
-                  className="booking-input booking-textarea w-full px-4 py-3 bg-slate-800/50 border border-slate-700 rounded-xl text-slate-200 placeholder-slate-500 focus:outline-none focus:border-blue-500/50 transition-all resize-none"
+                  className="booking-input booking-textarea w-full px-4 py-3 bg-slate-800/50 border border-slate-700 rounded-xl text-slate-200 placeholder-slate-500 focus:outline-none focus:border-violet-500/50 transition-all resize-none"
                 />
               </div>
 
-              <div className="booking-hold-notice-card bg-blue-500/10 border border-blue-500/20 rounded-xl p-4">
-                <p className="booking-hold-notice-text text-blue-400 text-base font-medium">
+              <div className="booking-hold-notice-card bg-violet-500/10 border border-violet-500/20 rounded-xl p-4">
+                <p className="booking-hold-notice-text text-violet-400 text-base font-medium">
                   {t('bookingModal.holdNotice')}
                 </p>
               </div>
@@ -471,14 +486,13 @@ export function BookingModal({
                   <div className="flex items-center justify-between text-slate-300 mt-2">
                     <span>
                       {getPackageLabel(selectedPackage.type, t)}{' '}
-                      {t('bookingModal.addOn')} (
-                      {nights}{' '}
+                      {t('bookingModal.addOn')} ({nights}{' '}
                       {nights !== 1 ? t('hotel.nights') : t('hotel.night')})
                     </span>
                     <span>${(packageSubtotalCents / 100).toFixed(2)}</span>
                   </div>
                 )}
-                <div className="booking-details-total border-t border-slate-700 mt-3 pt-3 flex items-center justify-between text-blue-400 font-semibold">
+                <div className="booking-details-total border-t border-slate-700 mt-3 pt-3 flex items-center justify-between text-violet-400 font-semibold">
                   <span>{t('booking.total')}</span>
                   <span>${(totalPriceCents / 100).toFixed(2)}</span>
                 </div>
@@ -495,7 +509,7 @@ export function BookingModal({
                 <button
                   type="submit"
                   disabled={loading}
-                  className="booking-action-primary flex-1 px-4 py-3 bg-gradient-to-r from-blue-500 to-blue-600 text-white font-medium rounded-xl hover:from-blue-600 hover:to-blue-700 transition-all disabled:opacity-50"
+                  className="booking-action-primary flex-1 px-4 py-3 bg-white text-slate-900 font-medium rounded-xl hover:bg-slate-100 transition-all disabled:opacity-50"
                 >
                   {loading
                     ? t('bookingModal.holding')
@@ -519,7 +533,9 @@ export function BookingModal({
 
               {bookingId && (
                 <div className="bg-slate-800/40 border border-slate-700 rounded-xl p-4 text-sm">
-                  <p className="text-slate-500 mb-1">{t('bookingModal.bookingId')}</p>
+                  <p className="text-slate-500 mb-1">
+                    {t('bookingModal.bookingId')}
+                  </p>
                   <p className="text-slate-200 font-medium">{bookingId}</p>
                 </div>
               )}
@@ -533,6 +549,10 @@ export function BookingModal({
                 </button>
                 <Link
                   to="/bookings"
+                  search={{
+                    payment: undefined,
+                    tx_ref: undefined,
+                  }}
                   onClick={onSuccess}
                   className="booking-action-success flex-1 px-4 py-3 text-center bg-gradient-to-r from-emerald-500 to-emerald-600 text-white font-medium rounded-xl hover:from-emerald-600 hover:to-emerald-700 transition-all"
                 >
@@ -566,8 +586,7 @@ export function BookingModal({
                   <div className="flex items-center justify-between text-slate-300 mt-2">
                     <span>
                       {getPackageLabel(selectedPackage.type, t)}{' '}
-                      {t('bookingModal.addOn')} (
-                      {nights}{' '}
+                      {t('bookingModal.addOn')} ({nights}{' '}
                       {nights !== 1 ? t('hotel.nights') : t('hotel.night')})
                     </span>
                     <span>${(packageSubtotalCents / 100).toFixed(2)}</span>
@@ -588,15 +607,15 @@ export function BookingModal({
                   <button
                     type="button"
                     onClick={() => setPaymentMethod('chapa')}
-                    className="w-full rounded-xl border border-slate-700 bg-slate-800/40 p-4 text-left transition-colors hover:border-blue-500/40 hover:bg-blue-500/10"
+                    className="booking-payment-option booking-payment-option--chapa w-full rounded-xl border border-slate-700 bg-slate-800/40 p-4 text-left transition-colors hover:border-violet-500/40 hover:bg-violet-500/10"
                   >
                     <div className="mb-1 flex items-center gap-3 text-slate-100">
-                      <CreditCard className="h-5 w-5 text-blue-400" />
-                      <span className="font-semibold">
+                      <CreditCard className="booking-payment-option-icon h-5 w-5 text-violet-400" />
+                      <span className="booking-payment-option-title font-semibold">
                         {t('bookingModal.payWithChapa')}
                       </span>
                     </div>
-                    <p className="text-sm text-slate-400">
+                    <p className="booking-payment-option-description text-sm text-slate-400">
                       {t('bookingModal.chapaDescription')}
                     </p>
                   </button>
@@ -604,15 +623,15 @@ export function BookingModal({
                   <button
                     type="button"
                     onClick={() => setPaymentMethod('bank')}
-                    className="w-full rounded-xl border border-slate-700 bg-slate-800/40 p-4 text-left transition-colors hover:border-emerald-500/40 hover:bg-emerald-500/10"
+                    className="booking-payment-option booking-payment-option--bank w-full rounded-xl border border-slate-700 bg-slate-800/40 p-4 text-left transition-colors hover:border-emerald-500/40 hover:bg-emerald-500/10"
                   >
                     <div className="mb-1 flex items-center gap-3 text-slate-100">
-                      <Landmark className="h-5 w-5 text-emerald-400" />
-                      <span className="font-semibold">
+                      <Landmark className="booking-payment-option-icon h-5 w-5 text-emerald-400" />
+                      <span className="booking-payment-option-title font-semibold">
                         {t('bookingModal.payWithBank')}
                       </span>
                     </div>
-                    <p className="text-sm text-slate-400">
+                    <p className="booking-payment-option-description text-sm text-slate-400">
                       {t('bookingModal.bankDescription')}
                     </p>
                   </button>
@@ -628,11 +647,11 @@ export function BookingModal({
 
               {paymentMethod === 'chapa' && (
                 <div className="space-y-4">
-                  <div className="rounded-xl border border-blue-500/20 bg-blue-500/10 p-4">
-                    <p className="text-sm font-medium text-blue-300">
+                  <div className="booking-chapa-notice rounded-xl border border-violet-500/20 bg-violet-500/10 p-4">
+                    <p className="booking-chapa-notice-title text-sm font-medium text-violet-300">
                       {t('bookingModal.chapaRedirectNotice')}
                     </p>
-                    <p className="mt-2 text-xs text-blue-200/80">
+                    <p className="booking-chapa-notice-body mt-2 text-xs text-violet-200/80">
                       {t('bookingModal.chapaProcessingNotice')}
                     </p>
                   </div>
@@ -649,7 +668,7 @@ export function BookingModal({
                       type="button"
                       onClick={handleChapaCheckout}
                       disabled={chapaLoading}
-                      className="booking-action-primary flex-1 px-4 py-3 bg-gradient-to-r from-blue-500 to-blue-600 text-white font-medium rounded-xl hover:from-blue-600 hover:to-blue-700 transition-all disabled:opacity-50"
+                      className="booking-action-primary flex-1 px-4 py-3 bg-white text-slate-900 font-medium rounded-xl hover:bg-slate-100 transition-all disabled:opacity-50"
                     >
                       {chapaLoading
                         ? t('bookingModal.redirectingToChapa')
@@ -678,7 +697,7 @@ export function BookingModal({
                             )
                           }
                           disabled={!bankAccounts || bankAccounts.length === 0}
-                          className="booking-input booking-select w-full px-3 py-2.5 bg-slate-800/60 border border-slate-700 rounded-xl text-slate-200 focus:outline-none focus:border-blue-500/50 transition-all"
+                          className="booking-input booking-select w-full px-3 py-2.5 bg-slate-800/60 border border-slate-700 rounded-xl text-slate-200 focus:outline-none focus:border-violet-500/50 transition-all"
                         >
                           {bankAccounts && bankAccounts.length > 0 ? (
                             bankAccounts.map((account) => (
@@ -734,7 +753,7 @@ export function BookingModal({
                         const file = e.target.files?.[0] ?? null
                         setNationalIdFile(file)
                       }}
-                      className="booking-input booking-file-input w-full px-4 py-3 bg-slate-800/50 border border-slate-700 rounded-xl text-slate-200 focus:outline-none focus:border-blue-500/50 transition-all file:mr-3 file:px-3 file:py-1.5 file:rounded-md file:border-0 file:bg-slate-700 file:text-slate-100 hover:file:bg-slate-600"
+                      className="booking-input booking-file-input w-full px-4 py-3 bg-slate-800/50 border border-slate-700 rounded-xl text-slate-200 focus:outline-none focus:border-violet-500/50 transition-all file:mr-3 file:px-3 file:py-1.5 file:rounded-md file:border-0 file:bg-slate-700 file:text-slate-100 hover:file:bg-slate-600"
                     />
                   </div>
 
@@ -747,7 +766,7 @@ export function BookingModal({
                       value={transactionId}
                       onChange={(e) => setTransactionId(e.target.value)}
                       placeholder={t('bookingModal.transactionIdPlaceholder')}
-                      className="booking-input w-full px-4 py-3 bg-slate-800/50 border border-slate-700 rounded-xl text-slate-200 placeholder-slate-500 focus:outline-none focus:border-blue-500/50 transition-all"
+                      className="booking-input w-full px-4 py-3 bg-slate-800/50 border border-slate-700 rounded-xl text-slate-200 placeholder-slate-500 focus:outline-none focus:border-violet-500/50 transition-all"
                     />
                   </div>
 

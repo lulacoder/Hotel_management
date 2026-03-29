@@ -27,7 +27,7 @@ export function BookingsHeader({ userName }: BookingsHeaderProps) {
             <Link
               to="/select-location"
               search={DEFAULT_SELECT_LOCATION_SEARCH}
-              className="p-2 text-slate-400 hover:text-blue-400 hover:bg-slate-800 rounded-lg transition-colors"
+              className="header-secondary-btn rounded-lg p-2"
             >
               <ArrowLeft className="w-5 h-5" />
             </Link>
@@ -50,12 +50,12 @@ export function BookingsHeader({ userName }: BookingsHeaderProps) {
             <LanguageSwitcher compact />
             <button
               onClick={() => setIsOpen(true)}
-              className="p-2.5 hover:bg-white/10 rounded-xl transition-all duration-300 group"
+              className="cursor-pointer p-2.5 hover:bg-white/10 rounded-xl transition-all duration-300 group"
               aria-label={t('header.openMenu')}
             >
               <Menu
                 size={22}
-                className="text-slate-300 group-hover:text-blue-400 transition-colors"
+                className="text-slate-300 group-hover:text-violet-400 transition-colors"
               />
             </button>
           </div>
@@ -70,7 +70,7 @@ export function BookingsHeader({ userName }: BookingsHeaderProps) {
       >
         <div className="flex items-center justify-between p-5 border-b border-slate-800/50">
           <div className="flex items-center gap-3">
-            <div className="h-10 rounded-xl bg-slate-950/70 border border-blue-500/30 px-1 flex items-center justify-center shadow-lg shadow-blue-500/20">
+            <div className="brand-logo-shell h-10 px-1 flex items-center justify-center">
               <img
                 src="/logo.png"
                 alt="Luxe Hotels"
@@ -83,7 +83,7 @@ export function BookingsHeader({ userName }: BookingsHeaderProps) {
           </div>
           <button
             onClick={() => setIsOpen(false)}
-            className="p-2.5 hover:bg-white/5 rounded-xl transition-all duration-300 group"
+            className="cursor-pointer p-2.5 hover:bg-white/5 rounded-xl transition-all duration-300 group"
             aria-label={t('header.closeMenu')}
           >
             <X
@@ -102,7 +102,7 @@ export function BookingsHeader({ userName }: BookingsHeaderProps) {
             >
               <Home
                 size={20}
-                className="group-hover:text-blue-400 transition-colors"
+                className="group-hover:text-violet-400 transition-colors"
               />
               <span className="font-medium">{t('header.home')}</span>
             </Link>
@@ -115,7 +115,7 @@ export function BookingsHeader({ userName }: BookingsHeaderProps) {
             >
               <MapPin
                 size={20}
-                className="group-hover:text-blue-400 transition-colors"
+                className="group-hover:text-violet-400 transition-colors"
               />
               <span className="font-medium">{t('header.browseLocations')}</span>
             </Link>

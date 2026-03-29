@@ -37,55 +37,57 @@ export function HeroSection({
       : locationErrorMessage
 
   return (
-    <div className="relative py-16 px-4 overflow-hidden">
-      <div className="absolute inset-0 bg-gradient-to-r from-blue-500/5 to-violet-500/5"></div>
-      <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[600px] h-[600px] bg-blue-500/10 rounded-full blur-3xl"></div>
+    <div className="relative overflow-hidden px-4 py-8 md:py-10">
+      <div className="absolute inset-0 bg-gradient-to-r from-violet-500/5 to-purple-500/5"></div>
+      <div className="absolute left-1/2 top-1/2 h-[420px] w-[420px] -translate-x-1/2 -translate-y-1/2 rounded-full bg-violet-500/10 blur-3xl"></div>
 
-      <div className="max-w-4xl mx-auto text-center relative z-10">
-        <h2 className="text-4xl md:text-5xl font-bold text-slate-100 mb-4 tracking-tight">
-          {t('select.findStay')}
-        </h2>
-        <p className="text-lg text-slate-400 mb-8">
-          {t('select.findStaySubtitle')}
-        </p>
+      <div className="relative z-10 mx-auto max-w-5xl">
+        <div className="mb-4 flex flex-col gap-3 md:mb-5 md:flex-row md:items-end md:justify-between">
+          <div>
+            <h2 className="text-2xl font-bold tracking-tight text-slate-100 md:text-3xl">
+              {t('select.findStay')}
+            </h2>
+            <p className="mt-1 text-sm text-slate-400 md:text-base">
+              {t('select.findStaySubtitle')}
+            </p>
+          </div>
 
-        {locationSupported && (
-          <div className="mb-6">
-            {locationLoading ? (
-<div className="selector-location-loading inline-flex items-center gap-2 px-4 py-2 bg-slate-800/50 rounded-lg text-slate-400 text-sm">
+          {locationSupported &&
+            (locationLoading ? (
+              <div className="selector-location-loading inline-flex items-center gap-2 rounded-lg bg-slate-800/50 px-3 py-1.5 text-xs text-slate-400 md:text-sm">
                 <Loader2 className="w-4 h-4 animate-spin" />
                 {t('select.gettingLocation')}
               </div>
             ) : hasUserLocation ? (
-              <div className="selector-location-enabled inline-flex items-center gap-2 px-4 py-2 bg-emerald-500/10 border border-emerald-500/30 rounded-lg text-emerald-400 text-sm">
+              <div className="selector-location-enabled inline-flex items-center gap-2 rounded-lg border border-emerald-500/30 bg-emerald-500/10 px-3 py-1.5 text-xs text-emerald-400 md:text-sm">
                 <Navigation className="w-4 h-4" />
                 {t('select.locationEnabled')}
               </div>
             ) : locationError ? (
               <button
+                type="button"
                 onClick={requestLocation}
                 title={locationErrorMessage}
-                className="selector-location-retry inline-flex items-center gap-2 px-4 py-2 bg-slate-800/50 hover:bg-slate-700/50 rounded-lg text-slate-400 text-sm transition-colors"
+                className="selector-location-retry inline-flex cursor-pointer items-center gap-2 rounded-lg bg-slate-800/50 px-3 py-1.5 text-xs text-slate-400 transition-colors hover:bg-slate-700/50 md:text-sm"
               >
                 <Navigation className="w-4 h-4" />
                 {locationErrorPreview}
-                <span className="selector-location-retry-link text-blue-400 ml-1">
+                <span className="selector-location-retry-link ml-1 text-violet-400">
                   {t('select.tryAgain')}
                 </span>
               </button>
-            ) : null}
-          </div>
-        )}
+            ) : null)}
+        </div>
 
-        <div className="flex flex-col gap-4 max-w-3xl mx-auto">
+        <div className="mx-auto flex max-w-4xl flex-col gap-3 rounded-2xl border border-slate-800/50 bg-slate-900/50 p-3 md:p-4">
           <div className="relative">
-            <Search className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-slate-500" />
+            <Search className="absolute left-4 top-1/2 h-5 w-5 -translate-y-1/2 text-slate-500" />
             <input
               type="text"
               placeholder={t('select.searchPlaceholder')}
               value={searchTerm}
               onChange={(event) => onSearchTermChange(event.target.value)}
-              className="w-full pl-12 pr-4 py-4 bg-slate-800/50 border border-slate-700/50 rounded-xl text-slate-200 placeholder-slate-500 focus:outline-none focus:border-blue-500/50 focus:ring-2 focus:ring-blue-500/20 transition-all"
+              className="w-full rounded-xl border border-slate-700/50 bg-slate-800/50 py-3 pl-12 pr-4 text-slate-200 placeholder-slate-500 transition-all focus:border-violet-500/50 focus:outline-none focus:ring-2 focus:ring-violet-500/20"
             />
           </div>
 

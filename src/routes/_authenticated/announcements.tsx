@@ -93,10 +93,10 @@ const priorityConfig: Record<
     labelKey: 'announcements.priority.normal',
     cardBg: 'bg-slate-800/40',
     cardBorder: 'border-slate-700/60',
-    badgeBg: 'bg-blue-500/10',
-    badgeText: 'text-blue-400',
-    iconColor: 'text-blue-400',
-    barColor: 'bg-blue-500',
+    badgeBg: 'bg-violet-500/10',
+    badgeText: 'text-violet-400',
+    iconColor: 'text-violet-400',
+    barColor: 'bg-violet-500',
   },
 }
 
@@ -168,7 +168,7 @@ function CustomerAnnouncementsPage() {
               <>
                 <Link
                   to="/bookings"
-                  className="px-3 py-1.5 text-sm font-semibold text-slate-900 bg-blue-500 hover:bg-blue-400 rounded-lg transition-colors"
+                  className="header-primary-btn rounded-lg px-3 py-1.5 text-sm font-semibold"
                 >
                   {t('header.myBookings')}
                 </Link>
@@ -179,18 +179,14 @@ function CustomerAnnouncementsPage() {
                 <Link
                   to="/sign-in"
                   search={DEFAULT_AUTH_SEARCH}
-                  className={`transition-colors font-medium ${
-                    isDark
-                      ? 'text-slate-400 hover:text-blue-400'
-                      : 'text-slate-600 hover:text-blue-600'
-                  }`}
+                  className="header-inline-link font-medium"
                 >
                   {t('header.signIn')}
                 </Link>
                 <Link
                   to="/sign-up"
                   search={DEFAULT_AUTH_SEARCH}
-                  className="px-3 py-1.5 bg-blue-500 text-slate-900 font-semibold rounded-lg hover:bg-blue-400 transition-colors"
+                  className="header-primary-btn rounded-lg px-3 py-1.5 font-semibold"
                 >
                   {t('header.signUp')}
                 </Link>
@@ -204,21 +200,21 @@ function CustomerAnnouncementsPage() {
             {isSignedIn && (
               <Link
                 to="/bookings"
-                className="px-3 py-1.5 text-sm font-semibold text-slate-900 bg-blue-500 hover:bg-blue-400 rounded-lg transition-colors"
+                className="header-primary-btn rounded-lg px-3 py-1.5 text-sm font-semibold"
               >
                 {t('header.myBookings')}
               </Link>
             )}
             <button
               onClick={() => setIsMobileMenuOpen(true)}
-              className={`p-2.5 rounded-xl transition-all duration-300 group ${
+              className={`cursor-pointer p-2.5 rounded-xl transition-all duration-300 group ${
                 isDark ? 'hover:bg-white/10' : 'hover:bg-slate-100'
               }`}
               aria-label={t('header.openMenu')}
             >
               <Menu
                 size={22}
-                className={`group-hover:text-blue-400 transition-colors ${
+                className={`group-hover:text-violet-400 transition-colors ${
                   isDark ? 'text-slate-300' : 'text-slate-600'
                 }`}
               />
@@ -241,7 +237,7 @@ function CustomerAnnouncementsPage() {
           }`}
         >
           <div className="flex items-center gap-3">
-            <div className="h-10 rounded-xl bg-slate-950/70 border border-blue-500/30 px-1 flex items-center justify-center shadow-lg shadow-blue-500/20">
+            <div className="brand-logo-shell h-10 px-1 flex items-center justify-center">
               <img
                 src="/logo.png"
                 alt="Luxe Hotels"
@@ -256,7 +252,7 @@ function CustomerAnnouncementsPage() {
           </div>
           <button
             onClick={() => setIsMobileMenuOpen(false)}
-            className={`p-2.5 rounded-xl transition-all duration-300 group ${
+            className={`cursor-pointer p-2.5 rounded-xl transition-all duration-300 group ${
               isDark ? 'hover:bg-white/5' : 'hover:bg-slate-100'
             }`}
             aria-label={t('header.closeMenu')}
@@ -285,7 +281,7 @@ function CustomerAnnouncementsPage() {
             >
               <Home
                 size={20}
-                className="group-hover:text-blue-400 transition-colors"
+                className="group-hover:text-violet-400 transition-colors"
               />
               <span className="font-medium">{t('header.home')}</span>
             </Link>
@@ -302,7 +298,7 @@ function CustomerAnnouncementsPage() {
             >
               <MapPin
                 size={20}
-                className="group-hover:text-blue-400 transition-colors"
+                className="group-hover:text-violet-400 transition-colors"
               />
               <span className="font-medium">{t('header.browseLocations')}</span>
             </Link>
@@ -348,7 +344,7 @@ function CustomerAnnouncementsPage() {
                   to="/sign-up"
                   search={DEFAULT_AUTH_SEARCH}
                   onClick={() => setIsMobileMenuOpen(false)}
-                  className="flex items-center justify-center gap-2 px-4 py-3 rounded-xl bg-gradient-to-r from-blue-500 to-indigo-500 hover:from-blue-400 hover:to-indigo-400 text-white font-semibold transition-all duration-300 shadow-lg shadow-blue-500/25"
+                  className="header-primary-btn flex items-center justify-center gap-2 px-4 py-3 rounded-xl font-semibold"
                 >
                   {t('header.createAccount')}
                 </Link>
@@ -394,8 +390,8 @@ function CustomerAnnouncementsPage() {
         {/* Page header */}
         <div className="mb-8">
           <div className="flex items-start gap-4">
-            <div className="w-12 h-12 rounded-2xl bg-blue-500/10 border border-blue-500/20 flex items-center justify-center shrink-0">
-              <Megaphone className="w-6 h-6 text-blue-400" />
+            <div className="w-12 h-12 rounded-2xl bg-violet-500/10 border border-violet-500/20 flex items-center justify-center shrink-0">
+              <Megaphone className="w-6 h-6 text-violet-400" />
             </div>
             <div>
               <h1
@@ -437,7 +433,7 @@ function CustomerAnnouncementsPage() {
         {/* Loading skeleton */}
         {isLoading && (
           <div className="flex items-center justify-center py-24">
-            <div className="animate-spin rounded-full h-8 w-8 border-2 border-blue-500/20 border-t-blue-500" />
+            <div className="animate-spin rounded-full h-8 w-8 border-2 border-violet-500/20 border-t-violet-500" />
           </div>
         )}
 

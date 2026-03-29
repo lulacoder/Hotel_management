@@ -15,12 +15,12 @@ export function getClerkAuthAppearance(theme: Theme) {
         dividerText: 'text-slate-500',
         formFieldLabel: 'text-slate-700',
         formFieldInput:
-          'bg-white border-slate-300 text-slate-900 placeholder:text-slate-500 focus:border-blue-500 focus:ring-blue-500/20',
+          'bg-white border-slate-300 text-slate-900 placeholder:text-slate-500 focus:border-violet-500 focus:ring-violet-500/20',
         formButtonPrimary:
-          'bg-gradient-to-r from-blue-500 to-indigo-500 hover:from-blue-400 hover:to-indigo-400 text-white font-semibold shadow-lg shadow-blue-500/25',
-        footerActionLink: 'text-blue-600 hover:text-blue-500',
+          'bg-slate-900 hover:bg-slate-800 text-white font-semibold shadow-lg shadow-slate-900/25',
+        footerActionLink: 'text-violet-600 hover:text-violet-500',
         identityPreviewText: 'text-slate-700',
-        identityPreviewEditButton: 'text-blue-600',
+        identityPreviewEditButton: 'text-violet-600',
         formFieldInputShowPasswordButton: 'text-slate-500',
         footer: 'hidden',
       },
@@ -40,12 +40,12 @@ export function getClerkAuthAppearance(theme: Theme) {
       dividerText: 'text-slate-500',
       formFieldLabel: 'text-slate-300',
       formFieldInput:
-        'bg-slate-800 border-slate-700 text-white placeholder:text-slate-500 focus:border-blue-500 focus:ring-blue-500/20',
+        'bg-slate-800 border-slate-700 text-white placeholder:text-slate-500 focus:border-violet-500 focus:ring-violet-500/20',
       formButtonPrimary:
-        'bg-gradient-to-r from-blue-500 to-indigo-500 hover:from-blue-400 hover:to-indigo-400 text-white font-semibold shadow-lg shadow-blue-500/25',
-      footerActionLink: 'text-blue-400 hover:text-blue-300',
+        'bg-white hover:bg-slate-100 text-slate-900 font-semibold shadow-lg shadow-black/20',
+      footerActionLink: 'text-violet-400 hover:text-violet-300',
       identityPreviewText: 'text-slate-300',
-      identityPreviewEditButton: 'text-blue-400',
+      identityPreviewEditButton: 'text-violet-400',
       formFieldInputShowPasswordButton: 'text-slate-400',
       footer: 'hidden',
     },

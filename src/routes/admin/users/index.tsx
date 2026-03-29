@@ -139,8 +139,8 @@ function AdminUsersPage() {
           onChange={(e) => setSearchQuery(e.target.value)}
           className={`w-full pl-12 pr-4 py-3 rounded-xl focus:outline-none transition-all ${
             isDark
-              ? 'bg-slate-900/50 border border-slate-800/50 text-slate-200 placeholder-slate-500 focus:border-blue-500/50 focus:ring-1 focus:ring-blue-500/20'
-              : 'bg-white border border-slate-200 text-slate-900 placeholder-slate-400 focus:border-amber-500/50 focus:ring-1 focus:ring-amber-500/20 shadow-sm'
+              ? 'bg-slate-900/50 border border-slate-800/50 text-slate-200 placeholder-slate-500 focus:border-violet-500/50 focus:ring-1 focus:ring-violet-500/20'
+              : 'bg-white border border-slate-200 text-slate-900 placeholder-slate-400 focus:border-violet-500/50 focus:ring-1 focus:ring-violet-500/20 shadow-sm'
           }`}
         />
       </motion.div>
@@ -220,7 +220,7 @@ function AdminUsersPage() {
                       <span
                         className={`inline-flex px-2.5 py-1 rounded-lg text-xs font-medium border ${
                           listedUser.role === 'room_admin'
-                            ? 'bg-blue-500/10 text-blue-400 border-blue-500/20'
+                            ? 'bg-violet-500/10 text-violet-400 border-violet-500/20'
                             : isDark
                               ? 'bg-slate-700/40 text-slate-300 border-slate-700'
                               : 'bg-slate-100 text-slate-600 border-slate-200'
@@ -255,7 +255,7 @@ function AdminUsersPage() {
                         <span
                           className={`inline-flex px-2.5 py-1 rounded-lg text-xs font-medium border ${
                             listedUser.assignment.role === 'hotel_admin'
-                              ? 'bg-blue-500/10 text-blue-400 border-blue-500/20'
+                              ? 'bg-violet-500/10 text-violet-400 border-violet-500/20'
                               : 'bg-emerald-500/10 text-emerald-400 border-emerald-500/20'
                           }`}
                         >
@@ -283,8 +283,8 @@ function AdminUsersPage() {
                           onClick={() => setSelectedUserId(listedUser._id)}
                           className={`px-3 py-1.5 rounded-lg text-xs font-medium border transition-colors ${
                             isDark
-                              ? 'bg-blue-500/10 text-blue-400 border-blue-500/20 hover:bg-blue-500/20'
-                              : 'bg-amber-500/10 text-amber-600 border-amber-500/20 hover:bg-amber-500/20'
+                              ? 'bg-violet-500/10 text-violet-400 border-violet-500/20 hover:bg-violet-500/20'
+                              : 'bg-violet-500/10 text-violet-600 border-violet-500/20 hover:bg-violet-500/20'
                           }`}
                         >
                           {t('admin.users.assign')}

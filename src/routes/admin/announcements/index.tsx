@@ -112,7 +112,7 @@ function AdminAnnouncementsPage() {
   if (profile === undefined || hotelAssignment === undefined) {
     return (
       <div className="flex items-center justify-center py-20">
-        <div className="animate-spin rounded-full h-8 w-8 border-2 border-blue-500/20 border-t-blue-500" />
+        <div className="animate-spin rounded-full h-8 w-8 border-2 border-violet-500/20 border-t-violet-500" />
       </div>
     )
   }
@@ -224,7 +224,11 @@ function AdminAnnouncementsPage() {
         </div>
         <button
           onClick={openCreate}
-          className="flex items-center gap-2 px-4 py-2.5 bg-gradient-to-r from-blue-500 to-blue-600 hover:from-blue-600 hover:to-blue-700 text-white text-sm font-semibold rounded-xl transition-all shadow-lg shadow-blue-500/20 shrink-0"
+          className={`flex items-center gap-2 px-4 py-2.5 text-sm font-semibold rounded-xl transition-all shrink-0 ${
+            isDark
+              ? 'bg-white text-slate-900 hover:bg-slate-100 shadow-lg shadow-white/10'
+              : 'bg-slate-900 text-white hover:bg-slate-800 shadow-lg shadow-slate-900/20'
+          }`}
         >
           <Plus size={16} />
           {t('admin.announcements.newAnnouncement')}
@@ -234,7 +238,7 @@ function AdminAnnouncementsPage() {
       {/* Content */}
       {announcements === undefined ? (
         <div className="flex items-center justify-center py-12">
-          <div className="animate-spin rounded-full h-8 w-8 border-2 border-blue-500/20 border-t-blue-500" />
+          <div className="animate-spin rounded-full h-8 w-8 border-2 border-violet-500/20 border-t-violet-500" />
         </div>
       ) : announcements.length === 0 ? (
         <div
@@ -265,7 +269,11 @@ function AdminAnnouncementsPage() {
           </p>
           <button
             onClick={openCreate}
-            className="inline-flex items-center gap-2 px-5 py-2.5 bg-blue-500/10 hover:bg-blue-500/20 border border-blue-500/20 text-blue-400 text-sm font-medium rounded-xl transition-all"
+            className={`inline-flex items-center gap-2 px-5 py-2.5 border text-sm font-medium rounded-xl transition-all ${
+              isDark
+                ? 'bg-violet-500/10 hover:bg-violet-500/20 border-violet-500/20 text-violet-400'
+                : 'bg-violet-500/10 hover:bg-violet-500/20 border-violet-500/20 text-violet-600'
+            }`}
           >
             <Plus size={15} />
             {t('admin.announcements.newAnnouncement')}

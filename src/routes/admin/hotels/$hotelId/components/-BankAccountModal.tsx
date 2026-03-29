@@ -86,7 +86,7 @@ export function BankAccountModal({
     }
   }
 
-  const inputClass = `w-full px-4 py-3 border rounded-xl focus:outline-none focus:border-blue-500/50 transition-all ${
+  const inputClass = `w-full px-4 py-3 border rounded-xl focus:outline-none focus:border-violet-500/50 transition-all ${
     isDark
       ? 'bg-slate-800/50 border-slate-700 text-slate-200 placeholder-slate-500'
       : 'bg-white border-slate-200 text-slate-800 placeholder-slate-400 shadow-sm'
@@ -161,7 +161,11 @@ export function BankAccountModal({
             <button
               type="submit"
               disabled={loading}
-              className="flex-1 px-4 py-3 bg-gradient-to-r from-blue-500 to-blue-600 text-white font-medium rounded-xl hover:from-blue-600 hover:to-blue-700 transition-all disabled:opacity-50"
+              className={`flex-1 px-4 py-3 font-medium rounded-xl transition-all disabled:opacity-50 ${
+                isDark
+                  ? 'bg-white text-slate-900 hover:bg-slate-100'
+                  : 'bg-slate-900 text-white hover:bg-slate-800'
+              }`}
             >
               {loading ? t('common.saving') : t('admin.hotels.payment.submit')}
             </button>

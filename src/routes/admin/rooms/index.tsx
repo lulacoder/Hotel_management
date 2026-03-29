@@ -93,10 +93,10 @@ function RoomsPage() {
             ${
               isDark
                 ? searchFocused
-                  ? 'bg-slate-800/60 border-cyan-500/30 shadow-[0_0_20px_-4px_rgba(34,211,238,0.15)]'
+                  ? 'bg-slate-800/60 border-violet-500/30 shadow-[0_0_20px_-4px_rgba(139,92,246,0.15)]'
                   : 'bg-slate-900/40 border-slate-800/50 hover:border-slate-700/60'
                 : searchFocused
-                  ? 'bg-white border-amber-400/60 shadow-[0_0_16px_-4px_rgba(245,158,11,0.15)]'
+                  ? 'bg-white border-violet-400/60 shadow-[0_0_16px_-4px_rgba(139,92,246,0.15)]'
                   : 'bg-white border-slate-200 hover:border-slate-300 shadow-sm'
             }
           `}
@@ -110,10 +110,10 @@ function RoomsPage() {
               className={`w-5 h-5 transition-colors duration-300 ${
                 isDark
                   ? searchFocused
-                    ? 'text-cyan-400'
+                    ? 'text-violet-400'
                     : 'text-slate-500'
                   : searchFocused
-                    ? 'text-amber-500'
+                    ? 'text-violet-500'
                     : 'text-slate-400'
               }`}
             />
@@ -135,8 +135,8 @@ function RoomsPage() {
         <motion.div
           className={`mb-7 flex items-center gap-3 rounded-xl border px-5 py-3.5 text-sm overflow-hidden relative ${
             isDark
-              ? 'border-cyan-500/15 bg-cyan-950/20 backdrop-blur-sm text-cyan-100'
-              : 'border-amber-400/25 bg-amber-50 text-amber-800'
+              ? 'border-violet-500/15 bg-violet-950/20 backdrop-blur-sm text-violet-100'
+              : 'border-violet-400/25 bg-violet-50 text-violet-800'
           }`}
           initial={{ opacity: 0, height: 0 }}
           animate={{ opacity: 1, height: 'auto' }}
@@ -144,12 +144,12 @@ function RoomsPage() {
         >
           {/* Left accent bar */}
           <div
-            className={`absolute left-0 top-0 bottom-0 w-[3px] rounded-l-xl ${isDark ? 'bg-gradient-to-b from-cyan-400 to-blue-500' : 'bg-gradient-to-b from-amber-400 to-amber-600'}`}
+            className={`absolute left-0 top-0 bottom-0 w-[3px] rounded-l-xl ${isDark ? 'bg-gradient-to-b from-violet-400 to-violet-500' : 'bg-gradient-to-b from-violet-400 to-violet-600'}`}
           />
           <SlidersHorizontal
-            className={`h-4 w-4 flex-shrink-0 ml-1 ${isDark ? 'text-cyan-300' : 'text-amber-600'}`}
+            className={`h-4 w-4 flex-shrink-0 ml-1 ${isDark ? 'text-violet-300' : 'text-violet-600'}`}
           />
-          <span className={isDark ? 'text-cyan-100/90' : 'text-amber-700'}>
+          <span className={isDark ? 'text-violet-100/90' : 'text-violet-700'}>
             {t('admin.rooms.analyticsFilterNotice' as never, {
               status: t(
                 `admin.hotels.status.${
@@ -168,10 +168,10 @@ function RoomsPage() {
         <div className="flex items-center justify-center py-24">
           <div className="relative">
             <div
-              className={`animate-spin rounded-full h-9 w-9 border-2 ${isDark ? 'border-cyan-500/20 border-t-cyan-400' : 'border-amber-500/20 border-t-amber-500'}`}
+              className={`animate-spin rounded-full h-9 w-9 border-2 ${isDark ? 'border-violet-500/20 border-t-violet-400' : 'border-violet-500/20 border-t-violet-500'}`}
             />
             <div
-              className={`absolute inset-0 rounded-full animate-ping opacity-20 border ${isDark ? 'border-cyan-400' : 'border-amber-400'}`}
+              className={`absolute inset-0 rounded-full animate-ping opacity-20 border ${isDark ? 'border-violet-400' : 'border-violet-400'}`}
             />
           </div>
         </div>
@@ -185,7 +185,7 @@ function RoomsPage() {
           {isDark && (
             <>
               <div className="absolute inset-0 bg-gradient-to-b from-slate-900/80 via-slate-900/60 to-slate-950/90" />
-              <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_center,rgba(34,211,238,0.03)_0%,transparent_70%)]" />
+              <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_center,rgba(139,92,246,0.03)_0%,transparent_70%)]" />
             </>
           )}
 
@@ -221,8 +221,8 @@ function RoomsPage() {
                 to="/admin/hotels"
                 className={`group/btn relative inline-flex items-center gap-2 px-6 py-2.5 font-medium rounded-xl transition-all duration-300 border ${
                   isDark
-                    ? 'border-cyan-500/25 bg-cyan-500/10 text-cyan-400 hover:bg-cyan-500/20 hover:border-cyan-500/40 hover:shadow-[0_0_24px_-6px_rgba(34,211,238,0.25)]'
-                    : 'border-amber-400/40 bg-amber-500/10 text-amber-600 hover:bg-amber-500/20 hover:border-amber-400/60'
+                    ? 'border-violet-500/25 bg-violet-500/10 text-violet-400 hover:bg-violet-500/20 hover:border-violet-500/40 hover:shadow-[0_0_24px_-6px_rgba(139,92,246,0.25)]'
+                    : 'border-violet-400/40 bg-violet-500/10 text-violet-600 hover:bg-violet-500/20 hover:border-violet-400/60'
                 }`}
               >
                 {t('admin.rooms.goToHotels')}
@@ -261,8 +261,8 @@ function RoomsPage() {
                 <div
                   className={`absolute left-0 top-0 bottom-0 w-[3px] rounded-l-xl opacity-0 group-hover:opacity-100 transition-opacity duration-300 ${
                     isDark
-                      ? 'bg-gradient-to-b from-blue-500/60 via-indigo-500/40 to-transparent'
-                      : 'bg-gradient-to-b from-amber-400 via-amber-500/60 to-transparent'
+                      ? 'bg-gradient-to-b from-violet-500/60 via-violet-500/40 to-transparent'
+                      : 'bg-gradient-to-b from-violet-400 via-violet-500/60 to-transparent'
                   }`}
                 />
 
@@ -271,23 +271,23 @@ function RoomsPage() {
                   <div
                     className={`w-12 h-12 rounded-xl flex items-center justify-center transition-all duration-300 ${
                       isDark
-                        ? 'bg-gradient-to-br from-slate-800 to-indigo-950/60 border border-slate-700/30 group-hover:border-indigo-500/20 shadow-sm'
-                        : 'bg-slate-100 border border-slate-200 group-hover:border-amber-300'
+                        ? 'bg-gradient-to-br from-slate-800 to-violet-950/60 border border-slate-700/30 group-hover:border-violet-500/20 shadow-sm'
+                        : 'bg-slate-100 border border-slate-200 group-hover:border-violet-300'
                     }`}
                   >
                     <Building2
-                      className={`w-6 h-6 transition-colors duration-300 ${isDark ? 'text-slate-400 group-hover:text-cyan-400' : 'text-slate-400 group-hover:text-amber-500'}`}
+                      className={`w-6 h-6 transition-colors duration-300 ${isDark ? 'text-slate-400 group-hover:text-violet-400' : 'text-slate-400 group-hover:text-violet-500'}`}
                     />
                   </div>
                   <div>
                     <h3
-                      className={`font-semibold transition-colors duration-300 ${isDark ? 'text-slate-200 group-hover:text-cyan-400' : 'text-slate-800 group-hover:text-amber-600'}`}
+                      className={`font-semibold transition-colors duration-300 ${isDark ? 'text-slate-200 group-hover:text-violet-400' : 'text-slate-800 group-hover:text-violet-600'}`}
                     >
                       <span className="relative">
                         {hotel.name}
                         {/* Hover underline animation */}
                         <span
-                          className={`absolute -bottom-px left-0 w-0 h-px group-hover:w-full transition-all duration-300 ${isDark ? 'bg-cyan-400/60' : 'bg-amber-400/70'}`}
+                          className={`absolute -bottom-px left-0 w-0 h-px group-hover:w-full transition-all duration-300 ${isDark ? 'bg-violet-400/60' : 'bg-violet-400/70'}`}
                         />
                       </span>
                     </h3>
@@ -302,7 +302,7 @@ function RoomsPage() {
                   </div>
                 </div>
                 <ChevronRight
-                  className={`w-5 h-5 transition-all duration-300 group-hover:translate-x-1 ${isDark ? 'text-slate-600 group-hover:text-cyan-400' : 'text-slate-400 group-hover:text-amber-500'}`}
+                  className={`w-5 h-5 transition-all duration-300 group-hover:translate-x-1 ${isDark ? 'text-slate-600 group-hover:text-violet-400' : 'text-slate-400 group-hover:text-violet-500'}`}
                 />
               </Link>
             </motion.div>

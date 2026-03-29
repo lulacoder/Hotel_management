@@ -43,7 +43,7 @@ export function HotelPageChrome({
               <>
                 <Link
                   to="/bookings"
-                  className="rounded-lg bg-blue-500 px-3 py-1.5 text-sm font-semibold text-slate-900 transition-colors hover:bg-blue-400"
+                  className="header-primary-btn rounded-lg px-3 py-1.5 text-sm font-semibold"
                 >
                   {t('header.myBookings')}
                 </Link>
@@ -54,14 +54,14 @@ export function HotelPageChrome({
                 <Link
                   to="/sign-in"
                   search={DEFAULT_AUTH_SEARCH}
-                  className="font-medium text-slate-400 transition-colors hover:text-blue-400"
+                  className="header-inline-link font-medium"
                 >
                   {t('header.signIn')}
                 </Link>
                 <Link
                   to="/sign-up"
                   search={DEFAULT_AUTH_SEARCH}
-                  className="rounded-lg bg-blue-500 px-3 py-1.5 font-semibold text-slate-900 transition-colors hover:bg-blue-400"
+                  className="header-primary-btn rounded-lg px-3 py-1.5 font-semibold"
                 >
                   {t('header.signUp')}
                 </Link>
@@ -74,19 +74,19 @@ export function HotelPageChrome({
             {isSignedIn && (
               <Link
                 to="/bookings"
-                className="rounded-lg bg-blue-500 px-3 py-1.5 text-sm font-semibold text-slate-900 transition-colors hover:bg-blue-400"
+                className="header-primary-btn rounded-lg px-3 py-1.5 text-sm font-semibold"
               >
                 {t('header.myBookings')}
               </Link>
             )}
             <button
               onClick={() => setIsMobileMenuOpen(true)}
-              className="group rounded-xl p-2.5 transition-all duration-300 hover:bg-white/10"
+              className="group cursor-pointer rounded-xl p-2.5 transition-all duration-300 hover:bg-white/10"
               aria-label={t('header.openMenu')}
             >
               <Menu
                 size={22}
-                className="text-slate-300 transition-colors group-hover:text-blue-400"
+                className="text-slate-300 transition-colors group-hover:text-violet-400"
               />
             </button>
           </div>
@@ -100,7 +100,7 @@ export function HotelPageChrome({
       >
         <div className="flex items-center justify-between border-b border-slate-800/50 p-5">
           <div className="flex items-center gap-3">
-            <div className="flex h-10 items-center justify-center rounded-xl border border-blue-500/30 bg-slate-950/70 px-1 shadow-lg shadow-blue-500/20">
+            <div className="brand-logo-shell flex h-10 items-center justify-center px-1">
               <img
                 src="/logo.png"
                 alt="Luxe Hotels"
@@ -113,7 +113,7 @@ export function HotelPageChrome({
           </div>
           <button
             onClick={() => setIsMobileMenuOpen(false)}
-            className="group rounded-xl p-2.5 transition-all duration-300 hover:bg-white/5"
+            className="group cursor-pointer rounded-xl p-2.5 transition-all duration-300 hover:bg-white/5"
             aria-label={t('header.closeMenu')}
           >
             <X
@@ -130,7 +130,7 @@ export function HotelPageChrome({
               onClick={() => setIsMobileMenuOpen(false)}
               activeProps={{
                 className:
-                  'flex items-center gap-3 rounded-xl border border-blue-500/20 bg-blue-500/10 px-4 py-3 text-blue-400 transition-all duration-300',
+                  'flex items-center gap-3 rounded-xl border border-violet-500/20 bg-violet-500/10 px-4 py-3 text-violet-400 transition-all duration-300',
               }}
               inactiveProps={{
                 className:
@@ -139,7 +139,7 @@ export function HotelPageChrome({
             >
               <Home
                 size={20}
-                className="transition-colors group-hover:text-blue-400"
+                className="transition-colors group-hover:text-violet-400"
               />
               <span className="font-medium">{t('header.home')}</span>
             </Link>
@@ -150,7 +150,7 @@ export function HotelPageChrome({
               onClick={() => setIsMobileMenuOpen(false)}
               activeProps={{
                 className:
-                  'flex items-center gap-3 rounded-xl border border-blue-500/20 bg-blue-500/10 px-4 py-3 text-blue-400 transition-all duration-300',
+                  'flex items-center gap-3 rounded-xl border border-violet-500/20 bg-violet-500/10 px-4 py-3 text-violet-400 transition-all duration-300',
               }}
               inactiveProps={{
                 className:
@@ -159,7 +159,7 @@ export function HotelPageChrome({
             >
               <MapPin
                 size={20}
-                className="transition-colors group-hover:text-blue-400"
+                className="transition-colors group-hover:text-violet-400"
               />
               <span className="font-medium">{t('header.browseLocations')}</span>
             </Link>
@@ -181,7 +181,7 @@ export function HotelPageChrome({
                   to="/sign-in"
                   search={DEFAULT_AUTH_SEARCH}
                   onClick={() => setIsMobileMenuOpen(false)}
-                  className="flex items-center justify-center gap-2 rounded-xl border border-slate-700 px-4 py-3 font-medium text-slate-300 transition-all duration-300 hover:border-slate-600 hover:bg-white/5"
+                  className="header-secondary-btn flex items-center justify-center gap-2 rounded-xl px-4 py-3 font-medium"
                 >
                   {t('header.signIn')}
                 </Link>
@@ -189,7 +189,7 @@ export function HotelPageChrome({
                   to="/sign-up"
                   search={DEFAULT_AUTH_SEARCH}
                   onClick={() => setIsMobileMenuOpen(false)}
-                  className="flex items-center justify-center gap-2 rounded-xl bg-gradient-to-r from-blue-500 to-indigo-500 px-4 py-3 font-semibold text-white shadow-lg shadow-blue-500/25 transition-all duration-300 hover:from-blue-400 hover:to-indigo-400"
+                  className="header-primary-btn flex items-center justify-center gap-2 rounded-xl px-4 py-3 font-semibold"
                 >
                   {t('header.createAccount')}
                 </Link>

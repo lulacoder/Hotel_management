@@ -55,11 +55,11 @@ export function AnalyticsTimeWindowTabs({ value, onChange }: Props) {
                 className="absolute inset-0 z-0 rounded-xl"
                 style={{
                   background: isDark
-                    ? 'linear-gradient(135deg, rgba(6, 182, 212, 0.20), rgba(59, 130, 246, 0.15))'
-                    : 'linear-gradient(135deg, rgba(59, 130, 246, 0.12), rgba(99, 102, 241, 0.10))',
+                    ? 'linear-gradient(135deg, rgba(139, 92, 246, 0.20), rgba(167, 139, 250, 0.15))'
+                    : 'linear-gradient(135deg, rgba(139, 92, 246, 0.12), rgba(124, 58, 237, 0.10))',
                   boxShadow: isDark
-                    ? '0 0 12px 2px rgba(6, 182, 212, 0.12), 0 0 24px 4px rgba(59, 130, 246, 0.08), inset 0 1px 0 rgba(255, 255, 255, 0.06)'
-                    : '0 0 12px 2px rgba(59, 130, 246, 0.08), 0 1px 3px rgba(0, 0, 0, 0.06), inset 0 1px 0 rgba(255, 255, 255, 0.8)',
+                    ? '0 0 12px 2px rgba(139, 92, 246, 0.12), 0 0 24px 4px rgba(167, 139, 250, 0.08), inset 0 1px 0 rgba(255, 255, 255, 0.06)'
+                    : '0 0 12px 2px rgba(139, 92, 246, 0.08), 0 1px 3px rgba(0, 0, 0, 0.06), inset 0 1px 0 rgba(255, 255, 255, 0.8)',
                 }}
                 transition={{
                   type: 'spring',

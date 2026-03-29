@@ -97,10 +97,10 @@ export function AnalyticsEmptyState({ title, description }: Props) {
       <div className="mb-2 flex items-center justify-center gap-2.5">
         <span className="relative flex h-2 w-2">
           <span
-            className={`absolute inline-flex h-full w-full animate-ping rounded-full ${isDark ? 'bg-blue-400/40' : 'bg-blue-500/30'}`}
+            className={`absolute inline-flex h-full w-full animate-ping rounded-full ${isDark ? 'bg-violet-400/40' : 'bg-violet-500/30'}`}
           />
           <span
-            className={`relative inline-flex h-2 w-2 rounded-full ${isDark ? 'bg-blue-400/70' : 'bg-blue-500/60'}`}
+            className={`relative inline-flex h-2 w-2 rounded-full ${isDark ? 'bg-violet-400/70' : 'bg-violet-500/60'}`}
           />
         </span>
 

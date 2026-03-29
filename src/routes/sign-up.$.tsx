@@ -44,15 +44,15 @@ function SignUpCatchAll() {
   return (
     <div className="min-h-screen bg-slate-950 flex">
       <div className="hidden lg:flex lg:w-1/2 relative overflow-hidden">
-        <div className="absolute inset-0 bg-gradient-to-br from-blue-500/20 via-slate-900 to-slate-950" />
-        <div className="absolute top-1/4 left-1/4 w-96 h-96 bg-blue-500/30 rounded-full blur-3xl animate-pulse" />
+        <div className="absolute inset-0 bg-gradient-to-br from-violet-500/20 via-slate-900 to-slate-950" />
+        <div className="absolute top-1/4 left-1/4 w-96 h-96 bg-violet-500/30 rounded-full blur-3xl animate-pulse" />
         <div
           className="absolute bottom-1/4 right-1/4 w-80 h-80 bg-indigo-500/20 rounded-full blur-3xl animate-pulse"
           style={{ animationDelay: '1s' }}
         />
         <div className="relative z-10 flex flex-col justify-between p-12 w-full">
           <Link to="/" className="inline-flex items-center group">
-            <div className="h-12 rounded-xl bg-slate-950/70 border border-blue-500/30 px-1 flex items-center justify-center shadow-lg shadow-blue-500/20 group-hover:shadow-blue-500/40 transition-all duration-300">
+            <div className="brand-logo-shell h-12 px-1 flex items-center justify-center group-hover:shadow-violet-500/40 transition-all duration-300">
               <img
                 src="/logo.png"
                 alt="Luxe Hotels"
@@ -87,7 +87,7 @@ function SignUpCatchAll() {
           </Link>
           <div className="flex items-center gap-2">
             <ThemeToggle compact />
-            <div className="h-8 rounded-lg bg-slate-950/70 border border-blue-500/30 px-1 flex items-center justify-center">
+            <div className="brand-logo-shell h-8 px-1 flex items-center justify-center">
               <img
                 src="/logo.png"
                 alt="Luxe Hotels"
@@ -116,4 +116,3 @@ function SignUpCatchAll() {
     </div>
   )
 }
-

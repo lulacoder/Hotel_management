@@ -71,7 +71,7 @@ export function HotelRoomsGrid({
 
       {rooms === undefined ? (
         <div className="flex items-center justify-center py-12">
-          <div className="h-8 w-8 animate-spin rounded-full border-2 border-blue-500/20 border-t-blue-500"></div>
+          <div className="h-8 w-8 animate-spin rounded-full border-2 border-violet-500/20 border-t-violet-500"></div>
         </div>
       ) : rooms.length === 0 ? (
         <div className="rounded-2xl border border-slate-800/50 bg-slate-900/50 p-12 text-center">
@@ -88,7 +88,7 @@ export function HotelRoomsGrid({
           </p>
         </div>
       ) : (
-        <div className="grid grid-cols-1 gap-6 md:grid-cols-2">
+        <div className="grid grid-cols-1 gap-5 md:grid-cols-2 xl:grid-cols-3">
           {rooms.map((room) => {
             const amenities = room.amenities ?? []
 
@@ -97,7 +97,7 @@ export function HotelRoomsGrid({
                 key={room._id}
                 className="overflow-hidden rounded-2xl border border-slate-800/50 bg-slate-900/50 transition-all hover:border-slate-700/50"
               >
-                <div className="relative flex h-40 items-center justify-center overflow-hidden bg-gradient-to-br from-slate-800 to-slate-900">
+                <div className="relative flex h-32 items-center justify-center overflow-hidden bg-gradient-to-br from-slate-800 to-slate-900">
                   {room.imageUrl ? (
                     <img
                       src={room.imageUrl}
@@ -109,31 +109,37 @@ export function HotelRoomsGrid({
                   )}
                 </div>
 
-                <div className="p-5">
-                  <div className="mb-3 flex items-start justify-between">
+                <div className="p-4">
+                  <div className="mb-2.5 flex items-start justify-between gap-3">
                     <div>
-                      <h3 className="text-lg font-semibold text-slate-200">
+                      <h3 className="text-base font-semibold text-slate-200">
                         {t('hotel.room')} {room.roomNumber}
                       </h3>
-                      <p className="text-slate-400">{roomTypeLabels[room.type]}</p>
+                      <p className="text-sm text-slate-400">
+                        {roomTypeLabels[room.type]}
+                      </p>
                       {room.description && (
-                        <p className="mt-1 text-sm text-slate-500">
+                        <p className="mt-1 text-xs text-slate-500">
                           {room.description}
                         </p>
                       )}
                     </div>
                     <div className="text-right">
-                      <p className="text-2xl font-bold text-blue-400">
+                      <p className="text-xl font-bold text-violet-400">
                         ${(room.basePrice / 100).toFixed(0)}
                       </p>
-                      <p className="text-sm text-slate-500">{t('hotel.perNight')}</p>
+                      <p className="text-xs text-slate-500">
+                        {t('hotel.perNight')}
+                      </p>
                     </div>
                   </div>
 
-                  <div className="mb-4 flex flex-wrap items-center gap-4 text-sm text-slate-400">
+                  <div className="mb-3 flex flex-wrap items-center gap-3 text-sm text-slate-400">
                     <div className="flex items-center gap-1">
                       <Users className="h-4 w-4" />
-                      <span>{t('hotel.upTo', { count: room.maxOccupancy })}</span>
+                      <span>
+                        {t('hotel.upTo', { count: room.maxOccupancy })}
+                      </span>
                     </div>
                     {room.bedOptions && (
                       <div className="flex items-center gap-1">
@@ -145,8 +151,10 @@ export function HotelRoomsGrid({
                       <div className="flex items-center gap-1">
                         {room.smokingAllowed ? (
                           <>
-                            <Cigarette className="h-4 w-4 text-blue-500" />
-                            <span className="text-blue-500">{t('hotel.smoking')}</span>
+                            <Cigarette className="h-4 w-4 text-amber-500" />
+                            <span className="text-amber-500">
+                              {t('hotel.smoking')}
+                            </span>
                           </>
                         ) : (
                           <>
@@ -161,7 +169,7 @@ export function HotelRoomsGrid({
                   </div>
 
                   {amenities.length > 0 && (
-                    <div className="mb-4 flex flex-wrap gap-2">
+                    <div className="mb-3 flex flex-wrap gap-2">
                       {amenities.slice(0, 4).map((amenity) => {
                         const Icon = amenityIcons[amenity] || CheckCircle
 
@@ -179,7 +187,7 @@ export function HotelRoomsGrid({
                   )}
 
                   {nights > 0 && (
-                    <div className="mb-4 rounded-xl bg-slate-800/50 p-3">
+                    <div className="mb-3 rounded-xl bg-slate-800/50 p-3">
                       <div className="flex justify-between text-sm">
                         <span className="text-slate-400">
                           ${(room.basePrice / 100).toFixed(0)} x {nights}{' '}
@@ -195,7 +203,7 @@ export function HotelRoomsGrid({
                   <button
                     onClick={() => onBookRoom(room._id)}
                     disabled={!selectedDates.checkIn || !selectedDates.checkOut}
-                    className="w-full rounded-xl bg-gradient-to-r from-blue-500 to-blue-600 py-3 font-semibold text-white transition-all hover:from-blue-600 hover:to-blue-700 disabled:cursor-not-allowed disabled:opacity-50"
+                    className="room-book-button w-full rounded-xl border border-slate-700/40 bg-white py-2.5 font-semibold text-slate-900 transition-all hover:bg-slate-100 disabled:cursor-not-allowed disabled:opacity-50"
                   >
                     {selectedDates.checkIn && selectedDates.checkOut
                       ? isSignedIn

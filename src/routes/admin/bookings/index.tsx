@@ -287,8 +287,8 @@ function BookingsPage() {
 
   const selectClass = `w-full px-4 py-3 rounded-xl text-sm font-medium border transition-all focus:outline-none ${
     isDark
-      ? 'bg-slate-900/50 border-slate-800/50 text-slate-200 focus:border-amber-500/40 focus:ring-1 focus:ring-amber-500/20'
-      : 'bg-white/80 border-slate-200/80 text-slate-700 shadow-sm focus:border-amber-500/40 focus:ring-1 focus:ring-amber-500/20'
+      ? 'bg-slate-900/50 border-slate-800/50 text-slate-200 focus:border-violet-500/40 focus:ring-1 focus:ring-violet-500/20'
+      : 'bg-white/80 border-slate-200/80 text-slate-700 shadow-sm focus:border-violet-500/40 focus:ring-1 focus:ring-violet-500/20'
   }`
 
   return (
@@ -395,7 +395,7 @@ function BookingsPage() {
       {bookings === undefined ? (
         <div className="flex items-center justify-center py-20">
           <div
-            className={`animate-spin rounded-full h-8 w-8 border-2 ${isDark ? 'border-blue-500/20 border-t-blue-500' : 'border-amber-500/20 border-t-amber-500'}`}
+            className={`animate-spin rounded-full h-8 w-8 border-2 ${isDark ? 'border-violet-500/20 border-t-violet-500' : 'border-violet-500/20 border-t-violet-500'}`}
           ></div>
         </div>
       ) : filteredBookings?.length === 0 ? (
@@ -570,7 +570,7 @@ function BookingsPage() {
                                 onClick={() =>
                                   handleStatusChange(booking._id, nextStatus)
                                 }
-                                className="px-3 py-2 bg-blue-500/10 text-blue-400 rounded-lg hover:bg-blue-500/20 transition-all text-sm font-medium border border-blue-500/20"
+                                className="px-3 py-2 bg-violet-500/10 text-violet-400 rounded-lg hover:bg-violet-500/20 transition-all text-sm font-medium border border-violet-500/20"
                               >
                                 {transitionLabel[nextStatus]}
                               </button>
@@ -635,7 +635,7 @@ function BookingsPage() {
             {selectedBookingDetail === undefined ? (
               <div className="flex items-center justify-center py-12">
                 <div
-                  className={`animate-spin rounded-full h-8 w-8 border-2 ${isDark ? 'border-blue-500/20 border-t-blue-500' : 'border-amber-500/20 border-t-amber-500'}`}
+                  className={`animate-spin rounded-full h-8 w-8 border-2 ${isDark ? 'border-violet-500/20 border-t-violet-500' : 'border-violet-500/20 border-t-violet-500'}`}
                 ></div>
               </div>
             ) : selectedBookingDetail === null ? (
@@ -781,7 +781,9 @@ function BookingsPage() {
                           {t('admin.bookings.providerStatus')}
                         </p>
                         <p
-                          className={isDark ? 'text-slate-100' : 'text-slate-800'}
+                          className={
+                            isDark ? 'text-slate-100' : 'text-slate-800'
+                          }
                         >
                           {selectedChapaPayment.status.replaceAll('_', ' ')}
                         </p>
@@ -806,9 +808,13 @@ function BookingsPage() {
                           {t('admin.bookings.chargedAmount')}
                         </p>
                         <p
-                          className={isDark ? 'text-slate-100' : 'text-slate-800'}
+                          className={
+                            isDark ? 'text-slate-100' : 'text-slate-800'
+                          }
                         >
-                          {formatEtbAmount(selectedChapaPayment.chargedAmountMinor)}
+                          {formatEtbAmount(
+                            selectedChapaPayment.chargedAmountMinor,
+                          )}
                         </p>
                       </div>
                       <div>
@@ -818,7 +824,9 @@ function BookingsPage() {
                           {t('admin.bookings.paymentProvider')}
                         </p>
                         <p
-                          className={isDark ? 'text-slate-100' : 'text-slate-800'}
+                          className={
+                            isDark ? 'text-slate-100' : 'text-slate-800'
+                          }
                         >
                           Chapa
                           {selectedChapaPayment.paymentMethod

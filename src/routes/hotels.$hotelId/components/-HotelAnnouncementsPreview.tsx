@@ -1,10 +1,5 @@
 import { Link } from '@tanstack/react-router'
-import {
-  AlertCircle,
-  AlertTriangle,
-  Info,
-  Megaphone,
-} from 'lucide-react'
+import { AlertCircle, AlertTriangle, Info, Megaphone } from 'lucide-react'
 
 import { useI18n } from '../../../lib/i18n'
 import { useTheme } from '../../../lib/theme'
@@ -37,7 +32,7 @@ export function HotelAnnouncementsPreview({
     <div className="mb-8">
       <div className="mb-3 flex items-center justify-between">
         <div className="flex items-center gap-2">
-          <Megaphone className="h-4 w-4 text-blue-400" />
+          <Megaphone className="h-4 w-4 text-violet-400" />
           <h2
             className={`text-base font-semibold ${
               isDark ? 'text-slate-200' : 'text-slate-800'
@@ -45,7 +40,7 @@ export function HotelAnnouncementsPreview({
           >
             {t('announcements.preview')}
           </h2>
-          <span className="rounded-full border border-blue-500/20 bg-blue-500/10 px-2 py-0.5 text-xs font-medium text-blue-400">
+          <span className="rounded-full border border-violet-500/20 bg-violet-500/10 px-2 py-0.5 text-xs font-medium text-violet-400">
             {announcements.length}
           </span>
         </div>
@@ -54,8 +49,8 @@ export function HotelAnnouncementsPreview({
           search={{ hotelId }}
           className={`text-xs transition-colors ${
             isDark
-              ? 'text-blue-400 hover:text-blue-300'
-              : 'text-blue-600 hover:text-blue-700'
+              ? 'text-violet-400 hover:text-violet-300'
+              : 'text-violet-600 hover:text-violet-700'
           }`}
         >
           {t('announcements.viewAll')} →
@@ -75,7 +70,7 @@ export function HotelAnnouncementsPreview({
             ? 'bg-red-500'
             : isImportant
               ? 'bg-amber-500'
-              : 'bg-blue-500'
+              : 'bg-violet-500'
           const cardBg = isUrgent
             ? isDark
               ? 'bg-red-500/5 border-red-500/20'
@@ -91,7 +86,7 @@ export function HotelAnnouncementsPreview({
             ? 'text-red-400'
             : isImportant
               ? 'text-amber-400'
-              : 'text-blue-400'
+              : 'text-violet-400'
           const badgeColor = isUrgent
             ? isDark
               ? 'bg-red-500/15 text-red-400'
@@ -101,8 +96,8 @@ export function HotelAnnouncementsPreview({
                 ? 'bg-amber-500/15 text-amber-400'
                 : 'bg-amber-100 text-amber-600'
               : isDark
-                ? 'bg-blue-500/10 text-blue-400'
-                : 'bg-blue-100 text-blue-600'
+                ? 'bg-violet-500/10 text-violet-400'
+                : 'bg-violet-100 text-violet-600'
           const priorityLabel = isUrgent
             ? t('announcements.priority.urgent')
             : isImportant

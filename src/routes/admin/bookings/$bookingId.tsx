@@ -224,7 +224,7 @@ function BookingDetailPage() {
     return (
       <div className="flex items-center justify-center py-20">
         <div
-          className={`animate-spin rounded-full h-8 w-8 border-2 ${isDark ? 'border-blue-500/20 border-t-blue-500' : 'border-amber-500/20 border-t-amber-500'}`}
+          className={`animate-spin rounded-full h-8 w-8 border-2 ${isDark ? 'border-violet-500/20 border-t-violet-500' : 'border-violet-500/20 border-t-violet-500'}`}
         ></div>
       </div>
     )
@@ -533,7 +533,8 @@ function BookingDetailPage() {
                 {formatEtbAmount(chapaPayment.chargedAmountMinor)}
               </p>
               <p className={isDark ? 'text-slate-400' : 'text-slate-500'}>
-                {t('admin.bookings.fxRate')}: {chapaPayment.fxRateEtbPerUsd} ETB/USD
+                {t('admin.bookings.fxRate')}: {chapaPayment.fxRateEtbPerUsd}{' '}
+                ETB/USD
               </p>
             </div>
           </div>
@@ -670,7 +671,7 @@ function BookingDetailPage() {
                   className={`px-3 py-2 rounded-lg transition-colors text-sm font-medium border ${
                     nextStatus === 'cancelled'
                       ? 'bg-red-500/10 text-red-400 hover:bg-red-500/20 border-red-500/20'
-                      : 'bg-blue-500/10 text-blue-400 hover:bg-blue-500/20 border-blue-500/20'
+                      : 'bg-violet-500/10 text-violet-400 hover:bg-violet-500/20 border-violet-500/20'
                   }`}
                 >
                   {transitionLabel[nextStatus]}

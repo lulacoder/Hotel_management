@@ -259,7 +259,7 @@ export function HotelModal({ hotelId, onClose }: HotelModalProps) {
     }
   }
 
-  const inputClass = `w-full px-4 py-3 border rounded-xl focus:outline-none focus:border-blue-500/50 focus:ring-1 focus:ring-blue-500/20 transition-all ${
+  const inputClass = `w-full px-4 py-3 border rounded-xl focus:outline-none focus:border-violet-500/50 focus:ring-1 focus:ring-violet-500/20 transition-all ${
     isDark
       ? 'bg-slate-800/50 border-slate-700 text-slate-200 placeholder-slate-500'
       : 'bg-white border-slate-200 text-slate-800 placeholder-slate-400 shadow-sm'
@@ -422,7 +422,7 @@ export function HotelModal({ hotelId, onClose }: HotelModalProps) {
               type="file"
               accept="image/*"
               onChange={handleImageSelection}
-              className={`w-full px-4 py-2.5 border rounded-xl file:mr-3 file:px-3 file:py-1.5 file:border-0 file:rounded-lg file:bg-blue-500/20 file:text-blue-300 file:cursor-pointer ${
+              className={`w-full px-4 py-2.5 border rounded-xl file:mr-3 file:px-3 file:py-1.5 file:border-0 file:rounded-lg file:bg-violet-500/20 file:text-violet-300 file:cursor-pointer ${
                 isDark
                   ? 'bg-slate-800/50 border-slate-700 text-slate-300'
                   : 'bg-white border-slate-200 text-slate-600'
@@ -601,7 +601,7 @@ export function HotelModal({ hotelId, onClose }: HotelModalProps) {
               onChange={(e) =>
                 setFormData({ ...formData, parkingIncluded: e.target.checked })
               }
-              className={`h-4 w-4 rounded focus:ring-blue-500/40 ${isDark ? 'border-slate-600 bg-slate-800 text-blue-500' : 'border-slate-300 bg-white text-blue-500'}`}
+              className={`h-4 w-4 rounded focus:ring-violet-500/40 ${isDark ? 'border-slate-600 bg-slate-800 text-violet-500' : 'border-slate-300 bg-white text-violet-500'}`}
             />
             <label
               htmlFor="parkingIncluded"
@@ -626,7 +626,11 @@ export function HotelModal({ hotelId, onClose }: HotelModalProps) {
             <button
               type="submit"
               disabled={loading || uploadingImage}
-              className="flex-1 px-4 py-3 bg-gradient-to-r from-blue-500 to-blue-600 text-white font-medium rounded-xl hover:from-blue-600 hover:to-blue-700 transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed"
+              className={`flex-1 px-4 py-3 font-medium rounded-xl transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed ${
+                isDark
+                  ? 'bg-white text-slate-900 hover:bg-slate-100'
+                  : 'bg-slate-900 text-white hover:bg-slate-800'
+              }`}
             >
               {loading || uploadingImage
                 ? uploadingImage

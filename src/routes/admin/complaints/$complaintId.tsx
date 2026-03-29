@@ -61,7 +61,7 @@ function ComplaintDetailPage() {
     return (
       <div className="flex items-center justify-center py-20">
         <div
-          className={`animate-spin rounded-full h-8 w-8 border-2 ${isDark ? 'border-blue-500/20 border-t-blue-500' : 'border-amber-500/20 border-t-amber-500'}`}
+          className={`animate-spin rounded-full h-8 w-8 border-2 ${isDark ? 'border-violet-500/20 border-t-violet-500' : 'border-violet-500/20 border-t-violet-500'}`}
         ></div>
       </div>
     )
@@ -91,7 +91,7 @@ function ComplaintDetailPage() {
     return (
       <div className="flex items-center justify-center py-20">
         <div
-          className={`animate-spin rounded-full h-8 w-8 border-2 ${isDark ? 'border-blue-500/20 border-t-blue-500' : 'border-amber-500/20 border-t-amber-500'}`}
+          className={`animate-spin rounded-full h-8 w-8 border-2 ${isDark ? 'border-violet-500/20 border-t-violet-500' : 'border-violet-500/20 border-t-violet-500'}`}
         ></div>
       </div>
     )
@@ -243,7 +243,7 @@ function ComplaintDetailPage() {
               <Link
                 to="/admin/bookings/$bookingId"
                 params={{ bookingId: booking._id }}
-                className={`inline-flex items-center mt-2 transition-colors ${isDark ? 'text-blue-400 hover:text-blue-300' : 'text-amber-600 hover:text-amber-700'}`}
+                className={`inline-flex items-center mt-2 transition-colors ${isDark ? 'text-violet-400 hover:text-violet-300' : 'text-violet-600 hover:text-violet-700'}`}
               >
                 {t('admin.complaints.openBooking')}
               </Link>

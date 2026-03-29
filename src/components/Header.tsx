@@ -60,7 +60,7 @@ export default function Header() {
             <div className="flex items-center gap-3 sm:gap-4">
               <button
                 onClick={() => setIsOpen(true)}
-                className="p-2 hover:bg-white/8 rounded-xl transition-all duration-300 group"
+                className="group cursor-pointer rounded-xl p-2 transition-all duration-300 hover:bg-white/8"
                 aria-label={t('header.openMenu')}
               >
                 <Menu
@@ -69,11 +69,11 @@ export default function Header() {
                 />
               </button>
               <Link to="/" className="flex items-center group">
-                <div className="h-9 flex items-center transition-all duration-300 group-hover:opacity-90">
+                <div className="brand-logo-shell h-9 px-1 transition-all duration-300 group-hover:opacity-90">
                   <img
                     src="/logo.png"
                     alt="TripWays Hotels"
-                    className="h-full w-auto object-contain"
+                    className="logo-tight h-full w-auto object-contain"
                   />
                 </div>
               </Link>
@@ -84,7 +84,7 @@ export default function Header() {
               {isSignedIn && (
                 <Link
                   to="/bookings"
-                  className="px-4 py-2 text-sm font-semibold text-white bg-violet-500 hover:bg-violet-400 rounded-xl transition-colors flex items-center gap-2"
+                  className="header-primary-btn flex items-center gap-2 rounded-xl px-4 py-2 text-sm font-semibold"
                 >
                   <CalendarCheck size={16} />
                   {t('header.myBookings')}
@@ -103,14 +103,14 @@ export default function Header() {
                   <Link
                     to="/sign-in"
                     search={DEFAULT_AUTH_SEARCH}
-                    className="px-4 py-2 text-sm font-medium text-slate-400 hover:text-white transition-colors hidden sm:block"
+                    className="header-inline-link hidden px-4 py-2 text-sm font-medium sm:block"
                   >
                     {t('header.signIn')}
                   </Link>
                   <Link
                     to="/sign-up"
                     search={DEFAULT_AUTH_SEARCH}
-                    className="px-5 py-2.5 text-sm font-semibold bg-gradient-to-r from-violet-500 to-indigo-500 hover:from-violet-400 hover:to-indigo-400 text-white rounded-xl transition-all duration-300 shadow-lg shadow-violet-500/25 hover:shadow-violet-500/40"
+                    className="header-primary-btn rounded-xl px-5 py-2.5 text-sm font-semibold"
                   >
                     {t('header.getStarted')}
                   </Link>
@@ -135,17 +135,17 @@ export default function Header() {
         {/* Menu Header */}
         <div className="flex items-center justify-between p-5 border-b border-slate-800/50">
           <div className="flex items-center gap-3">
-            <div className="h-9 flex items-center">
+            <div className="brand-logo-shell h-9 px-1">
               <img
                 src="/logo.png"
                 alt="TripWays Hotels"
-                className="h-full w-auto object-contain"
+                className="logo-tight h-full w-auto object-contain"
               />
             </div>
           </div>
           <button
             onClick={() => setIsOpen(false)}
-            className="p-2 hover:bg-white/5 rounded-xl transition-all duration-300 group"
+            className="group cursor-pointer rounded-xl p-2 transition-all duration-300 hover:bg-white/5"
             aria-label={t('header.closeMenu')}
           >
             <X
@@ -232,7 +232,7 @@ export default function Header() {
                   to="/sign-up"
                   search={DEFAULT_AUTH_SEARCH}
                   onClick={() => setIsOpen(false)}
-                  className="flex items-center justify-center gap-2 px-4 py-3 rounded-xl bg-gradient-to-r from-violet-500 to-indigo-500 hover:from-violet-400 hover:to-indigo-400 text-white font-semibold transition-all duration-300 shadow-lg shadow-violet-500/25"
+                  className="header-primary-btn flex items-center justify-center gap-2 rounded-xl px-4 py-3 font-semibold"
                 >
                   {t('header.createAccount')}
                 </Link>

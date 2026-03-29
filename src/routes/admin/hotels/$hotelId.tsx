@@ -226,7 +226,7 @@ function HotelDetailPage() {
     return (
       <div className="flex items-center justify-center py-20">
         <div
-          className={`animate-spin rounded-full h-8 w-8 border-2 ${isDark ? 'border-blue-500/20 border-t-blue-500' : 'border-amber-500/20 border-t-amber-500'}`}
+          className={`animate-spin rounded-full h-8 w-8 border-2 ${isDark ? 'border-violet-500/20 border-t-violet-500' : 'border-violet-500/20 border-t-violet-500'}`}
         ></div>
       </div>
     )
@@ -322,7 +322,7 @@ function HotelDetailPage() {
                 setEditingBankAccount(null)
                 setShowBankAccountModal(true)
               }}
-              className="px-4 py-2 bg-blue-500/10 text-blue-400 font-medium rounded-xl hover:bg-blue-500/20 transition-colors border border-blue-500/20"
+              className="px-4 py-2 bg-violet-500/10 text-violet-400 font-medium rounded-xl hover:bg-violet-500/20 transition-colors border border-violet-500/20"
             >
               {t('admin.hotels.payment.addAccount')}
             </button>
@@ -331,7 +331,7 @@ function HotelDetailPage() {
           {bankAccounts === undefined ? (
             <div className="flex items-center justify-center py-6">
               <div
-                className={`animate-spin rounded-full h-6 w-6 border-2 ${isDark ? 'border-blue-500/20 border-t-blue-500' : 'border-amber-500/20 border-t-amber-500'}`}
+                className={`animate-spin rounded-full h-6 w-6 border-2 ${isDark ? 'border-violet-500/20 border-t-violet-500' : 'border-violet-500/20 border-t-violet-500'}`}
               ></div>
             </div>
           ) : bankAccounts.length === 0 ? (
@@ -410,7 +410,7 @@ function HotelDetailPage() {
         </h2>
         <button
           onClick={() => setShowCreateRoom(true)}
-          className="flex items-center gap-2 px-4 py-2 bg-gradient-to-r from-blue-500 to-blue-600 text-white font-medium rounded-xl hover:from-blue-600 hover:to-blue-700 transition-all duration-200 shadow-lg shadow-blue-500/20"
+          className="flex items-center gap-2 px-4 py-2 bg-white text-slate-900 font-medium rounded-xl hover:bg-slate-100 transition-all duration-200 shadow-lg shadow-white/10"
         >
           <Plus className="w-5 h-5" />
           {t('admin.hotels.addRoom')}
@@ -421,7 +421,7 @@ function HotelDetailPage() {
       {rooms === undefined ? (
         <div className="flex items-center justify-center py-12">
           <div
-            className={`animate-spin rounded-full h-8 w-8 border-2 ${isDark ? 'border-blue-500/20 border-t-blue-500' : 'border-amber-500/20 border-t-amber-500'}`}
+            className={`animate-spin rounded-full h-8 w-8 border-2 ${isDark ? 'border-violet-500/20 border-t-violet-500' : 'border-violet-500/20 border-t-violet-500'}`}
           ></div>
         </div>
       ) : rooms.length === 0 ? (
@@ -443,7 +443,7 @@ function HotelDetailPage() {
           </p>
           <button
             onClick={() => setShowCreateRoom(true)}
-            className="inline-flex items-center gap-2 px-5 py-2.5 bg-blue-500/10 text-blue-400 font-medium rounded-xl hover:bg-blue-500/20 transition-colors border border-blue-500/20"
+            className="inline-flex items-center gap-2 px-5 py-2.5 bg-violet-500/10 text-violet-400 font-medium rounded-xl hover:bg-violet-500/20 transition-colors border border-violet-500/20"
           >
             <Plus className="w-5 h-5" />
             {t('admin.hotels.addFirstRoom')}
@@ -663,7 +663,7 @@ function HotelDetailPage() {
         {ratings === undefined ? (
           <div className="flex items-center justify-center py-8">
             <div
-              className={`animate-spin rounded-full h-6 w-6 border-2 ${isDark ? 'border-blue-500/20 border-t-blue-500' : 'border-amber-500/20 border-t-amber-500'}`}
+              className={`animate-spin rounded-full h-6 w-6 border-2 ${isDark ? 'border-violet-500/20 border-t-violet-500' : 'border-violet-500/20 border-t-violet-500'}`}
             ></div>
           </div>
         ) : ratings.length === 0 ? (
@@ -685,9 +685,7 @@ function HotelDetailPage() {
                             key={value}
                             className={`w-4 h-4 ${
                               value <= rating.rating
-                                ? isDark
-                                  ? 'text-blue-400 fill-blue-400'
-                                  : 'text-amber-400 fill-amber-400'
+                                ? 'text-amber-400 fill-amber-400'
                                 : isDark
                                   ? 'text-slate-600'
                                   : 'text-slate-300'

@@ -104,8 +104,8 @@ function HotelsPage() {
             onClick={() => setShowCreateModal(true)}
             className={`flex items-center gap-2 px-5 py-2.5 font-medium rounded-xl transition-all duration-200 shadow-lg ${
               isDark
-                ? 'bg-gradient-to-r from-blue-500 to-blue-600 text-white hover:from-blue-600 hover:to-blue-700 shadow-blue-500/20'
-                : 'bg-gradient-to-r from-amber-500 to-amber-600 text-white hover:from-amber-600 hover:to-amber-700 shadow-amber-500/20'
+                ? 'bg-white text-slate-900 hover:bg-slate-100 shadow-white/10'
+                : 'bg-slate-900 text-white hover:bg-slate-800 shadow-slate-900/20'
             }`}
           >
             <Plus className="w-5 h-5" />
@@ -131,8 +131,8 @@ function HotelsPage() {
           onChange={(e) => setSearchTerm(e.target.value)}
           className={`w-full pl-12 pr-4 py-3 rounded-xl transition-all focus:outline-none ${
             isDark
-              ? 'bg-slate-900/50 border border-slate-800/50 text-slate-200 placeholder-slate-500 focus:border-blue-500/50 focus:ring-1 focus:ring-blue-500/20'
-              : 'bg-white border border-slate-200 text-slate-900 placeholder-slate-400 focus:border-amber-500/50 focus:ring-1 focus:ring-amber-500/20 shadow-sm'
+              ? 'bg-slate-900/50 border border-slate-800/50 text-slate-200 placeholder-slate-500 focus:border-violet-500/50 focus:ring-1 focus:ring-violet-500/20'
+              : 'bg-white border border-slate-200 text-slate-900 placeholder-slate-400 focus:border-violet-500/50 focus:ring-1 focus:ring-violet-500/20 shadow-sm'
           }`}
         />
       </motion.div>
@@ -141,7 +141,7 @@ function HotelsPage() {
       {visibleHotels === undefined ? (
         <div className="flex items-center justify-center py-20">
           <div
-            className={`animate-spin rounded-full h-8 w-8 border-2 ${isDark ? 'border-blue-500/20 border-t-blue-500' : 'border-amber-500/20 border-t-amber-500'}`}
+            className={`animate-spin rounded-full h-8 w-8 border-2 ${isDark ? 'border-violet-500/20 border-t-violet-500' : 'border-violet-500/20 border-t-violet-500'}`}
           ></div>
         </div>
       ) : filteredHotels?.length === 0 ? (
@@ -175,8 +175,8 @@ function HotelsPage() {
               onClick={() => setShowCreateModal(true)}
               className={`inline-flex items-center gap-2 px-5 py-2.5 font-medium rounded-xl transition-colors border ${
                 isDark
-                  ? 'bg-blue-500/10 text-blue-400 border-blue-500/20 hover:bg-blue-500/20'
-                  : 'bg-amber-500/10 text-amber-600 border-amber-500/20 hover:bg-amber-500/20'
+                  ? 'bg-violet-500/10 text-violet-400 border-violet-500/20 hover:bg-violet-500/20'
+                  : 'bg-violet-500/10 text-violet-600 border-violet-500/20 hover:bg-violet-500/20'
               }`}
             >
               <Plus className="w-5 h-5" />
@@ -286,8 +286,8 @@ function HotelsPage() {
                 search={{ operationalStatus: 'all', window: '30d' }}
                 className={`inline-flex items-center gap-2 text-sm font-medium transition-colors ${
                   isDark
-                    ? 'text-blue-400 hover:text-blue-300'
-                    : 'text-amber-600 hover:text-amber-700'
+                    ? 'text-violet-400 hover:text-violet-300'
+                    : 'text-violet-600 hover:text-violet-700'
                 }`}
               >
                 {t('admin.hotels.manageRooms')}

@@ -191,7 +191,7 @@ export function ComplaintModal({
                       search: { redirect: complaintRedirect },
                     })
                   }
-                  className="flex-1 px-4 py-3 bg-blue-500 text-slate-900 font-semibold rounded-xl hover:bg-blue-400 transition-colors"
+                  className="flex-1 px-4 py-3 bg-white text-slate-900 font-semibold rounded-xl hover:bg-slate-100 transition-colors"
                 >
                   {t('header.signUp')}
                 </button>
@@ -211,7 +211,7 @@ export function ComplaintModal({
                 </label>
                 <select
                   {...register('hotelId')}
-                  className="w-full px-4 py-3 bg-slate-800/50 border border-slate-700 rounded-xl text-slate-200 focus:outline-none focus:border-blue-500/50 transition-all"
+                  className="w-full px-4 py-3 bg-slate-800/50 border border-slate-700 rounded-xl text-slate-200 focus:outline-none focus:border-violet-500/50 transition-all"
                 >
                   <option value="">{t('complaint.selectHotel')}</option>
                   {hotels.map((hotel) => (
@@ -228,13 +228,16 @@ export function ComplaintModal({
                 </label>
                 <select
                   {...register('bookingId')}
-                  disabled={!selectedHotelId || bookingsForSelectedHotel.length === 0}
-                  className="w-full px-4 py-3 bg-slate-800/50 border border-slate-700 rounded-xl text-slate-200 focus:outline-none focus:border-blue-500/50 transition-all disabled:opacity-50"
+                  disabled={
+                    !selectedHotelId || bookingsForSelectedHotel.length === 0
+                  }
+                  className="w-full px-4 py-3 bg-slate-800/50 border border-slate-700 rounded-xl text-slate-200 focus:outline-none focus:border-violet-500/50 transition-all disabled:opacity-50"
                 >
                   <option value="">{t('complaint.selectBooking')}</option>
                   {bookingsForSelectedHotel.map((booking) => (
                     <option key={booking._id} value={booking._id}>
-                      {booking.checkIn} - {booking.checkOut} ({statusLabel(booking.status)})
+                      {booking.checkIn} - {booking.checkOut} (
+                      {statusLabel(booking.status)})
                     </option>
                   ))}
                 </select>
@@ -249,7 +252,7 @@ export function ComplaintModal({
                   type="text"
                   maxLength={120}
                   placeholder={t('complaint.subjectPlaceholder')}
-                  className="w-full px-4 py-3 bg-slate-800/50 border border-slate-700 rounded-xl text-slate-200 placeholder-slate-500 focus:outline-none focus:border-blue-500/50 transition-all"
+                  className="w-full px-4 py-3 bg-slate-800/50 border border-slate-700 rounded-xl text-slate-200 placeholder-slate-500 focus:outline-none focus:border-violet-500/50 transition-all"
                 />
               </div>
 
@@ -262,7 +265,7 @@ export function ComplaintModal({
                   rows={4}
                   maxLength={2000}
                   placeholder={t('complaint.descriptionPlaceholder')}
-                  className="w-full px-4 py-3 bg-slate-800/50 border border-slate-700 rounded-xl text-slate-200 placeholder-slate-500 focus:outline-none focus:border-blue-500/50 transition-all resize-none"
+                  className="w-full px-4 py-3 bg-slate-800/50 border border-slate-700 rounded-xl text-slate-200 placeholder-slate-500 focus:outline-none focus:border-violet-500/50 transition-all resize-none"
                 />
                 <p className="text-xs text-slate-500 mt-2">
                   {descriptionValue.length}/2000
@@ -280,7 +283,7 @@ export function ComplaintModal({
                 <button
                   type="submit"
                   disabled={complaintSaving}
-                  className="flex-1 px-4 py-3 bg-blue-500 text-slate-900 font-semibold rounded-xl hover:bg-blue-400 transition-colors disabled:opacity-60"
+                  className="flex-1 px-4 py-3 bg-white text-slate-900 font-semibold rounded-xl hover:bg-slate-100 transition-colors disabled:opacity-60"
                 >
                   {complaintSaving
                     ? t('complaint.submitting')

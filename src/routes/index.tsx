@@ -125,16 +125,13 @@ function LandingPage() {
                 <Link
                   to="/select-location"
                   search={DEFAULT_SELECT_LOCATION_SEARCH}
-                  className="landing-primary-cta group relative inline-flex items-center gap-3 rounded-2xl bg-gradient-to-r from-violet-500 via-violet-600 to-indigo-600 px-8 py-4 font-semibold text-white shadow-xl shadow-violet-500/30 transition-all duration-300 hover:shadow-violet-500/50 hover:scale-[1.02] active:scale-[0.98] overflow-hidden"
+                  className="landing-primary-cta group inline-flex items-center gap-3 rounded-2xl bg-white px-8 py-4 font-semibold text-slate-900 shadow-xl shadow-black/10 transition-all duration-300 hover:bg-slate-50 hover:shadow-black/15 hover:scale-[1.02] active:scale-[0.98]"
                 >
-                  <span className="absolute inset-0 bg-gradient-to-r from-violet-400 via-violet-500 to-indigo-500 opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
-                  <MapPin size={20} className="relative z-10" />
-                  <span className="relative z-10">
-                    {t('landing.browseHotels')}
-                  </span>
+                  <MapPin size={20} />
+                  <span>{t('landing.browseHotels')}</span>
                   <ArrowRight
                     size={20}
-                    className="relative z-10 transition-transform group-hover:translate-x-1"
+                    className="transition-transform group-hover:translate-x-1"
                   />
                 </Link>
                 <Link
