@@ -16,9 +16,9 @@
     "@convex-dev/react-query": "0.1.0",
     "@hookform/resolvers": "^5.2.2",
     "@tailwindcss/vite": "^4.0.6",
-    "@tanstack/react-router": "^1.132.0",
+    "@tanstack/react-router": "^1.168.10",
     "@tanstack/react-router-ssr-query": "^1.131.7",
-    "@tanstack/react-start": "^1.132.0",
+    "@tanstack/react-start": "^1.167.15",
     "@tanstack/router-plugin": "^1.132.0",
     "convex": "^1.27.3",
     "dotenv": "^17.2.3",
@@ -35,11 +35,14 @@
     "vite-tsconfig-paths": "^6.0.2",
     "zod": "^4.3.6"
   },
+  "overrides": {
+    "h3-v2": "npm:h3@2.0.1-rc.20"
+  },
   "devDependencies": {
-    "@tanstack/react-devtools": "^0.7.0",
-    "@tanstack/react-router-devtools": "^1.132.0",
     "@tanstack/devtools-vite": "^0.3.11",
     "@tanstack/eslint-config": "^0.3.0",
+    "@tanstack/react-devtools": "^0.7.0",
+    "@tanstack/react-router-devtools": "^1.132.0",
     "@testing-library/dom": "^10.4.0",
     "@testing-library/react": "^16.2.0",
     "@types/node": "^22.10.2",
