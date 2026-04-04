@@ -72,4 +72,40 @@ http.route({
   }),
 })
 
+http.route({
+  path: '/chapa/mobile-return',
+  method: 'GET',
+  handler: httpAction(async (_ctx, request) => {
+    const url = new URL(request.url)
+    const txRef = url.searchParams.get('tx_ref') ?? url.searchParams.get('trx_ref')
+    const mobileReturnBaseUrl = process.env.MOBILE_APP_RETURN_URL_BASE
+
+    if (!txRef) {
+      return new Response('Missing tx_ref', { status: 400 })
+    }
+
+    if (!mobileReturnBaseUrl) {
+      return new Response('MOBILE_APP_RETURN_URL_BASE is not configured', {
+        status: 500,
+      })
+    }
+
+    const redirectUrl = new URL(mobileReturnBaseUrl)
+    redirectUrl.searchParams.set('payment', 'processing')
+    redirectUrl.searchParams.set('tx_ref', txRef)
+
+    const status = url.searchParams.get('status')
+    if (status) {
+      redirectUrl.searchParams.set('status', status)
+    }
+
+    const refId = url.searchParams.get('ref_id')
+    if (refId) {
+      redirectUrl.searchParams.set('ref_id', refId)
+    }
+
+    return Response.redirect(redirectUrl.toString(), 302)
+  }),
+})
+
 export default http

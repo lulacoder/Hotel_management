@@ -60,6 +60,8 @@ interface InitializeCheckoutResult {
   txRef?: string
 }
 
+type CheckoutOrigin = 'web' | 'mobile'
+
 function getEnv(name: string) {
   const value = process.env[name]
   if (!value) {
@@ -433,6 +435,7 @@ async function reconcileTransaction(
 export const initializeHostedCheckout = action({
   args: {
     bookingId: v.id('bookings'),
+    origin: v.optional(v.union(v.literal('web'), v.literal('mobile'))),
   },
   returns: v.object({
     success: v.boolean(),
@@ -505,6 +508,7 @@ export const initializeHostedCheckout = action({
     const providerMode = getEnv('CHAPA_EXPECTED_MODE')
     const brandName = getEnv('CHAPA_BRAND_NAME')
     const fxRate = Number(getEnv('CHAPA_FIXED_ETB_PER_USD'))
+    const origin: CheckoutOrigin = args.origin ?? 'web'
 
     if (!Number.isFinite(fxRate) || fxRate <= 0) {
       throw new Error('CHAPA_FIXED_ETB_PER_USD must be a positive number')
@@ -514,7 +518,10 @@ export const initializeHostedCheckout = action({
     const chargedAmountMinor = Math.round((booking.totalPrice / 100) * fxRate * 100)
     const amount = (chargedAmountMinor / 100).toFixed(2)
     const callbackUrl = `${callbackBaseUrl}/chapa/callback`
-    const returnUrl = `${appBaseUrl}/bookings?payment=processing&tx_ref=${encodeURIComponent(txRef)}`
+    const returnUrl =
+      origin === 'mobile'
+        ? `${callbackBaseUrl}/chapa/mobile-return?tx_ref=${encodeURIComponent(txRef)}`
+        : `${appBaseUrl}/bookings?payment=processing&tx_ref=${encodeURIComponent(txRef)}`
     const { firstName, lastName } = splitName(booking.guestName)
     const email = booking.guestEmail || currentUser.email
 
