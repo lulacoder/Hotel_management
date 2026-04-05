@@ -43,6 +43,8 @@ npx convex dev
 # Generate Convex types once (preferred for CI/local checks)
 npx convex dev --once
 ```
+# Never turn of typechecking when deplying to convex
+never run npx convex dev --notypechecking
 
 ### Convex Codegen Rule
 
@@ -317,3 +319,5 @@ skills:
   - task: "understanding the overall TanStack Start app structure"
     load: "node_modules/@tanstack/start-client-core/skills/start-core/SKILL.md"
 <!-- intent-skills:end -->
+
+
