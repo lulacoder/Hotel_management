@@ -8,6 +8,25 @@ interface HotelDateSelectionProps {
   onCheckOutChange: (value: string) => void
 }
 
+function getTodayDateString(): string {
+  const now = new Date()
+  const year = now.getFullYear()
+  const month = `${now.getMonth() + 1}`.padStart(2, '0')
+  const day = `${now.getDate()}`.padStart(2, '0')
+  return `${year}-${month}-${day}`
+}
+
+function addDays(dateString: string, days: number): string {
+  const date = new Date(`${dateString}T00:00:00`)
+  date.setDate(date.getDate() + days)
+
+  const year = date.getFullYear()
+  const month = `${date.getMonth() + 1}`.padStart(2, '0')
+  const day = `${date.getDate()}`.padStart(2, '0')
+
+  return `${year}-${month}-${day}`
+}
+
 export function HotelDateSelection({
   checkIn,
   checkOut,
@@ -16,7 +35,8 @@ export function HotelDateSelection({
   onCheckOutChange,
 }: HotelDateSelectionProps) {
   const { t } = useI18n()
-  const today = new Date().toISOString().split('T')[0]
+  const today = getTodayDateString()
+  const minCheckOut = checkIn ? addDays(checkIn, 1) : today
 
   return (
     <div className="mb-6 rounded-2xl border border-slate-800/50 bg-slate-900/50 p-5">
@@ -32,7 +52,14 @@ export function HotelDateSelection({
             type="date"
             value={checkIn}
             min={today}
-            onChange={(event) => onCheckInChange(event.target.value)}
+            onChange={(event) => {
+              const nextCheckIn = event.target.value
+              onCheckInChange(nextCheckIn)
+
+              if (nextCheckIn && (!checkOut || checkOut < addDays(nextCheckIn, 1))) {
+                onCheckOutChange(addDays(nextCheckIn, 1))
+              }
+            }}
             className="hotel-date-input w-full rounded-xl border border-slate-700 bg-slate-800/50 px-4 py-3 text-slate-200 transition-all focus:border-violet-500/50 focus:outline-none"
           />
         </div>
@@ -43,8 +70,15 @@ export function HotelDateSelection({
           <input
             type="date"
             value={checkOut}
-            min={checkIn || today}
-            onChange={(event) => onCheckOutChange(event.target.value)}
+            min={minCheckOut}
+            onChange={(event) => {
+              const nextCheckOut = event.target.value
+              onCheckOutChange(
+                nextCheckOut && nextCheckOut < minCheckOut
+                  ? minCheckOut
+                  : nextCheckOut,
+              )
+            }}
             className="hotel-date-input w-full rounded-xl border border-slate-700 bg-slate-800/50 px-4 py-3 text-slate-200 transition-all focus:border-violet-500/50 focus:outline-none"
           />
         </div>

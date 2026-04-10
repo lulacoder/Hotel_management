@@ -6,9 +6,11 @@ import {
   createRootRouteWithContext,
 } from '@tanstack/react-router'
 import { Suspense, lazy } from 'react'
-import { Toaster } from 'sonner'
 
 import Header from '../components/Header'
+import { Button } from '../components/ui/button'
+import { Toaster } from '../components/ui/sonner'
+import { TooltipProvider } from '../components/ui/tooltip'
 
 import ClerkProvider from '../integrations/clerk/provider'
 
@@ -107,12 +109,12 @@ function RootNotFound() {
         {t('root.notFoundTitle')}
       </h1>
       <p className="mt-3 text-slate-400">{t('root.notFoundDescription')}</p>
-      <Link
-        to="/"
-        className="mt-6 rounded-xl bg-blue-500 px-5 py-2.5 font-semibold text-slate-900 transition-colors hover:bg-blue-400"
+      <Button
+        asChild
+        className="mt-6 rounded-xl bg-violet-500 px-5 py-2.5 text-white hover:bg-violet-400"
       >
-        {t('root.goHome')}
-      </Link>
+        <Link to="/">{t('root.goHome')}</Link>
+      </Button>
     </main>
   )
 }
@@ -133,28 +135,29 @@ function RootDocument({ children }: { children: React.ReactNode }) {
           <ThemeProvider>
             <ClerkProvider>
               <ConvexProvider>
-                <Header />
-                {children}
-                {RootDevtools ? (
-                  <Suspense fallback={null}>
-                    <RootDevtools />
-                  </Suspense>
-                ) : null}
+                <TooltipProvider>
+                  <Header />
+                  {children}
+                  <Toaster
+                    position="bottom-right"
+                    toastOptions={{
+                      style: {
+                        background: 'var(--popover)',
+                        border: '1px solid var(--border)',
+                        color: 'var(--popover-foreground)',
+                      },
+                    }}
+                  />
+                  {RootDevtools ? (
+                    <Suspense fallback={null}>
+                      <RootDevtools />
+                    </Suspense>
+                  ) : null}
+                </TooltipProvider>
               </ConvexProvider>
             </ClerkProvider>
           </ThemeProvider>
         </I18nProvider>
-        <Toaster
-          position="bottom-right"
-          theme="dark"
-          toastOptions={{
-            style: {
-              background: 'rgb(15 23 42)',
-              border: '1px solid rgb(51 65 85 / 0.6)',
-              color: 'rgb(226 232 240)',
-            },
-          }}
-        />
         <Scripts />
       </body>
     </html>

@@ -1,4 +1,6 @@
+import { cn } from '../lib/utils'
 import { useI18n } from '../lib/i18n'
+import { Button } from './ui/button'
 
 interface LanguageSwitcherProps {
   compact?: boolean
@@ -13,32 +15,37 @@ export function LanguageSwitcher({
 
   return (
     <div
-      className={`inline-flex items-center rounded-xl border border-slate-700 bg-slate-800/70 p-1 ${className}`}
+      className={cn(
+        'inline-flex items-center rounded-xl border border-border bg-card/80 p-1 shadow-sm backdrop-blur-sm',
+        className,
+      )}
       role="group"
       aria-label={t('language.switcherLabel')}
     >
-      <button
-        type="button"
+      <Button
         onClick={() => setLocale('en')}
-        className={`rounded-lg px-2.5 py-1 text-xs font-semibold transition-colors ${
+        variant={locale === 'en' ? 'secondary' : 'ghost'}
+        size="xs"
+        className={`rounded-lg px-2.5 ${
           locale === 'en'
-            ? 'bg-white text-slate-900'
-            : 'text-slate-300 hover:text-white'
+            ? 'bg-white text-slate-900 hover:bg-white'
+            : 'text-muted-foreground hover:bg-transparent hover:text-foreground'
         }`}
       >
         EN
-      </button>
-      <button
-        type="button"
+      </Button>
+      <Button
         onClick={() => setLocale('am')}
-        className={`rounded-lg px-2.5 py-1 text-xs font-semibold transition-colors ${
+        variant={locale === 'am' ? 'secondary' : 'ghost'}
+        size="xs"
+        className={`rounded-lg px-2.5 ${
           locale === 'am'
-            ? 'bg-white text-slate-900'
-            : 'text-slate-300 hover:text-white'
+            ? 'bg-white text-slate-900 hover:bg-white'
+            : 'text-muted-foreground hover:bg-transparent hover:text-foreground'
         } ${compact ? '' : 'min-w-[2.5rem]'}`}
       >
         አማ
-      </button>
+      </Button>
     </div>
   )
 }

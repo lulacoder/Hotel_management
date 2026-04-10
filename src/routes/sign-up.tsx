@@ -2,6 +2,7 @@
 import { Link, createFileRoute, redirect } from '@tanstack/react-router'
 import { SignUp } from '@clerk/clerk-react'
 import { ArrowLeft } from 'lucide-react'
+import { Button } from '../components/ui/button'
 import { ThemeToggle } from '../components/ThemeToggle'
 import { buildRedirectSearch, sanitizeRedirect } from '../lib/authRouting'
 import { useI18n } from '../lib/i18n'
@@ -106,12 +107,16 @@ function SignUpPage() {
       <div className="flex-1 flex flex-col">
         {/* Mobile Header */}
         <div className="lg:hidden p-4 flex items-center justify-between">
-          <Link to="/" className="flex items-center gap-2">
-            <ArrowLeft size={20} className="text-slate-400" />
-            <span className="text-slate-400 font-medium">
-              {t('signIn.back')}
-            </span>
-          </Link>
+          <Button
+            asChild
+            variant="ghost"
+            className="text-slate-400 hover:text-slate-200"
+          >
+            <Link to="/">
+              <ArrowLeft size={20} className="mr-2" />
+              <span className="font-medium">{t('signIn.back')}</span>
+            </Link>
+          </Button>
           <div className="flex items-center gap-2">
             <ThemeToggle compact />
             <div className="brand-logo-shell h-8 px-1 flex items-center justify-center">
@@ -148,13 +153,15 @@ function SignUpPage() {
 
             <p className="text-center text-slate-500 text-sm mt-6">
               {t('signUp.haveAccount')}{' '}
-              <Link
-                to="/sign-in"
-                search={search}
-                className="text-violet-400 hover:text-violet-300 font-medium transition-colors"
+              <Button
+                asChild
+                variant="link"
+                className="h-auto px-0 text-violet-400 hover:text-violet-300"
               >
-                {t('header.signIn')}
-              </Link>
+                <Link to="/sign-in" search={search}>
+                  {t('header.signIn')}
+                </Link>
+              </Button>
             </p>
           </div>
         </div>

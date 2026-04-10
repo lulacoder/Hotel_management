@@ -5,19 +5,19 @@ export function getClerkAuthAppearance(theme: Theme) {
     return {
       elements: {
         rootBox: 'w-full',
-        card: 'bg-white/90 border border-slate-200 shadow-2xl shadow-slate-300/30 rounded-2xl',
+        card: 'rounded-3xl border border-slate-200/90 bg-white/95 shadow-2xl shadow-slate-300/30 backdrop-blur-xl',
         headerTitle: 'text-slate-900',
         headerSubtitle: 'text-slate-600',
         socialButtonsBlockButton:
-          'bg-white border-slate-300 text-slate-900 hover:bg-slate-50',
+          'border-slate-300 bg-white text-slate-900 hover:bg-slate-50',
         socialButtonsBlockButtonText: 'text-slate-700 font-medium',
         dividerLine: 'bg-slate-300',
         dividerText: 'text-slate-500',
         formFieldLabel: 'text-slate-700',
         formFieldInput:
-          'bg-white border-slate-300 text-slate-900 placeholder:text-slate-500 focus:border-violet-500 focus:ring-violet-500/20',
+          'h-12 rounded-xl border-slate-300 bg-white text-slate-900 placeholder:text-slate-500 focus:border-violet-500 focus:ring-violet-500/20',
         formButtonPrimary:
-          'bg-slate-900 hover:bg-slate-800 text-white font-semibold shadow-lg shadow-slate-900/25',
+          'h-11 rounded-xl bg-slate-900 text-white font-semibold shadow-lg shadow-slate-900/25 hover:bg-slate-800',
         footerActionLink: 'text-violet-600 hover:text-violet-500',
         identityPreviewText: 'text-slate-700',
         identityPreviewEditButton: 'text-violet-600',
@@ -30,19 +30,19 @@ export function getClerkAuthAppearance(theme: Theme) {
   return {
     elements: {
       rootBox: 'w-full',
-      card: 'bg-slate-900/50 border border-slate-800 shadow-2xl shadow-black/50 rounded-2xl',
+      card: 'rounded-3xl border border-slate-800 bg-slate-900/70 shadow-2xl shadow-black/50 backdrop-blur-xl',
       headerTitle: 'text-white',
       headerSubtitle: 'text-slate-400',
       socialButtonsBlockButton:
-        'bg-slate-800 border-slate-700 text-white hover:bg-slate-700',
+        'border-slate-700 bg-slate-800 text-white hover:bg-slate-700',
       socialButtonsBlockButtonText: 'text-slate-300 font-medium',
       dividerLine: 'bg-slate-700',
       dividerText: 'text-slate-500',
       formFieldLabel: 'text-slate-300',
       formFieldInput:
-        'bg-slate-800 border-slate-700 text-white placeholder:text-slate-500 focus:border-violet-500 focus:ring-violet-500/20',
+        'h-12 rounded-xl border-slate-700 bg-slate-800 text-white placeholder:text-slate-500 focus:border-violet-500 focus:ring-violet-500/20',
       formButtonPrimary:
-        'bg-white hover:bg-slate-100 text-slate-900 font-semibold shadow-lg shadow-black/20',
+        'h-11 rounded-xl bg-white text-slate-900 font-semibold shadow-lg shadow-black/20 hover:bg-slate-100',
       footerActionLink: 'text-violet-400 hover:text-violet-300',
       identityPreviewText: 'text-slate-300',
       identityPreviewEditButton: 'text-violet-400',

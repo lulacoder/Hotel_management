@@ -1,11 +1,20 @@
-// Header section for the customer bookings page with quick navigation actions.
 import { Link } from '@tanstack/react-router'
 import { UserButton } from '@clerk/clerk-react'
+import { ArrowLeft, Home, MapPin, Menu } from 'lucide-react'
 import { useState } from 'react'
-import { ArrowLeft, Menu, X, Home, MapPin } from 'lucide-react'
+
 import { LanguageSwitcher } from '../../../../components/LanguageSwitcher'
-import { ThemeToggle } from '../../../../components/ThemeToggle'
 import { NotificationBell } from '../../../../components/NotificationBell'
+import { ThemeToggle } from '../../../../components/ThemeToggle'
+import { Button } from '../../../../components/ui/button'
+import {
+  Sheet,
+  SheetContent,
+  SheetDescription,
+  SheetHeader,
+  SheetTitle,
+  SheetTrigger,
+} from '../../../../components/ui/sheet'
 import { useI18n } from '../../../../lib/i18n'
 import { DEFAULT_SELECT_LOCATION_SEARCH } from '../../../../lib/navigationSearch'
 
@@ -14,138 +23,110 @@ interface BookingsHeaderProps {
 }
 
 export function BookingsHeader({ userName }: BookingsHeaderProps) {
-  // Sticky header keeps navigation/account actions visible while scrolling.
   const { t } = useI18n()
   const [isOpen, setIsOpen] = useState(false)
 
   return (
-    <>
-      <header className="bg-slate-900 border-b border-slate-800/50 sticky top-0 z-10">
-        <div className="max-w-7xl mx-auto px-4 py-4 flex justify-between items-center">
-          <div className="flex items-center gap-4">
-            {/* Back arrow (all sizes) */}
-            <Link
-              to="/select-location"
-              search={DEFAULT_SELECT_LOCATION_SEARCH}
-              className="header-secondary-btn rounded-lg p-2"
-            >
-              <ArrowLeft className="w-5 h-5" />
-            </Link>
-            <h1 className="text-xl font-bold text-white">
-              {t('bookings.title')}
-            </h1>
-          </div>
-
-          {/* Desktop right-side actions */}
-          <div className="hidden md:flex items-center gap-4">
-            <LanguageSwitcher compact />
-            <ThemeToggle compact />
-            <NotificationBell />
-            <span className="text-sm text-slate-400">{userName}</span>
-            <UserButton afterSignOutUrl="/" />
-          </div>
-
-          {/* Mobile right-side: LanguageSwitcher + hamburger */}
-          <div className="flex md:hidden items-center gap-3">
-            <LanguageSwitcher compact />
-            <button
-              onClick={() => setIsOpen(true)}
-              className="cursor-pointer p-2.5 hover:bg-white/10 rounded-xl transition-all duration-300 group"
-              aria-label={t('header.openMenu')}
-            >
-              <Menu
-                size={22}
-                className="text-slate-300 group-hover:text-violet-400 transition-colors"
-              />
-            </button>
-          </div>
-        </div>
-      </header>
-
-      {/* Mobile Slide-out Menu */}
-      <aside
-        className={`fixed top-0 left-0 h-full w-80 bg-slate-900 border-r border-slate-800/50 shadow-2xl z-[60] transform transition-transform duration-500 ease-out flex flex-col ${
-          isOpen ? 'translate-x-0' : '-translate-x-full'
-        }`}
-      >
-        <div className="flex items-center justify-between p-5 border-b border-slate-800/50">
-          <div className="flex items-center gap-3">
-            <div className="brand-logo-shell h-10 px-1 flex items-center justify-center">
-              <img
-                src="/logo.png"
-                alt="Luxe Hotels"
-                className="h-8 w-auto object-contain logo-tight"
-              />
-            </div>
-            <p className="text-xs text-slate-500 font-medium">
-              {t('header.navigationMenu')}
-            </p>
-          </div>
-          <button
-            onClick={() => setIsOpen(false)}
-            className="cursor-pointer p-2.5 hover:bg-white/5 rounded-xl transition-all duration-300 group"
-            aria-label={t('header.closeMenu')}
+    <header className="sticky top-0 z-10 border-b border-slate-800/50 bg-slate-900/90 backdrop-blur-xl">
+      <div className="mx-auto flex max-w-7xl items-center justify-between px-4 py-4">
+        <div className="flex items-center gap-4">
+          <Button
+            asChild
+            variant="outline"
+            size="icon"
+            className="header-secondary-btn rounded-lg"
           >
-            <X
-              size={22}
-              className="text-slate-400 group-hover:text-white transition-colors"
-            />
-          </button>
+            <Link to="/select-location" search={DEFAULT_SELECT_LOCATION_SEARCH}>
+              <ArrowLeft className="size-5" />
+            </Link>
+          </Button>
+          <h1 className="text-xl font-bold text-white">
+            {t('bookings.title')}
+          </h1>
         </div>
 
-        <nav className="flex-1 p-4 overflow-y-auto">
-          <div className="space-y-1">
-            <Link
-              to="/"
-              onClick={() => setIsOpen(false)}
-              className="flex items-center gap-3 px-4 py-3 rounded-xl text-slate-400 hover:text-white hover:bg-white/5 transition-all duration-300 group"
-            >
-              <Home
-                size={20}
-                className="group-hover:text-violet-400 transition-colors"
-              />
-              <span className="font-medium">{t('header.home')}</span>
-            </Link>
-
-            <Link
-              to="/select-location"
-              search={DEFAULT_SELECT_LOCATION_SEARCH}
-              onClick={() => setIsOpen(false)}
-              className="flex items-center gap-3 px-4 py-3 rounded-xl text-slate-400 hover:text-white hover:bg-white/5 transition-all duration-300 group"
-            >
-              <MapPin
-                size={20}
-                className="group-hover:text-violet-400 transition-colors"
-              />
-              <span className="font-medium">{t('header.browseLocations')}</span>
-            </Link>
-          </div>
-
-          {/* Settings */}
-          <div className="mt-6 pt-6 border-t border-slate-800/50">
-            <div className="flex items-center gap-3 px-4 py-3">
-              <ThemeToggle />
-            </div>
-          </div>
-        </nav>
-
-        {/* User Section at Bottom */}
-        <div className="p-4 border-t border-slate-800/50 bg-slate-800/30">
-          <div className="flex items-center gap-3">
-            <UserButton afterSignOutUrl="/" />
-            <NotificationBell />
-            <span className="text-sm text-slate-400">{userName}</span>
-          </div>
+        <div className="hidden items-center gap-4 md:flex">
+          <LanguageSwitcher compact />
+          <ThemeToggle compact />
+          <NotificationBell />
+          <span className="text-sm text-slate-500">{userName}</span>
+          <UserButton afterSignOutUrl="/" />
         </div>
-      </aside>
 
-      {/* Backdrop Overlay */}
-      <div
-        className={`fixed inset-0 bg-black/60 backdrop-blur-sm z-[55] transition-all duration-500 ${
-          isOpen ? 'opacity-100' : 'opacity-0 pointer-events-none'
-        }`}
-        onClick={() => setIsOpen(false)}
-      />
-    </>
+        <div className="flex items-center gap-3 md:hidden">
+          <LanguageSwitcher compact />
+          <Sheet open={isOpen} onOpenChange={setIsOpen}>
+            <SheetTrigger asChild>
+              <Button
+                variant="ghost"
+                size="icon"
+                className="header-secondary-btn rounded-xl"
+                aria-label={t('header.openMenu')}
+              >
+                <Menu size={22} />
+              </Button>
+            </SheetTrigger>
+            <SheetContent
+              side="left"
+              className="w-80 border-r border-slate-800/50 bg-slate-900/95 p-0 text-slate-100"
+            >
+              <SheetHeader className="border-b border-slate-800/50 px-5 py-4 text-left">
+                <div className="flex items-center gap-3">
+                  <div className="brand-logo-shell h-10 px-1">
+                    <img
+                      src="/logo.png"
+                      alt="Luxe Hotels"
+                      className="h-8 w-auto object-contain logo-tight"
+                    />
+                  </div>
+                  <div>
+                    <SheetTitle className="text-slate-100">
+                      {t('bookings.title')}
+                    </SheetTitle>
+                    <SheetDescription className="text-xs text-slate-500">
+                      {t('header.navigationMenu')}
+                    </SheetDescription>
+                  </div>
+                </div>
+              </SheetHeader>
+
+              <nav className="space-y-2 p-4">
+                <Link
+                  to="/"
+                  onClick={() => setIsOpen(false)}
+                  className="flex items-center gap-3 rounded-xl px-4 py-3 text-slate-400 transition-all hover:bg-white/5 hover:text-slate-100"
+                >
+                  <Home size={20} />
+                  <span className="font-medium">{t('header.home')}</span>
+                </Link>
+                <Link
+                  to="/select-location"
+                  search={DEFAULT_SELECT_LOCATION_SEARCH}
+                  onClick={() => setIsOpen(false)}
+                  className="flex items-center gap-3 rounded-xl px-4 py-3 text-slate-400 transition-all hover:bg-white/5 hover:text-slate-100"
+                >
+                  <MapPin size={20} />
+                  <span className="font-medium">
+                    {t('header.browseLocations')}
+                  </span>
+                </Link>
+
+                <div className="mt-6 border-t border-slate-800/50 pt-6">
+                  <ThemeToggle className="w-full justify-center" />
+                </div>
+              </nav>
+
+              <div className="mt-auto border-t border-slate-800/50 bg-slate-800/30 p-4">
+                <div className="flex items-center gap-3">
+                  <UserButton afterSignOutUrl="/" />
+                  <NotificationBell dropDirection="up" />
+                  <span className="text-sm text-slate-500">{userName}</span>
+                </div>
+              </div>
+            </SheetContent>
+          </Sheet>
+        </div>
+      </div>
+    </header>
   )
 }
