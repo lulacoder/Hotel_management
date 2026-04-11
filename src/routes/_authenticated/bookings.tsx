@@ -190,7 +190,7 @@ function BookingsPage() {
               <button
                 type="button"
                 onClick={clearPaymentSearch}
-                className="rounded-lg p-1 text-current/80 transition-colors hover:bg-black/10 hover:text-current"
+                className="cursor-pointer rounded-lg p-1 text-current/80 transition-colors hover:bg-black/10 hover:text-current"
               >
                 <X className="h-4 w-4" />
               </button>
@@ -213,7 +213,7 @@ function BookingsPage() {
 
         {/* Empty State */}
         {!isLoading && filteredBookings?.length === 0 && (
-          <div className="bg-slate-900 rounded-2xl border border-slate-800/50 p-12 text-center">
+          <div className="rounded-2xl border border-slate-800/50 bg-slate-900/50 p-12 text-center">
             <Calendar className="w-16 h-16 text-slate-600 mx-auto mb-4" />
             <h2 className="text-xl font-semibold text-white mb-2">
               {statusFilter === 'all'

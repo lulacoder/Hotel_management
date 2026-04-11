@@ -11,6 +11,9 @@ import {
   XCircle,
 } from 'lucide-react'
 
+import { Badge } from '../../../../components/ui/badge'
+import { Button } from '../../../../components/ui/button'
+import { Card, CardContent } from '../../../../components/ui/card'
 import {
   formatPackageAddOn,
   getPackageLabelOrDefault,
@@ -54,59 +57,55 @@ function StatusBadge({ status }: { status: string }) {
   switch (status) {
     case 'held':
       return (
-        <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-xs font-medium bg-blue-500/20 text-blue-400 border border-blue-500/30">
+        <Badge className="inline-flex items-center gap-1 border border-blue-500/30 bg-blue-500/20 text-blue-400">
           <Clock className="w-3 h-3" />
           {t('booking.status.held')}
-        </span>
+        </Badge>
       )
     case 'pending_payment':
       return (
-        <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-xs font-medium bg-blue-500/20 text-blue-400 border border-blue-500/30">
+        <Badge className="inline-flex items-center gap-1 border border-blue-500/30 bg-blue-500/20 text-blue-400">
           <Clock className="w-3 h-3" />
           {t('booking.status.pendingPayment')}
-        </span>
+        </Badge>
       )
     case 'confirmed':
       return (
-        <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-xs font-medium bg-green-500/20 text-green-400 border border-green-500/30">
+        <Badge className="inline-flex items-center gap-1 border border-green-500/30 bg-green-500/20 text-green-400">
           <CheckCircle className="w-3 h-3" />
           {t('booking.status.confirmed')}
-        </span>
+        </Badge>
       )
     case 'checked_in':
       return (
-        <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-xs font-medium bg-blue-500/20 text-blue-400 border border-blue-500/30">
+        <Badge className="inline-flex items-center gap-1 border border-blue-500/30 bg-blue-500/20 text-blue-400">
           <CheckCircle className="w-3 h-3" />
           {t('booking.status.checkedIn')}
-        </span>
+        </Badge>
       )
     case 'checked_out':
       return (
-        <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-xs font-medium bg-slate-500/20 text-slate-400 border border-slate-500/30">
+        <Badge className="inline-flex items-center gap-1 border border-slate-500/30 bg-slate-500/20 text-slate-400">
           <CheckCircle className="w-3 h-3" />
           {t('booking.status.checkedOut')}
-        </span>
+        </Badge>
       )
     case 'cancelled':
       return (
-        <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-xs font-medium bg-red-500/20 text-red-400 border border-red-500/30">
+        <Badge className="inline-flex items-center gap-1 border border-red-500/30 bg-red-500/20 text-red-400">
           <XCircle className="w-3 h-3" />
           {t('booking.status.cancelled')}
-        </span>
+        </Badge>
       )
     case 'expired':
       return (
-        <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-xs font-medium bg-slate-500/20 text-slate-400 border border-slate-500/30">
+        <Badge className="inline-flex items-center gap-1 border border-slate-500/30 bg-slate-500/20 text-slate-400">
           <AlertCircle className="w-3 h-3" />
           {t('booking.status.expired')}
-        </span>
+        </Badge>
       )
     default:
-      return (
-        <span className="px-2.5 py-1 rounded-full text-xs font-medium bg-slate-500/20 text-slate-400">
-          {status}
-        </span>
-      )
+      return <Badge className="bg-slate-500/20 text-slate-400">{status}</Badge>
   }
 }
 
@@ -130,118 +129,129 @@ export function BookingCard({
   const roomTypeLabel = roomTypeLabels[room.type] ?? room.type
 
   return (
-    <div className="bg-slate-900 rounded-2xl border border-slate-800/50 p-6 hover:border-slate-700 transition-colors">
-      <div className="flex justify-between items-start gap-4">
-        <div className="flex-1">
-          <div className="flex items-start justify-between mb-3">
-            <div>
-              <h3 className="font-semibold text-white text-lg">{hotel.name}</h3>
-              <div className="flex items-center gap-1 text-sm text-slate-400 mt-1">
-                <MapPin className="w-4 h-4" />
-                {hotel.address}, {hotel.city}
+    <Card className="light-hover-surface rounded-2xl border-slate-800/50 bg-slate-900/50 transition-colors hover:border-slate-700">
+      <CardContent className="p-6">
+        <div className="flex justify-between items-start gap-4">
+          <div className="flex-1">
+            <div className="mb-3 flex items-start justify-between">
+              <div>
+                <h3 className="text-lg font-semibold text-white">
+                  {hotel.name}
+                </h3>
+                <div className="mt-1 flex items-center gap-1 text-sm text-slate-400">
+                  <MapPin className="w-4 h-4" />
+                  {hotel.address}, {hotel.city}
+                </div>
               </div>
+              <StatusBadge status={booking.status} />
             </div>
-            <StatusBadge status={booking.status} />
-          </div>
 
-          <div className="flex items-center gap-2 text-slate-300 mb-4">
-            <BedDouble className="w-4 h-4 text-violet-400" />
-            <span>
-              {roomTypeLabel} - {t('hotel.room')} {room.roomNumber}
-            </span>
-          </div>
+            <div className="mb-4 flex items-center gap-2 text-slate-300">
+              <BedDouble className="w-4 h-4 text-violet-400" />
+              <span>
+                {roomTypeLabel} - {t('hotel.room')} {room.roomNumber}
+              </span>
+            </div>
 
-          <div className="mb-4">
-            <span className="inline-flex items-center gap-2 px-2.5 py-1 rounded-full text-xs font-medium bg-slate-800 text-slate-300 border border-slate-700">
-              {t('booking.package')}:{' '}
-              {getPackageLabelOrDefault(booking.packageType, t)}
-              {booking.packageType && (
-                <span className="text-slate-400">
-                  ({formatPackageAddOn(booking.packageAddOn ?? 0, t)})
+            <div className="mb-4">
+              <Badge className="inline-flex items-center gap-2 border-slate-700 bg-slate-800 text-slate-300">
+                {t('booking.package')}:{' '}
+                {getPackageLabelOrDefault(booking.packageType, t)}
+                {booking.packageType && (
+                  <span className="text-slate-400">
+                    ({formatPackageAddOn(booking.packageAddOn ?? 0, t)})
+                  </span>
+                )}
+              </Badge>
+            </div>
+
+            <div className="grid grid-cols-2 gap-4 text-sm sm:grid-cols-4">
+              <div>
+                <span className="block text-slate-500">
+                  {t('booking.checkIn')}
                 </span>
-              )}
-            </span>
-          </div>
-
-          <div className="grid grid-cols-2 sm:grid-cols-4 gap-4 text-sm">
-            <div>
-              <span className="text-slate-500 block">
-                {t('booking.checkIn')}
-              </span>
-              <span className="text-slate-200 font-medium">
-                {formatDate(booking.checkIn, locale)}
-              </span>
-            </div>
-            <div>
-              <span className="text-slate-500 block">
-                {t('booking.checkOut')}
-              </span>
-              <span className="text-slate-200 font-medium">
-                {formatDate(booking.checkOut, locale)}
-              </span>
-            </div>
-            <div>
-              <span className="text-slate-500 block">
-                {t('booking.priceNight')}
-              </span>
-              <span className="text-slate-200 font-medium">
-                {formatPrice(booking.pricePerNight)}
-              </span>
-            </div>
-            <div>
-              <span className="text-slate-500 block">{t('booking.total')}</span>
-              <span className="text-violet-400 font-semibold">
-                {formatPrice(booking.totalPrice)}
-              </span>
-            </div>
-          </div>
-
-          {booking.status === 'held' && booking.holdExpiresAt && (
-            <div className="mt-4 p-3 bg-blue-500/10 border border-blue-500/30 rounded-lg">
-              <div className="flex items-center gap-2 text-blue-400 text-sm">
-                <Clock className="w-4 h-4" />
-                <span>
-                  {t('booking.holdExpires', {
-                    time: formatTime(booking.holdExpiresAt, locale),
-                  })}
+                <span className="font-medium text-slate-200">
+                  {formatDate(booking.checkIn, locale)}
+                </span>
+              </div>
+              <div>
+                <span className="block text-slate-500">
+                  {t('booking.checkOut')}
+                </span>
+                <span className="font-medium text-slate-200">
+                  {formatDate(booking.checkOut, locale)}
+                </span>
+              </div>
+              <div>
+                <span className="block text-slate-500">
+                  {t('booking.priceNight')}
+                </span>
+                <span className="font-medium text-slate-200">
+                  {formatPrice(booking.pricePerNight)}
+                </span>
+              </div>
+              <div>
+                <span className="block text-slate-500">
+                  {t('booking.total')}
+                </span>
+                <span className="font-semibold text-violet-400">
+                  {formatPrice(booking.totalPrice)}
                 </span>
               </div>
             </div>
-          )}
-        </div>
-      </div>
 
-      {canCancel(booking.status) && (
-        <div className="mt-4 pt-4 border-t border-slate-800 flex gap-3">
-          {booking.status === 'held' && (
-            <Link
-              to="/hotels/$hotelId"
-              params={{ hotelId: hotel._id }}
-              search={{ resumeBookingId: booking._id }}
-              className="px-4 py-2 bg-white text-slate-900 font-medium rounded-lg hover:bg-slate-100 transition-colors text-sm"
-            >
-              {t('booking.confirmBooking')}
-            </Link>
-          )}
-          <button
-            onClick={() => onCancel(booking._id)}
-            disabled={cancellingId === booking._id}
-            className="px-4 py-2 bg-slate-800 text-red-400 font-medium rounded-lg hover:bg-red-500/20 hover:text-red-300 transition-colors text-sm flex items-center gap-2 disabled:opacity-50"
-          >
-            {cancellingId === booking._id ? (
-              <>
-                <Loader2 className="w-4 h-4 animate-spin" />
-                {t('booking.cancelling')}
-              </>
-            ) : (
-              <>
-                <X className="w-4 h-4" />
-                {t('booking.cancel')}
-              </>
+            {booking.status === 'held' && booking.holdExpiresAt && (
+              <div className="mt-4 rounded-lg border border-blue-500/30 bg-blue-500/10 p-3">
+                <div className="flex items-center gap-2 text-sm text-blue-400">
+                  <Clock className="w-4 h-4" />
+                  <span>
+                    {t('booking.holdExpires', {
+                      time: formatTime(booking.holdExpiresAt, locale),
+                    })}
+                  </span>
+                </div>
+              </div>
             )}
-          </button>
+          </div>
         </div>
-      )}
-    </div>
+
+        {canCancel(booking.status) && (
+          <div className="mt-4 flex gap-3 border-t border-slate-800 pt-4">
+            {booking.status === 'held' && (
+              <Button
+                asChild
+                className="bg-white text-slate-900 hover:bg-slate-100"
+              >
+                <Link
+                  to="/hotels/$hotelId"
+                  params={{ hotelId: hotel._id }}
+                  search={{ resumeBookingId: booking._id }}
+                >
+                  {t('booking.confirmBooking')}
+                </Link>
+              </Button>
+            )}
+            <Button
+              variant="outline"
+              onClick={() => onCancel(booking._id)}
+              disabled={cancellingId === booking._id}
+              className="border-slate-700 bg-slate-800 text-red-400 hover:bg-red-500/20 hover:text-red-300"
+            >
+              {cancellingId === booking._id ? (
+                <>
+                  <Loader2 className="w-4 h-4 animate-spin" />
+                  {t('booking.cancelling')}
+                </>
+              ) : (
+                <>
+                  <X className="w-4 h-4" />
+                  {t('booking.cancel')}
+                </>
+              )}
+            </Button>
+          </div>
+        )}
+      </CardContent>
+    </Card>
   )
 }

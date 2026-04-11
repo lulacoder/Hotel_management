@@ -70,9 +70,7 @@ function AdminUsersPage() {
   if (profile === undefined) {
     return (
       <div className="max-w-7xl mx-auto">
-        <div
-          className={`rounded-2xl p-8 text-center border ${isDark ? 'bg-slate-900/50 border-slate-800/50 text-slate-500' : 'bg-white/80 border-slate-200/80 text-slate-400 shadow-sm'}`}
-        >
+        <div className="admin-empty-state p-8">
           {t('admin.users.loadingProfile')}
         </div>
       </div>
@@ -83,9 +81,7 @@ function AdminUsersPage() {
   if (profile?.role !== 'room_admin') {
     return (
       <div className="max-w-7xl mx-auto">
-        <div
-          className={`rounded-2xl p-8 text-center border border-red-500/20 ${isDark ? 'bg-slate-900/50' : 'bg-white/80 shadow-sm'}`}
-        >
+        <div className="admin-empty-state border-red-500/20 p-8">
           <h2 className="text-xl font-semibold text-red-400 mb-2">
             {t('admin.accessDenied')}
           </h2>
@@ -137,17 +133,13 @@ function AdminUsersPage() {
           placeholder={t('admin.users.searchPlaceholder')}
           value={searchQuery}
           onChange={(e) => setSearchQuery(e.target.value)}
-          className={`w-full pl-12 pr-4 py-3 rounded-xl focus:outline-none transition-all ${
-            isDark
-              ? 'bg-slate-900/50 border border-slate-800/50 text-slate-200 placeholder-slate-500 focus:border-violet-500/50 focus:ring-1 focus:ring-violet-500/20'
-              : 'bg-white border border-slate-200 text-slate-900 placeholder-slate-400 focus:border-violet-500/50 focus:ring-1 focus:ring-violet-500/20 shadow-sm'
-          }`}
+          className="admin-field pl-12"
         />
       </motion.div>
 
       {/* User list table with assignment status and actions. */}
       <motion.div
-        className={`rounded-2xl overflow-hidden border ${isDark ? 'bg-slate-900/50 border-slate-800/50' : 'bg-white/80 border-slate-200/80 shadow-sm backdrop-blur-sm'}`}
+        className="admin-table-shell overflow-hidden"
         initial={{ opacity: 0, y: 12 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.5, delay: 0.1 }}
@@ -209,7 +201,7 @@ function AdminUsersPage() {
                 filteredUsers.map((listedUser) => (
                   <tr
                     key={listedUser._id}
-                    className={`last:border-b-0 ${isDark ? 'border-b border-slate-800/40 hover:bg-slate-800/20' : 'border-b border-slate-100 hover:bg-slate-50/60'}`}
+                    className="admin-table-row last:border-b-0"
                   >
                     <td
                       className={`px-6 py-4 ${isDark ? 'text-slate-200' : 'text-slate-700'}`}
@@ -274,18 +266,14 @@ function AdminUsersPage() {
                       {listedUser.assignment ? (
                         <button
                           onClick={() => handleUnassign(listedUser._id)}
-                          className="px-3 py-1.5 rounded-lg text-xs font-medium bg-red-500/10 text-red-400 border border-red-500/20 hover:bg-red-500/20 transition-colors"
+                          className="admin-button-destructive px-3 py-1.5 text-xs"
                         >
                           {t('admin.users.unassign')}
                         </button>
                       ) : (
                         <button
                           onClick={() => setSelectedUserId(listedUser._id)}
-                          className={`px-3 py-1.5 rounded-lg text-xs font-medium border transition-colors ${
-                            isDark
-                              ? 'bg-violet-500/10 text-violet-400 border-violet-500/20 hover:bg-violet-500/20'
-                              : 'bg-violet-500/10 text-violet-600 border-violet-500/20 hover:bg-violet-500/20'
-                          }`}
+                          className="admin-button-soft px-3 py-1.5 text-xs"
                         >
                           {t('admin.users.assign')}
                         </button>

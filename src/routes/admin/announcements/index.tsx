@@ -241,18 +241,8 @@ function AdminAnnouncementsPage() {
           <div className="animate-spin rounded-full h-8 w-8 border-2 border-violet-500/20 border-t-violet-500" />
         </div>
       ) : announcements.length === 0 ? (
-        <div
-          className={`border rounded-2xl p-14 text-center ${
-            isDark
-              ? 'bg-slate-900/50 border-slate-800/50'
-              : 'bg-white/80 border-slate-200/80 shadow-sm backdrop-blur-sm'
-          }`}
-        >
-          <div
-            className={`w-16 h-16 rounded-2xl flex items-center justify-center mx-auto mb-4 ${
-              isDark ? 'bg-slate-800' : 'bg-slate-100'
-            }`}
-          >
+        <div className="admin-empty-state p-14">
+          <div className="admin-empty-icon">
             <Megaphone
               className={`w-8 h-8 ${isDark ? 'text-slate-500' : 'text-slate-400'}`}
             />
@@ -269,11 +259,7 @@ function AdminAnnouncementsPage() {
           </p>
           <button
             onClick={openCreate}
-            className={`inline-flex items-center gap-2 px-5 py-2.5 border text-sm font-medium rounded-xl transition-all ${
-              isDark
-                ? 'bg-violet-500/10 hover:bg-violet-500/20 border-violet-500/20 text-violet-400'
-                : 'bg-violet-500/10 hover:bg-violet-500/20 border-violet-500/20 text-violet-600'
-            }`}
+            className="admin-button-soft inline-flex items-center gap-2 text-sm"
           >
             <Plus size={15} />
             {t('admin.announcements.newAnnouncement')}
@@ -289,11 +275,7 @@ function AdminAnnouncementsPage() {
             return (
               <div
                 key={ann._id}
-                className={`border rounded-2xl overflow-hidden transition-all ${
-                  isDark
-                    ? 'bg-slate-900/50'
-                    : 'bg-white/80 shadow-sm backdrop-blur-sm'
-                } ${
+                className={`admin-surface overflow-hidden transition-all ${
                   ann.isActive
                     ? isDark
                       ? 'border-slate-800/50'
@@ -413,7 +395,7 @@ function AdminAnnouncementsPage() {
                             ? t('admin.announcements.inactive')
                             : t('admin.announcements.active')
                         }
-                        className={`p-2 rounded-xl border transition-all ${
+                        className={`admin-icon-button ${
                           ann.isActive
                             ? isDark
                               ? 'bg-emerald-500/10 border-emerald-500/20 text-emerald-400 hover:bg-emerald-500/20'
@@ -441,11 +423,7 @@ function AdminAnnouncementsPage() {
                           })
                         }
                         title="Edit"
-                        className={`p-2 rounded-xl border transition-all ${
-                          isDark
-                            ? 'bg-slate-800/60 border-slate-700 text-slate-400 hover:text-slate-200 hover:bg-slate-700'
-                            : 'bg-slate-100 border-slate-200 text-slate-500 hover:text-slate-700 hover:bg-slate-200'
-                        }`}
+                        className="admin-icon-button"
                       >
                         <Pencil size={15} />
                       </button>
@@ -454,10 +432,10 @@ function AdminAnnouncementsPage() {
                       <button
                         onClick={() => handleDelete(ann._id)}
                         title="Delete"
-                        className={`p-2 rounded-xl border transition-all ${
+                        className={`admin-icon-button ${
                           isDark
-                            ? 'bg-slate-800/60 border-slate-700 text-slate-400 hover:text-red-400 hover:bg-red-500/10 hover:border-red-500/20'
-                            : 'bg-slate-100 border-slate-200 text-slate-500 hover:text-red-500 hover:bg-red-50 hover:border-red-200'
+                            ? 'hover:text-red-400 hover:bg-red-500/10 hover:border-red-500/20'
+                            : 'hover:text-red-500 hover:bg-red-50 hover:border-red-200'
                         }`}
                       >
                         <Trash2 size={15} />

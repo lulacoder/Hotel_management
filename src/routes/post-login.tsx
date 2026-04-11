@@ -1,12 +1,10 @@
 // Post-auth route that resolves user role and redirects to the correct destination.
-import {
-  Navigate,
-  createFileRoute,
-} from '@tanstack/react-router'
+import { Navigate, createFileRoute } from '@tanstack/react-router'
 import { useUser } from '@clerk/clerk-react'
 import { useQuery } from 'convex/react'
 import { api } from '../../convex/_generated/api'
 import { sanitizeRedirect } from '../lib/authRouting'
+import { Card, CardContent } from '../components/ui/card'
 import { useI18n } from '../lib/i18n'
 import { DEFAULT_ADMIN_DASHBOARD_SEARCH } from '../lib/navigationSearch'
 
@@ -54,12 +52,18 @@ function PostLoginPage() {
   }
 
   return (
-    <div className="flex min-h-screen items-center justify-center bg-gradient-to-br from-blue-50 to-indigo-100">
-      <div className="text-center">
-        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600 mx-auto mb-4"></div>
-        <p className="text-gray-600 text-lg">{t('postLogin.loadingProfile')}</p>
-        <p className="text-gray-400 text-sm mt-2">{t('postLogin.settingUp')}</p>
-      </div>
+    <div className="flex min-h-screen items-center justify-center bg-slate-950 px-4">
+      <Card className="w-full max-w-md rounded-3xl border-slate-800 bg-slate-900/80 shadow-2xl shadow-black/30 backdrop-blur-xl">
+        <CardContent className="py-10 text-center">
+          <div className="mx-auto mb-4 h-12 w-12 animate-spin rounded-full border-2 border-violet-500/20 border-t-violet-500" />
+          <p className="text-lg text-slate-200">
+            {t('postLogin.loadingProfile')}
+          </p>
+          <p className="mt-2 text-sm text-slate-500">
+            {t('postLogin.settingUp')}
+          </p>
+        </CardContent>
+      </Card>
     </div>
   )
 }

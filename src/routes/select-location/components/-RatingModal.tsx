@@ -1,13 +1,25 @@
-// Modal for creating/updating a user's hotel rating and optional written review.
-import { zodResolver } from '@hookform/resolvers/zod'
 import { useNavigate } from '@tanstack/react-router'
-import { Star, X } from 'lucide-react'
-import { Controller, useForm } from 'react-hook-form'
+import { Star } from 'lucide-react'
 import { useEffect, useMemo } from 'react'
+import { useForm, useStore } from '@tanstack/react-form'
+import { z } from 'zod'
 
+import { Button } from '../../../components/ui/button'
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogHeader,
+  DialogTitle,
+} from '../../../components/ui/dialog'
+import { Label } from '../../../components/ui/label'
+import { Textarea } from '../../../components/ui/textarea'
 import { useI18n } from '../../../lib/i18n'
-import { createRatingFormSchema } from './-ratingFormSchema'
-import type { RatingFormValues } from './-ratingFormSchema'
+
+export interface RatingFormValues {
+  rating: number
+  review: string
+}
 
 interface RatingModalProps {
   isSignedIn: boolean
@@ -22,6 +34,31 @@ interface RatingModalProps {
   onSubmit: (values: RatingFormValues) => Promise<void>
 }
 
+function getFirstErrorMessage(errors: unknown[] | undefined): string | null {
+  if (!errors) {
+    return null
+  }
+
+  for (const error of errors) {
+    if (!error) {
+      continue
+    }
+
+    if (typeof error === 'string') {
+      return error
+    }
+
+    if (typeof error === 'object' && 'message' in error) {
+      const message = error.message
+      if (typeof message === 'string') {
+        return message
+      }
+    }
+  }
+
+  return null
+}
+
 export function RatingModal({
   isSignedIn,
   hotelName,
@@ -34,94 +71,86 @@ export function RatingModal({
   onClose,
   onSubmit,
 }: RatingModalProps) {
-  // Handles both authenticated rating form flow and guest sign-in prompts.
   const navigate = useNavigate()
   const { t } = useI18n()
+
   const schema = useMemo(
-    () => createRatingFormSchema(t('rating.selectRating')),
+    () =>
+      z.object({
+        rating: z
+          .number()
+          .int()
+          .min(1, t('rating.selectRating'))
+          .max(5, t('rating.selectRating')),
+        review: z.string().max(500),
+      }),
     [t],
   )
-  const {
-    control,
-    formState: { errors },
-    handleSubmit,
-    register,
-    reset,
-    watch,
-  } = useForm<RatingFormValues>({
-    resolver: zodResolver(schema),
+
+  const form = useForm({
     defaultValues: {
       rating: initialRatingValue,
       review: initialRatingText,
+    } satisfies RatingFormValues,
+    validators: {
+      onBlur: schema,
+      onSubmit: schema,
     },
-    mode: 'onSubmit',
-    reValidateMode: 'onChange',
+    onSubmit: async ({ value }) => {
+      await onSubmit(value)
+    },
   })
-  const ratingText = watch('review')
-  const formError =
-    errors.rating?.message ?? errors.review?.message ?? ratingError
 
   useEffect(() => {
-    reset({
+    form.reset({
       rating: initialRatingValue,
       review: initialRatingText,
     })
-  }, [initialRatingText, initialRatingValue, reset])
+  }, [form, initialRatingText, initialRatingValue])
+
+  const ratingValue = useStore(form.store, (state) => state.values.rating)
+  const reviewValue = useStore(form.store, (state) => state.values.review)
+  const ratingFieldError = getFirstErrorMessage(
+    form.getFieldMeta('rating')?.errors,
+  )
+  const reviewFieldError = getFirstErrorMessage(
+    form.getFieldMeta('review')?.errors,
+  )
 
   return (
-    <div className="fixed inset-0 bg-black/60 backdrop-blur-sm flex items-center justify-center z-50 p-4">
-      <div
-        className="bg-slate-900 border border-slate-800 rounded-2xl shadow-2xl w-full max-w-lg"
-        role="dialog"
-        aria-modal="true"
-        aria-labelledby="rating-modal-title"
-        aria-describedby="rating-modal-description"
-      >
-        <div className="p-6 border-b border-slate-800 flex items-start justify-between gap-4">
-          <div>
-            <h2
-              id="rating-modal-title"
-              className="text-xl font-semibold text-slate-100"
-            >
-              {hasExistingRating
-                ? t('rating.updateTitle')
-                : t('rating.newTitle')}
-            </h2>
-            <p
-              id="rating-modal-description"
-              className="text-sm text-slate-500 mt-1"
-            >
-              {hotelName || t('rating.shareExperience')}
-            </p>
-          </div>
-          <button
-            type="button"
-            onClick={onClose}
-            className="p-2 rounded-lg hover:bg-slate-800 transition-colors"
-            aria-label={t('rating.closeModal')}
+    <Dialog open onOpenChange={(open) => !open && onClose()}>
+      <DialogContent className="max-w-lg border-slate-800 bg-slate-900 p-0 text-slate-100 sm:max-w-lg">
+        <DialogHeader className="border-b border-slate-800 px-6 py-6">
+          <DialogTitle id="rating-modal-title" className="text-xl">
+            {hasExistingRating ? t('rating.updateTitle') : t('rating.newTitle')}
+          </DialogTitle>
+          <DialogDescription
+            id="rating-modal-description"
+            className="mt-1 text-sm text-slate-500"
           >
-            <X className="w-5 h-5 text-slate-400" />
-          </button>
-        </div>
+            {hotelName || t('rating.shareExperience')}
+          </DialogDescription>
+        </DialogHeader>
 
         <div className="p-6">
           {!isSignedIn ? (
             <div className="space-y-5">
               <p className="text-slate-400">{t('rating.signInPrompt')}</p>
-              <div className="flex flex-col sm:flex-row gap-3">
-                <button
+              <div className="flex flex-col gap-3 sm:flex-row">
+                <Button
                   type="button"
+                  variant="outline"
                   onClick={() =>
                     navigate({
                       to: '/sign-in',
                       search: { redirect: ratingRedirect },
                     })
                   }
-                  className="flex-1 px-4 py-3 bg-slate-800 text-slate-200 font-medium rounded-xl hover:bg-slate-700 transition-colors"
+                  className="flex-1 border-slate-700 bg-slate-800 text-slate-200 hover:bg-slate-700"
                 >
                   {t('header.signIn')}
-                </button>
-                <button
+                </Button>
+                <Button
                   type="button"
                   onClick={() =>
                     navigate({
@@ -129,92 +158,121 @@ export function RatingModal({
                       search: { redirect: ratingRedirect },
                     })
                   }
-                  className="flex-1 px-4 py-3 bg-white text-slate-900 font-semibold rounded-xl hover:bg-slate-100 transition-colors"
+                  className="flex-1 bg-white text-slate-900 hover:bg-slate-100"
                 >
                   {t('header.signUp')}
-                </button>
+                </Button>
               </div>
             </div>
           ) : (
-            <form onSubmit={handleSubmit(onSubmit)} className="space-y-5">
-              {formError && (
-                <div className="bg-red-500/10 border border-red-500/20 rounded-xl p-4 text-red-400 text-sm">
-                  {formError}
+            <form
+              onSubmit={(event) => {
+                event.preventDefault()
+                event.stopPropagation()
+                void form.handleSubmit()
+              }}
+              className="space-y-5"
+            >
+              {ratingError ? (
+                <div className="rounded-xl border border-red-500/20 bg-red-500/10 p-4 text-sm text-red-400">
+                  {ratingError}
                 </div>
-              )}
+              ) : null}
 
-              <div>
-                <label className="block text-sm font-medium text-slate-300 mb-2">
-                  {t('rating.yourRating')}
-                </label>
-                <Controller
-                  control={control}
-                  name="rating"
-                  render={({ field }) => (
+              <form.Field name="rating">
+                {(field) => (
+                  <div>
+                    <Label className="mb-2 block text-sm font-medium text-slate-300">
+                      {t('rating.yourRating')}
+                    </Label>
                     <div className="flex items-center gap-2">
                       {[1, 2, 3, 4, 5].map((value) => (
-                        <button
+                        <Button
                           key={value}
                           type="button"
-                          onClick={() => field.onChange(value)}
-                          className="p-1"
+                          variant="ghost"
+                          size="icon-sm"
+                          onClick={() => {
+                            field.handleChange(value)
+                            field.handleBlur()
+                          }}
+                          className="hover:bg-transparent"
                           aria-label={t('rating.rateStar', { value })}
                         >
                           <Star
-                            className={`w-6 h-6 ${
-                              value <= field.value
-                                ? 'text-amber-400 fill-amber-400'
+                            className={`h-6 w-6 ${
+                              value <= field.state.value
+                                ? 'fill-amber-400 text-amber-400'
                                 : 'text-slate-600'
                             }`}
                           />
-                        </button>
+                        </Button>
                       ))}
-                      <span className="text-sm text-slate-500 ml-2">
-                        {field.value > 0
-                          ? `${field.value}/5`
+                      <span className="ml-2 text-sm text-slate-500">
+                        {field.state.value > 0
+                          ? `${field.state.value}/5`
                           : t('rating.selectRating')}
                       </span>
                     </div>
-                  )}
-                />
-              </div>
+                    {ratingFieldError ? (
+                      <p className="mt-2 text-xs text-red-400">
+                        {ratingFieldError}
+                      </p>
+                    ) : null}
+                  </div>
+                )}
+              </form.Field>
 
-              <div>
-                <label className="block text-sm font-medium text-slate-300 mb-2">
-                  {t('rating.reviewOptional')}
-                </label>
-                <textarea
-                  rows={4}
-                  {...register('review')}
-                  maxLength={500}
-                  placeholder={t('rating.reviewPlaceholder')}
-                  className="w-full px-4 py-3 bg-slate-800/50 border border-slate-700 rounded-xl text-slate-200 placeholder-slate-500 focus:outline-none focus:border-violet-500/50 transition-all resize-none"
-                />
-                <p className="text-xs text-slate-500 mt-2">
-                  {ratingText.length}/500
-                </p>
-              </div>
+              <form.Field name="review">
+                {(field) => (
+                  <div>
+                    <Label className="mb-2 block text-sm font-medium text-slate-300">
+                      {t('rating.reviewOptional')}
+                    </Label>
+                    <Textarea
+                      rows={4}
+                      value={field.state.value}
+                      onChange={(event) =>
+                        field.handleChange(event.target.value)
+                      }
+                      onBlur={field.handleBlur}
+                      maxLength={500}
+                      placeholder={t('rating.reviewPlaceholder')}
+                      className="resize-none border-slate-700 bg-slate-800/50 text-slate-200 placeholder:text-slate-500"
+                    />
+                    {reviewFieldError ? (
+                      <p className="mt-2 text-xs text-red-400">
+                        {reviewFieldError}
+                      </p>
+                    ) : null}
+                    <p className="mt-2 text-xs text-slate-500">
+                      {reviewValue.length}/500
+                    </p>
+                  </div>
+                )}
+              </form.Field>
 
-              <div className="flex flex-col sm:flex-row gap-3">
-                <button
+              <div className="flex flex-col gap-3 sm:flex-row">
+                <Button
                   type="button"
+                  variant="outline"
                   onClick={onClose}
-                  className="flex-1 px-4 py-3 bg-slate-800 text-slate-200 font-medium rounded-xl hover:bg-slate-700 transition-colors"
+                  className="flex-1 border-slate-700 bg-slate-800 text-slate-200 hover:bg-slate-700"
                 >
                   {t('common.cancel')}
-                </button>
-                <button
+                </Button>
+                <Button
                   type="submit"
                   disabled={ratingSaving}
-                  className="flex-1 px-4 py-3 bg-white text-slate-900 font-semibold rounded-xl hover:bg-slate-100 transition-colors disabled:opacity-60"
+                  className="flex-1 bg-white text-slate-900 hover:bg-slate-100"
                 >
                   {ratingSaving ? t('common.saving') : t('common.saveChanges')}
-                </button>
+                </Button>
               </div>
             </form>
           )}
         </div>
-      </div>
-    </div>
+      </DialogContent>
+    </Dialog>
   )
 }

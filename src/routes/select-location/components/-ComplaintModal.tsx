@@ -1,13 +1,36 @@
-import { zodResolver } from '@hookform/resolvers/zod'
 import { useNavigate } from '@tanstack/react-router'
-import { X } from 'lucide-react'
 import { useEffect, useMemo } from 'react'
-import { useForm } from 'react-hook-form'
+import { useForm, useStore } from '@tanstack/react-form'
+import { z } from 'zod'
 
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogHeader,
+  DialogTitle,
+} from '../../../components/ui/dialog'
+import { Input } from '../../../components/ui/input'
+import { Label } from '../../../components/ui/label'
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '../../../components/ui/select'
+import { Textarea } from '../../../components/ui/textarea'
 import { useI18n } from '../../../lib/i18n'
-import { createComplaintFormSchema } from './-complaintFormSchema'
-import type { ComplaintFormValues } from './-complaintFormSchema'
+import { useTheme } from '../../../lib/theme'
+import { cn } from '../../../lib/utils'
 import type { Id } from '../../../../convex/_generated/dataModel'
+
+export interface ComplaintFormValues {
+  hotelId: string
+  subject: string
+  description: string
+  bookingId: string
+}
 
 interface ComplaintModalProps {
   isSignedIn: boolean
@@ -31,6 +54,31 @@ interface ComplaintModalProps {
   onSubmit: (values: ComplaintFormValues) => Promise<void>
 }
 
+function getFirstErrorMessage(errors: unknown[] | undefined): string | null {
+  if (!errors) {
+    return null
+  }
+
+  for (const error of errors) {
+    if (!error) {
+      continue
+    }
+
+    if (typeof error === 'string') {
+      return error
+    }
+
+    if (typeof error === 'object' && 'message' in error) {
+      const message = error.message
+      if (typeof message === 'string') {
+        return message
+      }
+    }
+  }
+
+  return null
+}
+
 export function ComplaintModal({
   isSignedIn,
   hotels,
@@ -43,41 +91,53 @@ export function ComplaintModal({
 }: ComplaintModalProps) {
   const navigate = useNavigate()
   const { t } = useI18n()
+  const { theme } = useTheme()
+  const isDark = theme === 'dark'
 
   const schema = useMemo(
     () =>
-      createComplaintFormSchema({
-        hotelRequired: t('complaint.validation.hotelRequired'),
-        subjectMin: t('complaint.validation.subjectMin'),
-        subjectMax: t('complaint.validation.subjectMax'),
-        descriptionMin: t('complaint.validation.descriptionMin'),
-        descriptionMax: t('complaint.validation.descriptionMax'),
+      z.object({
+        hotelId: z.string().min(1, t('complaint.validation.hotelRequired')),
+        subject: z
+          .string()
+          .trim()
+          .min(5, t('complaint.validation.subjectMin'))
+          .max(120, t('complaint.validation.subjectMax')),
+        description: z
+          .string()
+          .trim()
+          .min(20, t('complaint.validation.descriptionMin'))
+          .max(2000, t('complaint.validation.descriptionMax')),
+        bookingId: z.string(),
       }),
     [t],
   )
 
-  const {
-    formState: { errors },
-    handleSubmit,
-    register,
-    reset,
-    setValue,
-    watch,
-  } = useForm<ComplaintFormValues>({
-    resolver: zodResolver(schema),
+  const form = useForm({
     defaultValues: {
       hotelId: '',
       subject: '',
       description: '',
       bookingId: '',
+    } satisfies ComplaintFormValues,
+    validators: {
+      onBlur: schema,
+      onSubmit: schema,
     },
-    mode: 'onSubmit',
-    reValidateMode: 'onChange',
+    onSubmit: async ({ value }) => {
+      await onSubmit(value)
+    },
   })
 
-  const selectedHotelId = watch('hotelId')
-  const selectedBookingId = watch('bookingId')
-  const descriptionValue = watch('description')
+  const selectedHotelId = useStore(form.store, (state) => state.values.hotelId)
+  const selectedBookingId = useStore(
+    form.store,
+    (state) => state.values.bookingId,
+  )
+  const descriptionValue = useStore(
+    form.store,
+    (state) => state.values.description,
+  )
 
   const bookingsForSelectedHotel = useMemo(
     () =>
@@ -97,18 +157,18 @@ export function ComplaintModal({
     )
 
     if (!stillVisible) {
-      setValue('bookingId', '')
+      form.setFieldValue('bookingId', '')
     }
-  }, [bookingsForSelectedHotel, selectedBookingId, setValue])
+  }, [bookingsForSelectedHotel, form, selectedBookingId])
 
   useEffect(() => {
-    reset({
+    form.reset({
       hotelId: '',
       subject: '',
       description: '',
       bookingId: '',
     })
-  }, [reset])
+  }, [form])
 
   const statusLabel = (status: string) => {
     switch (status) {
@@ -126,51 +186,66 @@ export function ComplaintModal({
     }
   }
 
-  const formError =
-    errors.hotelId?.message ??
-    errors.subject?.message ??
-    errors.description?.message ??
-    complaintError
+  const panelClass = isDark
+    ? 'border-slate-800 bg-slate-900 text-slate-100'
+    : 'border-slate-200/90 text-slate-900'
+  const headerClass = isDark
+    ? 'border-b border-slate-800 bg-slate-900/90'
+    : 'border-b border-slate-200/90 bg-gradient-to-b from-white to-slate-50/95'
+  const bodyClass = isDark
+    ? 'bg-transparent'
+    : 'bg-gradient-to-b from-white/80 to-slate-50/70'
+  const fieldLabelClass = isDark ? 'text-slate-300' : 'text-slate-700'
+  const fieldClass = isDark
+    ? 'border-slate-700 bg-slate-800/50 text-slate-200 placeholder:text-slate-500'
+    : 'border-slate-300/90 bg-slate-50/90 text-slate-800 placeholder:text-slate-500 shadow-[inset_0_1px_0_rgba(255,255,255,0.85)]'
+  const footerClass = isDark
+    ? 'border-t border-slate-800/80 bg-slate-900/30'
+    : 'border-t border-slate-200/80 bg-white/75'
+  const subtleCardClass = isDark
+    ? 'border-slate-800/80 bg-slate-900/35'
+    : 'border-slate-200/80 bg-slate-50/85'
+
+  const hotelError = getFirstErrorMessage(form.getFieldMeta('hotelId')?.errors)
+  const subjectError = getFirstErrorMessage(
+    form.getFieldMeta('subject')?.errors,
+  )
+  const descriptionError = getFirstErrorMessage(
+    form.getFieldMeta('description')?.errors,
+  )
 
   return (
-    <div className="fixed inset-0 bg-black/60 backdrop-blur-sm flex items-start sm:items-center justify-center z-[70] p-3 sm:p-4 overflow-y-auto">
-      <div
-        className="complaint-modal-panel bg-slate-900 border border-slate-800 rounded-2xl shadow-2xl w-full max-w-md max-h-[calc(100vh-2rem)] overflow-y-auto my-3 sm:my-0"
-        role="dialog"
-        aria-modal="true"
-        aria-labelledby="complaint-modal-title"
-        aria-describedby="complaint-modal-description"
+    <Dialog open onOpenChange={(open) => !open && onClose()}>
+      <DialogContent
+        className={cn(
+          'complaint-modal-panel flex max-h-[calc(100vh-4rem)] w-full max-w-xl flex-col gap-0 overflow-hidden rounded-[20px] p-0 sm:max-w-2xl',
+          panelClass,
+        )}
       >
-        <div className="p-5 border-b border-slate-800 flex items-start justify-between gap-4">
-          <div>
-            <h2
-              id="complaint-modal-title"
-              className="text-xl font-semibold text-slate-100"
-            >
-              {t('complaint.title')}
-            </h2>
-            <p
-              id="complaint-modal-description"
-              className="text-sm text-slate-500 mt-1"
-            >
-              {t('complaint.subtitle')}
-            </p>
-          </div>
-          <button
-            type="button"
-            onClick={onClose}
-            className="p-2 rounded-lg hover:bg-slate-800 transition-colors"
-            aria-label={t('common.close')}
+        <DialogHeader className={cn('px-6 py-6', headerClass)}>
+          <DialogTitle id="complaint-modal-title" className="text-xl">
+            {t('complaint.title')}
+          </DialogTitle>
+          <DialogDescription
+            id="complaint-modal-description"
+            className={cn(
+              'mt-1 max-w-sm text-sm',
+              isDark ? 'text-slate-500' : 'text-slate-600',
+            )}
           >
-            <X className="w-5 h-5 text-slate-400" />
-          </button>
-        </div>
+            {t('complaint.subtitle')}
+          </DialogDescription>
+        </DialogHeader>
 
-        <div className="p-5">
+        <div
+          className={cn('min-h-0 flex-1 overflow-y-auto px-6 py-5', bodyClass)}
+        >
           {!isSignedIn ? (
             <div className="space-y-5">
-              <p className="text-slate-400">{t('complaint.signInPrompt')}</p>
-              <div className="flex flex-col sm:flex-row gap-3">
+              <p className={isDark ? 'text-slate-400' : 'text-slate-600'}>
+                {t('complaint.signInPrompt')}
+              </p>
+              <div className="flex flex-col gap-3 sm:flex-row">
                 <button
                   type="button"
                   onClick={() =>
@@ -179,7 +254,7 @@ export function ComplaintModal({
                       search: { redirect: complaintRedirect },
                     })
                   }
-                  className="flex-1 px-4 py-3 bg-slate-800 text-slate-200 font-medium rounded-xl hover:bg-slate-700 transition-colors"
+                  className="admin-button-secondary flex-1"
                 >
                   {t('header.signIn')}
                 </button>
@@ -191,99 +266,242 @@ export function ComplaintModal({
                       search: { redirect: complaintRedirect },
                     })
                   }
-                  className="flex-1 px-4 py-3 bg-white text-slate-900 font-semibold rounded-xl hover:bg-slate-100 transition-colors"
+                  className="admin-button-primary flex-1"
                 >
                   {t('header.signUp')}
                 </button>
               </div>
             </div>
           ) : (
-            <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
-              {formError && (
-                <div className="bg-red-500/10 border border-red-500/20 rounded-xl p-4 text-red-400 text-sm">
-                  {formError}
+            <form
+              onSubmit={(event) => {
+                event.preventDefault()
+                event.stopPropagation()
+                void form.handleSubmit()
+              }}
+              className="space-y-5"
+            >
+              {complaintError ? (
+                <div className="rounded-xl border border-red-500/20 bg-red-500/10 p-4 text-sm text-red-400">
+                  {complaintError}
                 </div>
-              )}
+              ) : null}
 
-              <div>
-                <label className="block text-sm font-medium text-slate-300 mb-2">
-                  {t('complaint.hotel')}
-                </label>
-                <select
-                  {...register('hotelId')}
-                  className="w-full px-4 py-3 bg-slate-800/50 border border-slate-700 rounded-xl text-slate-200 focus:outline-none focus:border-violet-500/50 transition-all"
-                >
-                  <option value="">{t('complaint.selectHotel')}</option>
-                  {hotels.map((hotel) => (
-                    <option key={hotel._id} value={hotel._id}>
-                      {hotel.name} - {hotel.city}, {hotel.country}
-                    </option>
-                  ))}
-                </select>
+              <div className={cn('rounded-2xl border p-4', subtleCardClass)}>
+                <div className="space-y-5">
+                  <form.Field name="hotelId">
+                    {(field) => (
+                      <div>
+                        <Label
+                          className={cn(
+                            'mb-2 block text-sm font-medium',
+                            fieldLabelClass,
+                          )}
+                        >
+                          {t('complaint.hotel')}
+                        </Label>
+                        <Select
+                          value={field.state.value || '__none__'}
+                          onValueChange={(value) =>
+                            field.handleChange(
+                              value === '__none__' ? '' : value,
+                            )
+                          }
+                        >
+                          <SelectTrigger
+                            className={cn(
+                              'h-12 rounded-2xl',
+                              fieldClass,
+                              hotelError
+                                ? 'border-red-500/60 focus:border-red-500/80'
+                                : '',
+                            )}
+                            onBlur={field.handleBlur}
+                          >
+                            <SelectValue
+                              placeholder={t('complaint.selectHotel')}
+                            />
+                          </SelectTrigger>
+                          <SelectContent
+                            className={cn(
+                              isDark
+                                ? 'border border-slate-800 bg-slate-900 text-slate-100'
+                                : 'border border-slate-200 bg-white text-slate-900',
+                            )}
+                            position="popper"
+                          >
+                            <SelectItem value="__none__">
+                              {t('complaint.selectHotel')}
+                            </SelectItem>
+                            {hotels.map((hotel) => (
+                              <SelectItem key={hotel._id} value={hotel._id}>
+                                {hotel.name} - {hotel.city}, {hotel.country}
+                              </SelectItem>
+                            ))}
+                          </SelectContent>
+                        </Select>
+                        {hotelError ? (
+                          <p className="mt-2 text-xs text-red-400">
+                            {hotelError}
+                          </p>
+                        ) : null}
+                      </div>
+                    )}
+                  </form.Field>
+
+                  <form.Field name="bookingId">
+                    {(field) => (
+                      <div>
+                        <Label
+                          className={cn(
+                            'mb-2 block text-sm font-medium',
+                            fieldLabelClass,
+                          )}
+                        >
+                          {t('complaint.bookingOptional')}
+                        </Label>
+                        <Select
+                          value={field.state.value || '__none__'}
+                          onValueChange={(value) =>
+                            field.handleChange(
+                              value === '__none__' ? '' : value,
+                            )
+                          }
+                          disabled={
+                            !selectedHotelId ||
+                            bookingsForSelectedHotel.length === 0
+                          }
+                        >
+                          <SelectTrigger
+                            className={cn(
+                              'h-12 rounded-2xl disabled:opacity-50',
+                              fieldClass,
+                            )}
+                            onBlur={field.handleBlur}
+                          >
+                            <SelectValue
+                              placeholder={t('complaint.selectBooking')}
+                            />
+                          </SelectTrigger>
+                          <SelectContent
+                            className={cn(
+                              isDark
+                                ? 'border border-slate-800 bg-slate-900 text-slate-100'
+                                : 'border border-slate-200 bg-white text-slate-900',
+                            )}
+                            position="popper"
+                          >
+                            <SelectItem value="__none__">
+                              {t('complaint.selectBooking')}
+                            </SelectItem>
+                            {bookingsForSelectedHotel.map((booking) => (
+                              <SelectItem key={booking._id} value={booking._id}>
+                                {booking.checkIn} - {booking.checkOut} ({' '}
+                                {statusLabel(booking.status)})
+                              </SelectItem>
+                            ))}
+                          </SelectContent>
+                        </Select>
+                      </div>
+                    )}
+                  </form.Field>
+
+                  <form.Field name="subject">
+                    {(field) => (
+                      <div>
+                        <Label
+                          className={cn(
+                            'mb-2 block text-sm font-medium',
+                            fieldLabelClass,
+                          )}
+                        >
+                          {t('complaint.subject')}
+                        </Label>
+                        <Input
+                          type="text"
+                          value={field.state.value}
+                          onChange={(event) =>
+                            field.handleChange(event.target.value)
+                          }
+                          onBlur={field.handleBlur}
+                          maxLength={120}
+                          placeholder={t('complaint.subjectPlaceholder')}
+                          className={cn(
+                            'h-12 rounded-2xl',
+                            fieldClass,
+                            subjectError
+                              ? 'border-red-500/60 focus:border-red-500/80'
+                              : '',
+                          )}
+                        />
+                        {subjectError ? (
+                          <p className="mt-2 text-xs text-red-400">
+                            {subjectError}
+                          </p>
+                        ) : null}
+                      </div>
+                    )}
+                  </form.Field>
+
+                  <form.Field name="description">
+                    {(field) => (
+                      <div>
+                        <Label
+                          className={cn(
+                            'mb-2 block text-sm font-medium',
+                            fieldLabelClass,
+                          )}
+                        >
+                          {t('complaint.description')}
+                        </Label>
+                        <Textarea
+                          rows={5}
+                          value={field.state.value}
+                          onChange={(event) =>
+                            field.handleChange(event.target.value)
+                          }
+                          onBlur={field.handleBlur}
+                          maxLength={2000}
+                          placeholder={t('complaint.descriptionPlaceholder')}
+                          className={cn(
+                            'min-h-36 rounded-2xl resize-none',
+                            fieldClass,
+                            descriptionError
+                              ? 'border-red-500/60 focus:border-red-500/80'
+                              : '',
+                          )}
+                        />
+                        {descriptionError ? (
+                          <p className="mt-2 text-xs text-red-400">
+                            {descriptionError}
+                          </p>
+                        ) : null}
+                        <p className="mt-2 text-xs text-slate-500">
+                          {descriptionValue.length}/2000
+                        </p>
+                      </div>
+                    )}
+                  </form.Field>
+                </div>
               </div>
 
-              <div>
-                <label className="block text-sm font-medium text-slate-300 mb-2">
-                  {t('complaint.bookingOptional')}
-                </label>
-                <select
-                  {...register('bookingId')}
-                  disabled={
-                    !selectedHotelId || bookingsForSelectedHotel.length === 0
-                  }
-                  className="w-full px-4 py-3 bg-slate-800/50 border border-slate-700 rounded-xl text-slate-200 focus:outline-none focus:border-violet-500/50 transition-all disabled:opacity-50"
-                >
-                  <option value="">{t('complaint.selectBooking')}</option>
-                  {bookingsForSelectedHotel.map((booking) => (
-                    <option key={booking._id} value={booking._id}>
-                      {booking.checkIn} - {booking.checkOut} (
-                      {statusLabel(booking.status)})
-                    </option>
-                  ))}
-                </select>
-              </div>
-
-              <div>
-                <label className="block text-sm font-medium text-slate-300 mb-2">
-                  {t('complaint.subject')}
-                </label>
-                <input
-                  {...register('subject')}
-                  type="text"
-                  maxLength={120}
-                  placeholder={t('complaint.subjectPlaceholder')}
-                  className="w-full px-4 py-3 bg-slate-800/50 border border-slate-700 rounded-xl text-slate-200 placeholder-slate-500 focus:outline-none focus:border-violet-500/50 transition-all"
-                />
-              </div>
-
-              <div>
-                <label className="block text-sm font-medium text-slate-300 mb-2">
-                  {t('complaint.description')}
-                </label>
-                <textarea
-                  {...register('description')}
-                  rows={4}
-                  maxLength={2000}
-                  placeholder={t('complaint.descriptionPlaceholder')}
-                  className="w-full px-4 py-3 bg-slate-800/50 border border-slate-700 rounded-xl text-slate-200 placeholder-slate-500 focus:outline-none focus:border-violet-500/50 transition-all resize-none"
-                />
-                <p className="text-xs text-slate-500 mt-2">
-                  {descriptionValue.length}/2000
-                </p>
-              </div>
-
-              <div className="flex flex-col sm:flex-row gap-3">
+              <div
+                className={cn(
+                  'flex flex-col gap-3 border-t px-6 py-4 sm:flex-row',
+                  footerClass,
+                )}
+              >
                 <button
                   type="button"
                   onClick={onClose}
-                  className="flex-1 px-4 py-3 bg-slate-800 text-slate-200 font-medium rounded-xl hover:bg-slate-700 transition-colors"
+                  className="admin-button-secondary flex-1"
                 >
                   {t('common.cancel')}
                 </button>
                 <button
                   type="submit"
                   disabled={complaintSaving}
-                  className="flex-1 px-4 py-3 bg-white text-slate-900 font-semibold rounded-xl hover:bg-slate-100 transition-colors disabled:opacity-60"
+                  className="admin-button-primary flex-1 disabled:opacity-60"
                 >
                   {complaintSaving
                     ? t('complaint.submitting')
@@ -293,7 +511,7 @@ export function ComplaintModal({
             </form>
           )}
         </div>
-      </div>
-    </div>
+      </DialogContent>
+    </Dialog>
   )
 }

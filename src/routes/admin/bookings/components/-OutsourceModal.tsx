@@ -123,12 +123,8 @@ export function OutsourceModal({
         role="button"
         tabIndex={-1}
       />
-      <div
-        className={`relative border rounded-2xl shadow-2xl w-full max-w-lg ${isDark ? 'bg-slate-900 border-slate-800' : 'bg-white border-slate-200'}`}
-      >
-        <div
-          className={`flex items-center justify-between p-6 border-b ${isDark ? 'border-slate-800' : 'border-slate-100'}`}
-        >
+      <div className="admin-modal-panel relative w-full max-w-lg">
+        <div className="admin-modal-header">
           <h3
             className={`text-lg font-semibold ${isDark ? 'text-slate-100' : 'text-slate-900'}`}
           >
@@ -143,10 +139,8 @@ export function OutsourceModal({
           </button>
         </div>
 
-        <div className="p-6 space-y-4">
-          <div
-            className={`border rounded-xl p-4 space-y-3 ${isDark ? 'bg-slate-800/40 border-slate-700' : 'bg-slate-50 border-slate-200'}`}
-          >
+        <div className="admin-modal-body space-y-4">
+          <div className="admin-surface-muted p-4 space-y-3">
             <div>
               <p
                 className={`text-xs uppercase tracking-wide mb-1 ${isDark ? 'text-slate-500' : 'text-slate-400'}`}
@@ -212,7 +206,7 @@ export function OutsourceModal({
               value={destinationHotelId}
               onChange={(event) => setDestinationHotelId(event.target.value)}
               disabled={isSubmitting || isSuccess}
-              className={`w-full px-4 py-3 border rounded-xl focus:outline-none focus:border-violet-500/50 focus:ring-1 focus:ring-violet-500/20 transition-colors ${isDark ? 'bg-slate-900 border-slate-700 text-slate-200' : 'bg-white border-slate-200 text-slate-800 shadow-sm'}`}
+              className="admin-select"
             >
               <option value="">
                 {t('admin.bookings.outsourceModal.selectHotel')}
@@ -228,18 +222,18 @@ export function OutsourceModal({
             )}
           </div>
 
-          <div className="flex items-center justify-end gap-3 pt-2">
+          <div className="admin-modal-footer">
             <button
               onClick={onClose}
               disabled={isSubmitting}
-              className={`px-4 py-2 border rounded-lg transition-colors text-sm font-medium disabled:opacity-50 ${isDark ? 'bg-slate-800 text-slate-300 border-slate-700 hover:bg-slate-700' : 'bg-slate-100 text-slate-600 border-slate-200 hover:bg-slate-200'}`}
+              className="admin-button-secondary text-sm disabled:opacity-50"
             >
               {t('common.cancel')}
             </button>
             <button
               onClick={handleSubmit}
               disabled={!destinationHotelId || isSubmitting || isSuccess}
-              className={`px-4 py-2 rounded-lg transition-all text-sm font-medium disabled:opacity-50 disabled:cursor-not-allowed inline-flex items-center gap-2 ${isDark ? 'bg-white text-slate-900 hover:bg-slate-100' : 'bg-slate-900 text-white hover:bg-slate-800'}`}
+              className="admin-button-primary text-sm disabled:opacity-50 disabled:cursor-not-allowed inline-flex items-center gap-2"
             >
               {isSubmitting && <Loader2 className="w-4 h-4 animate-spin" />}
               {isSuccess

@@ -26,8 +26,11 @@ export function applyThemeToDocument(theme: Theme) {
 
   const root = document.documentElement
   root.dataset.theme = theme
-  root.classList.remove('theme-dark', 'theme-light')
+  root.classList.remove('theme-dark', 'theme-light', 'dark')
   root.classList.add(`theme-${theme}`)
+  if (theme === 'dark') {
+    root.classList.add('dark')
+  }
 }
 
 export const themeBootstrapScript = `
@@ -37,8 +40,9 @@ export const themeBootstrapScript = `
   const theme = rawValue === 'light' || rawValue === 'dark' ? rawValue : 'dark';
   const root = document.documentElement;
   root.dataset.theme = theme;
-  root.classList.remove('theme-dark', 'theme-light');
+  root.classList.remove('theme-dark', 'theme-light', 'dark');
   root.classList.add('theme-' + theme);
+  if (theme === 'dark') root.classList.add('dark');
 })();
 `
 
@@ -72,10 +76,7 @@ export function ThemeProvider({ children }: { children: React.ReactNode }) {
     setTheme(theme === 'dark' ? 'light' : 'dark')
   }
 
-  const value = useMemo(
-    () => ({ theme, setTheme, toggleTheme }),
-    [theme],
-  )
+  const value = useMemo(() => ({ theme, setTheme, toggleTheme }), [theme])
 
   return <ThemeContext.Provider value={value}>{children}</ThemeContext.Provider>
 }

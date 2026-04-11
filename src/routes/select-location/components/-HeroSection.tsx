@@ -3,6 +3,7 @@ import { Loader2, Navigation, Search } from 'lucide-react'
 
 import { getGeolocationErrorMessage } from '../../../hooks/useGeolocation'
 import { useI18n } from '../../../lib/i18n'
+import { useTheme } from '../../../lib/theme'
 import type { ReactNode } from 'react'
 
 interface HeroSectionProps {
@@ -28,6 +29,8 @@ export function HeroSection({
 }: HeroSectionProps) {
   // Hero conveys search state and geolocation readiness to the user.
   const { t } = useI18n()
+  const { theme } = useTheme()
+  const isDark = theme === 'dark'
   const locationErrorMessage = locationError
     ? getGeolocationErrorMessage(locationError)
     : ''
@@ -38,16 +41,34 @@ export function HeroSection({
 
   return (
     <div className="relative overflow-hidden px-4 py-8 md:py-10">
-      <div className="absolute inset-0 bg-gradient-to-r from-violet-500/5 to-purple-500/5"></div>
-      <div className="absolute left-1/2 top-1/2 h-[420px] w-[420px] -translate-x-1/2 -translate-y-1/2 rounded-full bg-violet-500/10 blur-3xl"></div>
+      <div
+        className={`absolute inset-0 ${
+          isDark
+            ? 'bg-gradient-to-r from-violet-500/5 to-purple-500/5'
+            : 'bg-gradient-to-r from-violet-500/6 via-white/0 to-indigo-500/6'
+        }`}
+      ></div>
+      <div
+        className={`absolute left-1/2 top-1/2 h-[420px] w-[420px] -translate-x-1/2 -translate-y-1/2 rounded-full blur-3xl ${
+          isDark ? 'bg-violet-500/10' : 'bg-violet-500/8'
+        }`}
+      ></div>
 
       <div className="relative z-10 mx-auto max-w-5xl">
         <div className="mb-4 flex flex-col gap-3 md:mb-5 md:flex-row md:items-end md:justify-between">
           <div>
-            <h2 className="text-2xl font-bold tracking-tight text-slate-100 md:text-3xl">
+            <h2
+              className={`text-2xl font-bold tracking-tight md:text-3xl ${
+                isDark ? 'text-slate-100' : 'text-slate-900'
+              }`}
+            >
               {t('select.findStay')}
             </h2>
-            <p className="mt-1 text-sm text-slate-400 md:text-base">
+            <p
+              className={`mt-1 text-sm md:text-base ${
+                isDark ? 'text-slate-400' : 'text-slate-600'
+              }`}
+            >
               {t('select.findStaySubtitle')}
             </p>
           </div>
@@ -79,15 +100,29 @@ export function HeroSection({
             ) : null)}
         </div>
 
-        <div className="mx-auto flex max-w-4xl flex-col gap-3 rounded-2xl border border-slate-800/50 bg-slate-900/50 p-3 md:p-4">
+        <div
+          className={`mx-auto flex max-w-4xl flex-col gap-3 rounded-3xl border p-3 md:p-4 ${
+            isDark
+              ? 'border-slate-800/50 bg-slate-900/50'
+              : 'border-slate-200/90 bg-white/88 shadow-[0_28px_54px_-34px_rgba(15,23,42,0.28)] backdrop-blur-sm'
+          }`}
+        >
           <div className="relative">
-            <Search className="absolute left-4 top-1/2 h-5 w-5 -translate-y-1/2 text-slate-500" />
+            <Search
+              className={`absolute left-4 top-1/2 h-5 w-5 -translate-y-1/2 ${
+                isDark ? 'text-slate-500' : 'text-slate-400'
+              }`}
+            />
             <input
               type="text"
               placeholder={t('select.searchPlaceholder')}
               value={searchTerm}
               onChange={(event) => onSearchTermChange(event.target.value)}
-              className="w-full rounded-xl border border-slate-700/50 bg-slate-800/50 py-3 pl-12 pr-4 text-slate-200 placeholder-slate-500 transition-all focus:border-violet-500/50 focus:outline-none focus:ring-2 focus:ring-violet-500/20"
+              className={`w-full rounded-[1.75rem] border py-3 pl-12 pr-4 transition-all focus:border-violet-500/50 focus:outline-none focus:ring-2 focus:ring-violet-500/20 ${
+                isDark
+                  ? 'border-slate-700/50 bg-slate-800/50 text-slate-200 placeholder-slate-500'
+                  : 'border-slate-300/90 bg-slate-50/90 text-slate-800 placeholder-slate-500 shadow-[inset_0_1px_0_rgba(255,255,255,0.9)] hover:border-violet-300'
+              }`}
             />
           </div>
 

@@ -43,8 +43,10 @@ npx convex dev
 # Generate Convex types once (preferred for CI/local checks)
 npx convex dev --once
 ```
-# Never turn of typechecking when deplying to convex
-never run npx convex dev --notypechecking
+
+## Never turn off typechecking when deploying to Convex
+
+Never run `npx convex dev --notypechecking`.
 
 ### Convex Codegen Rule
 
@@ -228,14 +230,14 @@ Backend (Convex) — auth helpers from `convex/lib/auth.ts`:
 
 ```typescript
 import {
-  requireUser,    // returns user doc, throws UNAUTHORIZED / NOT_FOUND
-  requireAdmin,   // returns user doc with role=room_admin, throws FORBIDDEN
-  requireCustomer,// returns user doc with role=customer, throws FORBIDDEN
-  requireHotelAccess,     // verifies staff is assigned to the hotel
+  requireUser, // returns user doc, throws UNAUTHORIZED / NOT_FOUND
+  requireAdmin, // returns user doc with role=room_admin, throws FORBIDDEN
+  requireCustomer, // returns user doc with role=customer, throws FORBIDDEN
+  requireHotelAccess, // verifies staff is assigned to the hotel
   requireHotelManagement, // verifies hotel_admin role for the hotel
   getCurrentUser, // returns user doc or null (no throw)
-  isAdmin,        // boolean check
-  isCustomer,     // boolean check
+  isAdmin, // boolean check
+  isCustomer, // boolean check
   canAccessHotel, // boolean check
   canManageHotel, // boolean check
 } from './lib/auth'
@@ -249,14 +251,15 @@ await requireHotelAccess(ctx, args.hotelId)
 
 **Hybrid role model:**
 
-| Role           | Source                | Scope            |
-| -------------- | --------------------- | ---------------- |
-| `customer`     | Clerk metadata (signup) | Global         |
-| `room_admin`   | Clerk metadata (signup) | Global         |
-| `hotel_admin`  | Convex `hotelStaff` table | Per-hotel    |
-| `hotel_cashier`| Convex `hotelStaff` table | Per-hotel    |
+| Role            | Source                    | Scope     |
+| --------------- | ------------------------- | --------- |
+| `customer`      | Clerk metadata (signup)   | Global    |
+| `room_admin`    | Clerk metadata (signup)   | Global    |
+| `hotel_admin`   | Convex `hotelStaff` table | Per-hotel |
+| `hotel_cashier` | Convex `hotelStaff` table | Per-hotel |
 
 **Files involved:**
+
 - `convex/auth.config.ts` — tells Convex how to validate Clerk JWTs
 - `src/integrations/convex/provider.tsx` — `ConvexProviderWithClerk` bridges tokens
 - `convex/lib/auth.ts` — all auth helper functions (JWT-based)
@@ -279,6 +282,16 @@ await requireHotelAccess(ctx, args.hotelId)
 - Accent color: `amber-400`/`amber-500`
 - Rounded corners: `rounded-xl` or `rounded-2xl`
 - Use `transition-colors` or `transition-all` for interactions
+- Light mode in this app is intentionally subtle and custom. Do not replace it with a flat generic white shadcn look; preserve the soft slate surfaces, restrained contrast, and violet-tinted accents already used across customer and admin screens.
+- When adding new translucent slate utilities, prefer opacity values already covered by `src/styles.css` light-mode overrides or add explicit light-mode mappings for them. Hard-coded utilities such as `bg-slate-900/90` or `bg-slate-800/60` can break readability in light mode if they are not mapped.
+- Customer-facing overlays and floating UI such as dialogs, sheets, dropdowns, filters, and popovers need explicit light-mode borders, backgrounds, and shadows. Do not assume dark-mode surface classes will stay readable after the global light-theme text overrides apply.
+- Customer-side interactive controls must always show clickability. Buttons, tabs, select triggers/items, package cards, and similar controls should use `cursor-pointer` plus visible hover and focus feedback.
+- Booking date UX must enforce the same front-end constraints as the backend. If checkout cannot equal check-in, the UI should prevent selecting the same date instead of relying on the mutation to reject it.
+- Admin-facing pages should reuse the shared admin utility classes in `src/styles.css` whenever possible. Prefer `admin-surface`, `admin-surface-muted`, `admin-empty-state`, `admin-field`, `admin-select`, `admin-textarea`, `admin-button-*`, `admin-menu-*`, `admin-table-*`, and `admin-modal-*` over route-local one-off styling.
+- Admin light mode should feel like the same product as dark mode, not a separate generic theme. Keep the subtle white/slate surfaces, low-contrast borders, restrained shadows, and violet action accents consistent across the admin shell, CRUD pages, modals, menus, tables, and empty states.
+- When refactoring admin routes, treat the shell as part of the UI contract. Sidebar navigation, user chrome, dropdown menus, modal panels, and list/detail cards all need explicit light-mode states and should not stay hard-coded to dark-only `slate-900` surfaces.
+- Admin modals should keep a structural wrapper contract: `admin-modal-panel` as the flex container, `admin-modal-header` for the fixed title row, `admin-modal-body` for the scrollable content region, and `admin-modal-footer` for actions. Do not place raw modal content directly under the panel without the body wrapper.
+- In constrained admin chrome such as the sidebar controls row, prefer compact `ThemeToggle` and `LanguageSwitcher` variants so translated labels do not overflow the layout.
 
 ## Important Notes
 
@@ -289,7 +302,6 @@ await requireHotelAccess(ctx, args.hotelId)
 5. Soft deletes: Use `isDeleted` boolean, never hard delete
 6. **NEVER pass `clerkUserId` as an argument** to any public Convex function — identity MUST be derived from the JWT via `ctx.auth.getUserIdentity()` inside the handler
 
-
 # Agent guidance for this repo
 
 When working in this repository, use the skills below as context triggers.
@@ -299,25 +311,26 @@ When working in this repository, use the skills below as context triggers.
 - Keep the block below as the source of truth for skill-to-task mappings.
 
 <!-- intent-skills:start -->
+
 # Skill mappings — when working in these areas, load the linked skill file into context.
+
 skills:
-  - task: "working with routes, pages, layouts, or navigation"
-    load: "node_modules/@tanstack/router-core/skills/router-core/navigation/SKILL.md"
 
-  - task: "protecting routes, authentication, or role-based access"
-    load: "node_modules/@tanstack/router-core/skills/router-core/auth-and-guards/SKILL.md"
+- task: "working with routes, pages, layouts, or navigation"
+  load: "node_modules/@tanstack/router-core/skills/router-core/navigation/SKILL.md"
 
-  - task: "loading data, caching, loaders, search params, or route data"
-    load: "node_modules/@tanstack/router-core/skills/router-core/data-loading/SKILL.md"
+- task: "protecting routes, authentication, or role-based access"
+  load: "node_modules/@tanstack/router-core/skills/router-core/auth-and-guards/SKILL.md"
 
-  - task: "writing server functions, backend actions, or form submissions"
-    load: "node_modules/@tanstack/start-client-core/skills/start-core/server-functions/SKILL.md"
+- task: "loading data, caching, loaders, search params, or route data"
+  load: "node_modules/@tanstack/router-core/skills/router-core/data-loading/SKILL.md"
 
-  - task: "building API routes or HTTP handlers in TanStack Start"
-    load: "node_modules/@tanstack/start-client-core/skills/start-core/server-routes/SKILL.md"
+- task: "writing server functions, backend actions, or form submissions"
+  load: "node_modules/@tanstack/start-client-core/skills/start-core/server-functions/SKILL.md"
 
-  - task: "understanding the overall TanStack Start app structure"
-    load: "node_modules/@tanstack/start-client-core/skills/start-core/SKILL.md"
+- task: "building API routes or HTTP handlers in TanStack Start"
+  load: "node_modules/@tanstack/start-client-core/skills/start-core/server-routes/SKILL.md"
+
+- task: "understanding the overall TanStack Start app structure"
+  load: "node_modules/@tanstack/start-client-core/skills/start-core/SKILL.md"
 <!-- intent-skills:end -->
-
-

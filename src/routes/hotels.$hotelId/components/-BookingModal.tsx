@@ -1,4 +1,3 @@
-// Booking confirmation modal for selecting guest details and creating reservations.
 import { Link } from '@tanstack/react-router'
 import { useUser } from '@clerk/clerk-react'
 import { useAction, useMutation, useQuery } from 'convex/react'
@@ -10,7 +9,9 @@ import {
   CreditCard,
   Landmark,
 } from 'lucide-react'
-import { useEffect, useState } from 'react'
+import { useEffect, useMemo, useState } from 'react'
+import { useForm, useStore } from '@tanstack/react-form'
+import { z } from 'zod'
 
 import { api } from '../../../../convex/_generated/api'
 import {
@@ -49,6 +50,44 @@ interface BookingModalProps {
   onSuccess: () => void
 }
 
+type PaymentMethod = '' | 'chapa' | 'bank'
+
+interface BookingFormValues {
+  packageType: PackageType
+  guestName: string
+  guestEmail: string
+  specialRequests: string
+  paymentMethod: PaymentMethod
+  selectedBankAccountId: string
+  nationalIdFile: File | null
+  transactionId: string
+}
+
+function getFirstErrorMessage(errors: unknown[] | undefined): string | null {
+  if (!errors) {
+    return null
+  }
+
+  for (const error of errors) {
+    if (!error) {
+      continue
+    }
+
+    if (typeof error === 'string') {
+      return error
+    }
+
+    if (typeof error === 'object' && 'message' in error) {
+      const message = error.message
+      if (typeof message === 'string') {
+        return message
+      }
+    }
+  }
+
+  return null
+}
+
 export function BookingModal({
   roomId,
   hotelId,
@@ -59,7 +98,6 @@ export function BookingModal({
   onClose,
   onSuccess,
 }: BookingModalProps) {
-  // Fetch room/hotel context and manage a 3-step booking flow in local state.
   const { user } = useUser()
   const { t } = useI18n()
   const room = useQuery(api.rooms.get, { roomId })
@@ -78,55 +116,249 @@ export function BookingModal({
   const [step, setStep] = useState<'package' | 'details' | 'confirm'>(
     existingBooking ? 'confirm' : 'package',
   )
-  const [selectedPackageType, setSelectedPackageType] = useState<PackageType>(
-    existingBooking?.packageType ?? 'room_only',
-  )
-  const [guestDetails, setGuestDetails] = useState({
-    guestName: user?.fullName || '',
-    guestEmail: user?.emailAddresses[0]?.emailAddress || '',
-    specialRequests: '',
-  })
   const [bookingId, setBookingId] = useState<Id<'bookings'> | null>(
     existingBooking?._id ?? null,
   )
-  const [paymentMethod, setPaymentMethod] = useState<'chapa' | 'bank' | null>(
-    existingBooking?.status === 'pending_payment' ? 'bank' : null,
-  )
-  const [nationalIdFile, setNationalIdFile] = useState<File | null>(null)
-  const [transactionId, setTransactionId] = useState('')
   const [copied, setCopied] = useState(false)
   const [submitted, setSubmitted] = useState(false)
-  const [loading, setLoading] = useState(false)
+  const [loadingPhase, setLoadingPhase] = useState<'hold' | 'bank' | null>(null)
   const [chapaLoading, setChapaLoading] = useState(false)
   const [error, setError] = useState('')
-  const [selectedBankAccountId, setSelectedBankAccountId] = useState<
-    Id<'hotelBankAccounts'> | ''
-  >('')
+
+  const bookingSchema = useMemo(
+    () =>
+      z
+        .object({
+          packageType: z.enum(['room_only', 'with_breakfast', 'full_package']),
+          guestName: z.string(),
+          guestEmail: z.string(),
+          specialRequests: z.string(),
+          paymentMethod: z.enum(['', 'chapa', 'bank']),
+          selectedBankAccountId: z.string(),
+          nationalIdFile: z.custom<File | null>((value) => {
+            if (value === null) {
+              return true
+            }
+
+            if (typeof File === 'undefined') {
+              return true
+            }
+
+            return value instanceof File
+          }),
+          transactionId: z.string(),
+        })
+        .superRefine((value, ctx) => {
+          if (step === 'details') {
+            if (!value.guestName.trim()) {
+              ctx.addIssue({
+                code: 'custom',
+                path: ['guestName'],
+                message: t('bookingModal.guestName'),
+              })
+            }
+
+            if (!value.guestEmail.trim()) {
+              ctx.addIssue({
+                code: 'custom',
+                path: ['guestEmail'],
+                message: t('bookingModal.email'),
+              })
+            } else if (
+              !z.string().email().safeParse(value.guestEmail.trim()).success
+            ) {
+              ctx.addIssue({
+                code: 'custom',
+                path: ['guestEmail'],
+                message: t('bookingModal.email'),
+              })
+            }
+          }
+
+          if (step === 'confirm' && value.paymentMethod === 'bank') {
+            if (!value.selectedBankAccountId) {
+              ctx.addIssue({
+                code: 'custom',
+                path: ['selectedBankAccountId'],
+                message: t('bookingModal.selectBank'),
+              })
+            }
+
+            if (!value.nationalIdFile) {
+              ctx.addIssue({
+                code: 'custom',
+                path: ['nationalIdFile'],
+                message: t('bookingModal.nationalIdRequired'),
+              })
+            } else {
+              const fileError = validateImageFile(value.nationalIdFile)
+              if (fileError) {
+                ctx.addIssue({
+                  code: 'custom',
+                  path: ['nationalIdFile'],
+                  message: fileError,
+                })
+              }
+            }
+
+            if (!value.transactionId.trim()) {
+              ctx.addIssue({
+                code: 'custom',
+                path: ['transactionId'],
+                message: t('bookingModal.transactionIdRequired'),
+              })
+            }
+          }
+        }),
+    [step, t],
+  )
+
+  const form = useForm({
+    defaultValues: {
+      packageType: existingBooking?.packageType ?? 'room_only',
+      guestName: user?.fullName || '',
+      guestEmail: user?.emailAddresses[0]?.emailAddress || '',
+      specialRequests: '',
+      paymentMethod:
+        existingBooking?.status === 'pending_payment' ? 'bank' : '',
+      selectedBankAccountId: '',
+      nationalIdFile: null,
+      transactionId: '',
+    } satisfies BookingFormValues,
+    validators: {
+      onBlur: bookingSchema,
+      onSubmit: bookingSchema,
+    },
+    onSubmit: async ({ value }) => {
+      if (!user?.id) {
+        return
+      }
+
+      setError('')
+
+      if (step === 'details') {
+        setLoadingPhase('hold')
+
+        try {
+          const id = await holdRoom({
+            roomId,
+            checkIn,
+            checkOut,
+            packageType: value.packageType,
+            packageAddOn: getPackageByType(value.packageType).addOnPerNight,
+            guestName: value.guestName.trim(),
+            guestEmail: value.guestEmail.trim(),
+            specialRequests: value.specialRequests.trim() || undefined,
+          })
+
+          setBookingId(id)
+          form.setFieldValue('paymentMethod', '')
+          setStep('confirm')
+        } catch (submissionError) {
+          setError(
+            submissionError instanceof Error
+              ? submissionError.message
+              : t('bookingModal.failedHold'),
+          )
+        } finally {
+          setLoadingPhase(null)
+        }
+
+        return
+      }
+
+      if (step === 'confirm' && value.paymentMethod === 'bank' && bookingId) {
+        setLoadingPhase('bank')
+
+        try {
+          const nationalIdStorageId = await uploadImageToConvex({
+            file: value.nationalIdFile as File,
+            generateUploadUrl,
+            trackUpload,
+          })
+
+          await submitPaymentProof({
+            bookingId,
+            transactionId: value.transactionId.trim(),
+            nationalIdStorageId,
+          })
+
+          setSubmitted(true)
+        } catch (submissionError: any) {
+          if (submissionError?.data?.code === 'EXPIRED') {
+            setError(t('bookingModal.holdExpired'))
+          } else {
+            setError(
+              submissionError instanceof Error
+                ? submissionError.message
+                : t('bookingModal.failedSubmitPaymentProof'),
+            )
+          }
+        } finally {
+          setLoadingPhase(null)
+        }
+      }
+    },
+  })
+
+  const selectedPackageType = useStore(
+    form.store,
+    (state) => state.values.packageType,
+  )
+  const paymentMethod = useStore(
+    form.store,
+    (state) => state.values.paymentMethod,
+  )
+  const selectedBankAccountId = useStore(
+    form.store,
+    (state) => state.values.selectedBankAccountId,
+  )
+  const transactionId = useStore(
+    form.store,
+    (state) => state.values.transactionId,
+  )
+  const nationalIdFile = useStore(
+    form.store,
+    (state) => state.values.nationalIdFile,
+  )
 
   useEffect(() => {
-    if (!user) return
+    if (!user) {
+      return
+    }
 
-    setGuestDetails((prev) => ({
-      ...prev,
-      guestName: prev.guestName || user.fullName || '',
-      guestEmail: prev.guestEmail || user.emailAddresses[0]?.emailAddress || '',
-    }))
-  }, [user])
+    if (!form.getFieldValue('guestName')) {
+      form.setFieldValue('guestName', user.fullName || '')
+    }
+
+    if (!form.getFieldValue('guestEmail')) {
+      form.setFieldValue(
+        'guestEmail',
+        user.emailAddresses[0]?.emailAddress || '',
+      )
+    }
+  }, [form, user])
 
   useEffect(() => {
-    if (!existingBooking) return
+    if (!existingBooking) {
+      return
+    }
 
-    setSelectedPackageType(existingBooking.packageType ?? 'room_only')
-    setBookingId(existingBooking._id)
-    setPaymentMethod(
-      existingBooking.status === 'pending_payment' ? 'bank' : null,
+    form.setFieldValue(
+      'packageType',
+      existingBooking.packageType ?? 'room_only',
     )
+    form.setFieldValue(
+      'paymentMethod',
+      existingBooking.status === 'pending_payment' ? 'bank' : '',
+    )
+    setBookingId(existingBooking._id)
     setStep('confirm')
-  }, [existingBooking])
+  }, [existingBooking, form])
 
   useEffect(() => {
     if (!bankAccounts || bankAccounts.length === 0) {
-      setSelectedBankAccountId('')
+      form.setFieldValue('selectedBankAccountId', '')
       return
     }
 
@@ -134,91 +366,18 @@ export function BookingModal({
       const stillExists = bankAccounts.some(
         (account) => account._id === selectedBankAccountId,
       )
-      if (stillExists) return
-    }
-
-    setSelectedBankAccountId(bankAccounts[0]._id)
-  }, [bankAccounts, selectedBankAccountId])
-
-  const handleHold = async (e: React.FormEvent) => {
-    // Step 1 submission: place temporary hold with package + guest details.
-    e.preventDefault()
-    if (!user?.id) return
-
-    setLoading(true)
-    setError('')
-
-    try {
-      const id = await holdRoom({
-        roomId,
-        checkIn,
-        checkOut,
-        packageType: selectedPackageType,
-        packageAddOn: getPackageByType(selectedPackageType).addOnPerNight,
-        guestName: guestDetails.guestName,
-        guestEmail: guestDetails.guestEmail,
-        specialRequests: guestDetails.specialRequests || undefined,
-      })
-      setBookingId(id)
-      setPaymentMethod(null)
-      setStep('confirm')
-    } catch (err: any) {
-      setError(err.message || t('bookingModal.failedHold'))
-    } finally {
-      setLoading(false)
-    }
-  }
-
-  const handleSubmitPaymentProof = async () => {
-    // Step 3 confirmation: submit payment proof and move booking to pending verification.
-    if (!user?.id || !bookingId) return
-    if (!nationalIdFile) {
-      setError(t('bookingModal.nationalIdRequired'))
-      return
-    }
-
-    const fileError = validateImageFile(nationalIdFile)
-    if (fileError) {
-      setError(fileError)
-      return
-    }
-
-    const trimmedTransactionId = transactionId.trim()
-    if (!trimmedTransactionId) {
-      setError(t('bookingModal.transactionIdRequired'))
-      return
-    }
-
-    setLoading(true)
-    setError('')
-
-    try {
-      const nationalIdStorageId = await uploadImageToConvex({
-        file: nationalIdFile,
-        generateUploadUrl,
-        trackUpload,
-      })
-
-      await submitPaymentProof({
-        bookingId,
-        transactionId: trimmedTransactionId,
-        nationalIdStorageId,
-      })
-
-      setSubmitted(true)
-    } catch (err: any) {
-      if (err?.data?.code === 'EXPIRED') {
-        setError(t('bookingModal.holdExpired'))
-      } else {
-        setError(err.message || t('bookingModal.failedSubmitPaymentProof'))
+      if (stillExists) {
+        return
       }
-    } finally {
-      setLoading(false)
     }
-  }
+
+    form.setFieldValue('selectedBankAccountId', bankAccounts[0]._id)
+  }, [bankAccounts, form, selectedBankAccountId])
 
   const handleChapaCheckout = async () => {
-    if (!bookingId) return
+    if (!bookingId) {
+      return
+    }
 
     setChapaLoading(true)
     setError('')
@@ -232,8 +391,12 @@ export function BookingModal({
       }
 
       window.location.assign(result.checkoutUrl)
-    } catch (err: any) {
-      setError(err.message || t('bookingModal.chapaError'))
+    } catch (submissionError) {
+      setError(
+        submissionError instanceof Error
+          ? submissionError.message
+          : t('bookingModal.chapaError'),
+      )
     } finally {
       setChapaLoading(false)
     }
@@ -244,7 +407,9 @@ export function BookingModal({
   )
 
   const handleCopyBankAccount = async () => {
-    if (!selectedBankAccount) return
+    if (!selectedBankAccount) {
+      return
+    }
 
     await navigator.clipboard.writeText(
       `${selectedBankAccount.bankName} — ${selectedBankAccount.accountNumber}`,
@@ -268,10 +433,548 @@ export function BookingModal({
   const totalPriceCents =
     existingBooking?.totalPrice ?? roomSubtotalCents + packageSubtotalCents
 
+  const packageStepContent = (
+    <div className="space-y-3">
+      {PACKAGES.map((pkg) => {
+        const isSelected = pkg.type === selectedPackageType
+
+        return (
+          <button
+            key={pkg.type}
+            type="button"
+            onClick={() => form.setFieldValue('packageType', pkg.type)}
+            className={`booking-package-card light-hover-surface w-full cursor-pointer rounded-xl border p-4 text-left transition-all ${
+              isSelected
+                ? 'booking-package-card--selected border-violet-500/50 bg-violet-500/10'
+                : 'booking-package-card--idle border-slate-700 bg-slate-800/40 hover:border-slate-600'
+            }`}
+          >
+            <div className="mb-2 flex items-start justify-between gap-3">
+              <div>
+                <p className="booking-package-title font-semibold text-slate-100">
+                  {getPackageLabel(pkg.type, t)}
+                </p>
+                <p className="booking-package-description text-sm text-slate-400">
+                  {getPackageDescription(pkg.type, t)}
+                </p>
+              </div>
+              <span
+                className={`booking-package-badge rounded-full border px-2.5 py-1 text-xs font-medium ${
+                  isSelected
+                    ? 'booking-package-badge--selected border-violet-500/40 bg-violet-500/10 text-violet-300'
+                    : 'border-slate-600 bg-slate-700/40 text-slate-300'
+                }`}
+              >
+                {formatPackageAddOn(pkg.addOnPerNight, t)}
+              </span>
+            </div>
+
+            <ul className="booking-package-inclusions list-inside list-disc space-y-0.5 text-sm text-slate-400">
+              {getPackageInclusions(pkg.type, t).map((item) => (
+                <li key={item}>{item}</li>
+              ))}
+            </ul>
+          </button>
+        )
+      })}
+
+      <div className="flex gap-3 pt-2">
+        <button
+          type="button"
+          onClick={onClose}
+          className="booking-action-secondary flex-1 cursor-pointer rounded-xl border border-slate-700 bg-slate-800 px-4 py-3 font-medium text-slate-300 transition-colors hover:bg-slate-700"
+        >
+          {t('common.cancel')}
+        </button>
+        <button
+          type="button"
+          onClick={() => setStep('details')}
+          className="booking-action-primary flex-1 cursor-pointer rounded-xl bg-white px-4 py-3 font-medium text-slate-900 transition-all hover:bg-slate-100"
+        >
+          {t('bookingModal.continue')}
+        </button>
+      </div>
+    </div>
+  )
+
+  const detailsStepContent = (
+    <form
+      onSubmit={(event) => {
+        event.preventDefault()
+        event.stopPropagation()
+        void form.handleSubmit()
+      }}
+      className="space-y-4"
+    >
+      <form.Field name="guestName">
+        {(field) => {
+          const fieldError = getFirstErrorMessage(field.state.meta.errors)
+
+          return (
+            <div>
+              <label className="booking-field-label mb-2 block text-sm font-medium text-slate-300">
+                {t('bookingModal.guestName')}
+              </label>
+              <input
+                type="text"
+                value={field.state.value}
+                onChange={(event) => field.handleChange(event.target.value)}
+                onBlur={field.handleBlur}
+                className={`booking-input w-full rounded-xl border bg-slate-800/50 px-4 py-3 text-slate-200 transition-all focus:border-violet-500/50 focus:outline-none ${
+                  fieldError
+                    ? 'border-red-500/60 focus:border-red-500/80'
+                    : 'border-slate-700'
+                }`}
+              />
+              {fieldError ? (
+                <p className="mt-2 text-xs text-red-400">{fieldError}</p>
+              ) : null}
+            </div>
+          )
+        }}
+      </form.Field>
+
+      <form.Field name="guestEmail">
+        {(field) => {
+          const fieldError = getFirstErrorMessage(field.state.meta.errors)
+
+          return (
+            <div>
+              <label className="booking-field-label mb-2 block text-sm font-medium text-slate-300">
+                {t('bookingModal.email')}
+              </label>
+              <input
+                type="email"
+                value={field.state.value}
+                onChange={(event) => field.handleChange(event.target.value)}
+                onBlur={field.handleBlur}
+                className={`booking-input w-full rounded-xl border bg-slate-800/50 px-4 py-3 text-slate-200 transition-all focus:border-violet-500/50 focus:outline-none ${
+                  fieldError
+                    ? 'border-red-500/60 focus:border-red-500/80'
+                    : 'border-slate-700'
+                }`}
+              />
+              {fieldError ? (
+                <p className="mt-2 text-xs text-red-400">{fieldError}</p>
+              ) : null}
+            </div>
+          )
+        }}
+      </form.Field>
+
+      <form.Field name="specialRequests">
+        {(field) => (
+          <div>
+            <label className="booking-field-label mb-2 block text-sm font-medium text-slate-300">
+              {t('bookingModal.specialRequests')}
+            </label>
+            <textarea
+              rows={3}
+              value={field.state.value}
+              onChange={(event) => field.handleChange(event.target.value)}
+              onBlur={field.handleBlur}
+              placeholder={t('bookingModal.specialRequestsPlaceholder')}
+              className="booking-input booking-textarea w-full resize-none rounded-xl border border-slate-700 bg-slate-800/50 px-4 py-3 text-slate-200 placeholder-slate-500 transition-all focus:border-violet-500/50 focus:outline-none"
+            />
+          </div>
+        )}
+      </form.Field>
+
+      <div className="booking-hold-notice-card rounded-xl border border-violet-500/20 bg-violet-500/10 p-4">
+        <p className="booking-hold-notice-text text-base font-medium text-violet-400">
+          {t('bookingModal.holdNotice')}
+        </p>
+      </div>
+
+      <div className="booking-price-card rounded-xl border border-slate-700 bg-slate-800/40 p-4 text-sm">
+        <div className="flex items-center justify-between text-slate-300">
+          <span>
+            {t('bookingModal.roomRate')} ({nights}{' '}
+            {nights !== 1 ? t('hotel.nights') : t('hotel.night')})
+          </span>
+          <span>${(roomSubtotalCents / 100).toFixed(2)}</span>
+        </div>
+        {selectedPackage.addOnPerNight > 0 ? (
+          <div className="mt-2 flex items-center justify-between text-slate-300">
+            <span>
+              {getPackageLabel(selectedPackage.type, t)}{' '}
+              {t('bookingModal.addOn')} ({nights}{' '}
+              {nights !== 1 ? t('hotel.nights') : t('hotel.night')})
+            </span>
+            <span>${(packageSubtotalCents / 100).toFixed(2)}</span>
+          </div>
+        ) : null}
+        <div className="booking-details-total mt-3 flex items-center justify-between border-t border-slate-700 pt-3 font-semibold text-violet-400">
+          <span>{t('booking.total')}</span>
+          <span>${(totalPriceCents / 100).toFixed(2)}</span>
+        </div>
+      </div>
+
+      <div className="flex gap-3 pt-2">
+        <button
+          type="button"
+          onClick={() => setStep('package')}
+          className="booking-action-secondary flex-1 cursor-pointer rounded-xl border border-slate-700 bg-slate-800 px-4 py-3 font-medium text-slate-300 transition-colors hover:bg-slate-700"
+        >
+          {t('signIn.back')}
+        </button>
+        <button
+          type="submit"
+          disabled={loadingPhase === 'hold'}
+          className="booking-action-primary flex-1 cursor-pointer rounded-xl bg-white px-4 py-3 font-medium text-slate-900 transition-all hover:bg-slate-100 disabled:opacity-50"
+        >
+          {loadingPhase === 'hold'
+            ? t('bookingModal.holding')
+            : t('bookingModal.holdRoom')}
+        </button>
+      </div>
+    </form>
+  )
+
+  const confirmationContent = submitted ? (
+    <div className="space-y-4">
+      <div className="booking-success-card rounded-xl border border-emerald-500/20 bg-emerald-500/10 p-4">
+        <div className="mb-2 flex items-center gap-2 text-emerald-400">
+          <CheckCircle className="h-5 w-5" />
+          <span className="font-semibold">
+            {t('bookingModal.paymentProofSubmitted')}
+          </span>
+        </div>
+        <p className="text-sm text-slate-300">
+          {t('bookingModal.awaitingVerification')}
+        </p>
+      </div>
+
+      {bookingId ? (
+        <div className="rounded-xl border border-slate-700 bg-slate-800/40 p-4 text-sm">
+          <p className="mb-1 text-slate-500">{t('bookingModal.bookingId')}</p>
+          <p className="font-medium text-slate-200">{bookingId}</p>
+        </div>
+      ) : null}
+
+      <div className="flex gap-3">
+        <button
+          type="button"
+          onClick={onClose}
+          className="booking-action-secondary flex-1 cursor-pointer rounded-xl border border-slate-700 bg-slate-800 px-4 py-3 font-medium text-slate-300 transition-colors hover:bg-slate-700"
+        >
+          {t('common.close')}
+        </button>
+        <Link
+          to="/bookings"
+          search={{
+            payment: undefined,
+            tx_ref: undefined,
+          }}
+          onClick={onSuccess}
+          className="booking-action-success flex-1 rounded-xl bg-gradient-to-r from-emerald-500 to-emerald-600 px-4 py-3 text-center font-medium text-white transition-all hover:from-emerald-600 hover:to-emerald-700"
+        >
+          {t('bookingModal.viewMyBookings')}
+        </Link>
+      </div>
+    </div>
+  ) : (
+    <div className="space-y-4">
+      <div className="booking-success-card rounded-xl border border-emerald-500/20 bg-emerald-500/10 p-4">
+        <div className="mb-2 flex items-center gap-2 text-emerald-400">
+          <CheckCircle className="h-5 w-5" />
+          <span className="font-semibold">{t('bookingModal.heldSuccess')}</span>
+        </div>
+        <p className="text-sm text-slate-400">
+          {t('bookingModal.heldDescription')}
+        </p>
+      </div>
+
+      <div className="booking-price-card rounded-xl border border-slate-700 bg-slate-800/40 p-4 text-sm">
+        <div className="flex items-center justify-between text-slate-300">
+          <span>
+            {t('bookingModal.roomRate')} ({nights}{' '}
+            {nights !== 1 ? t('hotel.nights') : t('hotel.night')})
+          </span>
+          <span>${(roomSubtotalCents / 100).toFixed(2)}</span>
+        </div>
+        {packageRateCents > 0 ? (
+          <div className="mt-2 flex items-center justify-between text-slate-300">
+            <span>
+              {getPackageLabel(selectedPackage.type, t)}{' '}
+              {t('bookingModal.addOn')} ({nights}{' '}
+              {nights !== 1 ? t('hotel.nights') : t('hotel.night')})
+            </span>
+            <span>${(packageSubtotalCents / 100).toFixed(2)}</span>
+          </div>
+        ) : null}
+        <div className="mt-3 flex items-center justify-between border-t border-slate-700 pt-3 font-semibold text-emerald-400">
+          <span>{t('booking.total')}</span>
+          <span>${(totalPriceCents / 100).toFixed(2)}</span>
+        </div>
+      </div>
+
+      {!paymentMethod ? (
+        <div className="space-y-3">
+          <p className="text-sm font-medium text-slate-300">
+            {t('bookingModal.selectPaymentMethod')}
+          </p>
+
+          <button
+            type="button"
+            onClick={() => form.setFieldValue('paymentMethod', 'chapa')}
+            className="booking-payment-option booking-payment-option--chapa w-full cursor-pointer rounded-xl border border-slate-700 bg-slate-800/40 p-4 text-left transition-colors hover:border-violet-500/40 hover:bg-violet-500/10"
+          >
+            <div className="mb-1 flex items-center gap-3 text-slate-100">
+              <CreditCard className="booking-payment-option-icon h-5 w-5 text-violet-400" />
+              <span className="booking-payment-option-title font-semibold">
+                {t('bookingModal.payWithChapa')}
+              </span>
+            </div>
+            <p className="booking-payment-option-description text-sm text-slate-400">
+              {t('bookingModal.chapaDescription')}
+            </p>
+          </button>
+
+          <button
+            type="button"
+            onClick={() => form.setFieldValue('paymentMethod', 'bank')}
+            className="booking-payment-option booking-payment-option--bank w-full cursor-pointer rounded-xl border border-slate-700 bg-slate-800/40 p-4 text-left transition-colors hover:border-emerald-500/40 hover:bg-emerald-500/10"
+          >
+            <div className="mb-1 flex items-center gap-3 text-slate-100">
+              <Landmark className="booking-payment-option-icon h-5 w-5 text-emerald-400" />
+              <span className="booking-payment-option-title font-semibold">
+                {t('bookingModal.payWithBank')}
+              </span>
+            </div>
+            <p className="booking-payment-option-description text-sm text-slate-400">
+              {t('bookingModal.bankDescription')}
+            </p>
+          </button>
+
+          <button
+            type="button"
+            onClick={onClose}
+            className="booking-action-secondary w-full cursor-pointer rounded-xl border border-slate-700 bg-slate-800 px-4 py-3 font-medium text-slate-300 transition-colors hover:bg-slate-700"
+          >
+            {t('bookingModal.cancelHold')}
+          </button>
+        </div>
+      ) : null}
+
+      {paymentMethod === 'chapa' ? (
+        <div className="space-y-4">
+          <div className="booking-chapa-notice rounded-xl border border-violet-500/20 bg-violet-500/10 p-4">
+            <p className="booking-chapa-notice-title text-sm font-medium text-violet-300">
+              {t('bookingModal.chapaRedirectNotice')}
+            </p>
+            <p className="booking-chapa-notice-body mt-2 text-xs text-violet-200/80">
+              {t('bookingModal.chapaProcessingNotice')}
+            </p>
+          </div>
+
+          <div className="flex gap-3">
+            <button
+              type="button"
+              onClick={() => form.setFieldValue('paymentMethod', '')}
+              className="booking-action-secondary flex-1 cursor-pointer rounded-xl border border-slate-700 bg-slate-800 px-4 py-3 font-medium text-slate-300 transition-colors hover:bg-slate-700"
+            >
+              {t('signIn.back')}
+            </button>
+            <button
+              type="button"
+              onClick={handleChapaCheckout}
+              disabled={chapaLoading}
+              className="booking-action-primary flex-1 cursor-pointer rounded-xl bg-white px-4 py-3 font-medium text-slate-900 transition-all hover:bg-slate-100 disabled:opacity-50"
+            >
+              {chapaLoading
+                ? t('bookingModal.redirectingToChapa')
+                : t('bookingModal.proceedToChapa')}
+            </button>
+          </div>
+        </div>
+      ) : null}
+
+      {paymentMethod === 'bank' ? (
+        <form
+          onSubmit={(event) => {
+            event.preventDefault()
+            event.stopPropagation()
+            void form.handleSubmit()
+          }}
+          className="space-y-4"
+        >
+          <div>
+            <p className="mb-2 text-sm text-slate-400">
+              {t('bookingModal.transferTo')}
+            </p>
+            <div className="space-y-3">
+              <form.Field name="selectedBankAccountId">
+                {(field) => {
+                  const fieldError = getFirstErrorMessage(
+                    field.state.meta.errors,
+                  )
+
+                  return (
+                    <div>
+                      <label className="booking-field-label mb-2 block text-xs text-slate-500">
+                        {t('bookingModal.selectBank')}
+                      </label>
+                      <select
+                        value={field.state.value}
+                        onChange={(event) =>
+                          field.handleChange(event.target.value)
+                        }
+                        onBlur={field.handleBlur}
+                        disabled={!bankAccounts || bankAccounts.length === 0}
+                        className={`booking-input booking-select w-full rounded-xl border bg-slate-800/60 px-3 py-2.5 text-slate-200 transition-all focus:border-violet-500/50 focus:outline-none ${
+                          fieldError
+                            ? 'border-red-500/60 focus:border-red-500/80'
+                            : 'border-slate-700'
+                        }`}
+                      >
+                        {bankAccounts && bankAccounts.length > 0 ? (
+                          bankAccounts.map((account) => (
+                            <option key={account._id} value={account._id}>
+                              {account.bankName} — {account.accountNumber}
+                            </option>
+                          ))
+                        ) : (
+                          <option value="">
+                            {t('bookingModal.paymentNotConfigured')}
+                          </option>
+                        )}
+                      </select>
+                      {fieldError ? (
+                        <p className="mt-2 text-xs text-red-400">
+                          {fieldError}
+                        </p>
+                      ) : null}
+                    </div>
+                  )
+                }}
+              </form.Field>
+
+              <div className="booking-bank-card flex items-center justify-between gap-2 rounded-xl border border-slate-700 bg-slate-800/40 p-3">
+                <div>
+                  <p className="mb-1 text-xs text-slate-500">
+                    {t('bookingModal.bankAccountNumber')}
+                  </p>
+                  <p className="break-all font-semibold text-slate-100">
+                    {selectedBankAccount
+                      ? `${selectedBankAccount.bankName} — ${selectedBankAccount.accountNumber}`
+                      : t('bookingModal.paymentNotConfigured')}
+                  </p>
+                </div>
+                {selectedBankAccount ? (
+                  <button
+                    type="button"
+                    onClick={handleCopyBankAccount}
+                    className="booking-copy-button inline-flex cursor-pointer items-center gap-2 rounded-lg border border-slate-700 bg-slate-800 px-3 py-2 text-sm text-slate-300 transition-colors hover:bg-slate-700"
+                  >
+                    {copied ? (
+                      <Check className="h-4 w-4" />
+                    ) : (
+                      <Copy className="h-4 w-4" />
+                    )}
+                    {copied ? t('common.copied') : t('common.copy')}
+                  </button>
+                ) : null}
+              </div>
+            </div>
+          </div>
+
+          <form.Field name="nationalIdFile">
+            {(field) => {
+              const fieldError = getFirstErrorMessage(field.state.meta.errors)
+
+              return (
+                <div>
+                  <label className="booking-field-label mb-2 block text-sm font-medium text-slate-300">
+                    {t('bookingModal.uploadNationalId')}
+                  </label>
+                  <input
+                    type="file"
+                    accept="image/*"
+                    onChange={(event) =>
+                      field.handleChange(event.target.files?.[0] ?? null)
+                    }
+                    onBlur={field.handleBlur}
+                    className={`booking-input booking-file-input w-full rounded-xl border bg-slate-800/50 px-4 py-3 text-slate-200 transition-all file:mr-3 file:rounded-md file:border-0 file:bg-slate-700 file:px-3 file:py-1.5 file:text-slate-100 hover:file:bg-slate-600 focus:border-violet-500/50 focus:outline-none ${
+                      fieldError
+                        ? 'border-red-500/60 focus:border-red-500/80'
+                        : 'border-slate-700'
+                    }`}
+                  />
+                  {nationalIdFile ? (
+                    <p className="mt-2 text-xs text-slate-500">
+                      {nationalIdFile.name}
+                    </p>
+                  ) : null}
+                  {fieldError ? (
+                    <p className="mt-2 text-xs text-red-400">{fieldError}</p>
+                  ) : null}
+                </div>
+              )
+            }}
+          </form.Field>
+
+          <form.Field name="transactionId">
+            {(field) => {
+              const fieldError = getFirstErrorMessage(field.state.meta.errors)
+
+              return (
+                <div>
+                  <label className="booking-field-label mb-2 block text-sm font-medium text-slate-300">
+                    {t('bookingModal.transactionId')}
+                  </label>
+                  <input
+                    type="text"
+                    value={field.state.value}
+                    onChange={(event) => field.handleChange(event.target.value)}
+                    onBlur={field.handleBlur}
+                    placeholder={t('bookingModal.transactionIdPlaceholder')}
+                    className={`booking-input w-full rounded-xl border bg-slate-800/50 px-4 py-3 text-slate-200 placeholder-slate-500 transition-all focus:border-violet-500/50 focus:outline-none ${
+                      fieldError
+                        ? 'border-red-500/60 focus:border-red-500/80'
+                        : 'border-slate-700'
+                    }`}
+                  />
+                  {fieldError ? (
+                    <p className="mt-2 text-xs text-red-400">{fieldError}</p>
+                  ) : null}
+                </div>
+              )
+            }}
+          </form.Field>
+
+          <div className="flex gap-3">
+            <button
+              type="button"
+              onClick={() => form.setFieldValue('paymentMethod', '')}
+              className="booking-action-secondary flex-1 cursor-pointer rounded-xl border border-slate-700 bg-slate-800 px-4 py-3 font-medium text-slate-300 transition-colors hover:bg-slate-700"
+            >
+              {t('signIn.back')}
+            </button>
+            <button
+              type="submit"
+              disabled={
+                loadingPhase === 'bank' ||
+                !nationalIdFile ||
+                !transactionId.trim() ||
+                !selectedBankAccount
+              }
+              className="booking-action-success flex-1 cursor-pointer rounded-xl bg-gradient-to-r from-emerald-500 to-emerald-600 px-4 py-3 font-medium text-white transition-all hover:from-emerald-600 hover:to-emerald-700 disabled:opacity-50"
+            >
+              {loadingPhase === 'bank'
+                ? t('bookingModal.submittingPaymentProof')
+                : t('bookingModal.submitPaymentProof')}
+            </button>
+          </div>
+        </form>
+      ) : null}
+    </div>
+  )
+
   return (
-    <div className="booking-modal fixed inset-0 bg-black/60 backdrop-blur-sm flex items-center justify-center z-50 p-4">
-      <div className="booking-modal-panel bg-slate-900 border border-slate-800 rounded-2xl shadow-2xl w-full max-w-lg max-h-[92vh] overflow-hidden flex flex-col">
-        <div className="booking-modal-header p-4 sm:p-5 border-b border-slate-800 shrink-0">
+    <div className="booking-modal fixed inset-0 z-50 flex items-center justify-center bg-black/60 p-4 backdrop-blur-sm">
+      <div className="booking-modal-panel flex max-h-[92vh] w-full max-w-lg flex-col overflow-hidden rounded-2xl border border-slate-800 bg-slate-900 shadow-2xl">
+        <div className="booking-modal-header shrink-0 border-b border-slate-800 p-4 sm:p-5">
           <h2 className="booking-modal-title text-xl font-semibold text-slate-100">
             {step === 'package'
               ? t('bookingModal.step.packageTitle')
@@ -281,7 +984,7 @@ export function BookingModal({
                   ? t('bookingModal.step.submittedTitle')
                   : t('bookingModal.step.paymentTitle')}
           </h2>
-          <p className="booking-modal-subtitle text-sm text-slate-500 mt-1">
+          <p className="booking-modal-subtitle mt-1 text-sm text-slate-500">
             {step === 'package'
               ? t('bookingModal.step.packageDescription')
               : step === 'details'
@@ -292,11 +995,11 @@ export function BookingModal({
           </p>
         </div>
 
-        <div className="p-4 sm:p-5 flex-1 overflow-y-auto overscroll-contain scroll-smooth">
-          <div className="booking-summary-card bg-slate-800/50 rounded-xl p-4 mb-4">
-            <div className="flex items-center gap-3 mb-3">
-              <div className="booking-summary-icon-wrap w-12 h-12 rounded-lg bg-slate-700 flex items-center justify-center">
-                <Building2 className="booking-summary-icon w-6 h-6 text-slate-400" />
+        <div className="flex-1 overflow-y-auto p-4 overscroll-contain scroll-smooth sm:p-5">
+          <div className="booking-summary-card mb-4 rounded-xl bg-slate-800/50 p-4">
+            <div className="mb-3 flex items-center gap-3">
+              <div className="booking-summary-icon-wrap flex h-12 w-12 items-center justify-center rounded-lg bg-slate-700">
+                <Building2 className="booking-summary-icon h-6 w-6 text-slate-400" />
               </div>
               <div>
                 <p className="booking-summary-hotel font-semibold text-slate-200">
@@ -325,18 +1028,18 @@ export function BookingModal({
                 </p>
               </div>
             </div>
-            <div className="booking-summary-total border-t border-slate-700 mt-4 pt-4 flex justify-between">
-              <div className="text-slate-400 text-sm">
+            <div className="booking-summary-total mt-4 flex justify-between border-t border-slate-700 pt-4">
+              <div className="text-sm text-slate-400">
                 <p>
                   {t('hotel.room')}: ${(roomRateCents / 100).toFixed(0)} ×{' '}
                   {nights} {nights !== 1 ? t('hotel.nights') : t('hotel.night')}
                 </p>
-                {packageRateCents > 0 && (
+                {packageRateCents > 0 ? (
                   <p>
                     {t('booking.package')}: $
                     {(packageRateCents / 100).toFixed(0)} × {nights}
                   </p>
-                )}
+                ) : null}
               </div>
               <span className="booking-summary-total-amount text-xl font-bold text-violet-400">
                 ${(totalPriceCents / 100).toFixed(2)}
@@ -344,460 +1047,17 @@ export function BookingModal({
             </div>
           </div>
 
-          {error && (
-            <div className="booking-modal-error bg-red-500/10 border border-red-500/20 rounded-xl p-4 text-red-400 text-sm mb-4">
+          {error ? (
+            <div className="booking-modal-error mb-4 rounded-xl border border-red-500/20 bg-red-500/10 p-4 text-sm text-red-400">
               {error}
             </div>
-          )}
+          ) : null}
 
-          {step === 'package' ? (
-            <div className="space-y-3">
-              {PACKAGES.map((pkg) => {
-                const isSelected = pkg.type === selectedPackageType
-
-                return (
-                  <button
-                    key={pkg.type}
-                    type="button"
-                    onClick={() => setSelectedPackageType(pkg.type)}
-                    className={`booking-package-card light-hover-surface w-full text-left rounded-xl border p-4 transition-all ${
-                      isSelected
-                        ? 'booking-package-card--selected border-violet-500/50 bg-violet-500/10'
-                        : 'booking-package-card--idle border-slate-700 bg-slate-800/40 hover:border-slate-600'
-                    }`}
-                  >
-                    <div className="flex items-start justify-between gap-3 mb-2">
-                      <div>
-                        <p className="booking-package-title text-slate-100 font-semibold">
-                          {getPackageLabel(pkg.type, t)}
-                        </p>
-                        <p className="booking-package-description text-slate-400 text-sm">
-                          {getPackageDescription(pkg.type, t)}
-                        </p>
-                      </div>
-                      <span
-                        className={`booking-package-badge text-xs font-medium px-2.5 py-1 rounded-full border ${
-                          isSelected
-                            ? 'booking-package-badge--selected text-violet-300 border-violet-500/40 bg-violet-500/10'
-                            : 'text-slate-300 border-slate-600 bg-slate-700/40'
-                        }`}
-                      >
-                        {formatPackageAddOn(pkg.addOnPerNight, t)}
-                      </span>
-                    </div>
-
-                    <ul className="booking-package-inclusions list-disc list-inside text-sm text-slate-400 space-y-0.5">
-                      {getPackageInclusions(pkg.type, t).map((item) => (
-                        <li key={item}>{item}</li>
-                      ))}
-                    </ul>
-                  </button>
-                )
-              })}
-
-              <div className="flex gap-3 pt-2">
-                <button
-                  type="button"
-                  onClick={onClose}
-                  className="booking-action-secondary flex-1 px-4 py-3 bg-slate-800 text-slate-300 font-medium rounded-xl hover:bg-slate-700 transition-colors border border-slate-700"
-                >
-                  {t('common.cancel')}
-                </button>
-                <button
-                  type="button"
-                  onClick={() => setStep('details')}
-                  className="booking-action-primary flex-1 px-4 py-3 bg-white text-slate-900 font-medium rounded-xl hover:bg-slate-100 transition-all"
-                >
-                  {t('bookingModal.continue')}
-                </button>
-              </div>
-            </div>
-          ) : step === 'details' ? (
-            <form onSubmit={handleHold} className="space-y-4">
-              <div>
-                <label className="booking-field-label block text-sm font-medium text-slate-300 mb-2">
-                  {t('bookingModal.guestName')}
-                </label>
-                <input
-                  type="text"
-                  required
-                  value={guestDetails.guestName}
-                  onChange={(e) =>
-                    setGuestDetails({
-                      ...guestDetails,
-                      guestName: e.target.value,
-                    })
-                  }
-                  className="booking-input w-full px-4 py-3 bg-slate-800/50 border border-slate-700 rounded-xl text-slate-200 focus:outline-none focus:border-violet-500/50 transition-all"
-                />
-              </div>
-
-              <div>
-                <label className="booking-field-label block text-sm font-medium text-slate-300 mb-2">
-                  {t('bookingModal.email')}
-                </label>
-                <input
-                  type="email"
-                  required
-                  value={guestDetails.guestEmail}
-                  onChange={(e) =>
-                    setGuestDetails({
-                      ...guestDetails,
-                      guestEmail: e.target.value,
-                    })
-                  }
-                  className="booking-input w-full px-4 py-3 bg-slate-800/50 border border-slate-700 rounded-xl text-slate-200 focus:outline-none focus:border-violet-500/50 transition-all"
-                />
-              </div>
-
-              <div>
-                <label className="booking-field-label block text-sm font-medium text-slate-300 mb-2">
-                  {t('bookingModal.specialRequests')}
-                </label>
-                <textarea
-                  rows={3}
-                  value={guestDetails.specialRequests}
-                  onChange={(e) =>
-                    setGuestDetails({
-                      ...guestDetails,
-                      specialRequests: e.target.value,
-                    })
-                  }
-                  placeholder={t('bookingModal.specialRequestsPlaceholder')}
-                  className="booking-input booking-textarea w-full px-4 py-3 bg-slate-800/50 border border-slate-700 rounded-xl text-slate-200 placeholder-slate-500 focus:outline-none focus:border-violet-500/50 transition-all resize-none"
-                />
-              </div>
-
-              <div className="booking-hold-notice-card bg-violet-500/10 border border-violet-500/20 rounded-xl p-4">
-                <p className="booking-hold-notice-text text-violet-400 text-base font-medium">
-                  {t('bookingModal.holdNotice')}
-                </p>
-              </div>
-
-              <div className="booking-price-card bg-slate-800/40 border border-slate-700 rounded-xl p-4 text-sm">
-                <div className="flex items-center justify-between text-slate-300">
-                  <span>
-                    {t('bookingModal.roomRate')} ({nights}{' '}
-                    {nights !== 1 ? t('hotel.nights') : t('hotel.night')})
-                  </span>
-                  <span>${(roomSubtotalCents / 100).toFixed(2)}</span>
-                </div>
-                {selectedPackage.addOnPerNight > 0 && (
-                  <div className="flex items-center justify-between text-slate-300 mt-2">
-                    <span>
-                      {getPackageLabel(selectedPackage.type, t)}{' '}
-                      {t('bookingModal.addOn')} ({nights}{' '}
-                      {nights !== 1 ? t('hotel.nights') : t('hotel.night')})
-                    </span>
-                    <span>${(packageSubtotalCents / 100).toFixed(2)}</span>
-                  </div>
-                )}
-                <div className="booking-details-total border-t border-slate-700 mt-3 pt-3 flex items-center justify-between text-violet-400 font-semibold">
-                  <span>{t('booking.total')}</span>
-                  <span>${(totalPriceCents / 100).toFixed(2)}</span>
-                </div>
-              </div>
-
-              <div className="flex gap-3 pt-2">
-                <button
-                  type="button"
-                  onClick={() => setStep('package')}
-                  className="booking-action-secondary flex-1 px-4 py-3 bg-slate-800 text-slate-300 font-medium rounded-xl hover:bg-slate-700 transition-colors border border-slate-700"
-                >
-                  {t('signIn.back')}
-                </button>
-                <button
-                  type="submit"
-                  disabled={loading}
-                  className="booking-action-primary flex-1 px-4 py-3 bg-white text-slate-900 font-medium rounded-xl hover:bg-slate-100 transition-all disabled:opacity-50"
-                >
-                  {loading
-                    ? t('bookingModal.holding')
-                    : t('bookingModal.holdRoom')}
-                </button>
-              </div>
-            </form>
-          ) : submitted ? (
-            <div className="space-y-4">
-              <div className="booking-success-card bg-emerald-500/10 border border-emerald-500/20 rounded-xl p-4">
-                <div className="flex items-center gap-2 text-emerald-400 mb-2">
-                  <CheckCircle className="w-5 h-5" />
-                  <span className="font-semibold">
-                    {t('bookingModal.paymentProofSubmitted')}
-                  </span>
-                </div>
-                <p className="text-slate-300 text-sm">
-                  {t('bookingModal.awaitingVerification')}
-                </p>
-              </div>
-
-              {bookingId && (
-                <div className="bg-slate-800/40 border border-slate-700 rounded-xl p-4 text-sm">
-                  <p className="text-slate-500 mb-1">
-                    {t('bookingModal.bookingId')}
-                  </p>
-                  <p className="text-slate-200 font-medium">{bookingId}</p>
-                </div>
-              )}
-
-              <div className="flex gap-3">
-                <button
-                  onClick={onClose}
-                  className="booking-action-secondary flex-1 px-4 py-3 bg-slate-800 text-slate-300 font-medium rounded-xl hover:bg-slate-700 transition-colors border border-slate-700"
-                >
-                  {t('common.close')}
-                </button>
-                <Link
-                  to="/bookings"
-                  search={{
-                    payment: undefined,
-                    tx_ref: undefined,
-                  }}
-                  onClick={onSuccess}
-                  className="booking-action-success flex-1 px-4 py-3 text-center bg-gradient-to-r from-emerald-500 to-emerald-600 text-white font-medium rounded-xl hover:from-emerald-600 hover:to-emerald-700 transition-all"
-                >
-                  {t('bookingModal.viewMyBookings')}
-                </Link>
-              </div>
-            </div>
-          ) : (
-            <div className="space-y-4">
-              <div className="booking-success-card bg-emerald-500/10 border border-emerald-500/20 rounded-xl p-4">
-                <div className="flex items-center gap-2 text-emerald-400 mb-2">
-                  <CheckCircle className="w-5 h-5" />
-                  <span className="font-semibold">
-                    {t('bookingModal.heldSuccess')}
-                  </span>
-                </div>
-                <p className="text-slate-400 text-sm">
-                  {t('bookingModal.heldDescription')}
-                </p>
-              </div>
-
-              <div className="booking-price-card bg-slate-800/40 border border-slate-700 rounded-xl p-4 text-sm">
-                <div className="flex items-center justify-between text-slate-300">
-                  <span>
-                    {t('bookingModal.roomRate')} ({nights}{' '}
-                    {nights !== 1 ? t('hotel.nights') : t('hotel.night')})
-                  </span>
-                  <span>${(roomSubtotalCents / 100).toFixed(2)}</span>
-                </div>
-                {packageRateCents > 0 && (
-                  <div className="flex items-center justify-between text-slate-300 mt-2">
-                    <span>
-                      {getPackageLabel(selectedPackage.type, t)}{' '}
-                      {t('bookingModal.addOn')} ({nights}{' '}
-                      {nights !== 1 ? t('hotel.nights') : t('hotel.night')})
-                    </span>
-                    <span>${(packageSubtotalCents / 100).toFixed(2)}</span>
-                  </div>
-                )}
-                <div className="border-t border-slate-700 mt-3 pt-3 flex items-center justify-between text-emerald-400 font-semibold">
-                  <span>{t('booking.total')}</span>
-                  <span>${(totalPriceCents / 100).toFixed(2)}</span>
-                </div>
-              </div>
-
-              {!paymentMethod && (
-                <div className="space-y-3">
-                  <p className="text-sm font-medium text-slate-300">
-                    {t('bookingModal.selectPaymentMethod')}
-                  </p>
-
-                  <button
-                    type="button"
-                    onClick={() => setPaymentMethod('chapa')}
-                    className="booking-payment-option booking-payment-option--chapa w-full rounded-xl border border-slate-700 bg-slate-800/40 p-4 text-left transition-colors hover:border-violet-500/40 hover:bg-violet-500/10"
-                  >
-                    <div className="mb-1 flex items-center gap-3 text-slate-100">
-                      <CreditCard className="booking-payment-option-icon h-5 w-5 text-violet-400" />
-                      <span className="booking-payment-option-title font-semibold">
-                        {t('bookingModal.payWithChapa')}
-                      </span>
-                    </div>
-                    <p className="booking-payment-option-description text-sm text-slate-400">
-                      {t('bookingModal.chapaDescription')}
-                    </p>
-                  </button>
-
-                  <button
-                    type="button"
-                    onClick={() => setPaymentMethod('bank')}
-                    className="booking-payment-option booking-payment-option--bank w-full rounded-xl border border-slate-700 bg-slate-800/40 p-4 text-left transition-colors hover:border-emerald-500/40 hover:bg-emerald-500/10"
-                  >
-                    <div className="mb-1 flex items-center gap-3 text-slate-100">
-                      <Landmark className="booking-payment-option-icon h-5 w-5 text-emerald-400" />
-                      <span className="booking-payment-option-title font-semibold">
-                        {t('bookingModal.payWithBank')}
-                      </span>
-                    </div>
-                    <p className="booking-payment-option-description text-sm text-slate-400">
-                      {t('bookingModal.bankDescription')}
-                    </p>
-                  </button>
-
-                  <button
-                    onClick={onClose}
-                    className="booking-action-secondary w-full px-4 py-3 bg-slate-800 text-slate-300 font-medium rounded-xl hover:bg-slate-700 transition-colors border border-slate-700"
-                  >
-                    {t('bookingModal.cancelHold')}
-                  </button>
-                </div>
-              )}
-
-              {paymentMethod === 'chapa' && (
-                <div className="space-y-4">
-                  <div className="booking-chapa-notice rounded-xl border border-violet-500/20 bg-violet-500/10 p-4">
-                    <p className="booking-chapa-notice-title text-sm font-medium text-violet-300">
-                      {t('bookingModal.chapaRedirectNotice')}
-                    </p>
-                    <p className="booking-chapa-notice-body mt-2 text-xs text-violet-200/80">
-                      {t('bookingModal.chapaProcessingNotice')}
-                    </p>
-                  </div>
-
-                  <div className="flex gap-3">
-                    <button
-                      type="button"
-                      onClick={() => setPaymentMethod(null)}
-                      className="booking-action-secondary flex-1 px-4 py-3 bg-slate-800 text-slate-300 font-medium rounded-xl hover:bg-slate-700 transition-colors border border-slate-700"
-                    >
-                      {t('signIn.back')}
-                    </button>
-                    <button
-                      type="button"
-                      onClick={handleChapaCheckout}
-                      disabled={chapaLoading}
-                      className="booking-action-primary flex-1 px-4 py-3 bg-white text-slate-900 font-medium rounded-xl hover:bg-slate-100 transition-all disabled:opacity-50"
-                    >
-                      {chapaLoading
-                        ? t('bookingModal.redirectingToChapa')
-                        : t('bookingModal.proceedToChapa')}
-                    </button>
-                  </div>
-                </div>
-              )}
-
-              {paymentMethod === 'bank' && (
-                <div className="space-y-4">
-                  <div>
-                    <p className="text-sm text-slate-400 mb-2">
-                      {t('bookingModal.transferTo')}
-                    </p>
-                    <div className="space-y-3">
-                      <div>
-                        <label className="booking-field-label block text-xs text-slate-500 mb-2">
-                          {t('bookingModal.selectBank')}
-                        </label>
-                        <select
-                          value={selectedBankAccountId}
-                          onChange={(e) =>
-                            setSelectedBankAccountId(
-                              e.target.value as Id<'hotelBankAccounts'>,
-                            )
-                          }
-                          disabled={!bankAccounts || bankAccounts.length === 0}
-                          className="booking-input booking-select w-full px-3 py-2.5 bg-slate-800/60 border border-slate-700 rounded-xl text-slate-200 focus:outline-none focus:border-violet-500/50 transition-all"
-                        >
-                          {bankAccounts && bankAccounts.length > 0 ? (
-                            bankAccounts.map((account) => (
-                              <option key={account._id} value={account._id}>
-                                {account.bankName} — {account.accountNumber}
-                              </option>
-                            ))
-                          ) : (
-                            <option value="">
-                              {t('bookingModal.paymentNotConfigured')}
-                            </option>
-                          )}
-                        </select>
-                      </div>
-
-                      <div className="booking-bank-card flex items-center justify-between gap-2 bg-slate-800/40 border border-slate-700 rounded-xl p-3">
-                        <div>
-                          <p className="text-xs text-slate-500 mb-1">
-                            {t('bookingModal.bankAccountNumber')}
-                          </p>
-                          <p className="text-slate-100 font-semibold break-all">
-                            {selectedBankAccount
-                              ? `${selectedBankAccount.bankName} — ${selectedBankAccount.accountNumber}`
-                              : t('bookingModal.paymentNotConfigured')}
-                          </p>
-                        </div>
-                        {selectedBankAccount && (
-                          <button
-                            type="button"
-                            onClick={handleCopyBankAccount}
-                            className="booking-copy-button inline-flex items-center gap-2 px-3 py-2 bg-slate-800 text-slate-300 rounded-lg hover:bg-slate-700 transition-colors border border-slate-700 text-sm"
-                          >
-                            {copied ? (
-                              <Check className="w-4 h-4" />
-                            ) : (
-                              <Copy className="w-4 h-4" />
-                            )}
-                            {copied ? t('common.copied') : t('common.copy')}
-                          </button>
-                        )}
-                      </div>
-                    </div>
-                  </div>
-
-                  <div>
-                    <label className="booking-field-label block text-sm font-medium text-slate-300 mb-2">
-                      {t('bookingModal.uploadNationalId')}
-                    </label>
-                    <input
-                      type="file"
-                      accept="image/*"
-                      onChange={(e) => {
-                        const file = e.target.files?.[0] ?? null
-                        setNationalIdFile(file)
-                      }}
-                      className="booking-input booking-file-input w-full px-4 py-3 bg-slate-800/50 border border-slate-700 rounded-xl text-slate-200 focus:outline-none focus:border-violet-500/50 transition-all file:mr-3 file:px-3 file:py-1.5 file:rounded-md file:border-0 file:bg-slate-700 file:text-slate-100 hover:file:bg-slate-600"
-                    />
-                  </div>
-
-                  <div>
-                    <label className="booking-field-label block text-sm font-medium text-slate-300 mb-2">
-                      {t('bookingModal.transactionId')}
-                    </label>
-                    <input
-                      type="text"
-                      value={transactionId}
-                      onChange={(e) => setTransactionId(e.target.value)}
-                      placeholder={t('bookingModal.transactionIdPlaceholder')}
-                      className="booking-input w-full px-4 py-3 bg-slate-800/50 border border-slate-700 rounded-xl text-slate-200 placeholder-slate-500 focus:outline-none focus:border-violet-500/50 transition-all"
-                    />
-                  </div>
-
-                  <div className="flex gap-3">
-                    <button
-                      type="button"
-                      onClick={() => setPaymentMethod(null)}
-                      className="booking-action-secondary flex-1 px-4 py-3 bg-slate-800 text-slate-300 font-medium rounded-xl hover:bg-slate-700 transition-colors border border-slate-700"
-                    >
-                      {t('signIn.back')}
-                    </button>
-                    <button
-                      type="button"
-                      onClick={handleSubmitPaymentProof}
-                      disabled={
-                        loading ||
-                        !nationalIdFile ||
-                        !transactionId.trim() ||
-                        !selectedBankAccount
-                      }
-                      className="booking-action-success flex-1 px-4 py-3 bg-gradient-to-r from-emerald-500 to-emerald-600 text-white font-medium rounded-xl hover:from-emerald-600 hover:to-emerald-700 transition-all disabled:opacity-50"
-                    >
-                      {loading
-                        ? t('bookingModal.submittingPaymentProof')
-                        : t('bookingModal.submitPaymentProof')}
-                    </button>
-                  </div>
-                </div>
-              )}
-            </div>
-          )}
+          {step === 'package'
+            ? packageStepContent
+            : step === 'details'
+              ? detailsStepContent
+              : confirmationContent}
         </div>
       </div>
     </div>
