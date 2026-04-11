@@ -44,9 +44,9 @@ npx convex dev
 npx convex dev --once
 ```
 
-# Never turn of typechecking when deplying to convex
+## Never turn off typechecking when deploying to Convex
 
-never run npx convex dev --notypechecking
+Never run `npx convex dev --notypechecking`.
 
 ### Convex Codegen Rule
 
