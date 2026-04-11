@@ -332,5 +332,5 @@ skills:
   load: "node_modules/@tanstack/start-client-core/skills/start-core/server-routes/SKILL.md"
 
 - task: "understanding the overall TanStack Start app structure"
-load: "node_modules/@tanstack/start-client-core/skills/start-core/SKILL.md"
+  load: "node_modules/@tanstack/start-client-core/skills/start-core/SKILL.md"
 <!-- intent-skills:end -->
