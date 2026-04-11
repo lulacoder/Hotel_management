@@ -135,19 +135,9 @@ export function AnnouncementForm({ editing, onClose }: AnnouncementFormProps) {
         if (e.target === e.currentTarget) onClose()
       }}
     >
-      <div
-        className={`w-full max-w-lg max-h-[88vh] sm:max-h-[90vh] border rounded-2xl shadow-2xl flex flex-col overflow-hidden ${
-          isDark
-            ? 'bg-slate-900 border-slate-700/60 shadow-black/50'
-            : 'bg-white border-slate-200 shadow-slate-300/40'
-        }`}
-      >
+      <div className="admin-modal-panel w-full max-w-lg max-h-[88vh] sm:max-h-[90vh]">
         {/* Header */}
-        <div
-          className={`flex items-center justify-between px-5 sm:px-6 py-4 border-b ${
-            isDark ? 'border-slate-800/60' : 'border-slate-200'
-          }`}
-        >
+        <div className="admin-modal-header px-5 sm:px-6 py-4">
           <div className="flex items-center gap-3">
             <div className="w-9 h-9 rounded-xl bg-violet-500/10 border border-violet-500/20 flex items-center justify-center">
               <Megaphone className="w-4 h-4 text-violet-400" />
@@ -187,7 +177,7 @@ export function AnnouncementForm({ editing, onClose }: AnnouncementFormProps) {
         {/* Form */}
         <form
           onSubmit={handleSubmit}
-          className="p-5 sm:p-6 space-y-5 overflow-y-auto"
+          className="admin-modal-body p-5 sm:p-6 space-y-5"
         >
           {/* Priority selector */}
           <div>
@@ -247,16 +237,8 @@ export function AnnouncementForm({ editing, onClose }: AnnouncementFormProps) {
               }}
               placeholder={t('admin.announcements.form.titlePlaceholder')}
               maxLength={120}
-              className={`w-full px-4 py-3 border rounded-xl focus:outline-none transition-all text-sm ${
-                isDark
-                  ? 'bg-slate-800/50 text-slate-200 placeholder-slate-500'
-                  : 'bg-white text-slate-800 placeholder-slate-400 shadow-sm'
-              } ${
-                errors.title
-                  ? 'border-red-500/60 focus:border-red-500/80'
-                  : isDark
-                    ? 'border-slate-700 focus:border-violet-500/50 focus:ring-1 focus:ring-violet-500/20'
-                    : 'border-slate-200 focus:border-violet-500/50 focus:ring-1 focus:ring-violet-500/20'
+              className={`admin-field text-sm ${
+                errors.title ? 'border-red-500/60 focus:border-red-500/80' : ''
               }`}
             />
             <div className="flex items-start justify-between mt-1.5 gap-2">
@@ -296,16 +278,8 @@ export function AnnouncementForm({ editing, onClose }: AnnouncementFormProps) {
               placeholder={t('admin.announcements.form.bodyPlaceholder')}
               maxLength={2000}
               rows={5}
-              className={`w-full px-4 py-3 border rounded-xl focus:outline-none transition-all text-sm resize-none ${
-                isDark
-                  ? 'bg-slate-800/50 text-slate-200 placeholder-slate-500'
-                  : 'bg-white text-slate-800 placeholder-slate-400 shadow-sm'
-              } ${
-                errors.body
-                  ? 'border-red-500/60 focus:border-red-500/80'
-                  : isDark
-                    ? 'border-slate-700 focus:border-violet-500/50 focus:ring-1 focus:ring-violet-500/20'
-                    : 'border-slate-200 focus:border-violet-500/50 focus:ring-1 focus:ring-violet-500/20'
+              className={`admin-textarea text-sm resize-none ${
+                errors.body ? 'border-red-500/60 focus:border-red-500/80' : ''
               }`}
             />
             <div className="flex items-start justify-between mt-1.5 gap-2">
@@ -355,23 +329,19 @@ export function AnnouncementForm({ editing, onClose }: AnnouncementFormProps) {
           </div>
 
           {/* Actions */}
-          <div className="flex items-center justify-end gap-3 pt-1">
+          <div className="admin-modal-footer pt-1">
             <button
               type="button"
               onClick={onClose}
               disabled={isSubmitting}
-              className={`px-5 py-2.5 text-sm font-medium border rounded-xl transition-all disabled:opacity-50 ${
-                isDark
-                  ? 'text-slate-400 hover:text-slate-200 bg-slate-800/60 hover:bg-slate-800 border-slate-700'
-                  : 'text-slate-600 hover:text-slate-800 bg-slate-100 hover:bg-slate-200 border-slate-200'
-              }`}
+              className="admin-button-secondary text-sm disabled:opacity-50"
             >
               {t('common.cancel')}
             </button>
             <button
               type="submit"
               disabled={isSubmitting}
-              className={`px-5 py-2.5 text-sm font-semibold text-white rounded-xl transition-all disabled:opacity-60 disabled:cursor-not-allowed flex items-center gap-2 ${
+              className={`admin-button-primary text-sm disabled:opacity-60 disabled:cursor-not-allowed flex items-center gap-2 ${
                 priority === 'urgent'
                   ? 'bg-gradient-to-r from-red-500 to-red-600 hover:from-red-600 hover:to-red-700'
                   : priority === 'important'

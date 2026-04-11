@@ -100,9 +100,7 @@ function ComplaintDetailPage() {
   if (complaintDetail === null) {
     return (
       <div className="max-w-4xl mx-auto">
-        <div
-          className={`border rounded-2xl p-12 text-center backdrop-blur-sm ${isDark ? 'bg-slate-900/50 border-slate-800/50' : 'bg-white/80 border-slate-200/80 shadow-sm'}`}
-        >
+        <div className="admin-empty-state p-12">
           <h3
             className={`text-lg font-semibold mb-2 ${isDark ? 'text-slate-300' : 'text-slate-700'}`}
           >
@@ -110,7 +108,7 @@ function ComplaintDetailPage() {
           </h3>
           <Link
             to="/admin/complaints"
-            className={`inline-flex items-center gap-2 px-5 py-2.5 font-medium rounded-xl transition-colors ${isDark ? 'bg-slate-800 text-slate-200 hover:bg-slate-700' : 'bg-slate-100 text-slate-700 hover:bg-slate-200'}`}
+            className="admin-button-secondary inline-flex items-center gap-2"
           >
             <ArrowLeft className="w-4 h-4" />
             {t('admin.complaints.backToComplaints')}
@@ -139,10 +137,7 @@ function ComplaintDetailPage() {
         </Link>
       </motion.div>
 
-      <motion.div
-        variants={itemVariants}
-        className={`border rounded-2xl p-6 mb-6 backdrop-blur-sm ${isDark ? 'bg-slate-900/50 border-slate-800/50' : 'bg-white/80 border-slate-200/80 shadow-sm'}`}
-      >
+      <motion.div variants={itemVariants} className="admin-surface p-6 mb-6">
         <div className="flex items-start justify-between gap-4 mb-4">
           <div>
             <h1
@@ -172,9 +167,7 @@ function ComplaintDetailPage() {
         </h2>
 
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4 text-sm mb-5">
-          <div
-            className={`border rounded-xl p-4 ${isDark ? 'bg-slate-800/40 border-slate-700' : 'bg-slate-50 border-slate-200'}`}
-          >
+          <div className="admin-surface-muted p-4">
             <p
               className={`mb-1 ${isDark ? 'text-slate-500' : 'text-slate-400'}`}
             >
@@ -186,9 +179,7 @@ function ComplaintDetailPage() {
               {complaintDetail.customer?.email || t('admin.hotels.unknownUser')}
             </p>
           </div>
-          <div
-            className={`border rounded-xl p-4 ${isDark ? 'bg-slate-800/40 border-slate-700' : 'bg-slate-50 border-slate-200'}`}
-          >
+          <div className="admin-surface-muted p-4">
             <p
               className={`mb-1 ${isDark ? 'text-slate-500' : 'text-slate-400'}`}
             >
@@ -210,9 +201,7 @@ function ComplaintDetailPage() {
           </div>
         </div>
 
-        <div
-          className={`border rounded-xl p-4 mb-5 ${isDark ? 'bg-slate-800/40 border-slate-700' : 'bg-slate-50 border-slate-200'}`}
-        >
+        <div className="admin-surface-muted p-4 mb-5">
           <p className={`mb-2 ${isDark ? 'text-slate-500' : 'text-slate-400'}`}>
             {t('admin.complaints.descriptionLabel')}
           </p>
@@ -223,9 +212,7 @@ function ComplaintDetailPage() {
           </p>
         </div>
 
-        <div
-          className={`border rounded-xl p-4 text-sm ${isDark ? 'bg-slate-800/40 border-slate-700' : 'bg-slate-50 border-slate-200'}`}
-        >
+        <div className="admin-surface-muted p-4 text-sm">
           <p className={`mb-1 ${isDark ? 'text-slate-500' : 'text-slate-400'}`}>
             {t('admin.complaints.booking')}
           </p>

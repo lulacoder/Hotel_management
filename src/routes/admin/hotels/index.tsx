@@ -129,11 +129,7 @@ function HotelsPage() {
           placeholder={t('admin.hotels.searchPlaceholder')}
           value={searchTerm}
           onChange={(e) => setSearchTerm(e.target.value)}
-          className={`w-full pl-12 pr-4 py-3 rounded-xl transition-all focus:outline-none ${
-            isDark
-              ? 'bg-slate-900/50 border border-slate-800/50 text-slate-200 placeholder-slate-500 focus:border-violet-500/50 focus:ring-1 focus:ring-violet-500/20'
-              : 'bg-white border border-slate-200 text-slate-900 placeholder-slate-400 focus:border-violet-500/50 focus:ring-1 focus:ring-violet-500/20 shadow-sm'
-          }`}
+          className="admin-field pl-12"
         />
       </motion.div>
 
@@ -146,14 +142,12 @@ function HotelsPage() {
         </div>
       ) : filteredHotels?.length === 0 ? (
         <motion.div
-          className={`rounded-2xl p-12 text-center border ${isDark ? 'bg-slate-900/50 border-slate-800/50' : 'bg-white/80 border-slate-200/80 shadow-sm backdrop-blur-sm'}`}
+          className="admin-empty-state p-12"
           initial={{ opacity: 0, scale: 0.97 }}
           animate={{ opacity: 1, scale: 1 }}
           transition={{ duration: 0.4 }}
         >
-          <div
-            className={`w-16 h-16 rounded-2xl flex items-center justify-center mx-auto mb-4 ${isDark ? 'bg-slate-800' : 'bg-slate-100'}`}
-          >
+          <div className="admin-empty-icon">
             <Building2
               className={`w-8 h-8 ${isDark ? 'text-slate-600' : 'text-slate-400'}`}
             />
@@ -173,11 +167,7 @@ function HotelsPage() {
           {!searchTerm && canAddHotel && (
             <button
               onClick={() => setShowCreateModal(true)}
-              className={`inline-flex items-center gap-2 px-5 py-2.5 font-medium rounded-xl transition-colors border ${
-                isDark
-                  ? 'bg-violet-500/10 text-violet-400 border-violet-500/20 hover:bg-violet-500/20'
-                  : 'bg-violet-500/10 text-violet-600 border-violet-500/20 hover:bg-violet-500/20'
-              }`}
+              className="admin-button-soft inline-flex items-center gap-2 px-5 py-2.5"
             >
               <Plus className="w-5 h-5" />
               {t('admin.hotels.addFirst')}
@@ -195,10 +185,10 @@ function HotelsPage() {
             <motion.div
               key={hotel._id}
               variants={itemVariants}
-              className={`group rounded-2xl p-6 hover:border-slate-700/50 transition-all duration-200 relative border ${
+              className={`admin-surface group rounded-2xl p-6 transition-all duration-200 relative ${
                 isDark
-                  ? 'bg-slate-900/50 border-slate-800/50 hover:border-slate-700/50'
-                  : 'bg-white/80 border-slate-200/80 shadow-sm backdrop-blur-sm hover:shadow-md hover:border-slate-300'
+                  ? 'hover:border-slate-700/50 hover:bg-slate-900/80'
+                  : 'hover:shadow-md hover:border-slate-300'
               }`}
             >
               {/* Menu Button */}
@@ -216,18 +206,12 @@ function HotelsPage() {
 
                 {/* Dropdown Menu */}
                 {activeMenu === hotel._id && (
-                  <div
-                    className={`absolute right-0 top-10 w-48 rounded-xl shadow-xl z-10 overflow-hidden border ${
-                      isDark
-                        ? 'bg-slate-800 border-slate-700'
-                        : 'bg-white border-slate-200 shadow-lg'
-                    }`}
-                  >
+                  <div className="admin-menu-panel absolute right-0 top-10 w-48 z-10 overflow-hidden">
                     <Link
                       to="/admin/hotels/$hotelId"
                       params={{ hotelId: hotel._id }}
                       search={{ operationalStatus: 'all', window: '30d' }}
-                      className={`flex items-center gap-3 px-4 py-3 transition-colors ${isDark ? 'text-slate-300 hover:bg-slate-700' : 'text-slate-700 hover:bg-slate-50'}`}
+                      className="admin-menu-item flex items-center gap-3 px-4 py-3"
                     >
                       <Eye className="w-4 h-4" />
                       {t('admin.hotels.viewDetails')}
@@ -238,7 +222,7 @@ function HotelsPage() {
                           setEditingHotel(hotel._id)
                           setActiveMenu(null)
                         }}
-                        className={`flex items-center gap-3 px-4 py-3 transition-colors w-full ${isDark ? 'text-slate-300 hover:bg-slate-700' : 'text-slate-700 hover:bg-slate-50'}`}
+                        className="admin-menu-item flex items-center gap-3 px-4 py-3 w-full"
                       >
                         <Pencil className="w-4 h-4" />
                         {t('admin.hotels.editHotel')}
@@ -247,7 +231,9 @@ function HotelsPage() {
                     {canAddHotel && (
                       <button
                         onClick={() => handleDelete(hotel._id)}
-                        className={`flex items-center gap-3 px-4 py-3 text-red-400 transition-colors w-full ${isDark ? 'hover:bg-slate-700' : 'hover:bg-red-50'}`}
+                        className={`admin-menu-item flex items-center gap-3 px-4 py-3 text-red-400 w-full ${
+                          isDark ? 'hover:bg-slate-700' : 'hover:bg-red-50'
+                        }`}
                       >
                         <Trash2 className="w-4 h-4" />
                         {t('admin.hotels.deleteHotel')}

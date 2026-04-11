@@ -233,9 +233,7 @@ function BookingDetailPage() {
   if (bookingDetail === null) {
     return (
       <div className="max-w-4xl mx-auto">
-        <div
-          className={`border rounded-2xl p-12 text-center backdrop-blur-sm ${isDark ? 'bg-slate-900/50 border-slate-800/50' : 'bg-white/80 border-slate-200/80 shadow-sm'}`}
-        >
+        <div className="admin-empty-state p-12">
           <h3
             className={`text-lg font-semibold mb-2 ${isDark ? 'text-slate-300' : 'text-slate-700'}`}
           >
@@ -244,7 +242,7 @@ function BookingDetailPage() {
           <Link
             to="/admin/bookings"
             search={{ status: 'all', paymentStatus: 'all', window: '30d' }}
-            className={`inline-flex items-center gap-2 px-5 py-2.5 font-medium rounded-xl transition-colors ${isDark ? 'bg-slate-800 text-slate-200 hover:bg-slate-700' : 'bg-slate-100 text-slate-700 hover:bg-slate-200'}`}
+            className="admin-button-secondary inline-flex items-center gap-2"
           >
             <ArrowLeft className="w-4 h-4" />
             {t('admin.bookings.backToBookings')}
@@ -275,10 +273,7 @@ function BookingDetailPage() {
         </Link>
       </motion.div>
 
-      <motion.div
-        variants={itemVariants}
-        className={`border rounded-2xl p-6 mb-6 backdrop-blur-sm ${isDark ? 'bg-slate-900/50 border-slate-800/50' : 'bg-white/80 border-slate-200/80 shadow-sm'}`}
-      >
+      <motion.div variants={itemVariants} className="admin-surface p-6 mb-6">
         <div className="flex items-center justify-between gap-4 mb-4">
           <h1
             className={`text-2xl font-semibold ${isDark ? 'text-slate-100' : 'text-slate-900'}`}
@@ -295,9 +290,7 @@ function BookingDetailPage() {
         </div>
 
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4 text-sm">
-          <div
-            className={`border rounded-xl p-4 ${isDark ? 'bg-slate-800/40 border-slate-700' : 'bg-slate-50 border-slate-200'}`}
-          >
+          <div className="admin-surface-muted p-4">
             <p
               className={`mb-1 ${isDark ? 'text-slate-500' : 'text-slate-400'}`}
             >
@@ -327,9 +320,7 @@ function BookingDetailPage() {
               </p>
             )}
           </div>
-          <div
-            className={`border rounded-xl p-4 ${isDark ? 'bg-slate-800/40 border-slate-700' : 'bg-slate-50 border-slate-200'}`}
-          >
+          <div className="admin-surface-muted p-4">
             <p
               className={`mb-1 ${isDark ? 'text-slate-500' : 'text-slate-400'}`}
             >
@@ -346,9 +337,7 @@ function BookingDetailPage() {
               {bookingDetail.room.type}
             </p>
           </div>
-          <div
-            className={`border rounded-xl p-4 ${isDark ? 'bg-slate-800/40 border-slate-700' : 'bg-slate-50 border-slate-200'}`}
-          >
+          <div className="admin-surface-muted p-4">
             <p
               className={`mb-1 ${isDark ? 'text-slate-500' : 'text-slate-400'}`}
             >
@@ -364,9 +353,7 @@ function BookingDetailPage() {
             </p>
           </div>
           {bookingDetail.booking.status === 'outsourced' && (
-            <div
-              className={`border rounded-xl p-4 ${isDark ? 'bg-slate-800/40 border-slate-700' : 'bg-slate-50 border-slate-200'}`}
-            >
+            <div className="admin-surface-muted p-4">
               <p
                 className={`mb-1 ${isDark ? 'text-slate-500' : 'text-slate-400'}`}
               >
@@ -385,9 +372,7 @@ function BookingDetailPage() {
               </p>
             </div>
           )}
-          <div
-            className={`border rounded-xl p-4 ${isDark ? 'bg-slate-800/40 border-slate-700' : 'bg-slate-50 border-slate-200'}`}
-          >
+          <div className="admin-surface-muted p-4">
             <p
               className={`mb-1 ${isDark ? 'text-slate-500' : 'text-slate-400'}`}
             >
@@ -402,9 +387,7 @@ function BookingDetailPage() {
               ${(bookingDetail.booking.totalPrice / 100).toFixed(2)}
             </p>
           </div>
-          <div
-            className={`border rounded-xl p-4 ${isDark ? 'bg-slate-800/40 border-slate-700' : 'bg-slate-50 border-slate-200'}`}
-          >
+          <div className="admin-surface-muted p-4">
             <p
               className={`mb-1 ${isDark ? 'text-slate-500' : 'text-slate-400'}`}
             >
@@ -417,9 +400,7 @@ function BookingDetailPage() {
                 t('admin.bookings.pending')}
             </p>
           </div>
-          <div
-            className={`border rounded-xl p-4 ${isDark ? 'bg-slate-800/40 border-slate-700' : 'bg-slate-50 border-slate-200'}`}
-          >
+          <div className="admin-surface-muted p-4">
             <p
               className={`mb-1 ${isDark ? 'text-slate-500' : 'text-slate-400'}`}
             >
@@ -437,9 +418,7 @@ function BookingDetailPage() {
             )}
           </div>
           {bookingDetail.booking.specialRequests && (
-            <div
-              className={`border rounded-xl p-4 ${isDark ? 'bg-slate-800/40 border-slate-700' : 'bg-slate-50 border-slate-200'}`}
-            >
+            <div className="admin-surface-muted p-4">
               <p
                 className={`mb-1 ${isDark ? 'text-slate-500' : 'text-slate-400'}`}
               >
@@ -454,10 +433,7 @@ function BookingDetailPage() {
       </motion.div>
 
       {chapaPayment && (
-        <motion.div
-          variants={itemVariants}
-          className={`border rounded-2xl p-6 mb-6 backdrop-blur-sm ${isDark ? 'bg-slate-900/50 border-slate-800/50' : 'bg-white/80 border-slate-200/80 shadow-sm'}`}
-        >
+        <motion.div variants={itemVariants} className="admin-surface p-6 mb-6">
           <h2
             className={`text-lg font-semibold mb-4 ${isDark ? 'text-slate-200' : 'text-slate-800'}`}
           >
@@ -465,9 +441,7 @@ function BookingDetailPage() {
           </h2>
 
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4 text-sm">
-            <div
-              className={`border rounded-xl p-4 ${isDark ? 'bg-slate-800/40 border-slate-700' : 'bg-slate-50 border-slate-200'}`}
-            >
+            <div className="admin-surface-muted p-4">
               <p
                 className={`mb-1 ${isDark ? 'text-slate-500' : 'text-slate-400'}`}
               >
@@ -483,9 +457,7 @@ function BookingDetailPage() {
               </p>
             </div>
 
-            <div
-              className={`border rounded-xl p-4 ${isDark ? 'bg-slate-800/40 border-slate-700' : 'bg-slate-50 border-slate-200'}`}
-            >
+            <div className="admin-surface-muted p-4">
               <p
                 className={`mb-1 ${isDark ? 'text-slate-500' : 'text-slate-400'}`}
               >
@@ -501,9 +473,7 @@ function BookingDetailPage() {
               </p>
             </div>
 
-            <div
-              className={`border rounded-xl p-4 ${isDark ? 'bg-slate-800/40 border-slate-700' : 'bg-slate-50 border-slate-200'}`}
-            >
+            <div className="admin-surface-muted p-4">
               <p
                 className={`mb-1 ${isDark ? 'text-slate-500' : 'text-slate-400'}`}
               >
@@ -519,9 +489,7 @@ function BookingDetailPage() {
               </p>
             </div>
 
-            <div
-              className={`border rounded-xl p-4 ${isDark ? 'bg-slate-800/40 border-slate-700' : 'bg-slate-50 border-slate-200'}`}
-            >
+            <div className="admin-surface-muted p-4">
               <p
                 className={`mb-1 ${isDark ? 'text-slate-500' : 'text-slate-400'}`}
               >
@@ -545,7 +513,7 @@ function BookingDetailPage() {
         bookingDetail.booking.status === 'pending_payment' && (
           <motion.div
             variants={itemVariants}
-            className={`border rounded-2xl p-6 mb-6 backdrop-blur-sm ${isDark ? 'bg-slate-900/50 border-slate-800/50' : 'bg-white/80 border-slate-200/80 shadow-sm'}`}
+            className="admin-surface p-6 mb-6"
           >
             <h2
               className={`text-lg font-semibold mb-4 ${isDark ? 'text-slate-200' : 'text-slate-800'}`}
@@ -554,9 +522,7 @@ function BookingDetailPage() {
             </h2>
 
             <div className="space-y-4">
-              <div
-                className={`border rounded-xl p-4 ${isDark ? 'bg-slate-800/40 border-slate-700' : 'bg-slate-50 border-slate-200'}`}
-              >
+              <div className="admin-surface-muted p-4">
                 <p
                   className={`mb-1 ${isDark ? 'text-slate-500' : 'text-slate-400'}`}
                 >
@@ -573,7 +539,7 @@ function BookingDetailPage() {
                     <button
                       type="button"
                       onClick={handleCopyTransactionId}
-                      className={`inline-flex items-center gap-2 px-3 py-2 rounded-lg transition-colors border text-sm ${isDark ? 'bg-slate-800 text-slate-300 hover:bg-slate-700 border-slate-700' : 'bg-slate-100 text-slate-600 hover:bg-slate-200 border-slate-200'}`}
+                      className="admin-button-secondary inline-flex items-center gap-2 px-3 py-2 text-sm"
                     >
                       <Copy className="w-4 h-4" />
                       {t('common.copy')}
@@ -582,9 +548,7 @@ function BookingDetailPage() {
                 </div>
               </div>
 
-              <div
-                className={`border rounded-xl p-4 ${isDark ? 'bg-slate-800/40 border-slate-700' : 'bg-slate-50 border-slate-200'}`}
-              >
+              <div className="admin-surface-muted p-4">
                 <p
                   className={`mb-2 ${isDark ? 'text-slate-500' : 'text-slate-400'}`}
                 >
@@ -609,14 +573,14 @@ function BookingDetailPage() {
               <div className="flex flex-wrap gap-2">
                 <button
                   onClick={handleVerifyPayment}
-                  className="px-3 py-2 bg-emerald-500/10 text-emerald-400 rounded-lg hover:bg-emerald-500/20 transition-colors text-sm font-medium border border-emerald-500/20 inline-flex items-center gap-2"
+                  className="admin-button-soft px-3 py-2 text-sm inline-flex items-center gap-2 border-emerald-500/20 text-emerald-400 hover:bg-emerald-500/20"
                 >
                   <CheckCircle className="w-4 h-4" />
                   {t('admin.bookings.approvePayment')}
                 </button>
                 <button
                   onClick={handleRejectPayment}
-                  className="px-3 py-2 bg-red-500/10 text-red-400 rounded-lg hover:bg-red-500/20 transition-colors text-sm font-medium border border-red-500/20 inline-flex items-center gap-2"
+                  className="admin-button-destructive px-3 py-2 text-sm inline-flex items-center gap-2"
                 >
                   <XCircle className="w-4 h-4" />
                   {t('admin.bookings.rejectPayment')}
@@ -627,10 +591,7 @@ function BookingDetailPage() {
         )}
 
       {canManageBookings && (
-        <motion.div
-          variants={itemVariants}
-          className={`border rounded-2xl p-6 backdrop-blur-sm ${isDark ? 'bg-slate-900/50 border-slate-800/50' : 'bg-white/80 border-slate-200/80 shadow-sm'}`}
-        >
+        <motion.div variants={itemVariants} className="admin-surface p-6">
           <h2
             className={`text-lg font-semibold mb-4 ${isDark ? 'text-slate-200' : 'text-slate-800'}`}
           >
@@ -643,7 +604,7 @@ function BookingDetailPage() {
               ) && (
                 <button
                   onClick={handleAcceptCashPayment}
-                  className="px-3 py-2 bg-emerald-500/10 text-emerald-400 rounded-lg hover:bg-emerald-500/20 transition-colors text-sm font-medium border border-emerald-500/20 inline-flex items-center gap-2"
+                  className="admin-button-soft px-3 py-2 text-sm inline-flex items-center gap-2 border-emerald-500/20 text-emerald-400 hover:bg-emerald-500/20"
                 >
                   <CircleDollarSign className="w-4 h-4" />
                   {t('admin.bookings.acceptCashPayment')}
@@ -656,7 +617,7 @@ function BookingDetailPage() {
               ) && (
                 <button
                   onClick={() => setShowOutsourceModal(true)}
-                  className="px-3 py-2 bg-purple-500/10 text-purple-400 rounded-lg hover:bg-purple-500/20 transition-colors text-sm font-medium border border-purple-500/20 inline-flex items-center gap-2"
+                  className="admin-button-soft px-3 py-2 text-sm inline-flex items-center gap-2 border-purple-500/20 text-purple-400 hover:bg-purple-500/20"
                 >
                   <Hotel className="w-4 h-4" />
                   {t('admin.bookings.outsource')}
@@ -670,8 +631,8 @@ function BookingDetailPage() {
                   onClick={() => handleStatusChange(nextStatus)}
                   className={`px-3 py-2 rounded-lg transition-colors text-sm font-medium border ${
                     nextStatus === 'cancelled'
-                      ? 'bg-red-500/10 text-red-400 hover:bg-red-500/20 border-red-500/20'
-                      : 'bg-violet-500/10 text-violet-400 hover:bg-violet-500/20 border-violet-500/20'
+                      ? 'admin-button-destructive'
+                      : 'admin-button-soft'
                   }`}
                 >
                   {transitionLabel[nextStatus]}

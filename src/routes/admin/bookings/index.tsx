@@ -285,12 +285,6 @@ function BookingsPage() {
     })
   }
 
-  const selectClass = `w-full px-4 py-3 rounded-xl text-sm font-medium border transition-all focus:outline-none ${
-    isDark
-      ? 'bg-slate-900/50 border-slate-800/50 text-slate-200 focus:border-violet-500/40 focus:ring-1 focus:ring-violet-500/20'
-      : 'bg-white/80 border-slate-200/80 text-slate-700 shadow-sm focus:border-violet-500/40 focus:ring-1 focus:ring-violet-500/20'
-  }`
-
   return (
     <motion.div
       className="max-w-7xl mx-auto"
@@ -321,7 +315,7 @@ function BookingsPage() {
           <select
             value={selectedHotel}
             onChange={(e) => setSelectedHotel(e.target.value)}
-            className={selectClass}
+            className="admin-select"
           >
             {profile?.role === 'room_admin' && (
               <option value="all">{t('admin.bookings.selectHotel')}</option>
@@ -343,7 +337,7 @@ function BookingsPage() {
               setStatusFilter(value)
               updateSearchFilters({ status: value })
             }}
-            className={`${selectClass} md:w-48`}
+            className="admin-select md:w-48"
           >
             <option value="all">{t('admin.bookings.allStatuses')}</option>
             <option value="held">{t('booking.status.held')}</option>
@@ -369,7 +363,7 @@ function BookingsPage() {
               setPaymentStatusFilter(value)
               updateSearchFilters({ paymentStatus: value })
             }}
-            className={`${selectClass} md:w-48`}
+            className="admin-select md:w-48"
           >
             <option value="all">
               {t('admin.analytics.payment.all' as never)}
@@ -399,13 +393,8 @@ function BookingsPage() {
           ></div>
         </div>
       ) : filteredBookings?.length === 0 ? (
-        <motion.div
-          variants={itemVariants}
-          className={`border rounded-2xl p-12 text-center backdrop-blur-sm ${isDark ? 'bg-slate-900/50 border-slate-800/50' : 'bg-white/80 border-slate-200/80 shadow-sm'}`}
-        >
-          <div
-            className={`w-16 h-16 rounded-2xl flex items-center justify-center mx-auto mb-4 ${isDark ? 'bg-slate-800' : 'bg-slate-100'}`}
-          >
+        <motion.div variants={itemVariants} className="admin-empty-state p-12">
+          <div className="admin-empty-icon">
             <Calendar
               className={`w-8 h-8 ${isDark ? 'text-slate-600' : 'text-slate-400'}`}
             />
@@ -434,7 +423,11 @@ function BookingsPage() {
             return (
               <motion.div key={booking._id} variants={itemVariants}>
                 <div
-                  className={`border rounded-xl p-5 backdrop-blur-sm transition-all duration-200 ${isDark ? 'bg-slate-900/50 border-slate-800/50 hover:border-slate-700/50' : 'bg-white/80 border-slate-200/80 shadow-sm hover:border-slate-300/80 hover:shadow-md'}`}
+                  className={`admin-surface p-5 transition-all duration-200 ${
+                    isDark
+                      ? 'hover:border-slate-700/50 hover:bg-slate-900/80'
+                      : 'hover:border-slate-300/80 hover:shadow-md'
+                  }`}
                 >
                   <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
                     <div className="flex-1">
@@ -525,7 +518,7 @@ function BookingsPage() {
                     <div className="flex flex-wrap gap-2 md:justify-end md:w-80">
                       <button
                         onClick={() => setSelectedBookingId(booking._id)}
-                        className={`px-3 py-2 rounded-lg transition-all text-sm font-medium border inline-flex items-center gap-2 ${isDark ? 'bg-slate-800 text-slate-200 hover:bg-slate-700 border-slate-700' : 'bg-slate-100 text-slate-700 hover:bg-slate-200 border-slate-200'}`}
+                        className="admin-button-secondary px-3 py-2 text-sm inline-flex items-center gap-2"
                       >
                         <Eye className="w-4 h-4" />
                         {t('admin.bookings.viewDetail')}
@@ -534,7 +527,7 @@ function BookingsPage() {
                       <Link
                         to="/admin/bookings/$bookingId"
                         params={{ bookingId: booking._id }}
-                        className={`px-3 py-2 rounded-lg transition-all text-sm font-medium border ${isDark ? 'bg-slate-800 text-slate-200 hover:bg-slate-700 border-slate-700' : 'bg-slate-100 text-slate-700 hover:bg-slate-200 border-slate-200'}`}
+                        className="admin-button-secondary px-3 py-2 text-sm"
                       >
                         {t('admin.bookings.openPage')}
                       </Link>
@@ -546,7 +539,7 @@ function BookingsPage() {
                         ) && (
                           <button
                             onClick={() => handleAcceptCashPayment(booking._id)}
-                            className="px-3 py-2 bg-emerald-500/10 text-emerald-400 rounded-lg hover:bg-emerald-500/20 transition-all text-sm font-medium border border-emerald-500/20 inline-flex items-center gap-2"
+                            className="admin-button-soft px-3 py-2 text-sm inline-flex items-center gap-2 border-emerald-500/20 text-emerald-400 hover:bg-emerald-500/20"
                           >
                             <CircleDollarSign className="w-4 h-4" />
                             {t('admin.bookings.acceptCash')}
@@ -560,7 +553,7 @@ function BookingsPage() {
                               <button
                                 key={`${booking._id}-${nextStatus}`}
                                 onClick={() => handleCancel(booking._id)}
-                                className="px-3 py-2 bg-red-500/10 text-red-400 rounded-lg hover:bg-red-500/20 transition-all text-sm font-medium border border-red-500/20"
+                                className="admin-button-destructive px-3 py-2 text-sm"
                               >
                                 {transitionLabel[nextStatus]}
                               </button>
@@ -570,7 +563,7 @@ function BookingsPage() {
                                 onClick={() =>
                                   handleStatusChange(booking._id, nextStatus)
                                 }
-                                className="px-3 py-2 bg-violet-500/10 text-violet-400 rounded-lg hover:bg-violet-500/20 transition-all text-sm font-medium border border-violet-500/20"
+                                className="admin-button-soft px-3 py-2 text-sm"
                               >
                                 {transitionLabel[nextStatus]}
                               </button>
@@ -584,7 +577,7 @@ function BookingsPage() {
                         ) && (
                           <button
                             onClick={() => setOutsourceBookingId(booking._id)}
-                            className="px-3 py-2 bg-purple-500/10 text-purple-400 rounded-lg hover:bg-purple-500/20 transition-all text-sm font-medium border border-purple-500/20 inline-flex items-center gap-2"
+                            className="admin-button-soft px-3 py-2 text-sm inline-flex items-center gap-2 border-purple-500/20 text-purple-400 hover:bg-purple-500/20"
                           >
                             <Hotel className="w-4 h-4" />
                             {t('admin.bookings.outsource')}
@@ -607,10 +600,8 @@ function BookingsPage() {
             onClick={() => setSelectedBookingId(null)}
             aria-label={t('admin.bookings.closeDetails')}
           />
-          <div
-            className={`relative w-full max-w-2xl border rounded-2xl p-6 ${isDark ? 'bg-slate-900 border-slate-700' : 'bg-white border-slate-200 shadow-2xl'}`}
-          >
-            <div className="flex items-start justify-between gap-4 mb-4">
+          <div className="admin-modal-panel relative w-full max-w-2xl">
+            <div className="admin-modal-header">
               <div>
                 <h3
                   className={`text-xl font-semibold ${isDark ? 'text-slate-100' : 'text-slate-900'}`}
@@ -632,240 +623,241 @@ function BookingsPage() {
               </button>
             </div>
 
-            {selectedBookingDetail === undefined ? (
-              <div className="flex items-center justify-center py-12">
-                <div
-                  className={`animate-spin rounded-full h-8 w-8 border-2 ${isDark ? 'border-violet-500/20 border-t-violet-500' : 'border-violet-500/20 border-t-violet-500'}`}
-                ></div>
-              </div>
-            ) : selectedBookingDetail === null ? (
-              <div className={isDark ? 'text-slate-400' : 'text-slate-500'}>
-                {t('admin.bookings.notFound')}
-              </div>
-            ) : (
-              <div className="space-y-4">
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-4 text-sm">
+            <div className="admin-modal-body">
+              {selectedBookingDetail === undefined ? (
+                <div className="flex items-center justify-center py-12">
                   <div
-                    className={`border rounded-xl p-4 ${isDark ? 'bg-slate-800/40 border-slate-700' : 'bg-slate-50 border-slate-200'}`}
-                  >
-                    <p
-                      className={`mb-1 ${isDark ? 'text-slate-500' : 'text-slate-400'}`}
-                    >
-                      {t('admin.bookings.guest')}
-                    </p>
-                    <p
-                      className={`font-medium ${isDark ? 'text-slate-100' : 'text-slate-800'}`}
-                    >
-                      {selectedBookingDetail.guestProfile?.name ||
-                        selectedBookingDetail.booking.guestName ||
-                        t('admin.bookings.na')}
-                    </p>
-                    <p className={isDark ? 'text-slate-400' : 'text-slate-500'}>
-                      {selectedBookingDetail.guestProfile?.phone ||
-                        t('admin.bookings.noPhone')}
-                    </p>
-                    <p className={isDark ? 'text-slate-400' : 'text-slate-500'}>
-                      {selectedBookingDetail.guestProfile?.email ||
-                        selectedBookingDetail.booking.guestEmail ||
-                        t('admin.bookings.noEmail')}
-                    </p>
-                    {selectedBookingDetail.linkedUser && (
+                    className={`animate-spin rounded-full h-8 w-8 border-2 ${isDark ? 'border-violet-500/20 border-t-violet-500' : 'border-violet-500/20 border-t-violet-500'}`}
+                  ></div>
+                </div>
+              ) : selectedBookingDetail === null ? (
+                <div className={isDark ? 'text-slate-400' : 'text-slate-500'}>
+                  {t('admin.bookings.notFound')}
+                </div>
+              ) : (
+                <div className="space-y-4">
+                  <div className="grid grid-cols-1 gap-4 text-sm md:grid-cols-2">
+                    <div className="admin-surface-muted p-4">
                       <p
-                        className={`text-xs mt-1 ${isDark ? 'text-slate-500' : 'text-slate-400'}`}
+                        className={`mb-1 ${isDark ? 'text-slate-500' : 'text-slate-400'}`}
                       >
-                        {t('admin.bookings.linkedAccount')}:{' '}
-                        {selectedBookingDetail.linkedUser.email}
+                        {t('admin.bookings.guest')}
                       </p>
-                    )}
-                  </div>
-                  <div
-                    className={`border rounded-xl p-4 ${isDark ? 'bg-slate-800/40 border-slate-700' : 'bg-slate-50 border-slate-200'}`}
-                  >
-                    <p
-                      className={`mb-1 ${isDark ? 'text-slate-500' : 'text-slate-400'}`}
-                    >
-                      {t('hotel.room')}
-                    </p>
-                    <p
-                      className={`font-medium ${isDark ? 'text-slate-100' : 'text-slate-800'}`}
-                    >
-                      {t('hotel.room')} {selectedBookingDetail.room.roomNumber}
-                    </p>
-                    <p
-                      className={`capitalize ${isDark ? 'text-slate-400' : 'text-slate-500'}`}
-                    >
-                      {selectedBookingDetail.room.type}
-                    </p>
-                  </div>
-                  <div
-                    className={`border rounded-xl p-4 ${isDark ? 'bg-slate-800/40 border-slate-700' : 'bg-slate-50 border-slate-200'}`}
-                  >
-                    <p
-                      className={`mb-1 ${isDark ? 'text-slate-500' : 'text-slate-400'}`}
-                    >
-                      {t('admin.nav.hotels')}
-                    </p>
-                    <p
-                      className={`font-medium ${isDark ? 'text-slate-100' : 'text-slate-800'}`}
-                    >
-                      {selectedBookingDetail.hotel.name}
-                    </p>
-                    <p className={isDark ? 'text-slate-400' : 'text-slate-500'}>
-                      {selectedBookingDetail.hotel.city}
-                    </p>
-                  </div>
-                  <div
-                    className={`border rounded-xl p-4 ${isDark ? 'bg-slate-800/40 border-slate-700' : 'bg-slate-50 border-slate-200'}`}
-                  >
-                    <p
-                      className={`mb-1 ${isDark ? 'text-slate-500' : 'text-slate-400'}`}
-                    >
-                      {t('admin.bookings.stay')}
-                    </p>
-                    <p
-                      className={`font-medium ${isDark ? 'text-slate-100' : 'text-slate-800'}`}
-                    >
-                      {selectedBookingDetail.booking.checkIn} →{' '}
-                      {selectedBookingDetail.booking.checkOut}
-                    </p>
-                    <p className={isDark ? 'text-slate-400' : 'text-slate-500'}>
-                      $
-                      {(selectedBookingDetail.booking.totalPrice / 100).toFixed(
-                        2,
-                      )}
-                    </p>
-                  </div>
-                  <div
-                    className={`border rounded-xl p-4 ${isDark ? 'bg-slate-800/40 border-slate-700' : 'bg-slate-50 border-slate-200'}`}
-                  >
-                    <p
-                      className={`mb-1 ${isDark ? 'text-slate-500' : 'text-slate-400'}`}
-                    >
-                      {t('booking.package')}
-                    </p>
-                    <p
-                      className={`font-medium ${isDark ? 'text-slate-100' : 'text-slate-800'}`}
-                    >
-                      {getPackageLabelOrDefault(
-                        selectedBookingDetail.booking.packageType,
-                        t,
-                      )}
-                    </p>
-                    {selectedBookingDetail.booking.packageType && (
+                      <p
+                        className={`font-medium ${isDark ? 'text-slate-100' : 'text-slate-800'}`}
+                      >
+                        {selectedBookingDetail.guestProfile?.name ||
+                          selectedBookingDetail.booking.guestName ||
+                          t('admin.bookings.na')}
+                      </p>
                       <p
                         className={isDark ? 'text-slate-400' : 'text-slate-500'}
                       >
-                        {formatPackageAddOn(
-                          selectedBookingDetail.booking.packageAddOn ?? 0,
+                        {selectedBookingDetail.guestProfile?.phone ||
+                          t('admin.bookings.noPhone')}
+                      </p>
+                      <p
+                        className={isDark ? 'text-slate-400' : 'text-slate-500'}
+                      >
+                        {selectedBookingDetail.guestProfile?.email ||
+                          selectedBookingDetail.booking.guestEmail ||
+                          t('admin.bookings.noEmail')}
+                      </p>
+                      {selectedBookingDetail.linkedUser && (
+                        <p
+                          className={`mt-1 text-xs ${isDark ? 'text-slate-500' : 'text-slate-400'}`}
+                        >
+                          {t('admin.bookings.linkedAccount')}:{' '}
+                          {selectedBookingDetail.linkedUser.email}
+                        </p>
+                      )}
+                    </div>
+                    <div className="admin-surface-muted p-4">
+                      <p
+                        className={`mb-1 ${isDark ? 'text-slate-500' : 'text-slate-400'}`}
+                      >
+                        {t('hotel.room')}
+                      </p>
+                      <p
+                        className={`font-medium ${isDark ? 'text-slate-100' : 'text-slate-800'}`}
+                      >
+                        {t('hotel.room')}{' '}
+                        {selectedBookingDetail.room.roomNumber}
+                      </p>
+                      <p
+                        className={`capitalize ${isDark ? 'text-slate-400' : 'text-slate-500'}`}
+                      >
+                        {selectedBookingDetail.room.type}
+                      </p>
+                    </div>
+                    <div className="admin-surface-muted p-4">
+                      <p
+                        className={`mb-1 ${isDark ? 'text-slate-500' : 'text-slate-400'}`}
+                      >
+                        {t('admin.nav.hotels')}
+                      </p>
+                      <p
+                        className={`font-medium ${isDark ? 'text-slate-100' : 'text-slate-800'}`}
+                      >
+                        {selectedBookingDetail.hotel.name}
+                      </p>
+                      <p
+                        className={isDark ? 'text-slate-400' : 'text-slate-500'}
+                      >
+                        {selectedBookingDetail.hotel.city}
+                      </p>
+                    </div>
+                    <div className="admin-surface-muted p-4">
+                      <p
+                        className={`mb-1 ${isDark ? 'text-slate-500' : 'text-slate-400'}`}
+                      >
+                        {t('admin.bookings.stay')}
+                      </p>
+                      <p
+                        className={`font-medium ${isDark ? 'text-slate-100' : 'text-slate-800'}`}
+                      >
+                        {selectedBookingDetail.booking.checkIn} →{' '}
+                        {selectedBookingDetail.booking.checkOut}
+                      </p>
+                      <p
+                        className={isDark ? 'text-slate-400' : 'text-slate-500'}
+                      >
+                        $
+                        {(
+                          selectedBookingDetail.booking.totalPrice / 100
+                        ).toFixed(2)}
+                      </p>
+                    </div>
+                    <div className="admin-surface-muted p-4">
+                      <p
+                        className={`mb-1 ${isDark ? 'text-slate-500' : 'text-slate-400'}`}
+                      >
+                        {t('booking.package')}
+                      </p>
+                      <p
+                        className={`font-medium ${isDark ? 'text-slate-100' : 'text-slate-800'}`}
+                      >
+                        {getPackageLabelOrDefault(
+                          selectedBookingDetail.booking.packageType,
                           t,
                         )}
                       </p>
-                    )}
-                  </div>
-                </div>
-
-                {selectedChapaPayment && (
-                  <div
-                    className={`border rounded-xl p-4 text-sm ${isDark ? 'bg-slate-800/40 border-slate-700' : 'bg-slate-50 border-slate-200'}`}
-                  >
-                    <p
-                      className={`mb-2 font-medium ${isDark ? 'text-slate-200' : 'text-slate-800'}`}
-                    >
-                      {t('admin.bookings.chapaPayment')}
-                    </p>
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
-                      <div>
-                        <p
-                          className={`mb-1 ${isDark ? 'text-slate-500' : 'text-slate-400'}`}
-                        >
-                          {t('admin.bookings.providerStatus')}
-                        </p>
+                      {selectedBookingDetail.booking.packageType && (
                         <p
                           className={
-                            isDark ? 'text-slate-100' : 'text-slate-800'
+                            isDark ? 'text-slate-400' : 'text-slate-500'
                           }
                         >
-                          {selectedChapaPayment.status.replaceAll('_', ' ')}
-                        </p>
-                      </div>
-                      <div>
-                        <p
-                          className={`mb-1 ${isDark ? 'text-slate-500' : 'text-slate-400'}`}
-                        >
-                          {t('admin.bookings.checkoutReference')}
-                        </p>
-                        <p
-                          className={`break-all ${isDark ? 'text-slate-100' : 'text-slate-800'}`}
-                        >
-                          {selectedChapaPayment.chapaReference ||
-                            selectedChapaPayment.txRef}
-                        </p>
-                      </div>
-                      <div>
-                        <p
-                          className={`mb-1 ${isDark ? 'text-slate-500' : 'text-slate-400'}`}
-                        >
-                          {t('admin.bookings.chargedAmount')}
-                        </p>
-                        <p
-                          className={
-                            isDark ? 'text-slate-100' : 'text-slate-800'
-                          }
-                        >
-                          {formatEtbAmount(
-                            selectedChapaPayment.chargedAmountMinor,
+                          {formatPackageAddOn(
+                            selectedBookingDetail.booking.packageAddOn ?? 0,
+                            t,
                           )}
                         </p>
-                      </div>
-                      <div>
-                        <p
-                          className={`mb-1 ${isDark ? 'text-slate-500' : 'text-slate-400'}`}
-                        >
-                          {t('admin.bookings.paymentProvider')}
-                        </p>
-                        <p
-                          className={
-                            isDark ? 'text-slate-100' : 'text-slate-800'
-                          }
-                        >
-                          Chapa
-                          {selectedChapaPayment.paymentMethod
-                            ? ` - ${selectedChapaPayment.paymentMethod}`
-                            : ''}
-                        </p>
-                      </div>
+                      )}
                     </div>
                   </div>
-                )}
 
-                <div className="flex flex-wrap justify-end gap-2 pt-2">
-                  {profile?.role !== 'room_admin' &&
-                    canManageBooking(selectedBookingDetail.booking.hotelId) &&
-                    ['confirmed', 'checked_in'].includes(
-                      selectedBookingDetail.booking.status,
-                    ) && (
-                      <button
-                        onClick={() =>
-                          setOutsourceBookingId(
-                            selectedBookingDetail.booking._id,
-                          )
-                        }
-                        className="px-4 py-2 bg-purple-500/10 text-purple-400 rounded-lg hover:bg-purple-500/20 transition-colors text-sm font-medium border border-purple-500/20 inline-flex items-center gap-2"
+                  {selectedChapaPayment && (
+                    <div className="admin-surface-muted p-4 text-sm">
+                      <p
+                        className={`mb-2 font-medium ${isDark ? 'text-slate-200' : 'text-slate-800'}`}
                       >
-                        <Hotel className="w-4 h-4" />
-                        {t('admin.bookings.outsource')}
-                      </button>
-                    )}
-                  <Link
-                    to="/admin/bookings/$bookingId"
-                    params={{ bookingId: selectedBookingId }}
-                    className={`px-4 py-2 rounded-lg transition-colors text-sm font-medium border ${isDark ? 'bg-slate-800 text-slate-200 hover:bg-slate-700 border-slate-700' : 'bg-slate-100 text-slate-700 hover:bg-slate-200 border-slate-200'}`}
-                  >
-                    {t('admin.bookings.openFullPage')}
-                  </Link>
+                        {t('admin.bookings.chapaPayment')}
+                      </p>
+                      <div className="grid grid-cols-1 gap-3 md:grid-cols-2">
+                        <div>
+                          <p
+                            className={`mb-1 ${isDark ? 'text-slate-500' : 'text-slate-400'}`}
+                          >
+                            {t('admin.bookings.providerStatus')}
+                          </p>
+                          <p
+                            className={
+                              isDark ? 'text-slate-100' : 'text-slate-800'
+                            }
+                          >
+                            {selectedChapaPayment.status.replaceAll('_', ' ')}
+                          </p>
+                        </div>
+                        <div>
+                          <p
+                            className={`mb-1 ${isDark ? 'text-slate-500' : 'text-slate-400'}`}
+                          >
+                            {t('admin.bookings.checkoutReference')}
+                          </p>
+                          <p
+                            className={`break-all ${isDark ? 'text-slate-100' : 'text-slate-800'}`}
+                          >
+                            {selectedChapaPayment.chapaReference ||
+                              selectedChapaPayment.txRef}
+                          </p>
+                        </div>
+                        <div>
+                          <p
+                            className={`mb-1 ${isDark ? 'text-slate-500' : 'text-slate-400'}`}
+                          >
+                            {t('admin.bookings.chargedAmount')}
+                          </p>
+                          <p
+                            className={
+                              isDark ? 'text-slate-100' : 'text-slate-800'
+                            }
+                          >
+                            {formatEtbAmount(
+                              selectedChapaPayment.chargedAmountMinor,
+                            )}
+                          </p>
+                        </div>
+                        <div>
+                          <p
+                            className={`mb-1 ${isDark ? 'text-slate-500' : 'text-slate-400'}`}
+                          >
+                            {t('admin.bookings.paymentProvider')}
+                          </p>
+                          <p
+                            className={
+                              isDark ? 'text-slate-100' : 'text-slate-800'
+                            }
+                          >
+                            Chapa
+                            {selectedChapaPayment.paymentMethod
+                              ? ` - ${selectedChapaPayment.paymentMethod}`
+                              : ''}
+                          </p>
+                        </div>
+                      </div>
+                    </div>
+                  )}
+
+                  <div className="admin-modal-footer">
+                    {profile?.role !== 'room_admin' &&
+                      canManageBooking(selectedBookingDetail.booking.hotelId) &&
+                      ['confirmed', 'checked_in'].includes(
+                        selectedBookingDetail.booking.status,
+                      ) && (
+                        <button
+                          onClick={() =>
+                            setOutsourceBookingId(
+                              selectedBookingDetail.booking._id,
+                            )
+                          }
+                          className="admin-button-soft px-4 py-2 text-sm inline-flex items-center gap-2 border-purple-500/20 text-purple-400 hover:bg-purple-500/20"
+                        >
+                          <Hotel className="w-4 h-4" />
+                          {t('admin.bookings.outsource')}
+                        </button>
+                      )}
+                    <Link
+                      to="/admin/bookings/$bookingId"
+                      params={{ bookingId: selectedBookingId }}
+                      className="admin-button-secondary px-4 py-2 text-sm"
+                    >
+                      {t('admin.bookings.openFullPage')}
+                    </Link>
+                  </div>
                 </div>
-              </div>
-            )}
+              )}
+            </div>
           </div>
         </div>
       )}

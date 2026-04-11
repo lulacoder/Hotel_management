@@ -259,22 +259,12 @@ export function HotelModal({ hotelId, onClose }: HotelModalProps) {
     }
   }
 
-  const inputClass = `w-full px-4 py-3 border rounded-xl focus:outline-none focus:border-violet-500/50 focus:ring-1 focus:ring-violet-500/20 transition-all ${
-    isDark
-      ? 'bg-slate-800/50 border-slate-700 text-slate-200 placeholder-slate-500'
-      : 'bg-white border-slate-200 text-slate-800 placeholder-slate-400 shadow-sm'
-  }`
-
   const labelClass = `block text-sm font-medium mb-2 ${isDark ? 'text-slate-300' : 'text-slate-700'}`
 
   return (
     <div className="fixed inset-0 bg-black/60 backdrop-blur-sm flex items-start justify-center z-50 p-4 overflow-y-auto">
-      <div
-        className={`border rounded-2xl shadow-2xl w-full max-w-md max-h-[90vh] flex flex-col my-4 ${isDark ? 'bg-slate-900 border-slate-800' : 'bg-white border-slate-200'}`}
-      >
-        <div
-          className={`p-6 border-b ${isDark ? 'border-slate-800' : 'border-slate-100'}`}
-        >
+      <div className="admin-modal-panel w-full max-w-md max-h-[90vh] my-4">
+        <div className="admin-modal-header">
           <h2
             className={`text-xl font-semibold ${isDark ? 'text-slate-100' : 'text-slate-900'}`}
           >
@@ -291,10 +281,7 @@ export function HotelModal({ hotelId, onClose }: HotelModalProps) {
           </p>
         </div>
 
-        <form
-          onSubmit={handleSubmit}
-          className="p-6 space-y-4 overflow-y-auto flex-1"
-        >
+        <form onSubmit={handleSubmit} className="admin-modal-body space-y-4">
           {error && (
             <div className="bg-red-500/10 border border-red-500/20 rounded-xl p-4 text-red-400 text-sm">
               {error}
@@ -313,7 +300,7 @@ export function HotelModal({ hotelId, onClose }: HotelModalProps) {
                 setFormData({ ...formData, name: e.target.value })
               }
               placeholder={t('admin.hotels.modal.hotelNamePlaceholder')}
-              className={inputClass}
+              className="admin-field"
             />
           </div>
 
@@ -329,7 +316,7 @@ export function HotelModal({ hotelId, onClose }: HotelModalProps) {
                 setFormData({ ...formData, address: e.target.value })
               }
               placeholder={t('admin.hotels.modal.addressPlaceholder')}
-              className={inputClass}
+              className="admin-field"
             />
           </div>
 
@@ -346,7 +333,7 @@ export function HotelModal({ hotelId, onClose }: HotelModalProps) {
                   setFormData({ ...formData, city: e.target.value })
                 }
                 placeholder={t('admin.hotels.modal.cityPlaceholder')}
-                className={inputClass}
+                className="admin-field"
               />
             </div>
             <div>
@@ -361,7 +348,7 @@ export function HotelModal({ hotelId, onClose }: HotelModalProps) {
                   setFormData({ ...formData, country: e.target.value })
                 }
                 placeholder={t('admin.hotels.modal.countryPlaceholder')}
-                className={inputClass}
+                className="admin-field"
               />
             </div>
           </div>
@@ -379,7 +366,7 @@ export function HotelModal({ hotelId, onClose }: HotelModalProps) {
                   setFormData({ ...formData, latitude: e.target.value })
                 }
                 placeholder={t('admin.hotels.modal.latitudePlaceholder')}
-                className={inputClass}
+                className="admin-field"
               />
             </div>
             <div>
@@ -394,7 +381,7 @@ export function HotelModal({ hotelId, onClose }: HotelModalProps) {
                   setFormData({ ...formData, longitude: e.target.value })
                 }
                 placeholder={t('admin.hotels.modal.longitudePlaceholder')}
-                className={inputClass}
+                className="admin-field"
               />
             </div>
           </div>
@@ -410,7 +397,7 @@ export function HotelModal({ hotelId, onClose }: HotelModalProps) {
                 setFormData({ ...formData, description: e.target.value })
               }
               placeholder={t('admin.hotels.modal.descriptionPlaceholder')}
-              className={inputClass}
+              className="admin-textarea"
             />
           </div>
 
@@ -422,10 +409,8 @@ export function HotelModal({ hotelId, onClose }: HotelModalProps) {
               type="file"
               accept="image/*"
               onChange={handleImageSelection}
-              className={`w-full px-4 py-2.5 border rounded-xl file:mr-3 file:px-3 file:py-1.5 file:border-0 file:rounded-lg file:bg-violet-500/20 file:text-violet-300 file:cursor-pointer ${
-                isDark
-                  ? 'bg-slate-800/50 border-slate-700 text-slate-300'
-                  : 'bg-white border-slate-200 text-slate-600'
+              className={`admin-field py-2.5 file:mr-3 file:px-3 file:py-1.5 file:border-0 file:rounded-lg file:bg-violet-500/20 file:text-violet-300 file:cursor-pointer ${
+                isDark ? 'text-slate-300' : 'text-slate-600'
               }`}
             />
             <p
@@ -469,7 +454,7 @@ export function HotelModal({ hotelId, onClose }: HotelModalProps) {
                   setFormData({ ...formData, externalId: e.target.value })
                 }
                 placeholder={t('admin.hotels.modal.externalIdPlaceholder')}
-                className={inputClass}
+                className="admin-field"
               />
             </div>
             <div>
@@ -484,7 +469,7 @@ export function HotelModal({ hotelId, onClose }: HotelModalProps) {
                     category: e.target.value as HotelCategory | '',
                   })
                 }
-                className={inputClass}
+                className="admin-select"
               >
                 <option value="">
                   {t('admin.hotels.modal.selectCategory')}
@@ -510,7 +495,7 @@ export function HotelModal({ hotelId, onClose }: HotelModalProps) {
                   setFormData({ ...formData, stateProvince: e.target.value })
                 }
                 placeholder={t('admin.hotels.modal.stateProvincePlaceholder')}
-                className={inputClass}
+                className="admin-field"
               />
             </div>
             <div>
@@ -524,7 +509,7 @@ export function HotelModal({ hotelId, onClose }: HotelModalProps) {
                   setFormData({ ...formData, postalCode: e.target.value })
                 }
                 placeholder={t('admin.hotels.modal.postalCodePlaceholder')}
-                className={inputClass}
+                className="admin-field"
               />
             </div>
           </div>
@@ -544,7 +529,7 @@ export function HotelModal({ hotelId, onClose }: HotelModalProps) {
                   setFormData({ ...formData, rating: e.target.value })
                 }
                 placeholder={t('admin.hotels.modal.ratingPlaceholder')}
-                className={inputClass}
+                className="admin-field"
               />
             </div>
             <div>
@@ -560,7 +545,7 @@ export function HotelModal({ hotelId, onClose }: HotelModalProps) {
                     lastRenovationDate: e.target.value,
                   })
                 }
-                className={inputClass}
+                className="admin-field"
               />
             </div>
           </div>
@@ -574,7 +559,7 @@ export function HotelModal({ hotelId, onClose }: HotelModalProps) {
                 setFormData({ ...formData, tags: e.target.value })
               }
               placeholder={t('admin.hotels.modal.tagsPlaceholder')}
-              className={inputClass}
+              className="admin-field"
             />
           </div>
 
@@ -589,7 +574,7 @@ export function HotelModal({ hotelId, onClose }: HotelModalProps) {
                 setFormData({ ...formData, metadata: e.target.value })
               }
               placeholder={t('admin.hotels.modal.metadataPlaceholder')}
-              className={inputClass}
+              className="admin-textarea"
             />
           </div>
 
@@ -611,26 +596,18 @@ export function HotelModal({ hotelId, onClose }: HotelModalProps) {
             </label>
           </div>
 
-          <div className="flex gap-3 pt-4">
+          <div className="admin-modal-footer">
             <button
               type="button"
               onClick={onClose}
-              className={`flex-1 px-4 py-3 font-medium rounded-xl transition-colors border ${
-                isDark
-                  ? 'bg-slate-800 text-slate-300 border-slate-700 hover:bg-slate-700'
-                  : 'bg-slate-100 text-slate-600 border-slate-200 hover:bg-slate-200'
-              }`}
+              className="admin-button-secondary flex-1"
             >
               {t('common.cancel')}
             </button>
             <button
               type="submit"
               disabled={loading || uploadingImage}
-              className={`flex-1 px-4 py-3 font-medium rounded-xl transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed ${
-                isDark
-                  ? 'bg-white text-slate-900 hover:bg-slate-100'
-                  : 'bg-slate-900 text-white hover:bg-slate-800'
-              }`}
+              className="admin-button-primary flex-1 disabled:opacity-50 disabled:cursor-not-allowed"
             >
               {loading || uploadingImage
                 ? uploadingImage

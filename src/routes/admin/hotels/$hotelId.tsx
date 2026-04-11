@@ -235,9 +235,7 @@ function HotelDetailPage() {
   if (hotel === null) {
     return (
       <div className="max-w-7xl mx-auto">
-        <div
-          className={`border rounded-2xl p-12 text-center ${isDark ? 'bg-slate-900/50 border-slate-800/50' : 'bg-white/80 border-slate-200/80 shadow-sm backdrop-blur-sm'}`}
-        >
+        <div className="admin-empty-state p-12">
           <h2
             className={`text-xl font-semibold mb-2 ${isDark ? 'text-slate-300' : 'text-slate-700'}`}
           >
@@ -248,7 +246,7 @@ function HotelDetailPage() {
           </p>
           <Link
             to="/admin/hotels"
-            className={`inline-flex items-center gap-2 px-5 py-2.5 font-medium rounded-xl transition-colors ${isDark ? 'bg-slate-800 text-slate-200 hover:bg-slate-700' : 'bg-slate-100 text-slate-700 hover:bg-slate-200'}`}
+            className="admin-button-secondary inline-flex items-center gap-2"
           >
             <ArrowLeft className="w-5 h-5" />
             {t('admin.hotels.backToHotels')}
@@ -258,8 +256,8 @@ function HotelDetailPage() {
     )
   }
 
-  const cardClass = `border rounded-2xl ${isDark ? 'bg-slate-900/50 border-slate-800/50' : 'bg-white/80 border-slate-200/80 shadow-sm backdrop-blur-sm'}`
-  const innerCellClass = `border rounded-xl ${isDark ? 'bg-slate-800/40 border-slate-700' : 'bg-slate-50 border-slate-200'}`
+  const cardClass = 'admin-surface rounded-2xl'
+  const innerCellClass = 'admin-surface-muted rounded-xl'
 
   return (
     <div className="max-w-7xl mx-auto">
@@ -293,7 +291,7 @@ function HotelDetailPage() {
           </div>
           <button
             onClick={() => setShowEditHotel(true)}
-            className={`flex items-center gap-2 px-4 py-2 rounded-xl transition-colors border ${isDark ? 'bg-slate-800 text-slate-300 border-slate-700 hover:bg-slate-700' : 'bg-white text-slate-700 border-slate-200 hover:bg-slate-50 shadow-sm'}`}
+            className="admin-button-secondary flex items-center gap-2 px-4 py-2"
           >
             <Edit className="w-4 h-4" />
             {t('admin.hotels.editHotel')}
@@ -322,7 +320,7 @@ function HotelDetailPage() {
                 setEditingBankAccount(null)
                 setShowBankAccountModal(true)
               }}
-              className="px-4 py-2 bg-violet-500/10 text-violet-400 font-medium rounded-xl hover:bg-violet-500/20 transition-colors border border-violet-500/20"
+              className="admin-button-soft px-4 py-2 font-medium"
             >
               {t('admin.hotels.payment.addAccount')}
             </button>
@@ -366,14 +364,14 @@ function HotelDetailPage() {
                         setEditingBankAccount(account)
                         setShowBankAccountModal(true)
                       }}
-                      className={`px-3 py-1.5 text-sm border rounded-lg transition-colors ${isDark ? 'text-slate-300 bg-slate-800 border-slate-700 hover:bg-slate-700' : 'text-slate-600 bg-white border-slate-200 hover:bg-slate-50'}`}
+                      className="admin-button-secondary px-3 py-1.5 text-sm"
                     >
                       {t('admin.hotels.payment.editAccount')}
                     </button>
                     <button
                       type="button"
                       onClick={() => handleDeleteBankAccount(account)}
-                      className="px-3 py-1.5 text-sm text-red-300 bg-red-500/10 border border-red-500/30 rounded-lg hover:bg-red-500/20 transition-colors"
+                      className="admin-button-destructive px-3 py-1.5 text-sm"
                     >
                       {t('admin.hotels.payment.deleteAccount')}
                     </button>
@@ -410,7 +408,7 @@ function HotelDetailPage() {
         </h2>
         <button
           onClick={() => setShowCreateRoom(true)}
-          className="flex items-center gap-2 px-4 py-2 bg-white text-slate-900 font-medium rounded-xl hover:bg-slate-100 transition-all duration-200 shadow-lg shadow-white/10"
+          className="admin-button-primary flex items-center gap-2 px-4 py-2"
         >
           <Plus className="w-5 h-5" />
           {t('admin.hotels.addRoom')}
@@ -426,9 +424,7 @@ function HotelDetailPage() {
         </div>
       ) : rooms.length === 0 ? (
         <div className={`${cardClass} p-12 text-center`}>
-          <div
-            className={`w-16 h-16 rounded-2xl flex items-center justify-center mx-auto mb-4 ${isDark ? 'bg-slate-800' : 'bg-slate-100'}`}
-          >
+          <div className="admin-empty-icon">
             <Building2
               className={`w-8 h-8 ${isDark ? 'text-slate-600' : 'text-slate-400'}`}
             />
@@ -443,7 +439,7 @@ function HotelDetailPage() {
           </p>
           <button
             onClick={() => setShowCreateRoom(true)}
-            className="inline-flex items-center gap-2 px-5 py-2.5 bg-violet-500/10 text-violet-400 font-medium rounded-xl hover:bg-violet-500/20 transition-colors border border-violet-500/20"
+            className="admin-button-soft inline-flex items-center gap-2 px-5 py-2.5"
           >
             <Plus className="w-5 h-5" />
             {t('admin.hotels.addFirstRoom')}
@@ -457,9 +453,7 @@ function HotelDetailPage() {
           return room.operationalStatus === search.operationalStatus
         }).length === 0 ? (
         <div className={`${cardClass} p-12 text-center`}>
-          <div
-            className={`w-16 h-16 rounded-2xl flex items-center justify-center mx-auto mb-4 ${isDark ? 'bg-slate-800' : 'bg-slate-100'}`}
-          >
+          <div className="admin-empty-icon">
             <Building2
               className={`w-8 h-8 ${isDark ? 'text-slate-600' : 'text-slate-400'}`}
             />
@@ -490,7 +484,11 @@ function HotelDetailPage() {
               return (
                 <div
                   key={room._id}
-                  className={`${cardClass} p-5 hover:border-slate-300/80 transition-all relative`}
+                  className={`${cardClass} p-5 transition-all relative ${
+                    isDark
+                      ? 'hover:border-slate-700/70 hover:bg-slate-900/80'
+                      : 'hover:border-slate-300/80 hover:shadow-md'
+                  }`}
                 >
                   {/* Menu Button */}
                   <div className="absolute top-4 right-4">
@@ -506,15 +504,13 @@ function HotelDetailPage() {
                     </button>
 
                     {activeMenu === room._id && (
-                      <div
-                        className={`absolute right-0 top-8 w-52 border rounded-xl shadow-xl z-10 overflow-hidden ${isDark ? 'bg-slate-800 border-slate-700' : 'bg-white border-slate-200'}`}
-                      >
+                      <div className="admin-menu-panel absolute right-0 top-8 w-52 shadow-xl z-10 overflow-hidden">
                         <button
                           onClick={() => {
                             setEditingRoom(room._id)
                             setActiveMenu(null)
                           }}
-                          className={`flex items-center gap-3 px-4 py-2.5 transition-colors w-full text-sm ${isDark ? 'text-slate-300 hover:bg-slate-700' : 'text-slate-700 hover:bg-slate-50'}`}
+                          className="admin-menu-item flex items-center gap-3 px-4 py-2.5 w-full text-sm"
                         >
                           <Pencil className="w-4 h-4" />
                           {t('admin.hotels.editRoom')}
@@ -534,7 +530,7 @@ function HotelDetailPage() {
                             <button
                               key={key}
                               onClick={() => handleStatusChange(room._id, key)}
-                              className={`flex items-center gap-3 px-4 py-2 transition-colors w-full text-sm ${isDark ? 'hover:bg-slate-700' : 'hover:bg-slate-50'} ${
+                              className={`admin-menu-item flex items-center gap-3 px-4 py-2 w-full text-sm ${
                                 room.operationalStatus === key
                                   ? config.color
                                   : isDark
@@ -552,7 +548,9 @@ function HotelDetailPage() {
                         ></div>
                         <button
                           onClick={() => handleDeleteRoom(room._id)}
-                          className={`flex items-center gap-3 px-4 py-2.5 text-red-400 transition-colors w-full text-sm ${isDark ? 'hover:bg-slate-700' : 'hover:bg-red-50'}`}
+                          className={`admin-menu-item flex items-center gap-3 px-4 py-2.5 text-red-400 w-full text-sm ${
+                            isDark ? 'hover:bg-slate-700' : 'hover:bg-red-50'
+                          }`}
                         >
                           <Trash2 className="w-4 h-4" />
                           {t('admin.hotels.deleteRoom')}
@@ -722,7 +720,7 @@ function HotelDetailPage() {
                   <button
                     type="button"
                     onClick={() => handleDeleteRating(rating._id)}
-                    className="p-2 rounded-lg hover:bg-red-500/10 transition-colors text-red-400"
+                    className="admin-icon-button hover:bg-red-500/10 hover:text-red-400 text-red-400"
                     aria-label={t('admin.hotels.deleteRating')}
                   >
                     <Trash2 className="w-4 h-4" />

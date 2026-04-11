@@ -125,7 +125,11 @@ function RoomsPage() {
             onChange={(e) => setSearchTerm(e.target.value)}
             onFocus={() => setSearchFocused(true)}
             onBlur={() => setSearchFocused(false)}
-            className={`w-full pl-12 pr-4 py-3.5 bg-transparent focus:outline-none transition-all rounded-xl ${isDark ? 'text-slate-200 placeholder-slate-500' : 'text-slate-900 placeholder-slate-400'}`}
+            className={`admin-field w-full pl-12 pr-4 py-3.5 bg-transparent ${
+              isDark
+                ? 'text-slate-200 placeholder-slate-500'
+                : 'text-slate-900 placeholder-slate-400'
+            }`}
           />
         </div>
       </motion.div>
@@ -177,7 +181,7 @@ function RoomsPage() {
         </div>
       ) : filteredHotels?.length === 0 ? (
         <motion.div
-          className={`relative rounded-2xl border p-14 text-center overflow-hidden ${isDark ? 'border-slate-800/50' : 'border-slate-200/80 bg-white/80 shadow-sm backdrop-blur-sm'}`}
+          className={`admin-empty-state relative p-14 overflow-hidden ${isDark ? '' : 'bg-white/80'}`}
           initial={{ opacity: 0, scale: 0.97 }}
           animate={{ opacity: 1, scale: 1 }}
           transition={{ duration: 0.5, ease: [0.22, 1, 0.36, 1] }}
@@ -219,10 +223,10 @@ function RoomsPage() {
             {!searchTerm && (
               <Link
                 to="/admin/hotels"
-                className={`group/btn relative inline-flex items-center gap-2 px-6 py-2.5 font-medium rounded-xl transition-all duration-300 border ${
+                className={`group/btn admin-button-soft relative inline-flex items-center gap-2 px-6 py-2.5 font-medium transition-all duration-300 ${
                   isDark
-                    ? 'border-violet-500/25 bg-violet-500/10 text-violet-400 hover:bg-violet-500/20 hover:border-violet-500/40 hover:shadow-[0_0_24px_-6px_rgba(139,92,246,0.25)]'
-                    : 'border-violet-400/40 bg-violet-500/10 text-violet-600 hover:bg-violet-500/20 hover:border-violet-400/60'
+                    ? 'border-violet-500/25 text-violet-400 hover:border-violet-500/40 hover:shadow-[0_0_24px_-6px_rgba(139,92,246,0.25)]'
+                    : 'text-violet-600 border-violet-400/40 hover:border-violet-400/60'
                 }`}
               >
                 {t('admin.rooms.goToHotels')}

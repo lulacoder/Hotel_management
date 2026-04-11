@@ -287,6 +287,11 @@ await requireHotelAccess(ctx, args.hotelId)
 - Customer-facing overlays and floating UI such as dialogs, sheets, dropdowns, filters, and popovers need explicit light-mode borders, backgrounds, and shadows. Do not assume dark-mode surface classes will stay readable after the global light-theme text overrides apply.
 - Customer-side interactive controls must always show clickability. Buttons, tabs, select triggers/items, package cards, and similar controls should use `cursor-pointer` plus visible hover and focus feedback.
 - Booking date UX must enforce the same front-end constraints as the backend. If checkout cannot equal check-in, the UI should prevent selecting the same date instead of relying on the mutation to reject it.
+- Admin-facing pages should reuse the shared admin utility classes in `src/styles.css` whenever possible. Prefer `admin-surface`, `admin-surface-muted`, `admin-empty-state`, `admin-field`, `admin-select`, `admin-textarea`, `admin-button-*`, `admin-menu-*`, `admin-table-*`, and `admin-modal-*` over route-local one-off styling.
+- Admin light mode should feel like the same product as dark mode, not a separate generic theme. Keep the subtle white/slate surfaces, low-contrast borders, restrained shadows, and violet action accents consistent across the admin shell, CRUD pages, modals, menus, tables, and empty states.
+- When refactoring admin routes, treat the shell as part of the UI contract. Sidebar navigation, user chrome, dropdown menus, modal panels, and list/detail cards all need explicit light-mode states and should not stay hard-coded to dark-only `slate-900` surfaces.
+- Admin modals should keep a structural wrapper contract: `admin-modal-panel` as the flex container, `admin-modal-header` for the fixed title row, `admin-modal-body` for the scrollable content region, and `admin-modal-footer` for actions. Do not place raw modal content directly under the panel without the body wrapper.
+- In constrained admin chrome such as the sidebar controls row, prefer compact `ThemeToggle` and `LanguageSwitcher` variants so translated labels do not overflow the layout.
 
 ## Important Notes
 

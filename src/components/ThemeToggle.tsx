@@ -6,15 +6,23 @@ import { useTheme } from '../lib/theme'
 interface ThemeToggleProps {
   compact?: boolean
   className?: string
+  labelMode?: 'state' | 'control'
 }
 
 export function ThemeToggle({
   compact = false,
   className = '',
+  labelMode = 'state',
 }: ThemeToggleProps) {
   const { theme, toggleTheme } = useTheme()
   const { t } = useI18n()
   const isDark = theme === 'dark'
+  const showControlLabel = !compact && labelMode === 'control'
+  const label = showControlLabel
+    ? t('theme.label' as never)
+    : isDark
+      ? t('theme.lightMode')
+      : t('theme.darkMode')
 
   return (
     <Button
@@ -24,17 +32,17 @@ export function ThemeToggle({
       variant="outline"
       size={compact ? 'icon-sm' : 'sm'}
       className={`${
-        isDark
-          ? 'border-slate-700/80 bg-slate-800/80 text-slate-200 hover:border-violet-500/50 hover:bg-slate-700/85 hover:text-violet-300'
-          : 'border-slate-300 bg-white/95 text-slate-700 hover:border-violet-500/70 hover:bg-violet-50 hover:text-violet-700'
+        showControlLabel
+          ? isDark
+            ? 'h-10 rounded-xl border-slate-700/80 bg-slate-800/80 px-3.5 text-slate-200 shadow-sm shadow-black/15 backdrop-blur-sm hover:border-violet-500/45 hover:bg-slate-700/85 hover:text-violet-200'
+            : 'h-10 rounded-xl border-slate-300/95 bg-white/92 px-3.5 text-slate-700 shadow-sm shadow-slate-300/70 backdrop-blur-sm hover:border-violet-500/55 hover:bg-violet-50/90 hover:text-violet-700'
+          : isDark
+            ? 'border-slate-700/80 bg-slate-800/80 text-slate-200 hover:border-violet-500/50 hover:bg-slate-700/85 hover:text-violet-300'
+            : 'border-slate-300 bg-white/95 text-slate-700 hover:border-violet-500/70 hover:bg-violet-50 hover:text-violet-700'
       } ${!compact ? 'px-3.5' : ''} ${className}`}
     >
       {isDark ? <Sun className="h-4 w-4" /> : <Moon className="h-4 w-4" />}
-      {!compact && (
-        <span className="text-sm font-medium">
-          {isDark ? t('theme.lightMode') : t('theme.darkMode')}
-        </span>
-      )}
+      {!compact && <span className="text-sm font-medium">{label}</span>}
     </Button>
   )
 }

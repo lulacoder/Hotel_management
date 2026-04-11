@@ -60,20 +60,10 @@ export function AssignModal({ userId, onClose }: AssignModalProps) {
     }
   }
 
-  const inputClass = `w-full px-4 py-3 border rounded-xl focus:outline-none focus:border-violet-500/50 focus:ring-1 focus:ring-violet-500/20 transition-all ${
-    isDark
-      ? 'bg-slate-950 border-slate-800 text-slate-200'
-      : 'bg-white border-slate-200 text-slate-800 shadow-sm'
-  }`
-
   return (
     <div className="fixed inset-0 z-50 bg-black/60 backdrop-blur-sm flex items-center justify-center p-4">
-      <div
-        className={`w-full max-w-xl border rounded-2xl shadow-2xl ${isDark ? 'bg-slate-900 border-slate-800' : 'bg-white border-slate-200'}`}
-      >
-        <div
-          className={`flex items-center justify-between p-6 border-b ${isDark ? 'border-slate-800' : 'border-slate-100'}`}
-        >
+      <div className="admin-modal-panel w-full max-w-xl">
+        <div className="admin-modal-header">
           <div>
             <h2
               className={`text-xl font-semibold ${isDark ? 'text-slate-100' : 'text-slate-900'}`}
@@ -97,7 +87,7 @@ export function AssignModal({ userId, onClose }: AssignModalProps) {
           </button>
         </div>
 
-        <form onSubmit={handleSubmit} className="p-6 space-y-6">
+        <form onSubmit={handleSubmit} className="admin-modal-body space-y-6">
           {error && (
             <div className="bg-red-500/10 border border-red-500/20 text-red-300 text-sm rounded-xl p-3">
               {error}
@@ -115,7 +105,7 @@ export function AssignModal({ userId, onClose }: AssignModalProps) {
               onChange={(e) =>
                 setSelectedHotelId(e.target.value as Id<'hotels'>)
               }
-              className={inputClass}
+              className="admin-select"
               required
             >
               <option value="">
@@ -137,7 +127,13 @@ export function AssignModal({ userId, onClose }: AssignModalProps) {
             </p>
             <div className="space-y-3">
               <label
-                className={`flex items-start gap-3 p-3 rounded-xl border cursor-pointer transition-colors ${isDark ? 'border-slate-800 hover:border-slate-700' : 'border-slate-200 hover:border-slate-300 hover:bg-slate-50'}`}
+                className={`admin-surface-muted flex items-start gap-3 p-3 cursor-pointer transition-colors ${
+                  role === 'hotel_admin'
+                    ? isDark
+                      ? 'border-violet-500/30 bg-violet-500/10'
+                      : 'border-violet-300/70 bg-violet-50/80'
+                    : ''
+                }`}
               >
                 <input
                   type="radio"
@@ -162,7 +158,13 @@ export function AssignModal({ userId, onClose }: AssignModalProps) {
               </label>
 
               <label
-                className={`flex items-start gap-3 p-3 rounded-xl border cursor-pointer transition-colors ${isDark ? 'border-slate-800 hover:border-slate-700' : 'border-slate-200 hover:border-slate-300 hover:bg-slate-50'}`}
+                className={`admin-surface-muted flex items-start gap-3 p-3 cursor-pointer transition-colors ${
+                  role === 'hotel_cashier'
+                    ? isDark
+                      ? 'border-violet-500/30 bg-violet-500/10'
+                      : 'border-violet-300/70 bg-violet-50/80'
+                    : ''
+                }`}
               >
                 <input
                   type="radio"
@@ -188,26 +190,18 @@ export function AssignModal({ userId, onClose }: AssignModalProps) {
             </div>
           </div>
 
-          <div className="flex justify-end gap-3 pt-2">
+          <div className="admin-modal-footer">
             <button
               type="button"
               onClick={onClose}
-              className={`px-5 py-2.5 rounded-xl border transition-colors ${
-                isDark
-                  ? 'border-slate-700 text-slate-300 hover:bg-slate-800'
-                  : 'border-slate-200 text-slate-600 hover:bg-slate-100'
-              }`}
+              className="admin-button-secondary"
             >
               {t('common.cancel')}
             </button>
             <button
               type="submit"
               disabled={!selectedHotelId || isSubmitting}
-              className={`px-5 py-2.5 rounded-xl font-medium disabled:opacity-50 disabled:cursor-not-allowed transition-colors ${
-                isDark
-                  ? 'bg-white text-slate-900 hover:bg-slate-100'
-                  : 'bg-slate-900 text-white hover:bg-slate-800'
-              }`}
+              className="admin-button-primary disabled:opacity-50 disabled:cursor-not-allowed"
             >
               {isSubmitting
                 ? t('admin.users.assignModal.assigning')

@@ -204,13 +204,9 @@ function WalkInBookingPage() {
   }
 
   // Shared input class helper
-  const inputClass = isDark
-    ? 'bg-slate-800/50 border border-slate-700 text-slate-200 placeholder-slate-500 focus:border-violet-500/50 focus:ring-1 focus:ring-violet-500/20'
-    : 'bg-white border border-slate-200 text-slate-800 placeholder-slate-400 focus:border-violet-500/50 focus:ring-1 focus:ring-violet-500/20 shadow-sm'
+  const inputClass = 'admin-field'
 
-  const sectionCardClass = isDark
-    ? 'bg-slate-900/50 border border-slate-800/50 rounded-2xl p-6'
-    : 'bg-white/80 border border-slate-200/80 rounded-2xl p-6 shadow-sm backdrop-blur-sm'
+  const sectionCardClass = 'admin-surface p-6'
 
   const selectableCardBase =
     'walkin-selectable-card text-left p-3 rounded-xl border transition-all'
@@ -302,11 +298,7 @@ function WalkInBookingPage() {
           <button
             type="button"
             onClick={handleSearch}
-            className={`px-4 py-3 rounded-xl border transition-colors ${
-              isDark
-                ? 'bg-slate-800 text-slate-200 border-slate-700 hover:bg-slate-700'
-                : 'bg-slate-100 text-slate-700 border-slate-200 hover:bg-slate-200'
-            }`}
+            className="admin-button-secondary px-4 py-3"
           >
             {t('admin.walkIn.search')}
           </button>
@@ -373,11 +365,7 @@ function WalkInBookingPage() {
             <button
               type="button"
               onClick={handleCreateOrUseGuest}
-              className={`md:col-span-3 px-4 py-3 rounded-xl border transition-colors ${
-                isDark
-                  ? 'bg-violet-500/15 text-violet-300 border-violet-500/30 hover:bg-violet-500/20'
-                  : 'bg-violet-500/10 text-violet-700 border-violet-400/30 hover:bg-violet-500/15'
-              }`}
+              className="admin-button-soft md:col-span-3 px-4 py-3"
             >
               {t('admin.walkIn.createOrReuseGuest')}
             </button>
@@ -533,9 +521,7 @@ function WalkInBookingPage() {
           rows={3}
         />
 
-        <div
-          className={`rounded-xl p-4 text-sm mb-4 border ${isDark ? 'bg-slate-800/40 border-slate-700' : 'bg-slate-50 border-slate-200'}`}
-        >
+        <div className="admin-surface-muted rounded-xl p-4 text-sm mb-4">
           <p className={isDark ? 'text-slate-300' : 'text-slate-700'}>
             {t('admin.bookings.guest')}: {selectedGuest?.name || '—'}
           </p>
@@ -562,11 +548,7 @@ function WalkInBookingPage() {
           type="button"
           disabled={!selectedGuest || !selectedRoom || submitting}
           onClick={handleConfirmBooking}
-          className={`px-5 py-3 font-medium rounded-xl transition-all disabled:opacity-50 disabled:cursor-not-allowed ${
-            isDark
-              ? 'bg-white text-slate-900 hover:bg-slate-100'
-              : 'bg-slate-900 text-white hover:bg-slate-800'
-          }`}
+          className="admin-button-primary px-5 py-3 disabled:opacity-50 disabled:cursor-not-allowed"
         >
           {submitting
             ? t('admin.walkIn.booking')
