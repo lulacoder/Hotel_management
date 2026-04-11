@@ -16,16 +16,14 @@ import { SearchFilters } from './select-location/components/-SearchFilters'
 import { HotelGrid } from './select-location/components/-HotelGrid'
 import { RatingModal } from './select-location/components/-RatingModal'
 import { ComplaintModal } from './select-location/components/-ComplaintModal'
-import { normalizeRatingFormValues } from './select-location/components/-ratingFormSchema'
-import { normalizeComplaintFormValues } from './select-location/components/-complaintFormSchema'
 import {
   normalizeFilterValue,
   normalizeSearchTerm,
   normalizeSortOption,
 } from './select-location/components/-helpers'
-import type { ComplaintFormValues } from './select-location/components/-complaintFormSchema'
+import type { ComplaintFormValues } from './select-location/components/-ComplaintModal'
 import type { SortOption } from './select-location/components/-helpers'
-import type { RatingFormValues } from './select-location/components/-ratingFormSchema'
+import type { RatingFormValues } from './select-location/components/-RatingModal'
 import type { Id } from '../../convex/_generated/dataModel'
 
 export const Route = createFileRoute('/select-location')({
@@ -314,11 +312,10 @@ function SelectLocationPage() {
     setRatingError('')
 
     try {
-      const normalizedValues = normalizeRatingFormValues(values)
       await upsertRating({
         hotelId: activeRatingHotelId,
-        rating: normalizedValues.rating,
-        review: normalizedValues.review,
+        rating: values.rating,
+        review: values.review.trim() || undefined,
       })
       closeRatingModal()
     } catch (err) {
@@ -339,14 +336,12 @@ function SelectLocationPage() {
     setComplaintError('')
 
     try {
-      const normalizedValues = normalizeComplaintFormValues(values)
-
       await submitComplaint({
-        hotelId: normalizedValues.hotelId as Id<'hotels'>,
-        subject: normalizedValues.subject,
-        description: normalizedValues.description,
-        bookingId: normalizedValues.bookingId
-          ? (normalizedValues.bookingId as Id<'bookings'>)
+        hotelId: values.hotelId as Id<'hotels'>,
+        subject: values.subject.trim(),
+        description: values.description.trim(),
+        bookingId: values.bookingId.trim()
+          ? (values.bookingId.trim() as Id<'bookings'>)
           : undefined,
       })
 
@@ -407,7 +402,7 @@ function SelectLocationPage() {
       <button
         type="button"
         onClick={openComplaintModal}
-        className="fixed bottom-6 right-6 z-40 inline-flex items-center gap-2 px-4 py-3 bg-white text-slate-900 font-semibold rounded-full shadow-lg shadow-white/20 hover:bg-slate-100 transition-all"
+        className="fixed bottom-6 right-6 z-40 inline-flex cursor-pointer items-center gap-2 rounded-full bg-white px-4 py-3 font-semibold text-slate-900 shadow-lg shadow-white/20 transition-all hover:bg-slate-100"
         aria-label={t('complaint.fab')}
       >
         <MessageSquarePlus className="w-5 h-5" />

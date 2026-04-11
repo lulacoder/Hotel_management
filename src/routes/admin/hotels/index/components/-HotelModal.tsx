@@ -1,10 +1,11 @@
-// Modal form for creating or updating hotel records in admin hotels page.
+import { useEffect, useMemo, useState } from 'react'
+import { useMutation, useQuery } from 'convex/react'
+import { useForm, useStore } from '@tanstack/react-form'
+import { z } from 'zod'
 import { useUser } from '@clerk/clerk-react'
-import { useQuery, useMutation } from 'convex/react'
-import { useEffect, useState } from 'react'
 
 import { api } from '../../../../../../convex/_generated/api'
-import { Id } from '../../../../../../convex/_generated/dataModel'
+import type { Id } from '../../../../../../convex/_generated/dataModel'
 import {
   uploadImageToConvex,
   validateImageFile,
@@ -18,25 +19,106 @@ interface HotelModalProps {
   onClose: () => void
 }
 
-type HotelCategory =
-  | 'Boutique'
-  | 'Budget'
-  | 'Luxury'
-  | 'Resort and Spa'
-  | 'Extended-Stay'
-  | 'Suite'
-
-const categories: Array<HotelCategory> = [
+const categoryOptions = [
   'Boutique',
   'Budget',
   'Luxury',
   'Resort and Spa',
   'Extended-Stay',
   'Suite',
-]
+] as const
+
+type HotelCategory = (typeof categoryOptions)[number]
+
+interface HotelFormValues {
+  name: string
+  address: string
+  city: string
+  country: string
+  latitude: string
+  longitude: string
+  externalId: string
+  description: string
+  category: HotelCategory | ''
+  tags: string
+  parkingIncluded: boolean
+  rating: string
+  stateProvince: string
+  postalCode: string
+  lastRenovationDate: string
+  metadata: string
+}
+
+const categories: HotelCategory[] = [...categoryOptions]
+
+function buildHotelDefaultValues(
+  hotel:
+    | {
+        name: string
+        address: string
+        city: string
+        country: string
+        location?: { lat: number; lng: number }
+        externalId?: string
+        description?: string
+        category?: HotelCategory
+        tags?: string[]
+        parkingIncluded?: boolean
+        rating?: number
+        stateProvince?: string
+        postalCode?: string
+        lastRenovationDate?: string
+        metadata?: Record<string, unknown>
+      }
+    | null
+    | undefined,
+): HotelFormValues {
+  return {
+    name: hotel?.name ?? '',
+    address: hotel?.address ?? '',
+    city: hotel?.city ?? '',
+    country: hotel?.country ?? '',
+    latitude: hotel?.location?.lat?.toString() ?? '',
+    longitude: hotel?.location?.lng?.toString() ?? '',
+    externalId: hotel?.externalId ?? '',
+    description: hotel?.description ?? '',
+    category: hotel?.category ?? '',
+    tags: hotel?.tags?.join(', ') ?? '',
+    parkingIncluded: hotel?.parkingIncluded ?? false,
+    rating: hotel?.rating?.toString() ?? '',
+    stateProvince: hotel?.stateProvince ?? '',
+    postalCode: hotel?.postalCode ?? '',
+    lastRenovationDate: hotel?.lastRenovationDate ?? '',
+    metadata: hotel?.metadata ? JSON.stringify(hotel.metadata, null, 2) : '',
+  }
+}
+
+function getFirstErrorMessage(errors: unknown[] | undefined): string | null {
+  if (!errors) {
+    return null
+  }
+
+  for (const error of errors) {
+    if (!error) {
+      continue
+    }
+
+    if (typeof error === 'string') {
+      return error
+    }
+
+    if (typeof error === 'object' && 'message' in error) {
+      const message = error.message
+      if (typeof message === 'string') {
+        return message
+      }
+    }
+  }
+
+  return null
+}
 
 export function HotelModal({ hotelId, onClose }: HotelModalProps) {
-  // Unified create/edit modal that manages hotel form state and image uploads.
   const { user } = useUser()
   const { t } = useI18n()
   const { theme } = useTheme()
@@ -47,27 +129,8 @@ export function HotelModal({ hotelId, onClose }: HotelModalProps) {
   const generateUploadUrl = useMutation(api.files.generateUploadUrl)
   const trackUpload = useMutation(api.files.trackUpload)
 
-  const [formData, setFormData] = useState({
-    name: '',
-    address: '',
-    city: '',
-    country: '',
-    latitude: '',
-    longitude: '',
-    externalId: '',
-    description: '',
-    category: '' as HotelCategory | '',
-    tags: '',
-    parkingIncluded: false,
-    rating: '',
-    stateProvince: '',
-    postalCode: '',
-    lastRenovationDate: '',
-    metadata: '',
-  })
-  const [loading, setLoading] = useState(false)
+  const [submitError, setSubmitError] = useState('')
   const [uploadingImage, setUploadingImage] = useState(false)
-  const [error, setError] = useState('')
   const [selectedImageFile, setSelectedImageFile] = useState<File | null>(null)
   const [imagePreviewUrl, setImagePreviewUrl] = useState('')
   const [imageStorageId, setImageStorageId] = useState<Id<'_storage'> | null>(
@@ -76,330 +139,466 @@ export function HotelModal({ hotelId, onClose }: HotelModalProps) {
   const [imageChanged, setImageChanged] = useState(false)
   const [clearImage, setClearImage] = useState(false)
 
-  useEffect(() => {
-    // Prefill form when editing; reset state when creating a new hotel.
-    if (hotelId && hotel) {
-      setFormData({
-        name: hotel.name,
-        address: hotel.address,
-        city: hotel.city,
-        country: hotel.country,
-        latitude: hotel.location?.lat?.toString() ?? '',
-        longitude: hotel.location?.lng?.toString() ?? '',
-        externalId: hotel.externalId ?? '',
-        description: hotel.description ?? '',
-        category: hotel.category ?? '',
-        tags: hotel.tags?.join(', ') ?? '',
-        parkingIncluded: hotel.parkingIncluded ?? false,
-        rating: hotel.rating?.toString() ?? '',
-        stateProvince: hotel.stateProvince ?? '',
-        postalCode: hotel.postalCode ?? '',
-        lastRenovationDate: hotel.lastRenovationDate ?? '',
-        metadata: hotel.metadata ? JSON.stringify(hotel.metadata, null, 2) : '',
-      })
-      setSelectedImageFile(null)
-      setImagePreviewUrl(hotel.imageUrl ?? '')
-      setImageStorageId(hotel.imageStorageId ?? null)
-      setImageChanged(false)
-      setClearImage(false)
-      return
-    }
+  const schema = useMemo(
+    () =>
+      z
+        .object({
+          name: z.string().trim().min(1, 'Hotel name is required.'),
+          address: z.string().trim().min(1, 'Address is required.'),
+          city: z.string().trim().min(1, 'City is required.'),
+          country: z.string().trim().min(1, 'Country is required.'),
+          latitude: z.string(),
+          longitude: z.string(),
+          externalId: z.string(),
+          description: z.string(),
+          category: z.union([
+            z.literal(''),
+            z.enum(categoryOptions),
+          ]) as z.ZodType<HotelCategory | ''>,
+          tags: z.string(),
+          parkingIncluded: z.boolean(),
+          rating: z.string(),
+          stateProvince: z.string(),
+          postalCode: z.string(),
+          lastRenovationDate: z.string(),
+          metadata: z.string(),
+        })
+        .superRefine((value, ctx) => {
+          const latitude = value.latitude.trim()
+          const longitude = value.longitude.trim()
 
-    if (!hotelId) {
-      setFormData({
-        name: '',
-        address: '',
-        city: '',
-        country: '',
-        latitude: '',
-        longitude: '',
-        externalId: '',
-        description: '',
-        category: '',
-        tags: '',
-        parkingIncluded: false,
-        rating: '',
-        stateProvince: '',
-        postalCode: '',
-        lastRenovationDate: '',
-        metadata: '',
-      })
-      setSelectedImageFile(null)
-      setImagePreviewUrl('')
-      setImageStorageId(null)
-      setImageChanged(false)
-      setClearImage(false)
-    }
-  }, [hotelId, hotel])
+          if ((latitude && !longitude) || (!latitude && longitude)) {
+            ctx.addIssue({
+              code: 'custom',
+              path: ['latitude'],
+              message: t('admin.hotels.modal.error.latLngRequired'),
+            })
+            ctx.addIssue({
+              code: 'custom',
+              path: ['longitude'],
+              message: t('admin.hotels.modal.error.latLngRequired'),
+            })
+          }
+
+          if (latitude && Number.isNaN(Number(latitude))) {
+            ctx.addIssue({
+              code: 'custom',
+              path: ['latitude'],
+              message: t('admin.hotels.modal.error.latLngInvalid'),
+            })
+          }
+
+          if (longitude && Number.isNaN(Number(longitude))) {
+            ctx.addIssue({
+              code: 'custom',
+              path: ['longitude'],
+              message: t('admin.hotels.modal.error.latLngInvalid'),
+            })
+          }
+
+          const rating = value.rating.trim()
+          if (rating && Number.isNaN(Number(rating))) {
+            ctx.addIssue({
+              code: 'custom',
+              path: ['rating'],
+              message: t('admin.hotels.modal.error.ratingInvalid'),
+            })
+          }
+
+          const metadata = value.metadata.trim()
+          if (metadata) {
+            try {
+              const parsed = JSON.parse(metadata)
+              if (
+                !parsed ||
+                typeof parsed !== 'object' ||
+                Array.isArray(parsed)
+              ) {
+                ctx.addIssue({
+                  code: 'custom',
+                  path: ['metadata'],
+                  message: t('admin.hotels.modal.error.metadataJson'),
+                })
+              }
+            } catch {
+              ctx.addIssue({
+                code: 'custom',
+                path: ['metadata'],
+                message: t('admin.hotels.modal.error.metadataJson'),
+              })
+            }
+          }
+        }),
+    [t],
+  )
+
+  const form = useForm({
+    defaultValues: buildHotelDefaultValues(hotel),
+    validators: {
+      onBlur: schema,
+      onSubmit: schema,
+    },
+    onSubmit: async ({ value }) => {
+      if (!user?.id) {
+        return
+      }
+
+      setSubmitError('')
+      setUploadingImage(false)
+
+      try {
+        let nextImageStorageId = imageStorageId
+
+        if (selectedImageFile) {
+          setUploadingImage(true)
+          nextImageStorageId = await uploadImageToConvex({
+            file: selectedImageFile,
+            generateUploadUrl,
+            trackUpload,
+          })
+        }
+
+        const latitude = value.latitude.trim()
+        const longitude = value.longitude.trim()
+        const location =
+          latitude && longitude
+            ? {
+                lat: Number(latitude),
+                lng: Number(longitude),
+              }
+            : undefined
+
+        const metadata = value.metadata.trim()
+          ? (JSON.parse(value.metadata.trim()) as Record<string, unknown>)
+          : undefined
+
+        const rating = value.rating.trim()
+          ? Number(value.rating.trim())
+          : undefined
+
+        const payload = {
+          name: value.name.trim(),
+          address: value.address.trim(),
+          city: value.city.trim(),
+          country: value.country.trim(),
+          location,
+          externalId: value.externalId.trim() || undefined,
+          description: value.description.trim() || undefined,
+          category: value.category || undefined,
+          tags: value.tags
+            .split(',')
+            .map((tag) => tag.trim())
+            .filter(Boolean),
+          parkingIncluded: value.parkingIncluded,
+          rating,
+          stateProvince: value.stateProvince.trim() || undefined,
+          postalCode: value.postalCode.trim() || undefined,
+          lastRenovationDate: value.lastRenovationDate.trim() || undefined,
+          metadata,
+        }
+
+        if (hotelId) {
+          const imagePayload: {
+            imageStorageId?: Id<'_storage'>
+            clearImage?: boolean
+          } = {}
+
+          if (imageChanged) {
+            if (clearImage) {
+              imagePayload.clearImage = true
+            } else if (nextImageStorageId) {
+              imagePayload.imageStorageId = nextImageStorageId
+            }
+          }
+
+          await updateHotel({
+            hotelId,
+            ...payload,
+            ...imagePayload,
+          })
+        } else {
+          await createHotel({
+            ...payload,
+            imageStorageId: nextImageStorageId ?? undefined,
+          })
+        }
+
+        onClose()
+      } catch (error) {
+        setSubmitError(
+          error instanceof Error
+            ? error.message
+            : t('admin.hotels.modal.error.generic'),
+        )
+      } finally {
+        setUploadingImage(false)
+      }
+    },
+  })
+
+  useEffect(() => {
+    form.reset(buildHotelDefaultValues(hotel))
+    setSelectedImageFile(null)
+    setImagePreviewUrl(hotel?.imageUrl ?? '')
+    setImageStorageId(hotel?.imageStorageId ?? null)
+    setImageChanged(false)
+    setClearImage(false)
+    setSubmitError('')
+  }, [form, hotel, hotelId])
+
+  const isSubmitting = useStore(form.store, (state) => state.isSubmitting)
+  const labelClass = `mb-2 block text-sm font-medium ${
+    isDark ? 'text-slate-300' : 'text-slate-700'
+  }`
 
   const handleImageSelection = (event: React.ChangeEvent<HTMLInputElement>) => {
     const file = event.target.files?.[0]
+
     if (!file) {
       return
     }
 
     const validationError = validateImageFile(file)
     if (validationError) {
-      setError(validationError)
+      setSubmitError(validationError)
       return
     }
 
+    setSubmitError('')
     setSelectedImageFile(file)
     setImagePreviewUrl(URL.createObjectURL(file))
     setImageChanged(true)
     setClearImage(false)
   }
 
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault()
-    if (!user?.id) return
-
-    setLoading(true)
-    setError('')
-
-    try {
-      let nextImageStorageId = imageStorageId
-      if (selectedImageFile) {
-        setUploadingImage(true)
-        nextImageStorageId = await uploadImageToConvex({
-          file: selectedImageFile,
-          generateUploadUrl,
-          trackUpload,
-        })
-      }
-
-      const lat = formData.latitude.trim()
-      const lng = formData.longitude.trim()
-      if ((lat && !lng) || (!lat && lng)) {
-        setError(t('admin.hotels.modal.error.latLngRequired'))
-        return
-      }
-
-      let location: { lat: number; lng: number } | undefined
-      if (lat && lng) {
-        const parsedLat = Number(lat)
-        const parsedLng = Number(lng)
-        if (Number.isNaN(parsedLat) || Number.isNaN(parsedLng)) {
-          setError(t('admin.hotels.modal.error.latLngInvalid'))
-          return
-        }
-        location = { lat: parsedLat, lng: parsedLng }
-      }
-
-      let metadata: Record<string, unknown> | undefined
-      if (formData.metadata.trim()) {
-        try {
-          metadata = JSON.parse(formData.metadata)
-        } catch {
-          setError(t('admin.hotels.modal.error.metadataJson'))
-          return
-        }
-      }
-
-      const rating = formData.rating.trim()
-        ? Number(formData.rating.trim())
-        : undefined
-      if (rating !== undefined && Number.isNaN(rating)) {
-        setError(t('admin.hotels.modal.error.ratingInvalid'))
-        return
-      }
-
-      const payload = {
-        name: formData.name,
-        address: formData.address,
-        city: formData.city,
-        country: formData.country,
-        location,
-        externalId: formData.externalId.trim() || undefined,
-        description: formData.description.trim() || undefined,
-        category: formData.category || undefined,
-        tags: formData.tags
-          .split(',')
-          .map((tag) => tag.trim())
-          .filter(Boolean),
-        parkingIncluded: formData.parkingIncluded,
-        rating,
-        stateProvince: formData.stateProvince.trim() || undefined,
-        postalCode: formData.postalCode.trim() || undefined,
-        lastRenovationDate: formData.lastRenovationDate.trim() || undefined,
-        metadata,
-      }
-
-      if (hotelId) {
-        const imagePayload: {
-          imageStorageId?: Id<'_storage'>
-          clearImage?: boolean
-        } = {}
-
-        if (imageChanged) {
-          if (clearImage) {
-            imagePayload.clearImage = true
-          } else if (nextImageStorageId) {
-            imagePayload.imageStorageId = nextImageStorageId
-          }
-        }
-
-        await updateHotel({
-          hotelId,
-          ...payload,
-          ...imagePayload,
-        })
-      } else {
-        await createHotel({
-          ...payload,
-          imageStorageId: nextImageStorageId ?? undefined,
-        })
-      }
-      onClose()
-    } catch (err: any) {
-      setError(err.message || t('admin.hotels.modal.error.generic'))
-    } finally {
-      setUploadingImage(false)
-      setLoading(false)
-    }
-  }
-
-  const labelClass = `block text-sm font-medium mb-2 ${isDark ? 'text-slate-300' : 'text-slate-700'}`
+  const nameError = getFirstErrorMessage(form.getFieldMeta('name')?.errors)
+  const addressError = getFirstErrorMessage(
+    form.getFieldMeta('address')?.errors,
+  )
+  const cityError = getFirstErrorMessage(form.getFieldMeta('city')?.errors)
+  const countryError = getFirstErrorMessage(
+    form.getFieldMeta('country')?.errors,
+  )
+  const latitudeError = getFirstErrorMessage(
+    form.getFieldMeta('latitude')?.errors,
+  )
+  const longitudeError = getFirstErrorMessage(
+    form.getFieldMeta('longitude')?.errors,
+  )
+  const ratingError = getFirstErrorMessage(form.getFieldMeta('rating')?.errors)
+  const metadataError = getFirstErrorMessage(
+    form.getFieldMeta('metadata')?.errors,
+  )
 
   return (
-    <div className="fixed inset-0 bg-black/60 backdrop-blur-sm flex items-start justify-center z-50 p-4 overflow-y-auto">
-      <div className="admin-modal-panel w-full max-w-md max-h-[90vh] my-4">
+    <div className="fixed inset-0 z-50 flex items-start justify-center overflow-y-auto bg-black/60 p-4 backdrop-blur-sm">
+      <div className="admin-modal-panel my-4 w-full max-w-3xl max-h-[90vh]">
         <div className="admin-modal-header">
-          <h2
-            className={`text-xl font-semibold ${isDark ? 'text-slate-100' : 'text-slate-900'}`}
-          >
-            {hotelId
-              ? t('admin.hotels.modal.editTitle')
-              : t('admin.hotels.modal.addTitle')}
-          </h2>
-          <p
-            className={`text-sm mt-1 ${isDark ? 'text-slate-500' : 'text-slate-500'}`}
-          >
-            {hotelId
-              ? t('admin.hotels.modal.editDescription')
-              : t('admin.hotels.modal.addDescription')}
-          </p>
+          <div>
+            <h2
+              className={`text-xl font-semibold ${
+                isDark ? 'text-slate-100' : 'text-slate-900'
+              }`}
+            >
+              {hotelId
+                ? t('admin.hotels.modal.editTitle')
+                : t('admin.hotels.modal.addTitle')}
+            </h2>
+            <p className="mt-1 text-sm text-slate-500">
+              {hotelId
+                ? t('admin.hotels.modal.editDescription')
+                : t('admin.hotels.modal.addDescription')}
+            </p>
+          </div>
         </div>
 
-        <form onSubmit={handleSubmit} className="admin-modal-body space-y-4">
-          {error && (
-            <div className="bg-red-500/10 border border-red-500/20 rounded-xl p-4 text-red-400 text-sm">
-              {error}
+        <form
+          onSubmit={(event) => {
+            event.preventDefault()
+            event.stopPropagation()
+            void form.handleSubmit()
+          }}
+          className="admin-modal-body space-y-4"
+        >
+          {submitError ? (
+            <div className="rounded-xl border border-red-500/20 bg-red-500/10 p-4 text-sm text-red-400">
+              {submitError}
             </div>
-          )}
+          ) : null}
 
-          <div>
-            <label className={labelClass}>
-              {t('admin.hotels.modal.hotelName')}
-            </label>
-            <input
-              type="text"
-              required
-              value={formData.name}
-              onChange={(e) =>
-                setFormData({ ...formData, name: e.target.value })
-              }
-              placeholder={t('admin.hotels.modal.hotelNamePlaceholder')}
-              className="admin-field"
-            />
+          <form.Field name="name">
+            {(field) => (
+              <div>
+                <label className={labelClass}>
+                  {t('admin.hotels.modal.hotelName')}
+                </label>
+                <input
+                  type="text"
+                  value={field.state.value}
+                  onChange={(event) => field.handleChange(event.target.value)}
+                  onBlur={field.handleBlur}
+                  placeholder={t('admin.hotels.modal.hotelNamePlaceholder')}
+                  className={`admin-field ${
+                    nameError ? 'border-red-500/60 focus:border-red-500/80' : ''
+                  }`}
+                />
+                {nameError ? (
+                  <p className="mt-2 text-xs text-red-400">{nameError}</p>
+                ) : null}
+              </div>
+            )}
+          </form.Field>
+
+          <form.Field name="address">
+            {(field) => (
+              <div>
+                <label className={labelClass}>
+                  {t('admin.hotels.modal.address')}
+                </label>
+                <input
+                  type="text"
+                  value={field.state.value}
+                  onChange={(event) => field.handleChange(event.target.value)}
+                  onBlur={field.handleBlur}
+                  placeholder={t('admin.hotels.modal.addressPlaceholder')}
+                  className={`admin-field ${
+                    addressError
+                      ? 'border-red-500/60 focus:border-red-500/80'
+                      : ''
+                  }`}
+                />
+                {addressError ? (
+                  <p className="mt-2 text-xs text-red-400">{addressError}</p>
+                ) : null}
+              </div>
+            )}
+          </form.Field>
+
+          <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
+            <form.Field name="city">
+              {(field) => (
+                <div>
+                  <label className={labelClass}>
+                    {t('admin.hotels.modal.city')}
+                  </label>
+                  <input
+                    type="text"
+                    value={field.state.value}
+                    onChange={(event) => field.handleChange(event.target.value)}
+                    onBlur={field.handleBlur}
+                    placeholder={t('admin.hotels.modal.cityPlaceholder')}
+                    className={`admin-field ${
+                      cityError
+                        ? 'border-red-500/60 focus:border-red-500/80'
+                        : ''
+                    }`}
+                  />
+                  {cityError ? (
+                    <p className="mt-2 text-xs text-red-400">{cityError}</p>
+                  ) : null}
+                </div>
+              )}
+            </form.Field>
+
+            <form.Field name="country">
+              {(field) => (
+                <div>
+                  <label className={labelClass}>
+                    {t('admin.hotels.modal.country')}
+                  </label>
+                  <input
+                    type="text"
+                    value={field.state.value}
+                    onChange={(event) => field.handleChange(event.target.value)}
+                    onBlur={field.handleBlur}
+                    placeholder={t('admin.hotels.modal.countryPlaceholder')}
+                    className={`admin-field ${
+                      countryError
+                        ? 'border-red-500/60 focus:border-red-500/80'
+                        : ''
+                    }`}
+                  />
+                  {countryError ? (
+                    <p className="mt-2 text-xs text-red-400">{countryError}</p>
+                  ) : null}
+                </div>
+              )}
+            </form.Field>
           </div>
 
-          <div>
-            <label className={labelClass}>
-              {t('admin.hotels.modal.address')}
-            </label>
-            <input
-              type="text"
-              required
-              value={formData.address}
-              onChange={(e) =>
-                setFormData({ ...formData, address: e.target.value })
-              }
-              placeholder={t('admin.hotels.modal.addressPlaceholder')}
-              className="admin-field"
-            />
+          <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
+            <form.Field name="latitude">
+              {(field) => (
+                <div>
+                  <label className={labelClass}>
+                    {t('admin.hotels.modal.latitude')}
+                  </label>
+                  <input
+                    type="number"
+                    step="any"
+                    value={field.state.value}
+                    onChange={(event) => field.handleChange(event.target.value)}
+                    onBlur={field.handleBlur}
+                    placeholder={t('admin.hotels.modal.latitudePlaceholder')}
+                    className={`admin-field ${
+                      latitudeError
+                        ? 'border-red-500/60 focus:border-red-500/80'
+                        : ''
+                    }`}
+                  />
+                  {latitudeError ? (
+                    <p className="mt-2 text-xs text-red-400">{latitudeError}</p>
+                  ) : null}
+                </div>
+              )}
+            </form.Field>
+
+            <form.Field name="longitude">
+              {(field) => (
+                <div>
+                  <label className={labelClass}>
+                    {t('admin.hotels.modal.longitude')}
+                  </label>
+                  <input
+                    type="number"
+                    step="any"
+                    value={field.state.value}
+                    onChange={(event) => field.handleChange(event.target.value)}
+                    onBlur={field.handleBlur}
+                    placeholder={t('admin.hotels.modal.longitudePlaceholder')}
+                    className={`admin-field ${
+                      longitudeError
+                        ? 'border-red-500/60 focus:border-red-500/80'
+                        : ''
+                    }`}
+                  />
+                  {longitudeError ? (
+                    <p className="mt-2 text-xs text-red-400">
+                      {longitudeError}
+                    </p>
+                  ) : null}
+                </div>
+              )}
+            </form.Field>
           </div>
 
-          <div className="grid grid-cols-2 gap-4">
-            <div>
-              <label className={labelClass}>
-                {t('admin.hotels.modal.city')}
-              </label>
-              <input
-                type="text"
-                required
-                value={formData.city}
-                onChange={(e) =>
-                  setFormData({ ...formData, city: e.target.value })
-                }
-                placeholder={t('admin.hotels.modal.cityPlaceholder')}
-                className="admin-field"
-              />
-            </div>
-            <div>
-              <label className={labelClass}>
-                {t('admin.hotels.modal.country')}
-              </label>
-              <input
-                type="text"
-                required
-                value={formData.country}
-                onChange={(e) =>
-                  setFormData({ ...formData, country: e.target.value })
-                }
-                placeholder={t('admin.hotels.modal.countryPlaceholder')}
-                className="admin-field"
-              />
-            </div>
-          </div>
-
-          <div className="grid grid-cols-2 gap-4">
-            <div>
-              <label className={labelClass}>
-                {t('admin.hotels.modal.latitude')}
-              </label>
-              <input
-                type="number"
-                step="any"
-                value={formData.latitude}
-                onChange={(e) =>
-                  setFormData({ ...formData, latitude: e.target.value })
-                }
-                placeholder={t('admin.hotels.modal.latitudePlaceholder')}
-                className="admin-field"
-              />
-            </div>
-            <div>
-              <label className={labelClass}>
-                {t('admin.hotels.modal.longitude')}
-              </label>
-              <input
-                type="number"
-                step="any"
-                value={formData.longitude}
-                onChange={(e) =>
-                  setFormData({ ...formData, longitude: e.target.value })
-                }
-                placeholder={t('admin.hotels.modal.longitudePlaceholder')}
-                className="admin-field"
-              />
-            </div>
-          </div>
-
-          <div>
-            <label className={labelClass}>
-              {t('admin.hotels.modal.description')}
-            </label>
-            <textarea
-              rows={3}
-              value={formData.description}
-              onChange={(e) =>
-                setFormData({ ...formData, description: e.target.value })
-              }
-              placeholder={t('admin.hotels.modal.descriptionPlaceholder')}
-              className="admin-textarea"
-            />
-          </div>
+          <form.Field name="description">
+            {(field) => (
+              <div>
+                <label className={labelClass}>
+                  {t('admin.hotels.modal.description')}
+                </label>
+                <textarea
+                  rows={4}
+                  value={field.state.value}
+                  onChange={(event) => field.handleChange(event.target.value)}
+                  onBlur={field.handleBlur}
+                  placeholder={t('admin.hotels.modal.descriptionPlaceholder')}
+                  className="admin-textarea"
+                />
+              </div>
+            )}
+          </form.Field>
 
           <div>
             <label className={labelClass}>
@@ -409,21 +608,25 @@ export function HotelModal({ hotelId, onClose }: HotelModalProps) {
               type="file"
               accept="image/*"
               onChange={handleImageSelection}
-              className={`admin-field py-2.5 file:mr-3 file:px-3 file:py-1.5 file:border-0 file:rounded-lg file:bg-violet-500/20 file:text-violet-300 file:cursor-pointer ${
+              className={`admin-field py-2.5 file:mr-3 file:cursor-pointer file:rounded-lg file:border-0 file:bg-violet-500/20 file:px-3 file:py-1.5 file:text-violet-300 ${
                 isDark ? 'text-slate-300' : 'text-slate-600'
               }`}
             />
             <p
-              className={`text-xs mt-2 ${isDark ? 'text-slate-500' : 'text-slate-400'}`}
+              className={`mt-2 text-xs ${
+                isDark ? 'text-slate-500' : 'text-slate-400'
+              }`}
             >
               {t('common.maxSize10mb')}
             </p>
-            {imagePreviewUrl && (
+            {imagePreviewUrl ? (
               <div className="mt-3">
                 <img
                   src={imagePreviewUrl}
                   alt={t('admin.hotels.modal.imagePreviewAlt')}
-                  className={`w-full h-36 object-cover rounded-xl border ${isDark ? 'border-slate-700' : 'border-slate-200'}`}
+                  className={`h-44 w-full rounded-xl border object-cover ${
+                    isDark ? 'border-slate-700' : 'border-slate-200'
+                  }`}
                 />
                 <button
                   type="button"
@@ -433,168 +636,220 @@ export function HotelModal({ hotelId, onClose }: HotelModalProps) {
                     setImageStorageId(null)
                     setImageChanged(true)
                     setClearImage(true)
+                    setSubmitError('')
                   }}
-                  className="mt-2 text-xs text-red-400 hover:text-red-300"
+                  className="mt-3 cursor-pointer text-sm font-medium text-red-400 transition-colors hover:text-red-300"
                 >
                   {t('common.removeImage')}
                 </button>
               </div>
+            ) : null}
+          </div>
+
+          <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
+            <form.Field name="externalId">
+              {(field) => (
+                <div>
+                  <label className={labelClass}>
+                    {t('admin.hotels.modal.externalId')}
+                  </label>
+                  <input
+                    type="text"
+                    value={field.state.value}
+                    onChange={(event) => field.handleChange(event.target.value)}
+                    onBlur={field.handleBlur}
+                    placeholder={t('admin.hotels.modal.externalIdPlaceholder')}
+                    className="admin-field"
+                  />
+                </div>
+              )}
+            </form.Field>
+
+            <form.Field name="category">
+              {(field) => (
+                <div>
+                  <label className={labelClass}>
+                    {t('admin.hotels.modal.category')}
+                  </label>
+                  <select
+                    value={field.state.value}
+                    onChange={(event) =>
+                      field.handleChange(
+                        event.target.value as HotelCategory | '',
+                      )
+                    }
+                    onBlur={field.handleBlur}
+                    className="admin-select"
+                  >
+                    <option value="">
+                      {t('admin.hotels.modal.selectCategory')}
+                    </option>
+                    {categories.map((category) => (
+                      <option key={category} value={category}>
+                        {getHotelCategoryLabel(category, t)}
+                      </option>
+                    ))}
+                  </select>
+                </div>
+              )}
+            </form.Field>
+          </div>
+
+          <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
+            <form.Field name="stateProvince">
+              {(field) => (
+                <div>
+                  <label className={labelClass}>
+                    {t('admin.hotels.modal.stateProvince')}
+                  </label>
+                  <input
+                    type="text"
+                    value={field.state.value}
+                    onChange={(event) => field.handleChange(event.target.value)}
+                    onBlur={field.handleBlur}
+                    placeholder={t(
+                      'admin.hotels.modal.stateProvincePlaceholder',
+                    )}
+                    className="admin-field"
+                  />
+                </div>
+              )}
+            </form.Field>
+
+            <form.Field name="postalCode">
+              {(field) => (
+                <div>
+                  <label className={labelClass}>
+                    {t('admin.hotels.modal.postalCode')}
+                  </label>
+                  <input
+                    type="text"
+                    value={field.state.value}
+                    onChange={(event) => field.handleChange(event.target.value)}
+                    onBlur={field.handleBlur}
+                    placeholder={t('admin.hotels.modal.postalCodePlaceholder')}
+                    className="admin-field"
+                  />
+                </div>
+              )}
+            </form.Field>
+          </div>
+
+          <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
+            <form.Field name="rating">
+              {(field) => (
+                <div>
+                  <label className={labelClass}>
+                    {t('admin.hotels.modal.rating')}
+                  </label>
+                  <input
+                    type="number"
+                    step="0.1"
+                    min="0"
+                    max="5"
+                    value={field.state.value}
+                    onChange={(event) => field.handleChange(event.target.value)}
+                    onBlur={field.handleBlur}
+                    placeholder={t('admin.hotels.modal.ratingPlaceholder')}
+                    className={`admin-field ${
+                      ratingError
+                        ? 'border-red-500/60 focus:border-red-500/80'
+                        : ''
+                    }`}
+                  />
+                  {ratingError ? (
+                    <p className="mt-2 text-xs text-red-400">{ratingError}</p>
+                  ) : null}
+                </div>
+              )}
+            </form.Field>
+
+            <form.Field name="lastRenovationDate">
+              {(field) => (
+                <div>
+                  <label className={labelClass}>
+                    {t('admin.hotels.modal.lastRenovationDate')}
+                  </label>
+                  <input
+                    type="date"
+                    value={field.state.value}
+                    onChange={(event) => field.handleChange(event.target.value)}
+                    onBlur={field.handleBlur}
+                    className="admin-field"
+                  />
+                </div>
+              )}
+            </form.Field>
+          </div>
+
+          <form.Field name="tags">
+            {(field) => (
+              <div>
+                <label className={labelClass}>
+                  {t('admin.hotels.modal.tags')}
+                </label>
+                <input
+                  type="text"
+                  value={field.state.value}
+                  onChange={(event) => field.handleChange(event.target.value)}
+                  onBlur={field.handleBlur}
+                  placeholder={t('admin.hotels.modal.tagsPlaceholder')}
+                  className="admin-field"
+                />
+              </div>
             )}
-          </div>
+          </form.Field>
 
-          <div className="grid grid-cols-2 gap-4">
-            <div>
-              <label className={labelClass}>
-                {t('admin.hotels.modal.externalId')}
-              </label>
-              <input
-                type="text"
-                value={formData.externalId}
-                onChange={(e) =>
-                  setFormData({ ...formData, externalId: e.target.value })
-                }
-                placeholder={t('admin.hotels.modal.externalIdPlaceholder')}
-                className="admin-field"
-              />
-            </div>
-            <div>
-              <label className={labelClass}>
-                {t('admin.hotels.modal.category')}
-              </label>
-              <select
-                value={formData.category}
-                onChange={(e) =>
-                  setFormData({
-                    ...formData,
-                    category: e.target.value as HotelCategory | '',
-                  })
-                }
-                className="admin-select"
-              >
-                <option value="">
-                  {t('admin.hotels.modal.selectCategory')}
-                </option>
-                {categories.map((category) => (
-                  <option key={category} value={category}>
-                    {getHotelCategoryLabel(category, t)}
-                  </option>
-                ))}
-              </select>
-            </div>
-          </div>
+          <form.Field name="metadata">
+            {(field) => (
+              <div>
+                <label className={labelClass}>
+                  {t('admin.hotels.modal.metadata')}
+                </label>
+                <textarea
+                  rows={5}
+                  value={field.state.value}
+                  onChange={(event) => field.handleChange(event.target.value)}
+                  onBlur={field.handleBlur}
+                  placeholder={t('admin.hotels.modal.metadataPlaceholder')}
+                  className={`admin-textarea ${
+                    metadataError
+                      ? 'border-red-500/60 focus:border-red-500/80'
+                      : ''
+                  }`}
+                />
+                {metadataError ? (
+                  <p className="mt-2 text-xs text-red-400">{metadataError}</p>
+                ) : null}
+              </div>
+            )}
+          </form.Field>
 
-          <div className="grid grid-cols-2 gap-4">
-            <div>
-              <label className={labelClass}>
-                {t('admin.hotels.modal.stateProvince')}
+          <form.Field name="parkingIncluded">
+            {(field) => (
+              <label className="flex cursor-pointer items-center gap-3">
+                <input
+                  id="parkingIncluded"
+                  type="checkbox"
+                  checked={field.state.value}
+                  onChange={(event) => field.handleChange(event.target.checked)}
+                  onBlur={field.handleBlur}
+                  className={`h-4 w-4 rounded focus:ring-violet-500/40 ${
+                    isDark
+                      ? 'border-slate-600 bg-slate-800 text-violet-500'
+                      : 'border-slate-300 bg-white text-violet-500'
+                  }`}
+                />
+                <span
+                  className={`text-sm ${
+                    isDark ? 'text-slate-300' : 'text-slate-700'
+                  }`}
+                >
+                  {t('admin.hotels.modal.parkingIncluded')}
+                </span>
               </label>
-              <input
-                type="text"
-                value={formData.stateProvince}
-                onChange={(e) =>
-                  setFormData({ ...formData, stateProvince: e.target.value })
-                }
-                placeholder={t('admin.hotels.modal.stateProvincePlaceholder')}
-                className="admin-field"
-              />
-            </div>
-            <div>
-              <label className={labelClass}>
-                {t('admin.hotels.modal.postalCode')}
-              </label>
-              <input
-                type="text"
-                value={formData.postalCode}
-                onChange={(e) =>
-                  setFormData({ ...formData, postalCode: e.target.value })
-                }
-                placeholder={t('admin.hotels.modal.postalCodePlaceholder')}
-                className="admin-field"
-              />
-            </div>
-          </div>
-
-          <div className="grid grid-cols-2 gap-4">
-            <div>
-              <label className={labelClass}>
-                {t('admin.hotels.modal.rating')}
-              </label>
-              <input
-                type="number"
-                step="0.1"
-                min="0"
-                max="5"
-                value={formData.rating}
-                onChange={(e) =>
-                  setFormData({ ...formData, rating: e.target.value })
-                }
-                placeholder={t('admin.hotels.modal.ratingPlaceholder')}
-                className="admin-field"
-              />
-            </div>
-            <div>
-              <label className={labelClass}>
-                {t('admin.hotels.modal.lastRenovationDate')}
-              </label>
-              <input
-                type="date"
-                value={formData.lastRenovationDate}
-                onChange={(e) =>
-                  setFormData({
-                    ...formData,
-                    lastRenovationDate: e.target.value,
-                  })
-                }
-                className="admin-field"
-              />
-            </div>
-          </div>
-
-          <div>
-            <label className={labelClass}>{t('admin.hotels.modal.tags')}</label>
-            <input
-              type="text"
-              value={formData.tags}
-              onChange={(e) =>
-                setFormData({ ...formData, tags: e.target.value })
-              }
-              placeholder={t('admin.hotels.modal.tagsPlaceholder')}
-              className="admin-field"
-            />
-          </div>
-
-          <div>
-            <label className={labelClass}>
-              {t('admin.hotels.modal.metadata')}
-            </label>
-            <textarea
-              rows={3}
-              value={formData.metadata}
-              onChange={(e) =>
-                setFormData({ ...formData, metadata: e.target.value })
-              }
-              placeholder={t('admin.hotels.modal.metadataPlaceholder')}
-              className="admin-textarea"
-            />
-          </div>
-
-          <div className="flex items-center gap-3">
-            <input
-              id="parkingIncluded"
-              type="checkbox"
-              checked={formData.parkingIncluded}
-              onChange={(e) =>
-                setFormData({ ...formData, parkingIncluded: e.target.checked })
-              }
-              className={`h-4 w-4 rounded focus:ring-violet-500/40 ${isDark ? 'border-slate-600 bg-slate-800 text-violet-500' : 'border-slate-300 bg-white text-violet-500'}`}
-            />
-            <label
-              htmlFor="parkingIncluded"
-              className={`text-sm ${isDark ? 'text-slate-300' : 'text-slate-700'}`}
-            >
-              {t('admin.hotels.modal.parkingIncluded')}
-            </label>
-          </div>
+            )}
+          </form.Field>
 
           <div className="admin-modal-footer">
             <button
@@ -606,10 +861,10 @@ export function HotelModal({ hotelId, onClose }: HotelModalProps) {
             </button>
             <button
               type="submit"
-              disabled={loading || uploadingImage}
-              className="admin-button-primary flex-1 disabled:opacity-50 disabled:cursor-not-allowed"
+              disabled={isSubmitting || uploadingImage}
+              className="admin-button-primary flex-1 disabled:cursor-not-allowed disabled:opacity-50"
             >
-              {loading || uploadingImage
+              {isSubmitting || uploadingImage
                 ? uploadingImage
                   ? t('common.uploadingImage')
                   : t('common.saving')
