@@ -1,6 +1,6 @@
 import { createFileRoute, Link, useNavigate } from '@tanstack/react-router'
 import { useUser } from '@clerk/clerk-react'
-import { useQuery } from 'convex/react'
+import { useQuery } from '@/integrations/convex/hooks'
 import { Calendar, Car, Star, Tag } from 'lucide-react'
 import { useState } from 'react'
 
@@ -304,3 +304,4 @@ function HotelDetailPage() {
     </div>
   )
 }
+

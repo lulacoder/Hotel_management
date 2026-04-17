@@ -1,7 +1,7 @@
 // User administration route for assigning and managing staff access.
 import { createFileRoute } from '@tanstack/react-router'
 import { useUser } from '@clerk/clerk-react'
-import { useMutation, useQuery } from 'convex/react'
+import { useMutation, useQuery } from '@/integrations/convex/hooks'
 import { Building2, Search } from 'lucide-react'
 import { useMemo, useState } from 'react'
 import { motion } from 'motion/react'
@@ -296,3 +296,4 @@ function AdminUsersPage() {
     </div>
   )
 }
+

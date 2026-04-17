@@ -1,7 +1,7 @@
 // Admin dashboard landing page with role-aware analytics and quick actions.
 import { createFileRoute, Link, useNavigate } from '@tanstack/react-router'
 import { useUser } from '@clerk/clerk-react'
-import { useQuery } from 'convex/react'
+import { useQuery } from '@/integrations/convex/hooks'
 import { Suspense, lazy } from 'react'
 import { api } from '../../../convex/_generated/api'
 import {
@@ -784,3 +784,4 @@ function AdminDashboard() {
     </motion.div>
   )
 }
+

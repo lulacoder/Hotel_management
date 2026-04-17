@@ -1,4 +1,4 @@
-import { useMutation, useQuery } from 'convex/react'
+import { useMutation, useQuery } from '@/integrations/convex/hooks'
 import { X } from 'lucide-react'
 import { useState } from 'react'
 import { useForm, useStore } from '@tanstack/react-form'
@@ -291,3 +291,4 @@ export function AssignModal({ userId, onClose }: AssignModalProps) {
     </div>
   )
 }
+

@@ -1,6 +1,6 @@
 import { Link, createFileRoute } from '@tanstack/react-router'
 import { useUser } from '@clerk/clerk-react'
-import { useQuery } from 'convex/react'
+import { useQuery } from '@/integrations/convex/hooks'
 import { AlertTriangle, ArrowLeft, MessageSquareText } from 'lucide-react'
 import { motion } from 'motion/react'
 
@@ -245,3 +245,4 @@ function ComplaintDetailPage() {
     </motion.div>
   )
 }
+

@@ -1,6 +1,6 @@
 import { createFileRoute } from '@tanstack/react-router'
 import { useUser } from '@clerk/clerk-react'
-import { useMutation, useQuery } from 'convex/react'
+import { useMutation, useQuery } from '@/integrations/convex/hooks'
 import {
   AlertCircle,
   AlertTriangle,
@@ -454,3 +454,4 @@ function AdminAnnouncementsPage() {
     </div>
   )
 }
+

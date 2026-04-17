@@ -21,7 +21,7 @@ import {
   Users,
   X,
 } from 'lucide-react'
-import { useQuery } from 'convex/react'
+import { useQuery } from '@/integrations/convex/hooks'
 import { api } from '../../convex/_generated/api'
 import { LanguageSwitcher } from '../components/LanguageSwitcher'
 import { ThemeToggle } from '../components/ThemeToggle'
@@ -505,3 +505,4 @@ function AdminLayout() {
     </div>
   )
 }
+

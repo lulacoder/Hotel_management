@@ -1,7 +1,7 @@
 // Post-auth route that resolves user role and redirects to the correct destination.
 import { Navigate, createFileRoute } from '@tanstack/react-router'
 import { useUser } from '@clerk/clerk-react'
-import { useQuery } from 'convex/react'
+import { useQuery } from '@/integrations/convex/hooks'
 import { api } from '../../convex/_generated/api'
 import { sanitizeRedirect } from '../lib/authRouting'
 import { Card, CardContent } from '../components/ui/card'
@@ -67,3 +67,4 @@ function PostLoginPage() {
     </div>
   )
 }
+

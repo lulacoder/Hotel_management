@@ -1,4 +1,4 @@
-import { useMutation, useQuery } from 'convex/react'
+import { useMutation, useQuery } from '@/integrations/convex/hooks'
 import { useAuth } from '@clerk/clerk-react'
 import { useEffect, useRef, useState } from 'react'
 import { Bell, BellOff, Check, CheckCheck, Trash2 } from 'lucide-react'
@@ -264,3 +264,4 @@ export function NotificationBell({
     </DropdownMenu>
   )
 }
+

@@ -1,7 +1,7 @@
 // Room inventory management route scoped by hotel assignment/role.
 import { createFileRoute, Link } from '@tanstack/react-router'
 import { useUser } from '@clerk/clerk-react'
-import { useQuery } from 'convex/react'
+import { useQuery } from '@/integrations/convex/hooks'
 import { api } from '../../../../convex/_generated/api'
 import {
   Building2,
@@ -316,3 +316,4 @@ function RoomsPage() {
     </div>
   )
 }
+

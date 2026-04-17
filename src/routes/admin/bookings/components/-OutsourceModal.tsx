@@ -1,7 +1,7 @@
 // Modal used to outsource a booking to another hotel when capacity is unavailable.
 import { useMemo, useState } from 'react'
 import { Loader2, X } from 'lucide-react'
-import { useMutation, useQuery } from 'convex/react'
+import { useMutation, useQuery } from '@/integrations/convex/hooks'
 
 import { api } from '../../../../../convex/_generated/api'
 import type { Id } from '../../../../../convex/_generated/dataModel'
@@ -246,3 +246,4 @@ export function OutsourceModal({
     </div>
   )
 }
+

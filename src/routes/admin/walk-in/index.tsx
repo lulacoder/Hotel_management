@@ -2,7 +2,7 @@
 import { createFileRoute, useNavigate } from '@tanstack/react-router'
 import { useUser } from '@clerk/clerk-react'
 import { useMemo, useState } from 'react'
-import { useMutation, useQuery } from 'convex/react'
+import { useMutation, useQuery } from '@/integrations/convex/hooks'
 import { Calendar, CheckCircle, Search, UserRound } from 'lucide-react'
 import { motion } from 'motion/react'
 
@@ -558,3 +558,4 @@ function WalkInBookingPage() {
     </div>
   )
 }
+

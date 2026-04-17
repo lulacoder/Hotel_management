@@ -1,7 +1,7 @@
 // Hotel discovery route with geolocation, search filters, sorting, and rating workflow.
 import { createFileRoute, useNavigate } from '@tanstack/react-router'
 import { useUser } from '@clerk/clerk-react'
-import { useMutation, useQuery } from 'convex/react'
+import { useMutation, useQuery } from '@/integrations/convex/hooks'
 import { useEffect, useMemo, useState } from 'react'
 import { MessageSquarePlus } from 'lucide-react'
 
@@ -446,3 +446,4 @@ function SelectLocationPage() {
     </div>
   )
 }
+

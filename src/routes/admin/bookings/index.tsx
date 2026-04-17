@@ -15,7 +15,7 @@ import {
   XCircle,
 } from 'lucide-react'
 import { useEffect, useMemo, useState } from 'react'
-import { useMutation, useQuery } from 'convex/react'
+import { useMutation, useQuery } from '@/integrations/convex/hooks'
 import { motion } from 'motion/react'
 import { api } from '../../../../convex/_generated/api'
 import { useI18n } from '../../../lib/i18n'
@@ -872,3 +872,4 @@ function BookingsPage() {
     </motion.div>
   )
 }
+

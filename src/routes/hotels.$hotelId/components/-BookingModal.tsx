@@ -1,6 +1,6 @@
 import { Link } from '@tanstack/react-router'
 import { useUser } from '@clerk/clerk-react'
-import { useAction, useMutation, useQuery } from 'convex/react'
+import { useAction, useMutation, useQuery } from '@/integrations/convex/hooks'
 import {
   Building2,
   Check,
@@ -1063,3 +1063,4 @@ export function BookingModal({
     </div>
   )
 }
+

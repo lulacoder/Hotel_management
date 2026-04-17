@@ -124,7 +124,7 @@ function RootDocument({ children }: { children: React.ReactNode }) {
   return (
     <html lang="en" suppressHydrationWarning>
       <head>
-        {/* Prevent theme/i18n flicker before hyPdration. */}
+        {/* Prevent theme/i18n flicker before hydration. */}
         <script dangerouslySetInnerHTML={{ __html: themeBootstrapScript }} />
         <script dangerouslySetInnerHTML={{ __html: localeBootstrapScript }} />
         <HeadContent />

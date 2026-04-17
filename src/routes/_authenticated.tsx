@@ -7,7 +7,7 @@ import {
   useLocation,
 } from '@tanstack/react-router'
 import { useUser } from '@clerk/clerk-react'
-import { useQuery } from 'convex/react'
+import { useQuery } from '@/integrations/convex/hooks'
 import { api } from '../../convex/_generated/api'
 import { buildRedirectSearch } from '../lib/authRouting'
 import { DEFAULT_ADMIN_DASHBOARD_SEARCH } from '../lib/navigationSearch'
@@ -90,3 +90,4 @@ function AuthenticatedLayout() {
 
   return <Outlet />
 }
+

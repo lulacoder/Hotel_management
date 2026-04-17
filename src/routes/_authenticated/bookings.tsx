@@ -1,7 +1,7 @@
 // Customer bookings route with filtering and list rendering.
 import { Link, createFileRoute, useNavigate } from '@tanstack/react-router'
 import { useUser } from '@clerk/clerk-react'
-import { useMutation, useQuery } from 'convex/react'
+import { useMutation, useQuery } from '@/integrations/convex/hooks'
 import {
   AlertTriangle,
   Calendar,
@@ -249,3 +249,4 @@ function BookingsPage() {
     </div>
   )
 }
+

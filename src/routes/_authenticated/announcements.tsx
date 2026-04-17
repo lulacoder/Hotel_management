@@ -1,6 +1,6 @@
 import { Link, createFileRoute } from '@tanstack/react-router'
 import { UserButton, useUser } from '@clerk/clerk-react'
-import { useQuery } from 'convex/react'
+import { useQuery } from '@/integrations/convex/hooks'
 import {
   AlertCircle,
   AlertTriangle,
@@ -579,3 +579,4 @@ function CustomerAnnouncementsPage() {
     </div>
   )
 }
+

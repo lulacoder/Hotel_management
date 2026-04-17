@@ -1,7 +1,7 @@
 // Hotel details management route inside admin, including room-level controls.
 import { Link, createFileRoute } from '@tanstack/react-router'
 import { useUser } from '@clerk/clerk-react'
-import { useMutation, useQuery } from 'convex/react'
+import { useMutation, useQuery } from '@/integrations/convex/hooks'
 import {
   ArrowLeft,
   Building2,
@@ -773,3 +773,4 @@ function HotelDetailPage() {
     </div>
   )
 }
+

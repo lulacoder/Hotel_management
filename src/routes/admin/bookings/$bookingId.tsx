@@ -1,7 +1,7 @@
 // Booking details route for a specific booking record in the admin area.
 import { Link, createFileRoute } from '@tanstack/react-router'
 import { useUser } from '@clerk/clerk-react'
-import { useMutation, useQuery } from 'convex/react'
+import { useMutation, useQuery } from '@/integrations/convex/hooks'
 import {
   ArrowLeft,
   CheckCircle,
@@ -653,3 +653,4 @@ function BookingDetailPage() {
     </motion.div>
   )
 }
+

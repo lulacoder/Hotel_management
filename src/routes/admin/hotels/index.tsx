@@ -1,7 +1,7 @@
 // Admin hotels management route for creating, editing, and listing hotel properties.
 import { createFileRoute, Link } from '@tanstack/react-router'
 import { useUser } from '@clerk/clerk-react'
-import { useQuery, useMutation } from 'convex/react'
+import { useQuery, useMutation } from '@/integrations/convex/hooks'
 import { api } from '../../../../convex/_generated/api'
 import {
   Plus,
@@ -305,3 +305,4 @@ function HotelsPage() {
     </div>
   )
 }
+

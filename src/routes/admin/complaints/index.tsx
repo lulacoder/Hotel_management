@@ -1,6 +1,6 @@
 import { Link, createFileRoute } from '@tanstack/react-router'
 import { useUser } from '@clerk/clerk-react'
-import { useQuery } from 'convex/react'
+import { useQuery } from '@/integrations/convex/hooks'
 import { AlertTriangle, MessageSquareText } from 'lucide-react'
 
 import { api } from '../../../../convex/_generated/api'
@@ -203,3 +203,4 @@ function AdminComplaintsPage() {
     </div>
   )
 }
+
