@@ -14,9 +14,10 @@
   "dependencies": {
     "@clerk/clerk-react": "^5.49.0",
     "@convex-dev/react-query": "0.1.0",
+    "@convex-dev/resend": "^0.2.3",
     "@fontsource-variable/geist": "^5.2.8",
     "@hookform/resolvers": "^5.2.2",
-    "@tailwindcss/vite": "^4.0.6",
+    "@tailwindcss/vite": "^4.2.2",
     "@tanstack/react-form": "^1.29.0",
     "@tanstack/react-router": "^1.168.10",
     "@tanstack/react-router-ssr-query": "^1.131.7",
@@ -25,6 +26,7 @@
     "class-variance-authority": "^0.7.1",
     "clsx": "^2.1.1",
     "convex": "^1.27.3",
+    "convex-helpers": "^0.1.114",
     "dotenv": "^17.2.3",
     "lucide-react": "^0.561.0",
     "motion": "^12.36.0",
@@ -39,16 +41,15 @@
     "sonner": "^2.0.7",
     "svix": "^1.84.1",
     "tailwind-merge": "^3.5.0",
-    "tailwindcss": "^4.0.6",
+    "tailwindcss": "^4.2.2",
     "tw-animate-css": "^1.4.0",
-    "vite-tsconfig-paths": "^6.0.2",
     "zod": "^4.3.6"
   },
   "overrides": {
     "h3-v2": "npm:h3@2.0.1-rc.20"
   },
   "devDependencies": {
-    "@tanstack/devtools-vite": "^0.3.11",
+    "@tanstack/devtools-vite": "^0.6.0",
     "@tanstack/eslint-config": "^0.3.0",
     "@tanstack/react-devtools": "^0.7.0",
     "@tanstack/react-router-devtools": "^1.132.0",
@@ -57,12 +58,12 @@
     "@types/node": "^22.10.2",
     "@types/react": "^19.2.0",
     "@types/react-dom": "^19.2.0",
-    "@vitejs/plugin-react": "^5.0.4",
+    "@vitejs/plugin-react": "^6.0.1",
     "jsdom": "^27.0.0",
     "prettier": "^3.5.3",
     "typescript": "^5.7.2",
-    "vite": "^7.1.7",
-    "vitest": "^3.0.5",
+    "vite": "^8.0.8",
+    "vitest": "^4.1.4",
     "web-vitals": "^5.1.0"
   }
 }

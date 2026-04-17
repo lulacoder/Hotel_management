@@ -1,6 +1,7 @@
 import { httpRouter } from 'convex/server'
 import { httpAction } from './_generated/server'
 import { internal } from './_generated/api'
+import { resend } from './paymentEmails'
 
 const http = httpRouter()
 
@@ -105,6 +106,14 @@ http.route({
     }
 
     return Response.redirect(redirectUrl.toString(), 302)
+  }),
+})
+
+http.route({
+  path: '/resend-webhook',
+  method: 'POST',
+  handler: httpAction(async (ctx, request) => {
+    return await resend.handleResendEventWebhook(ctx, request)
   }),
 })
 

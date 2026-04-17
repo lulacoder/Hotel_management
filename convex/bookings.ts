@@ -1128,6 +1128,18 @@ export const verifyPayment = mutation({
       })
     }
 
+    try {
+      await ctx.runMutation(internal.paymentEmails.sendPaymentSuccessEmails, {
+        bookingId: args.bookingId,
+        channel: 'bank',
+      })
+    } catch (error) {
+      console.error(
+        'Failed to enqueue bank payment success emails:',
+        error,
+      )
+    }
+
     return null
   },
 })
@@ -1350,6 +1362,18 @@ export const confirmChapaPayment = internalMutation({
         updatedBy: booking.userId,
       })
 
+      try {
+        await ctx.runMutation(internal.paymentEmails.sendPaymentSuccessEmails, {
+          bookingId: args.bookingId,
+          channel: 'chapa',
+        })
+      } catch (error) {
+        console.error(
+          'Failed to enqueue Chapa payment success emails:',
+          error,
+        )
+      }
+
       return 'synchronized'
     }
 
@@ -1400,6 +1424,15 @@ export const confirmChapaPayment = internalMutation({
         hotelId: booking.hotelId,
         message: `Your booking #${args.bookingId.slice(-6).toUpperCase()} has been confirmed! Payment received successfully via Chapa.`,
       })
+    }
+
+    try {
+      await ctx.runMutation(internal.paymentEmails.sendPaymentSuccessEmails, {
+        bookingId: args.bookingId,
+        channel: 'chapa',
+      })
+    } catch (error) {
+      console.error('Failed to enqueue Chapa payment success emails:', error)
     }
 
     return 'confirmed'
