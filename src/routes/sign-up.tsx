@@ -63,7 +63,7 @@ function SignUpPage() {
             <div className="brand-logo-shell h-12 px-1 flex items-center justify-center group-hover:shadow-violet-500/40 transition-all duration-300">
               <img
                 src="/logo.png"
-                alt="Luxe Hotels"
+                alt="TripWays Hotels"
                 className="h-9 w-auto object-contain logo-tight"
               />
             </div>
@@ -97,7 +97,7 @@ function SignUpPage() {
 
           {/* Footer */}
           <p className="text-slate-600 text-sm">
-            &copy; {new Date().getFullYear()} Luxe Hotels.{' '}
+            &copy; {new Date().getFullYear()} TripWays Hotels.{' '}
             {t('common.allRightsReserved')}
           </p>
         </div>
@@ -122,7 +122,7 @@ function SignUpPage() {
             <div className="brand-logo-shell h-8 px-1 flex items-center justify-center">
               <img
                 src="/logo.png"
-                alt="Luxe Hotels"
+                alt="TripWays Hotels"
                 className="h-6 w-auto object-contain logo-tight"
               />
             </div>

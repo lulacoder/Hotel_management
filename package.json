@@ -14,7 +14,7 @@
   "dependencies": {
     "@clerk/clerk-react": "^5.49.0",
     "@convex-dev/react-query": "0.1.0",
-    "@convex-dev/resend": "^0.2.3",
+    "@convex-dev/resend": "^0.2.2",
     "@fontsource-variable/geist": "^5.2.8",
     "@hookform/resolvers": "^5.2.2",
     "@tailwindcss/vite": "^4.2.2",
