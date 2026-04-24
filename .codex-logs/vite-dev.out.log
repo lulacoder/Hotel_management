@@ -1,0 +1,21 @@
+
+> dev
+> vite dev --port 3000
+
+[2m12:29:23 AM[22m [36m[1m[vite][22m[39m [90m[2m(client)[22m[39m Re-optimizing dependencies because vite config has changed
+
+  [32m[1mVITE[22m v8.0.8[39m  [2mready in [0m[1m6676[22m[2m[0m ms[22m
+
+  [32m➜[39m  [1mLocal[22m:   [36mhttp://localhost:[1m3000[22m/[39m
+[2m  [32m➜[39m  [1mNetwork[22m[2m: use [22m[1m--host[22m[2m to expose[22m
+[2m[32m  ➜[39m[22m[2m  press [22m[1mh + enter[22m[2m to show help[22m
+[2m12:29:24 AM[22m [36m[1m[vite][22m[39m [90m[2m(client)[22m[39m [optimizer] scanning dependencies...
+[2m12:29:27 AM[22m [36m[1m[vite][22m[39m [90m[2m(client)[22m[39m [optimizer] bundling dependencies...
+[2m12:43:42 AM[22m [36m[1m[vite][22m[39m [90m[2m(client)[22m[39m [32mhmr update [39m[2m/src/styles.css?direct, /src/routes/select-location/components/-HeroSection.tsx[22m
+[2m12:43:42 AM[22m [36m[1m[vite][22m[39m [34m[2m(ssr)[22m[39m [32mpage reload [39m[2msrc/routes/select-location/components/-HeroSection.tsx[22m
+[Client] [vite] css hot updated: /src/styles.css
+[Client] [vite] hot updated: /src/routes/select-location/components/-HeroSection.tsx
+[2m12:43:51 AM[22m [36m[1m[vite][22m[39m [90m[2m(client)[22m[39m [32mhmr update [39m[2m/src/styles.css?direct, /src/routes/select-location/components/-HotelGrid.tsx[22m
+[2m12:43:51 AM[22m [36m[1m[vite][22m[39m [34m[2m(ssr)[22m[39m [32mpage reload [39m[2msrc/routes/select-location/components/-HotelGrid.tsx[22m
+[Client] [vite] css hot updated: /src/styles.css
+[Client] [vite] hot updated: /src/routes/select-location/components/-HotelGrid.tsx

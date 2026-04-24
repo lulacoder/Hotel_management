@@ -41,18 +41,20 @@ export function HeroSection({
 
   return (
     <div className="relative overflow-hidden px-4 py-8 md:py-10">
+      <img
+        src="/assets/trifways-lakeside-hotel.png"
+        alt=""
+        aria-hidden="true"
+        className="absolute inset-0 h-full w-full object-cover object-center"
+      />
       <div
         className={`absolute inset-0 ${
           isDark
-            ? 'bg-gradient-to-r from-violet-500/5 to-purple-500/5'
-            : 'bg-gradient-to-r from-violet-500/6 via-white/0 to-indigo-500/6'
+            ? 'bg-gradient-to-r from-slate-950/88 via-slate-950/62 to-slate-950/34'
+            : 'bg-gradient-to-r from-white/90 via-white/62 to-white/18'
         }`}
       ></div>
-      <div
-        className={`absolute left-1/2 top-1/2 h-[420px] w-[420px] -translate-x-1/2 -translate-y-1/2 rounded-full blur-3xl ${
-          isDark ? 'bg-violet-500/10' : 'bg-violet-500/8'
-        }`}
-      ></div>
+      <div className="absolute inset-x-0 bottom-0 h-24 bg-gradient-to-t from-slate-50 to-transparent dark:from-slate-950"></div>
 
       <div className="relative z-10 mx-auto max-w-5xl">
         <div className="mb-4 flex flex-col gap-3 md:mb-5 md:flex-row md:items-end md:justify-between">
@@ -101,10 +103,10 @@ export function HeroSection({
         </div>
 
         <div
-          className={`mx-auto flex max-w-4xl flex-col gap-3 rounded-3xl border p-3 md:p-4 ${
+          className={`mx-auto flex max-w-4xl flex-col gap-3 rounded-[2rem] border p-3 md:p-4 ${
             isDark
-              ? 'border-slate-800/50 bg-slate-900/50'
-              : 'border-slate-200/90 bg-white/88 shadow-[0_28px_54px_-34px_rgba(15,23,42,0.28)] backdrop-blur-sm'
+              ? 'border-slate-700/70 bg-slate-950/72 shadow-[0_28px_54px_-34px_rgba(2,6,23,0.9)] backdrop-blur-md'
+              : 'border-slate-200/95 bg-white/92 shadow-[0_30px_58px_-34px_rgba(15,23,42,0.36)] backdrop-blur-md'
           }`}
         >
           <div className="relative">
