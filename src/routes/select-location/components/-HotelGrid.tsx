@@ -134,10 +134,10 @@ export function HotelGrid({
                       fetchPriority="low"
                       width={640}
                       height={360}
-                      className="absolute inset-0 w-full h-full object-cover"
+                      className="absolute inset-0 w-full h-full object-cover transition duration-500 group-hover:scale-[1.03]"
                     />
                   )}
-                  <div className="absolute inset-0 bg-gradient-to-t from-slate-900/80 to-transparent"></div>
+                  <div className="absolute inset-0 bg-gradient-to-t from-slate-950/78 via-slate-900/8 to-transparent"></div>
                   {!hotel.imageUrl && (
                     <div className="absolute inset-0 flex items-center justify-center">
                       <Building2 className="w-16 h-16 text-slate-700" />
