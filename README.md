@@ -64,7 +64,7 @@ npm run test
 
 ## Project Overview
 
-This project is a modern hotel management platform designed to streamline operations for hotel owners and providing a seamless booking experience for customers. It integrates several sophisticated features to ensure data consistency and real-time updates.
+This project is a modern hotel management platform designed to streamline operations for hotel owners and provide a seamless booking experience for customers. It integrates several sophisticated features to ensure data consistency and real-time updates.
 
 ### Architecture
 
@@ -80,7 +80,7 @@ The application uses a serverless architecture with:
 - `src/routes/`: File-based routing structure using TanStack Router.
 - `src/hooks/`: Custom React hooks for geolocation and state management.
 - `src/lib/`: Unified utility functions, categories, and business logic.
-- `doc/`: Detailed implementation plans and reports for various features.
+- `doc/`: Organized feature docs and technical notes. See `doc/README.md` for the folder map.
 - `scripts/`: Data seeding and maintenance scripts.
 
 ## Data Seeding

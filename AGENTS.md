@@ -67,7 +67,7 @@ hotel_management/
 │   ├── schema.ts        # Database schema definition
 │   ├── lib/             # Shared server utilities (auth.ts, dates.ts)
 │   └── _generated/      # Auto-generated types (DO NOT EDIT)
-├── doc/                 # Documentation files
+├── doc/                 # Documentation files grouped by feature; see doc/README.md
 └── scripts/             # Build and seed scripts
 ```
 

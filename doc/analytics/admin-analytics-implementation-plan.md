@@ -1,6 +1,6 @@
 # Admin Dashboard Analytics Implementation Plan
 
-> **For agentic workers:** REQUIRED: Use superpowers:subagent-driven-development (if subagents available) or superpowers:executing-plans to implement this plan. Steps use checkbox (`- [ ]`) syntax for tracking.
+> **For agentic workers:** Follow the steps below in order. Use the checklist syntax (`- [ ]`) to track progress while implementing this plan.
 
 **Goal:** Build a live, role-aware analytics dashboard on the existing admin home with Convex-backed KPIs, trends, breakdowns, occupancy, and drill-down navigation, while keeping hotel cashiers fully excluded from revenue analytics.
 
@@ -717,4 +717,4 @@ Verify all of the following:
   - `/admin?window=30d` for `hotel_cashier`
   - drill into `/admin/bookings`, `/admin/rooms`, and `/admin/hotels/$hotelId` from analytics widgets
 
-Plan complete and saved to `doc/superpowers/plans/2026-03-13-admin-analytics-implementation-plan.md`. Ready to execute?
+Plan complete and saved to `doc/analytics/admin-analytics-implementation-plan.md`. Ready to execute?
