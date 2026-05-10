@@ -1,8 +1,7 @@
-// Root document shell for TanStack Router (providers, metadata, and global layout).
+// Root app shell for TanStack Router providers and global layout.
 import {
-  HeadContent,
   Link,
-  Scripts,
+  Outlet,
   createRootRouteWithContext,
 } from '@tanstack/react-router'
 import { Suspense, lazy } from 'react'
@@ -15,10 +14,8 @@ import { TooltipProvider } from '../components/ui/tooltip'
 import ClerkProvider from '../integrations/clerk/provider'
 
 import ConvexProvider from '../integrations/convex/provider'
-import { I18nProvider, localeBootstrapScript, useI18n } from '../lib/i18n'
-import { ThemeProvider, themeBootstrapScript } from '../lib/theme'
-
-import appCss from '../styles.css?url'
+import { I18nProvider, useI18n } from '../lib/i18n'
+import { ThemeProvider } from '../lib/theme'
 import type { AppRouterContext } from '../lib/routerContext'
 
 const RootDevtools = import.meta.env.DEV
@@ -30,73 +27,11 @@ const RootDevtools = import.meta.env.DEV
   : null
 
 export const Route = createRootRouteWithContext<AppRouterContext>()({
-  // Define document-level metadata and assets once for the whole app.
-  // Static document metadata shared by every route.
-  head: () => ({
-    meta: [
-      {
-        charSet: 'utf-8',
-      },
-      {
-        name: 'viewport',
-        content: 'width=device-width, initial-scale=1',
-      },
-      {
-        title: 'Hotel Management System',
-      },
-    ],
-    links: [
-      {
-        rel: 'stylesheet',
-        href: appCss,
-      },
-      {
-        rel: 'preconnect',
-        href: 'https://fonts.googleapis.com',
-      },
-      {
-        rel: 'preconnect',
-        href: 'https://fonts.gstatic.com',
-        crossOrigin: 'anonymous',
-      },
-      {
-        rel: 'stylesheet',
-        href: 'https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&family=Outfit:wght@400;500;600;700;800&display=swap',
-      },
-      {
-        rel: 'icon',
-        type: 'image/x-icon',
-        href: '/favicon.ico',
-      },
-      {
-        rel: 'icon',
-        type: 'image/png',
-        sizes: '32x32',
-        href: '/logo32.png',
-      },
-      {
-        rel: 'icon',
-        type: 'image/png',
-        sizes: '192x192',
-        href: '/logo192.png',
-      },
-      {
-        rel: 'apple-touch-icon',
-        sizes: '180x180',
-        href: '/logo192.png',
-      },
-      {
-        rel: 'manifest',
-        href: '/manifest.json',
-      },
-    ],
-  }),
-
   // Fallback UI when no route matches.
   notFoundComponent: RootNotFound,
 
   // Global app shell wrapped around routed pages.
-  shellComponent: RootDocument,
+  component: RootAppShell,
 })
 
 function RootNotFound() {
@@ -119,47 +54,35 @@ function RootNotFound() {
   )
 }
 
-function RootDocument({ children }: { children: React.ReactNode }) {
-  // Root HTML shell that wraps every matched route component.
+function RootAppShell() {
+  // Root app shell that wraps every matched route component.
   return (
-    <html lang="en" suppressHydrationWarning>
-      <head>
-        {/* Prevent theme/i18n flicker before hydration. */}
-        <script dangerouslySetInnerHTML={{ __html: themeBootstrapScript }} />
-        <script dangerouslySetInnerHTML={{ __html: localeBootstrapScript }} />
-        <HeadContent />
-      </head>
-      <body>
-        {/* Global providers power auth, data, i18n, and theme across all routes. */}
-        <I18nProvider>
-          <ThemeProvider>
-            <ClerkProvider>
-              <ConvexProvider>
-                <TooltipProvider>
-                  <Header />
-                  {children}
-                  <Toaster
-                    position="bottom-right"
-                    toastOptions={{
-                      style: {
-                        background: 'var(--popover)',
-                        border: '1px solid var(--border)',
-                        color: 'var(--popover-foreground)',
-                      },
-                    }}
-                  />
-                  {RootDevtools ? (
-                    <Suspense fallback={null}>
-                      <RootDevtools />
-                    </Suspense>
-                  ) : null}
-                </TooltipProvider>
-              </ConvexProvider>
-            </ClerkProvider>
-          </ThemeProvider>
-        </I18nProvider>
-        <Scripts />
-      </body>
-    </html>
+    <I18nProvider>
+      <ThemeProvider>
+        <ClerkProvider>
+          <ConvexProvider>
+            <TooltipProvider>
+              <Header />
+              <Outlet />
+              <Toaster
+                position="bottom-right"
+                toastOptions={{
+                  style: {
+                    background: 'var(--popover)',
+                    border: '1px solid var(--border)',
+                    color: 'var(--popover-foreground)',
+                  },
+                }}
+              />
+              {RootDevtools ? (
+                <Suspense fallback={null}>
+                  <RootDevtools />
+                </Suspense>
+              ) : null}
+            </TooltipProvider>
+          </ConvexProvider>
+        </ClerkProvider>
+      </ThemeProvider>
+    </I18nProvider>
   )
 }

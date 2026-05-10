@@ -1,7 +1,7 @@
 // Filter controls used to narrow down customer bookings.
 import { useI18n } from '../../../../lib/i18n'
 import { useTheme } from '../../../../lib/theme'
-import { Tabs, TabsList, TabsTrigger } from '../../../../components/ui/tabs'
+import { cn } from '../../../../lib/utils'
 
 interface BookingsFiltersProps {
   statusFilter: string
@@ -27,32 +27,40 @@ export function BookingsFilters({
   ]
 
   return (
-    <Tabs
-      value={statusFilter}
-      onValueChange={onFilterChange}
-      className="mb-6 w-full"
-    >
-      <TabsList
-        className={`h-auto w-full flex-wrap justify-start rounded-2xl border p-1 shadow-[0_14px_34px_-28px_rgba(15,23,42,0.5)] ${
+    <div className="mb-6 w-full">
+      <div
+        className={cn(
+          'flex gap-2 overflow-x-auto pb-2 scrollbar-hide',
+          'rounded-2xl border p-2',
+          'shadow-[0_14px_34px_-28px_rgba(15,23,42,0.5)]',
           isDark
             ? 'border-slate-800/60 bg-slate-900/50'
             : 'border-slate-300/90 bg-white/88 shadow-[0_18px_36px_-30px_rgba(15,23,42,0.28)]'
-        }`}
+        )}
       >
-        {filters.map((filter) => (
-          <TabsTrigger
-            key={filter.value}
-            value={filter.value}
-            className={`rounded-xl px-4 py-2 text-sm transition-all ${
-              isDark
-                ? 'hover:bg-slate-800/80 hover:text-slate-100 data-[state=active]:bg-white data-[state=active]:text-slate-900'
-                : 'text-slate-600 hover:border-slate-300 hover:bg-slate-100 hover:text-slate-900 data-[state=active]:border-white/70 data-[state=active]:bg-white data-[state=active]:text-slate-900 data-[state=active]:shadow-[0_8px_18px_-14px_rgba(15,23,42,0.35)]'
-            }`}
-          >
-            {filter.label}
-          </TabsTrigger>
-        ))}
-      </TabsList>
-    </Tabs>
+        {filters.map((filter) => {
+          const isActive = statusFilter === filter.value
+          return (
+            <button
+              key={filter.value}
+              onClick={() => onFilterChange(filter.value)}
+              className={cn(
+                'shrink-0 rounded-xl px-4 py-2 text-sm font-medium transition-all',
+                'focus-visible:ring-2 focus-visible:ring-amber-400/50 focus-visible:outline-none',
+                isDark
+                  ? 'text-slate-300 hover:bg-slate-800/80 hover:text-slate-100'
+                  : 'text-slate-600 hover:border-slate-300 hover:bg-slate-100 hover:text-slate-900',
+                isActive &&
+                  (isDark
+                    ? 'bg-white text-slate-900 shadow-[0_8px_18px_-14px_rgba(15,23,42,0.35)]'
+                    : 'border-white/70 bg-white text-slate-900 shadow-[0_8px_18px_-14px_rgba(15,23,42,0.35)]')
+              )}
+            >
+              {filter.label}
+            </button>
+          )
+        })}
+      </div>
+    </div>
   )
 }

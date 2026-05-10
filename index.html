@@ -1,0 +1,47 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Hotel Management System</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      rel="stylesheet"
+      href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&family=Outfit:wght@400;500;600;700;800&display=swap"
+    />
+    <link rel="icon" type="image/x-icon" href="/favicon.ico" />
+    <link rel="icon" type="image/png" sizes="32x32" href="/logo32.png" />
+    <link rel="icon" type="image/png" sizes="192x192" href="/logo192.png" />
+    <link rel="apple-touch-icon" sizes="180x180" href="/logo192.png" />
+    <link rel="manifest" href="/manifest.json" />
+    <script>
+      (() => {
+        const STORAGE_KEY = 'hotel-theme'
+        const rawValue = window.localStorage.getItem(STORAGE_KEY)
+        const theme =
+          rawValue === 'light' || rawValue === 'dark' ? rawValue : 'dark'
+        const root = document.documentElement
+        root.dataset.theme = theme
+        root.classList.remove('theme-dark', 'theme-light', 'dark')
+        root.classList.add('theme-' + theme)
+        if (theme === 'dark') root.classList.add('dark')
+      })()
+    </script>
+    <script>
+      ;(() => {
+        try {
+          const value = window.localStorage.getItem('hotel-locale')
+          const locale = value === 'am' ? 'am' : 'en'
+          document.documentElement.lang = locale
+        } catch {
+          document.documentElement.lang = 'en'
+        }
+      })()
+    </script>
+  </head>
+  <body>
+    <div id="app"></div>
+    <script type="module" src="/src/main.tsx"></script>
+  </body>
+</html>

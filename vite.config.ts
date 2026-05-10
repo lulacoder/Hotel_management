@@ -1,10 +1,9 @@
 import { defineConfig } from 'vite'
 import { devtools } from '@tanstack/devtools-vite'
-import { tanstackStart } from '@tanstack/react-start/plugin/vite'
+import { tanstackRouter } from '@tanstack/router-plugin/vite'
 import viteReact from '@vitejs/plugin-react'
 
 import tailwindcss from '@tailwindcss/vite'
-import { nitro } from 'nitro/vite'
 
 const config = defineConfig({
   resolve: {
@@ -31,9 +30,8 @@ const config = defineConfig({
         enabled: false,
       },
     }),
-    nitro(),
     tailwindcss(),
-    tanstackStart(),
+    tanstackRouter(),
     viteReact(),
   ],
 })
