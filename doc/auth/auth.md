@@ -12,7 +12,7 @@ The app uses:
 
 Key routes and providers:
 
-- Root shell: [src/routes/__root.tsx](../../src/routes/__root.tsx)
+- Root shell: [src/routes/\_\_root.tsx](../../src/routes/__root.tsx)
 - Clerk provider: [src/integrations/clerk/provider.tsx](../../src/integrations/clerk/provider.tsx)
 - Convex provider: [src/integrations/convex/provider.tsx](../../src/integrations/convex/provider.tsx)
 - Post-login router: [src/routes/post-login.tsx](../../src/routes/post-login.tsx)
@@ -31,7 +31,7 @@ These are typically stored in `.env.local`.
 
 ### Providers wiring
 
-In [src/routes/__root.tsx](../../src/routes/__root.tsx), the app is wrapped with:
+In [src/routes/\_\_root.tsx](../../src/routes/__root.tsx), the app is wrapped with:
 
 1. `ClerkProvider` (authentication + session)
 2. `ConvexProvider` (data client)
@@ -101,8 +101,8 @@ The `createUser` mutation is intended to be called by the Clerk webhook handler.
 
 Authenticated routes are grouped under the `_authenticated` routes in:
 
-- [src/routes/_authenticated.tsx](../../src/routes/_authenticated.tsx)
-- [src/routes/_authenticated/*](../../src/routes/_authenticated)
+- [src/routes/\_authenticated.tsx](../../src/routes/_authenticated.tsx)
+- [src/routes/\_authenticated/\*](../../src/routes/_authenticated)
 
 These routes should assume a valid Clerk session and a valid Convex profile.
 

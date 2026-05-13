@@ -19,9 +19,7 @@ export function validateImageFile(file: File): string | null {
 export async function uploadImageToConvex(params: {
   file: File
   generateUploadUrl: (args: Record<string, never>) => Promise<string>
-  trackUpload: (args: {
-    storageId: Id<'_storage'>
-  }) => Promise<null>
+  trackUpload: (args: { storageId: Id<'_storage'> }) => Promise<null>
 }): Promise<Id<'_storage'>> {
   // Request a specific upload URL from Convex
   const uploadUrl = await params.generateUploadUrl({})
@@ -39,7 +37,9 @@ export async function uploadImageToConvex(params: {
   }
 
   // Parse response to extract the unique storageId
-  const payload = (await uploadResponse.json()) as { storageId?: Id<'_storage'> }
+  const payload = (await uploadResponse.json()) as {
+    storageId?: Id<'_storage'>
+  }
   if (!payload.storageId) {
     throw new Error('Upload completed without a storage ID.')
   }

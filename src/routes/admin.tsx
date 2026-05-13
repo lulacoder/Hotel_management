@@ -505,4 +505,3 @@ function AdminLayout() {
     </div>
   )
 }
-

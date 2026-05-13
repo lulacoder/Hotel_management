@@ -878,4 +878,3 @@ export function HotelModal({ hotelId, onClose }: HotelModalProps) {
     </div>
   )
 }
-

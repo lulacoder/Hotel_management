@@ -57,7 +57,8 @@ http.route({
   method: 'GET',
   handler: httpAction(async (ctx, request) => {
     const url = new URL(request.url)
-    const txRef = url.searchParams.get('tx_ref') ?? url.searchParams.get('trx_ref')
+    const txRef =
+      url.searchParams.get('tx_ref') ?? url.searchParams.get('trx_ref')
 
     if (!txRef) {
       return new Response('Missing tx_ref', { status: 400 })
@@ -78,7 +79,8 @@ http.route({
   method: 'GET',
   handler: httpAction(async (_ctx, request) => {
     const url = new URL(request.url)
-    const txRef = url.searchParams.get('tx_ref') ?? url.searchParams.get('trx_ref')
+    const txRef =
+      url.searchParams.get('tx_ref') ?? url.searchParams.get('trx_ref')
     const mobileReturnBaseUrl = process.env.MOBILE_APP_RETURN_URL_BASE
 
     if (!txRef) {

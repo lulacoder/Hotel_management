@@ -202,7 +202,7 @@ bookings: defineTable({
 4. **Hold expiration** - The `holdExpiresAt` field enables the "hold for 15 minutes" feature.
 
 ### auditEvents
- 
+
 Tracks all significant actions for debugging and compliance.
 
 ```typescript

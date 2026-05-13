@@ -264,4 +264,3 @@ export function NotificationBell({
     </DropdownMenu>
   )
 }
-

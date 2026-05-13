@@ -58,10 +58,7 @@ function AuthenticatedLayout() {
 
   if (!isSignedIn) {
     return (
-      <Navigate
-        to="/sign-in"
-        search={buildRedirectSearch(location.href)}
-      />
+      <Navigate to="/sign-in" search={buildRedirectSearch(location.href)} />
     )
   }
 
@@ -90,4 +87,3 @@ function AuthenticatedLayout() {
 
   return <Outlet />
 }
-

@@ -579,4 +579,3 @@ function CustomerAnnouncementsPage() {
     </div>
   )
 }
-

@@ -1063,4 +1063,3 @@ export function BookingModal({
     </div>
   )
 }
-

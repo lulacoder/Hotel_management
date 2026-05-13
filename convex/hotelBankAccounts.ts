@@ -15,10 +15,7 @@ interface BankAccountSummary {
   updatedAt: number
 }
 
-const canManagePayment = async (
-  ctx: MutationCtx,
-  hotelId: Id<'hotels'>,
-) => {
+const canManagePayment = async (ctx: MutationCtx, hotelId: Id<'hotels'>) => {
   const { user, assignment } = await requireHotelAccess(ctx, hotelId)
 
   if (user.role === 'room_admin') {
@@ -28,7 +25,10 @@ const canManagePayment = async (
     })
   }
 
-  if (!assignment || !['hotel_admin', 'hotel_cashier'].includes(assignment.role)) {
+  if (
+    !assignment ||
+    !['hotel_admin', 'hotel_cashier'].includes(assignment.role)
+  ) {
     throw new ConvexError({
       code: 'FORBIDDEN',
       message: 'Only hotel admins and cashiers can update payment settings.',
@@ -113,7 +113,10 @@ export const create = mutation({
       action: 'hotel_bank_account_created',
       targetType: 'hotel',
       targetId: args.hotelId,
-      newValue: { bankName: trimmedBankName, accountNumber: trimmedAccountNumber },
+      newValue: {
+        bankName: trimmedBankName,
+        accountNumber: trimmedAccountNumber,
+      },
     })
 
     return id
@@ -172,7 +175,10 @@ export const update = mutation({
         bankName: existing.bankName ?? DEFAULT_BANK_NAME,
         accountNumber: existing.accountNumber,
       },
-      newValue: { bankName: trimmedBankName, accountNumber: trimmedAccountNumber },
+      newValue: {
+        bankName: trimmedBankName,
+        accountNumber: trimmedAccountNumber,
+      },
     })
 
     return null

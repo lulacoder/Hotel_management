@@ -558,4 +558,3 @@ function WalkInBookingPage() {
     </div>
   )
 }
-

@@ -789,8 +789,7 @@ export const softDelete = mutation({
       (b) =>
         ['held', 'pending_payment', 'confirmed', 'checked_in'].includes(
           b.status,
-        ) &&
-        !(b.status === 'held' && isHoldExpired(b.holdExpiresAt)),
+        ) && !(b.status === 'held' && isHoldExpired(b.holdExpiresAt)),
     )
 
     if (hasActiveBookings) {

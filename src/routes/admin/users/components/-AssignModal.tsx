@@ -291,4 +291,3 @@ export function AssignModal({ userId, onClose }: AssignModalProps) {
     </div>
   )
 }
-

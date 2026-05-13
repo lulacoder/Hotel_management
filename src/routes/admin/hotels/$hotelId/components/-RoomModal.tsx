@@ -556,4 +556,3 @@ export function RoomModal({ hotelId, roomId, onClose }: RoomModalProps) {
     </div>
   )
 }
-

@@ -653,4 +653,3 @@ function BookingDetailPage() {
     </motion.div>
   )
 }
-

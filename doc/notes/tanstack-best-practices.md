@@ -24,7 +24,7 @@ The router now uses a real typed context instead of a placeholder empty object.
 Files:
 
 - [src/lib/routerContext.ts](C:/Users/hp/hotel-management/hotel_management/src/lib/routerContext.ts)
-- [src/routes/__root.tsx](C:/Users/hp/hotel-management/hotel_management/src/routes/__root.tsx)
+- [src/routes/\_\_root.tsx](C:/Users/hp/hotel-management/hotel_management/src/routes/__root.tsx)
 - [src/router.tsx](C:/Users/hp/hotel-management/hotel_management/src/router.tsx)
 
 What changed:
@@ -73,7 +73,7 @@ Why this matters:
 
 Files:
 
-- [src/routes/_authenticated.tsx](C:/Users/hp/hotel-management/hotel_management/src/routes/_authenticated.tsx)
+- [src/routes/\_authenticated.tsx](C:/Users/hp/hotel-management/hotel_management/src/routes/_authenticated.tsx)
 - [src/routes/admin.tsx](C:/Users/hp/hotel-management/hotel_management/src/routes/admin.tsx)
 - [src/routes/post-login.tsx](C:/Users/hp/hotel-management/hotel_management/src/routes/post-login.tsx)
 - [src/routes/sign-in.tsx](C:/Users/hp/hotel-management/hotel_management/src/routes/sign-in.tsx)
@@ -164,9 +164,9 @@ Files touched include:
 
 - [src/components/Header.tsx](C:/Users/hp/hotel-management/hotel_management/src/components/Header.tsx)
 - [src/routes/index.tsx](C:/Users/hp/hotel-management/hotel_management/src/routes/index.tsx)
-- [src/routes/_authenticated/announcements.tsx](C:/Users/hp/hotel-management/hotel_management/src/routes/_authenticated/announcements.tsx)
-- [src/routes/_authenticated/bookings.tsx](C:/Users/hp/hotel-management/hotel_management/src/routes/_authenticated/bookings.tsx)
-- [src/routes/_authenticated/bookings/components/-BookingsHeader.tsx](C:/Users/hp/hotel-management/hotel_management/src/routes/_authenticated/bookings/components/-BookingsHeader.tsx)
+- [src/routes/\_authenticated/announcements.tsx](C:/Users/hp/hotel-management/hotel_management/src/routes/_authenticated/announcements.tsx)
+- [src/routes/\_authenticated/bookings.tsx](C:/Users/hp/hotel-management/hotel_management/src/routes/_authenticated/bookings.tsx)
+- [src/routes/\_authenticated/bookings/components/-BookingsHeader.tsx](C:/Users/hp/hotel-management/hotel_management/src/routes/_authenticated/bookings/components/-BookingsHeader.tsx)
 - [src/routes/select-location/components/-HotelGrid.tsx](C:/Users/hp/hotel-management/hotel_management/src/routes/select-location/components/-HotelGrid.tsx)
 - [src/routes/select-location/components/-SelectLocationHeader.tsx](C:/Users/hp/hotel-management/hotel_management/src/routes/select-location/components/-SelectLocationHeader.tsx)
 
@@ -287,4 +287,3 @@ If you want, the next cleanup pass can focus specifically on:
 1. making `npm run lint` pass cleanly
 2. reducing large bundle chunks reported by build
 3. refactoring the admin dashboard and admin bookings pages more aggressively into smaller presentational pieces
-

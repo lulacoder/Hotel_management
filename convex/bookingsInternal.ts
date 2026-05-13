@@ -44,7 +44,10 @@ export const cleanupExpiredHolds = internalMutation({
             targetType: 'booking',
             targetId: booking._id,
             previousValue: JSON.stringify({ status: booking.status }),
-            newValue: JSON.stringify({ status: 'expired', paymentStatus: 'failed' }),
+            newValue: JSON.stringify({
+              status: 'expired',
+              paymentStatus: 'failed',
+            }),
             metadata: { system: true, reason: 'hold_timeout' },
             timestamp: now,
           })

@@ -35,7 +35,7 @@ export function BookingsFilters({
           'shadow-[0_14px_34px_-28px_rgba(15,23,42,0.5)]',
           isDark
             ? 'border-slate-800/60 bg-slate-900/50'
-            : 'border-slate-300/90 bg-white/88 shadow-[0_18px_36px_-30px_rgba(15,23,42,0.28)]'
+            : 'border-slate-300/90 bg-white/88 shadow-[0_18px_36px_-30px_rgba(15,23,42,0.28)]',
         )}
       >
         {filters.map((filter) => {
@@ -53,7 +53,7 @@ export function BookingsFilters({
                 isActive &&
                   (isDark
                     ? 'bg-white text-slate-900 shadow-[0_8px_18px_-14px_rgba(15,23,42,0.35)]'
-                    : 'border-white/70 bg-white text-slate-900 shadow-[0_8px_18px_-14px_rgba(15,23,42,0.35)]')
+                    : 'border-white/70 bg-white text-slate-900 shadow-[0_8px_18px_-14px_rgba(15,23,42,0.35)]'),
               )}
             >
               {filter.label}

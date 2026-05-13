@@ -773,4 +773,3 @@ function HotelDetailPage() {
     </div>
   )
 }
-

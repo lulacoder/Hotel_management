@@ -56,7 +56,10 @@ export function HotelDateSelection({
               const nextCheckIn = event.target.value
               onCheckInChange(nextCheckIn)
 
-              if (nextCheckIn && (!checkOut || checkOut < addDays(nextCheckIn, 1))) {
+              if (
+                nextCheckIn &&
+                (!checkOut || checkOut < addDays(nextCheckIn, 1))
+              ) {
                 onCheckOutChange(addDays(nextCheckIn, 1))
               }
             }}

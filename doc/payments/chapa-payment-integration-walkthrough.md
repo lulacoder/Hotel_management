@@ -625,7 +625,7 @@ If it sees:
 - `tx_ref=<value>`
 
 then it subscribes to `api.chapaQueries.getCheckoutStatus`.
- 
+
 ### Important note
 
 The original written plan said "poll".

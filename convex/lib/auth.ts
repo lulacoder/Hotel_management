@@ -101,16 +101,12 @@ export async function requireCustomer(
  * Check if user is admin (doesn't throw, returns boolean).
  * Returns false if not authenticated or user not found.
  */
-export async function isAdmin(
-  ctx: QueryCtx | MutationCtx,
-): Promise<boolean> {
+export async function isAdmin(ctx: QueryCtx | MutationCtx): Promise<boolean> {
   const identity = await ctx.auth.getUserIdentity()
   if (!identity) return false
   const user = await ctx.db
     .query('users')
-    .withIndex('by_clerk_user_id', (q) =>
-      q.eq('clerkUserId', identity.subject),
-    )
+    .withIndex('by_clerk_user_id', (q) => q.eq('clerkUserId', identity.subject))
     .unique()
   return user?.role === 'room_admin'
 }
@@ -126,9 +122,7 @@ export async function isCustomer(
   if (!identity) return false
   const user = await ctx.db
     .query('users')
-    .withIndex('by_clerk_user_id', (q) =>
-      q.eq('clerkUserId', identity.subject),
-    )
+    .withIndex('by_clerk_user_id', (q) => q.eq('clerkUserId', identity.subject))
     .unique()
   return user?.role === 'customer'
 }
@@ -178,9 +172,7 @@ export async function canAccessHotel(
 
   const user = await ctx.db
     .query('users')
-    .withIndex('by_clerk_user_id', (q) =>
-      q.eq('clerkUserId', identity.subject),
-    )
+    .withIndex('by_clerk_user_id', (q) => q.eq('clerkUserId', identity.subject))
     .unique()
   if (!user) return false
 
@@ -229,9 +221,7 @@ export async function canManageHotel(
 
   const user = await ctx.db
     .query('users')
-    .withIndex('by_clerk_user_id', (q) =>
-      q.eq('clerkUserId', identity.subject),
-    )
+    .withIndex('by_clerk_user_id', (q) => q.eq('clerkUserId', identity.subject))
     .unique()
   if (!user) return false
 

@@ -1,5 +1,10 @@
 import { ConvexError, v } from 'convex/values'
-import { internalMutation, internalQuery, mutation, query } from './_generated/server'
+import {
+  internalMutation,
+  internalQuery,
+  mutation,
+  query,
+} from './_generated/server'
 import { internal } from './_generated/api'
 import {
   getHotelAssignment,
@@ -274,12 +279,18 @@ export const getByHotel = query({
       bookings = bookings.filter((b) => b.status === args.status)
     }
 
-    const guestProfileIds = uniqueIds(bookings.map((booking) => booking.guestProfileId))
+    const guestProfileIds = uniqueIds(
+      bookings.map((booking) => booking.guestProfileId),
+    )
     const linkedUserIds = uniqueIds(bookings.map((booking) => booking.userId))
 
     const [guestProfiles, linkedUsers] = await Promise.all([
-      Promise.all(guestProfileIds.map((guestProfileId) => ctx.db.get(guestProfileId))),
-      Promise.all(linkedUserIds.map((linkedUserId) => ctx.db.get(linkedUserId))),
+      Promise.all(
+        guestProfileIds.map((guestProfileId) => ctx.db.get(guestProfileId)),
+      ),
+      Promise.all(
+        linkedUserIds.map((linkedUserId) => ctx.db.get(linkedUserId)),
+      ),
     ])
 
     const guestProfileMap = new Map(
@@ -1134,10 +1145,7 @@ export const verifyPayment = mutation({
         channel: 'bank',
       })
     } catch (error) {
-      console.error(
-        'Failed to enqueue bank payment success emails:',
-        error,
-      )
+      console.error('Failed to enqueue bank payment success emails:', error)
     }
 
     return null
@@ -1368,10 +1376,7 @@ export const confirmChapaPayment = internalMutation({
           channel: 'chapa',
         })
       } catch (error) {
-        console.error(
-          'Failed to enqueue Chapa payment success emails:',
-          error,
-        )
+        console.error('Failed to enqueue Chapa payment success emails:', error)
       }
 
       return 'synchronized'
@@ -1620,7 +1625,9 @@ export const getMyBookingsEnriched = query({
       rooms.filter((room) => room !== null).map((room) => [room._id, room]),
     )
     const hotelMap = new Map(
-      hotels.filter((hotel) => hotel !== null).map((hotel) => [hotel._id, hotel]),
+      hotels
+        .filter((hotel) => hotel !== null)
+        .map((hotel) => [hotel._id, hotel]),
     )
 
     return bookings.flatMap((booking) => {

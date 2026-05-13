@@ -174,13 +174,13 @@ No email is sent in non-success returns such as:
 
 ## Trigger matrix (web scope)
 
-| Event source | Backend function | Outcome | Email sent? | Channel tag |
-| --- | --- | --- | --- | --- |
-| Staff approves bank proof in web admin | `bookings.verifyPayment` | `pending_payment -> confirmed + paid` | Yes | `bank` |
-| Chapa paid and synchronized | `bookings.confirmChapaPayment` | `confirmed + paymentStatus paid` | Yes | `chapa` |
-| Chapa paid and confirmed from held | `bookings.confirmChapaPayment` | `held -> confirmed + paid` | Yes | `chapa` |
-| Cash accepted by staff | `bookings.acceptCashPayment` | payment paid for cash path | No (by design) | n/a |
-| Payment rejected | `bookings.rejectPayment` | booking cancelled/failed | No (success-only scope) | n/a |
+| Event source                           | Backend function               | Outcome                               | Email sent?             | Channel tag |
+| -------------------------------------- | ------------------------------ | ------------------------------------- | ----------------------- | ----------- |
+| Staff approves bank proof in web admin | `bookings.verifyPayment`       | `pending_payment -> confirmed + paid` | Yes                     | `bank`      |
+| Chapa paid and synchronized            | `bookings.confirmChapaPayment` | `confirmed + paymentStatus paid`      | Yes                     | `chapa`     |
+| Chapa paid and confirmed from held     | `bookings.confirmChapaPayment` | `held -> confirmed + paid`            | Yes                     | `chapa`     |
+| Cash accepted by staff                 | `bookings.acceptCashPayment`   | payment paid for cash path            | No (by design)          | n/a         |
+| Payment rejected                       | `bookings.rejectPayment`       | booking cancelled/failed              | No (success-only scope) | n/a         |
 
 ## End-to-end flow diagrams (web only)
 

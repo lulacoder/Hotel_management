@@ -1,19 +1,19 @@
 import React, { createContext, useState, useContext } from 'react';
-import { lang } from '../language'; 
+import { lang } from '../language';
 
 const LanguageContext = createContext();
-    
-export const useLanguage = () =>  useContext(LanguageContext);
+
+export const useLanguage = () => useContext(LanguageContext);
 
 export const LanguageProvider = ({ children }) => {
-    const [language, setLanguage] = useState('am'); 
+const [language, setLanguage] = useState('am');
 
     const toggleLanguage = (selectedLanguage) => {
         setLanguage(selectedLanguage);
     };
-    
+
     const translate = (word) => {
-        return lang[language][word] || word; 
+        return lang[language][word] || word;
     };
 
     return (
@@ -21,8 +21,8 @@ export const LanguageProvider = ({ children }) => {
             {children}
         </LanguageContext.Provider>
     );
-};
 
+};
 
 <Provider store={store}>
         <LanguageProvider>
@@ -37,29 +37,27 @@ export const LanguageProvider = ({ children }) => {
     </ReactKeycloakProvider>
 
     import axiosInstance from '@/config/axios';
+
 import { useEffect, useState } from 'react';
 import { useLocation } from 'react-router-dom';
 import { useLanguage } from "../../../LanguageProvider";
 import '../../MangerPage/pages/TaskAssignee.css'; // Custom CSS file for styling
 
-
-
 const ApprovalPage = ({ id }) => {
-  const [users, setUsers] = useState([]);
-  const location = useLocation();
-  const pathSegments = location.pathname.split('/');
-  const branchId = pathSegments[pathSegments.length - 1];
-  const [userTasks, setUserTasks] = useState({}); // Store the state of tasks for each user
-  const { translate } = useLanguage();
+const [users, setUsers] = useState([]);
+const location = useLocation();
+const pathSegments = location.pathname.split('/');
+const branchId = pathSegments[pathSegments.length - 1];
+const [userTasks, setUserTasks] = useState({}); // Store the state of tasks for each user
+const { translate } = useLanguage();
 
-
-  // Fetch users and their task statuses from API
-  useEffect(() => {
-    const fetchUsers = async () => {
-      try {
-        const response = await axiosInstance.get(`api/planPermissions/1/50`); // API call to fetch users and task statuses
-        const usersData = response.data.content;
-        // console.log("user data" , usersData)
+// Fetch users and their task statuses from API
+useEffect(() => {
+const fetchUsers = async () => {
+try {
+const response = await axiosInstance.get(`api/planPermissions/1/50`); // API call to fetch users and task statuses
+const usersData = response.data.content;
+// console.log("user data" , usersData)
 
         // Initialize the user tasks based on the API response
         const initialTasks = {};
@@ -79,25 +77,25 @@ const ApprovalPage = ({ id }) => {
     };
 
     fetchUsers();
-  }, []);
 
-  // Handle checkbox change
-  const handleCheckboxChange = (userId, task, isChecked) => {
-    // Update the user task state for the checked task
-    setUserTasks(prevTasks => ({
-      ...prevTasks,
-      [userId]: {
-        ...prevTasks[userId],
-        [task]: isChecked,
-      },
-    }));
+}, []);
+
+// Handle checkbox change
+const handleCheckboxChange = (userId, task, isChecked) => {
+// Update the user task state for the checked task
+setUserTasks(prevTasks => ({
+...prevTasks,
+[userId]: {
+...prevTasks[userId],
+[task]: isChecked,
+},
+}));
 
     // Prepare payload to send to API
 
-  };
+};
 
-
-  const handleSaveChanges = () => {
+const handleSaveChanges = () => {
 
     // Send the updated data in a single API request
     const updatedPermissions = users.map(user => ({
@@ -134,20 +132,21 @@ const ApprovalPage = ({ id }) => {
       .catch(error => {
         console.error('Error updating task:', error);
       });
-  };
 
-  const [currentPage, setCurrentPage] = useState(1);
-  const usersPerPage = 5; // Adjust the number of users per page
+};
 
-  // Calculate pagination
-  const indexOfLastUser = currentPage * usersPerPage;
-  const indexOfFirstUser = indexOfLastUser - usersPerPage;
-  const currentUsers = users.slice(indexOfFirstUser, indexOfLastUser);
-  const totalPages = Math.ceil(users.length / usersPerPage);
+const [currentPage, setCurrentPage] = useState(1);
+const usersPerPage = 5; // Adjust the number of users per page
 
-  return (
-    <div className="task-assignee-container">
-      <h1 className="title">{translate("Permission Management Approval")} </h1>
+// Calculate pagination
+const indexOfLastUser = currentPage \* usersPerPage;
+const indexOfFirstUser = indexOfLastUser - usersPerPage;
+const currentUsers = users.slice(indexOfFirstUser, indexOfLastUser);
+const totalPages = Math.ceil(users.length / usersPerPage);
+
+return (
+<div className="task-assignee-container">
+<h1 className="title">{translate("Permission Management Approval")} </h1>
 
       {/* Table of Users and Tasks */}
       <div className="table-wrapper">
@@ -220,7 +219,8 @@ const ApprovalPage = ({ id }) => {
         </button>
       </div>
     </div>
-  );
+
+);
 };
 
 export default ApprovalPage;

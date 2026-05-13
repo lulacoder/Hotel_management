@@ -202,7 +202,9 @@ export function HotelPageChrome({
           <div className="border-t border-slate-800/50 bg-slate-800/30 p-4">
             <div className="flex items-center gap-3">
               <UserButton afterSignOutUrl="/" />
-              <span className="text-sm text-slate-400">{userFirstName ?? ''}</span>
+              <span className="text-sm text-slate-400">
+                {userFirstName ?? ''}
+              </span>
             </div>
           </div>
         )}

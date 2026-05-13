@@ -22,6 +22,7 @@ This document records the implementation completed to address PM feedback for ca
 **Requirement:** Cashier/admin must see which room a guest confirmed.
 
 **Implemented:**
+
 - Booking detail now includes room number and room type in:
   - booking list modal,
   - dedicated booking detail page.
@@ -31,6 +32,7 @@ This document records the implementation completed to address PM feedback for ca
 **Requirement:** Both cashier and admin can change booking status.
 
 **Implemented transitions:**
+
 - `held -> confirmed`
 - `confirmed -> checked_in`
 - `checked_in -> checked_out`
@@ -43,6 +45,7 @@ Transition validation is enforced server-side.
 **Requirement:** Cashier can accept cash and update booking payment state.
 
 **Implemented:**
+
 - Added action to mark `paymentStatus` as `paid` without forcing additional status changes.
 
 ### 2.4 Cashier room management access
@@ -50,6 +53,7 @@ Transition validation is enforced server-side.
 **Requirement:** Cashier must manage rooms (not bookings-only).
 
 **Implemented:**
+
 - Cashier can access rooms navigation and room management views for assigned hotel.
 - Backend room mutations now authorize assigned hotel staff (including cashier), not only hotel admins.
 
@@ -60,9 +64,11 @@ Transition validation is enforced server-side.
 ## 3.1 Booking domain updates
 
 ### File changed
+
 - `convex/bookings.ts`
 
 ### New mutations
+
 - `updateStatus`
   - Validates role/hotel access.
   - Enforces allowed transition matrix.
@@ -77,6 +83,7 @@ Transition validation is enforced server-side.
   - Writes audit event: `booking_payment_paid_cash`.
 
 ### Permission alignment updates
+
 - `cancelBooking`
   - Expanded from hotel_admin-only to assigned hotel staff for hotel-scoped cancellation authority.
 - `getEnriched`
@@ -85,9 +92,11 @@ Transition validation is enforced server-side.
 ## 3.2 Room domain authorization updates
 
 ### File changed
+
 - `convex/rooms.ts`
 
 ### Authorization change
+
 - Replaced `requireHotelManagement` with `requireHotelAccess` for room mutations:
   - `create`
   - `update`
@@ -104,9 +113,11 @@ Transition validation is enforced server-side.
 ## 4.1 Admin bookings list enhancements
 
 ### File changed
+
 - `src/routes/admin/bookings/index.tsx`
 
 ### Added capabilities
+
 - `View Detail` modal from booking cards.
 - `Open Page` navigation to dedicated booking detail route.
 - `Accept Cash` action.
@@ -116,9 +127,11 @@ Transition validation is enforced server-side.
 ## 4.2 Dedicated booking detail page
 
 ### New file
+
 - `src/routes/admin/bookings/$bookingId.tsx`
 
 ### Features
+
 - Full booking detail presentation including confirmed room details.
 - Action panel for status transitions and cash payment acceptance.
 - Permission-aware controls for room admin and assigned hotel staff.
@@ -126,19 +139,23 @@ Transition validation is enforced server-side.
 ## 4.3 Route tree/type updates
 
 ### File updated (generated)
+
 - `src/routeTree.gen.ts`
 
 ### Result
+
 - New route registered: `/admin/bookings/$bookingId`.
 
 ## 4.4 Cashier navigation and access changes
 
 ### Files changed
+
 - `src/routes/admin.tsx`
 - `src/routes/admin/rooms/index.tsx`
 - `src/routes/admin/hotels/index.tsx`
 
 ### Behavior updates
+
 - Sidebar for `hotel_cashier` now includes:
   - `Bookings`
   - `Rooms`
@@ -152,9 +169,11 @@ Transition validation is enforced server-side.
 ## 4.5 Back-link copy update
 
 ### File changed
+
 - `src/routes/admin/hotels/$hotelId.tsx`
 
 ### Copy change
+
 - Updated back-link text from `Back to Hotels` to `Back to My Hotel` (both occurrences).
 
 ---
@@ -169,10 +188,12 @@ Transition validation is enforced server-side.
 ## 6) Files Added/Modified
 
 ### Added
+
 - `src/routes/admin/bookings/$bookingId.tsx`
 - `doc/cashier-admin-booking-room-management-update.md`
 
 ### Modified
+
 - `convex/bookings.ts`
 - `convex/rooms.ts`
 - `src/routes/admin.tsx`

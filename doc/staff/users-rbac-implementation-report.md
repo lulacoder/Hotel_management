@@ -24,6 +24,7 @@ The implementation introduces a dedicated assignment table, new Convex APIs for 
 **Decision:** We kept `users.role` unchanged (`customer | room_admin`) and added a separate `hotelStaff` table for scoped permissions.
 
 **Why:**
+
 - Avoids breaking existing role semantics.
 - Preserves `room_admin` as an unconditional super role.
 - Allows future extension to richer assignment models.
@@ -33,16 +34,19 @@ The implementation introduces a dedicated assignment table, new Convex APIs for 
 **Decision:** Assignment uniqueness is enforced in mutation logic (`assign`) by checking existing assignment via `by_user` index.
 
 **Why:**
+
 - Matches MVP requirements.
 - Avoids schema complexity while preserving deterministic behavior.
 
 ## 2.3 Server-side permission boundaries first
 
 **Decision:** Authorization was moved into backend operations using auth helpers:
+
 - `requireHotelAccess`
 - `requireHotelManagement`
 
 **Why:**
+
 - Prevents trust in frontend-only filtering.
 - Aligns with RBAC best practice where backend is source of truth.
 
@@ -51,15 +55,18 @@ The implementation introduces a dedicated assignment table, new Convex APIs for 
 **Decision:** `room_admin` always bypasses hotel-scoped restrictions.
 
 **Why:**
+
 - Required by product design: room_admin remains unrestricted even if assigned to a hotel.
 
 ## 2.5 Cashier scope constrained
 
 **Decision:** Cashiers are restricted to bookings-focused access.
+
 - In admin nav: cashier sees **Bookings only**.
 - Backend management actions requiring `requireHotelManagement` are denied to cashier.
 
 **Why:**
+
 - Aligns with selected implementation direction and least-privilege.
 
 ## 2.6 Audit trail extended to user assignment events
@@ -67,6 +74,7 @@ The implementation introduces a dedicated assignment table, new Convex APIs for 
 **Decision:** Audit target type `user` was added and assignment/unassignment actions are logged.
 
 **Why:**
+
 - Hotel staff assignment is an administrative security action and should be traceable.
 
 ---
@@ -80,6 +88,7 @@ The implementation introduces a dedicated assignment table, new Convex APIs for 
 ### Added table: `hotelStaff`
 
 Fields:
+
 - `userId: Id<'users'>`
 - `hotelId: Id<'hotels'>`
 - `role: 'hotel_admin' | 'hotel_cashier'`
@@ -87,6 +96,7 @@ Fields:
 - `assignedBy: Id<'users'>`
 
 Indexes:
+
 - `by_user` on `userId`
 - `by_hotel` on `hotelId`
 
@@ -103,11 +113,13 @@ Indexes:
 ### Queries
 
 #### `listAllUsers`
+
 - Requires `room_admin`.
 - Returns all users plus optional assignment object.
 - Enriches assignment with hotel name/city.
 
 #### `getByUserId`
+
 - Args: `{ clerkUserId, userId }`.
 - Allows:
   - self lookup,
@@ -116,6 +128,7 @@ Indexes:
 - Returns assignment or `null`.
 
 #### `getByHotelId`
+
 - Args: `{ clerkUserId, hotelId }`.
 - Requires hotel access (`requireHotelAccess`).
 - Returns assignments with resolved `userEmail`.
@@ -123,6 +136,7 @@ Indexes:
 ### Mutations
 
 #### `assign`
+
 - Requires `room_admin`.
 - Validates:
   - target user exists,
@@ -133,6 +147,7 @@ Indexes:
   - targetType: `user`
 
 #### `unassign`
+
 - Requires `room_admin`.
 - Validates assignment exists.
 - Deletes assignment and writes audit event:
@@ -146,6 +161,7 @@ Indexes:
 ### File changed: `convex/lib/auth.ts`
 
 Added:
+
 - `HotelStaffRole` type
 - `getHotelAssignment(ctx, userId)`
 - `canAccessHotel(ctx, clerkUserId, hotelId)`
@@ -154,6 +170,7 @@ Added:
 - `requireHotelManagement(ctx, clerkUserId, hotelId)`
 
 Behavior:
+
 - `room_admin` always passes access/management checks.
 - non-admin users must have assignment matching `hotelId` to access.
 - only `hotel_admin` can pass management checks for assigned hotel.
@@ -228,15 +245,18 @@ Behavior:
 ### File changed: `src/routes/admin.tsx`
 
 ### Route-level sign-in guard
+
 - Added `beforeLoad` sign-in redirect using TanStack route guard pattern.
 
 ### Access logic
+
 - Loads profile and assignment.
 - Access allowed if:
   - `profile.role === 'room_admin'`, or
   - user has `hotelStaff` assignment.
 
 ### Navigation visibility
+
 - Base nav now includes `Users`.
 - `visibleNavItems` rules:
   - `room_admin`: all items.
@@ -250,10 +270,12 @@ Applied in both mobile and desktop sidebars.
 ## 4.2 New Users management page
 
 ### New files
+
 - `src/routes/admin/users/index.tsx`
 - `src/routes/admin/users/components/-AssignModal.tsx`
 
 ### Users page
+
 - Room-admin-only page.
 - Queries:
   - `api.hotelStaff.listAllUsers`
@@ -265,6 +287,7 @@ Applied in both mobile and desktop sidebars.
   - modal integration and error handling.
 
 ### Assign modal
+
 - Select hotel dropdown (from `api.hotels.list`).
 - Role radio (`hotel_admin` / `hotel_cashier`).
 - Validation for required hotel selection.
@@ -331,37 +354,41 @@ Applied in both mobile and desktop sidebars.
 ## 4.8 Post-login and authenticated redirects
 
 ### Files changed
+
 - `src/routes/post-login.tsx`
 - `src/routes/_authenticated.tsx`
 
 Changes:
+
 - Redirect logic now checks hotel assignment (`api.hotelStaff.getByUserId`) in addition to global role.
 - Assigned staff (`hotel_admin` / `hotel_cashier`) are redirected to `/admin` after sign-in.
 
 Why this matters:
+
 - Fixed an issue where assigned staff were incorrectly sent to customer routes (`/select-location`) because only `room_admin` was being checked.
 
 ---
 
 ## 5) Permission Matrix (As Implemented)
 
-| Capability | room_admin | hotel_admin (assigned hotel) | hotel_cashier (assigned hotel) | customer (unassigned) |
-|---|---|---|---|---|
-| Access `/admin` | ✅ | ✅ | ✅ | ❌ |
-| See Hotels nav | ✅ | ✅ | ❌ | ❌ |
-| See Rooms nav | ✅ | ✅ | ❌ | ❌ |
-| See Bookings nav | ✅ | ✅ | ✅ | ❌ |
-| See Users nav | ✅ | ❌ | ❌ | ❌ |
-| Create hotel | ✅ | ❌ | ❌ | ❌ |
-| Update/delete/restore hotel | ✅ | ✅ (own) | ❌ | ❌ |
-| Create/update/delete/restore room | ✅ | ✅ (own hotel) | ❌ | ❌ |
-| View hotel bookings | ✅ | ✅ (own hotel) | ✅ (own hotel) | ❌ |
-| View hotel ratings (admin view) | ✅ | ✅ (own hotel) | ✅ (own hotel) | ❌ |
-| Delete hotel ratings | ✅ | ✅ (own hotel) | ❌ | ❌ |
-| Cancel booking (admin flow) | ✅ | ✅ (own hotel) | ❌ | self only |
-| Assign/unassign hotel staff | ✅ | ❌ | ❌ | ❌ |
+| Capability                        | room_admin | hotel_admin (assigned hotel) | hotel_cashier (assigned hotel) | customer (unassigned) |
+| --------------------------------- | ---------- | ---------------------------- | ------------------------------ | --------------------- |
+| Access `/admin`                   | ✅         | ✅                           | ✅                             | ❌                    |
+| See Hotels nav                    | ✅         | ✅                           | ❌                             | ❌                    |
+| See Rooms nav                     | ✅         | ✅                           | ❌                             | ❌                    |
+| See Bookings nav                  | ✅         | ✅                           | ✅                             | ❌                    |
+| See Users nav                     | ✅         | ❌                           | ❌                             | ❌                    |
+| Create hotel                      | ✅         | ❌                           | ❌                             | ❌                    |
+| Update/delete/restore hotel       | ✅         | ✅ (own)                     | ❌                             | ❌                    |
+| Create/update/delete/restore room | ✅         | ✅ (own hotel)               | ❌                             | ❌                    |
+| View hotel bookings               | ✅         | ✅ (own hotel)               | ✅ (own hotel)                 | ❌                    |
+| View hotel ratings (admin view)   | ✅         | ✅ (own hotel)               | ✅ (own hotel)                 | ❌                    |
+| Delete hotel ratings              | ✅         | ✅ (own hotel)               | ❌                             | ❌                    |
+| Cancel booking (admin flow)       | ✅         | ✅ (own hotel)               | ❌                             | self only             |
+| Assign/unassign hotel staff       | ✅         | ❌                           | ❌                             | ❌                    |
 
 Notes:
+
 - Owner self-cancel remains supported for normal customer flow.
 - Room admin remains unrestricted even if also assigned in `hotelStaff`.
 
@@ -386,6 +413,7 @@ Notes:
 - Soft-deleted hotel validation blocks assigning staff to deleted hotels.
 
 Potential hardening items:
+
 - Add idempotent/transaction-safe assignment guard for concurrent assign races.
 - Consider stricter access policy for `getByUserId` if same-hotel cross-view is undesired.
 
@@ -414,6 +442,7 @@ Potential hardening items:
 ## 10) Final Outcome
 
 The RBAC refactor is now in place with:
+
 - scoped staff assignment model,
 - enforceable backend authorization boundaries,
 - admin users management UI,

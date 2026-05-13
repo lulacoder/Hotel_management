@@ -61,10 +61,7 @@ const getStaffAssignmentForComplaints = async (
   return assignment
 }
 
-const normalizeSingleLine = (value: string) =>
-  value
-    .replace(/\s+/g, ' ')
-    .trim()
+const normalizeSingleLine = (value: string) => value.replace(/\s+/g, ' ').trim()
 
 const normalizeMultiline = (value: string) => value.trim()
 
@@ -219,7 +216,9 @@ export const getForAssignedHotel = query({
     }
 
     const customer = await ctx.db.get(complaint.userId)
-    const booking = complaint.bookingId ? await ctx.db.get(complaint.bookingId) : null
+    const booking = complaint.bookingId
+      ? await ctx.db.get(complaint.bookingId)
+      : null
 
     return {
       complaint,

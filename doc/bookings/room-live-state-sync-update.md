@@ -30,9 +30,11 @@ Admin room cards were rendered from `api.rooms.getByHotel`, which only returns s
 ## 3.1 Backend: live room-state derivation
 
 ### File changed
+
 - `convex/rooms.ts`
 
 ### New validators/types
+
 - Added `roomLiveStateValidator` with:
   - `available`
   - `maintenance`
@@ -44,6 +46,7 @@ Admin room cards were rendered from `api.rooms.getByHotel`, which only returns s
 - Added `roomWithLiveStateValidator` by extending the existing room validator.
 
 ### New helper
+
 - `getDerivedLiveState(operationalStatus, bookings)`
 
 ### Derivation logic
@@ -56,6 +59,7 @@ Admin room cards were rendered from `api.rooms.getByHotel`, which only returns s
    - Else -> `available`
 
 ### New query
+
 - `getByHotelWithLiveState`
   - Args:
     - `clerkUserId`
@@ -69,6 +73,7 @@ Admin room cards were rendered from `api.rooms.getByHotel`, which only returns s
 ### Booking filters in derivation
 
 The query excludes non-blocking booking states from active evaluation:
+
 - `cancelled`
 - `expired`
 - `checked_out`
@@ -80,19 +85,23 @@ For held bookings, expired holds are ignored via `isHoldExpired`.
 ## 3.2 Frontend: admin room cards use live state
 
 ### File changed
+
 - `src/routes/admin/hotels/$hotelId.tsx`
 
 ### Query switch
+
 - Replaced `api.rooms.getByHotel` with `api.rooms.getByHotelWithLiveState`.
 - Query now uses role-aware auth context via `clerkUserId`.
 
 ### UI status rendering
+
 - Status badge now maps from `room.liveState`.
 - Added UI configs for:
   - `held`
   - `booked`
 
 ### Status action menu preserved
+
 - Manual operational status actions still only allow:
   - `available`
   - `maintenance`
@@ -126,10 +135,12 @@ For held bookings, expired holds are ignored via `isHoldExpired`.
 ## 6) Files Added/Modified
 
 ### Modified
+
 - `convex/rooms.ts`
 - `src/routes/admin/hotels/$hotelId.tsx`
 
 ### Added
+
 - `doc/room-live-state-sync-update.md`
 
 ---

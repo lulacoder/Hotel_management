@@ -87,10 +87,16 @@ export const listAllUsers = query({
           .unique(),
       ),
     )
-    const hotelIds = uniqueIds(assignments.map((assignment) => assignment?.hotelId))
-    const hotels = await Promise.all(hotelIds.map((hotelId) => ctx.db.get(hotelId)))
+    const hotelIds = uniqueIds(
+      assignments.map((assignment) => assignment?.hotelId),
+    )
+    const hotels = await Promise.all(
+      hotelIds.map((hotelId) => ctx.db.get(hotelId)),
+    )
     const hotelMap = new Map(
-      hotels.filter((hotel) => hotel !== null).map((hotel) => [hotel._id, hotel]),
+      hotels
+        .filter((hotel) => hotel !== null)
+        .map((hotel) => [hotel._id, hotel]),
     )
 
     return users.map((user, index) => {

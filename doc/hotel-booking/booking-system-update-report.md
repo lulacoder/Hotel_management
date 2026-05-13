@@ -19,9 +19,11 @@ This document records the booking-system updates implemented for package selecti
 ## 2.1 Package-first booking flow
 
 ### File changed
+
 - `src/routes/hotels.$hotelId/components/-BookingModal.tsx`
 
 ### Behavior updates
+
 - Booking modal now starts at `package` step before guest details.
 - Default selected package is `room_only`.
 - Customer can continue to details, go back, and keep selected package state.
@@ -31,9 +33,11 @@ This document records the booking-system updates implemented for package selecti
 ## 2.2 Package pricing in breakdowns
 
 ### File changed
+
 - `src/routes/hotels.$hotelId/components/-BookingModal.tsx`
 
 ### Behavior updates
+
 - Details and confirm steps now show:
   - room subtotal (`pricePerNight * nights`)
   - optional package subtotal (`packageAddOn * nights`) when add-on > 0
@@ -50,9 +54,11 @@ This document records the booking-system updates implemented for package selecti
 ## 3.1 Booking schema extension
 
 ### File changed
+
 - `convex/schema.ts`
 
 ### New optional fields on `bookings`
+
 - `packageType`: `'room_only' | 'with_breakfast' | 'full_package'`
 - `packageAddOn`: `number` (cents per night snapshot)
 
@@ -61,13 +67,16 @@ Both are optional for backward compatibility with existing booking documents.
 ## 3.2 Booking mutation/validator updates
 
 ### File changed
+
 - `convex/bookings.ts`
 
 ### Added validators/constants
+
 - `packageTypeValidator`
 - `packageAddOnByType`
 
 ### Updated `holdRoom`
+
 - Accepts optional args:
   - `packageType`
   - `packageAddOn`
@@ -77,6 +86,7 @@ Both are optional for backward compatibility with existing booking documents.
 - Computes `totalPrice` with package add-on included.
 
 ### Updated booking return contracts
+
 - Booking validator now includes optional `packageType` and `packageAddOn`.
 - Enriched booking queries automatically surface package fields through shared validator.
 
@@ -85,9 +95,11 @@ Both are optional for backward compatibility with existing booking documents.
 ## 4) Frontend Shared Package Source
 
 ### New file
+
 - `src/lib/packages.ts`
 
 ### Added exports
+
 - `PackageType`
 - `StayPackage`
 - `PACKAGES`
@@ -106,10 +118,12 @@ This module is the single frontend source for package labels, descriptions, incl
 ## 5.1 Customer booking cards
 
 ### Files changed
+
 - `src/routes/_authenticated/bookings/components/-BookingCard.tsx`
 - `src/routes/_authenticated/bookings/components/-BookingsList.tsx`
 
 ### Behavior updates
+
 - Cards now display package badge/label.
 - Legacy bookings without package data show fallback label:
   - `Not specified`
@@ -117,10 +131,12 @@ This module is the single frontend source for package labels, descriptions, incl
 ## 5.2 Admin booking detail surfaces
 
 ### Files changed
+
 - `src/routes/admin/bookings/$bookingId.tsx`
 - `src/routes/admin/bookings/index.tsx`
 
 ### Behavior updates
+
 - Admin full detail and quick detail modal now display:
   - package label
   - per-night package add-on (formatted)
@@ -152,10 +168,12 @@ Note: full-repo lint still has unrelated pre-existing issues in generated/output
 ## 8) Files Added/Modified
 
 ### Added
+
 - `src/lib/packages.ts`
 - `doc/hotel-booking/booking-system-update-report.md`
 
 ### Modified
+
 - `convex/schema.ts`
 - `convex/bookings.ts`
 - `src/routes/hotels.$hotelId/components/-BookingModal.tsx`

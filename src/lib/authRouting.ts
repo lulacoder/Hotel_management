@@ -25,7 +25,9 @@ declare global {
   }
 }
 
-function resolveGlobalRole(user: ClerkLikeUser | null | undefined): GlobalUserRole {
+function resolveGlobalRole(
+  user: ClerkLikeUser | null | undefined,
+): GlobalUserRole {
   if (!user) {
     return null
   }

@@ -116,7 +116,8 @@ function extractChapaErrorMessage(message: unknown) {
 
       if (Array.isArray(value)) {
         const firstString = value.find(
-          (entry): entry is string => typeof entry === 'string' && entry.trim().length > 0,
+          (entry): entry is string =>
+            typeof entry === 'string' && entry.trim().length > 0,
         )
 
         if (firstString) {
@@ -157,12 +158,15 @@ function verifyWebhookSignature(args: {
 async function verifyTransactionWithChapa(txRef: string) {
   const secretKey = getEnv('CHAPA_SECRET_KEY')
 
-  const response = await fetch(`${CHAPA_API_BASE}/transaction/verify/${txRef}`, {
-    headers: {
-      Authorization: `Bearer ${secretKey}`,
+  const response = await fetch(
+    `${CHAPA_API_BASE}/transaction/verify/${txRef}`,
+    {
+      headers: {
+        Authorization: `Bearer ${secretKey}`,
+      },
+      method: 'GET',
     },
-    method: 'GET',
-  })
+  )
 
   const data = (await response.json()) as ChapaVerifyResponse
 
@@ -175,8 +179,7 @@ async function verifyTransactionWithChapa(txRef: string) {
     chapaReference: data.data.reference ?? undefined,
     currency: data.data.currency ?? undefined,
     mode: data.data.mode ?? undefined,
-    paymentMethod:
-      data.data.payment_method ?? data.data.method ?? undefined,
+    paymentMethod: data.data.payment_method ?? data.data.method ?? undefined,
     status: data.data.status ?? undefined,
     txRef: data.data.tx_ref ?? undefined,
   } satisfies VerifiedTransaction
@@ -258,20 +261,24 @@ async function reconcileTransaction(
   if (eventStatus === 'refunded' || eventStatus === 'reversed') {
     const refundedAt = Date.now()
 
-    const updatedPayment = await ctx.runMutation(internal.chapaInternal.updatePaymentRecord, {
-      txRef: args.txRef,
-      status: eventStatus,
-      event: args.event,
-      payload: args.payload,
-      providerStatus: eventStatus,
-      refundedAt,
-      source: args.source,
-    })
+    const updatedPayment = await ctx.runMutation(
+      internal.chapaInternal.updatePaymentRecord,
+      {
+        txRef: args.txRef,
+        status: eventStatus,
+        event: args.event,
+        payload: args.payload,
+        providerStatus: eventStatus,
+        refundedAt,
+        source: args.source,
+      },
+    )
 
     if (
       booking &&
       updatedPayment &&
-      (updatedPayment.status === 'refunded' || updatedPayment.status === 'reversed')
+      (updatedPayment.status === 'refunded' ||
+        updatedPayment.status === 'reversed')
     ) {
       await ctx.runMutation(internal.bookings.applyChapaPaymentStatus, {
         bookingId: booking._id,
@@ -399,26 +406,30 @@ async function reconcileTransaction(
     }
   }
 
-  const updatedPayment = await ctx.runMutation(internal.chapaInternal.updatePaymentRecord, {
-    txRef: args.txRef,
-    status: resolvedStatus,
-    chapaReference: verification.chapaReference,
-    event: args.event,
-    payload: args.payload,
-    paymentMethod: verification.paymentMethod,
-    providerMode:
-      verification.mode === 'test' || verification.mode === 'live'
-        ? verification.mode
-        : undefined,
-    providerStatus: verification.status,
-    source: args.source,
-    verifiedAt: Date.now(),
-  })
+  const updatedPayment = await ctx.runMutation(
+    internal.chapaInternal.updatePaymentRecord,
+    {
+      txRef: args.txRef,
+      status: resolvedStatus,
+      chapaReference: verification.chapaReference,
+      event: args.event,
+      payload: args.payload,
+      paymentMethod: verification.paymentMethod,
+      providerMode:
+        verification.mode === 'test' || verification.mode === 'live'
+          ? verification.mode
+          : undefined,
+      providerStatus: verification.status,
+      source: args.source,
+      verifiedAt: Date.now(),
+    },
+  )
 
   if (
     booking &&
     updatedPayment &&
-    (updatedPayment.status === 'failed' || updatedPayment.status === 'cancelled')
+    (updatedPayment.status === 'failed' ||
+      updatedPayment.status === 'cancelled')
   ) {
     await ctx.runMutation(internal.bookings.applyChapaPaymentStatus, {
       bookingId: booking._id,
@@ -515,7 +526,9 @@ export const initializeHostedCheckout = action({
     }
 
     const txRef = generateTxRef(args.bookingId)
-    const chargedAmountMinor = Math.round((booking.totalPrice / 100) * fxRate * 100)
+    const chargedAmountMinor = Math.round(
+      (booking.totalPrice / 100) * fxRate * 100,
+    )
     const amount = (chargedAmountMinor / 100).toFixed(2)
     const callbackUrl = `${callbackBaseUrl}/chapa/callback`
     const returnUrl =

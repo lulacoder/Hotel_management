@@ -245,4 +245,3 @@ function ComplaintDetailPage() {
     </motion.div>
   )
 }
-

@@ -392,10 +392,7 @@ function AdminDashboard() {
         <motion.div variants={itemVariants} className="mb-8">
           <Suspense
             fallback={
-              <AnalyticsLoadingCard
-                className="h-[24rem]"
-                isDark={isDark}
-              />
+              <AnalyticsLoadingCard className="h-[24rem]" isDark={isDark} />
             }
           >
             <LazyCashierAnalyticsPanel
@@ -439,9 +436,7 @@ function AdminDashboard() {
                 navigateToBookings({ status: statusKey })
               }}
               emptyTitle={t('admin.analytics.noData' as never)}
-              emptyDescription={t(
-                'admin.analytics.noDataDescription' as never,
-              )}
+              emptyDescription={t('admin.analytics.noDataDescription' as never)}
               bookingTrendTitle={t('admin.analytics.bookingTrend' as never)}
               paymentBreakdownTitle={t(
                 'admin.analytics.paymentBreakdown' as never,
@@ -518,7 +513,9 @@ function AdminDashboard() {
           >
             <motion.div variants={itemVariants}>
               <Suspense
-                fallback={<AnalyticsLoadingCard className="h-80" isDark={isDark} />}
+                fallback={
+                  <AnalyticsLoadingCard className="h-80" isDark={isDark} />
+                }
               >
                 <LazyAnalyticsTrendChart
                   title={t('admin.analytics.bookingTrend' as never)}
@@ -535,7 +532,9 @@ function AdminDashboard() {
             </motion.div>
             <motion.div variants={itemVariants}>
               <Suspense
-                fallback={<AnalyticsLoadingCard className="h-80" isDark={isDark} />}
+                fallback={
+                  <AnalyticsLoadingCard className="h-80" isDark={isDark} />
+                }
               >
                 <LazyAnalyticsTrendChart
                   title={t('admin.analytics.revenueTrend' as never)}
@@ -563,13 +562,17 @@ function AdminDashboard() {
           >
             <motion.div variants={itemVariants}>
               <Suspense
-                fallback={<AnalyticsLoadingCard className="h-80" isDark={isDark} />}
+                fallback={
+                  <AnalyticsLoadingCard className="h-80" isDark={isDark} />
+                }
               >
                 <LazyAnalyticsStatusBreakdown
                   title={t('admin.analytics.bookingBreakdown' as never)}
                   items={statusBreakdowns?.bookingStatuses}
                   labels={metricLabels}
-                  onItemClick={(item) => navigateToBookings({ status: item.key })}
+                  onItemClick={(item) =>
+                    navigateToBookings({ status: item.key })
+                  }
                   emptyTitle={t('admin.analytics.noData' as never)}
                   emptyDescription={t(
                     'admin.analytics.noDataDescription' as never,
@@ -579,7 +582,9 @@ function AdminDashboard() {
             </motion.div>
             <motion.div variants={itemVariants}>
               <Suspense
-                fallback={<AnalyticsLoadingCard className="h-80" isDark={isDark} />}
+                fallback={
+                  <AnalyticsLoadingCard className="h-80" isDark={isDark} />
+                }
               >
                 <LazyAnalyticsStatusBreakdown
                   title={t('admin.analytics.paymentBreakdown' as never)}
@@ -597,7 +602,9 @@ function AdminDashboard() {
             </motion.div>
             <motion.div variants={itemVariants}>
               <Suspense
-                fallback={<AnalyticsLoadingCard className="h-80" isDark={isDark} />}
+                fallback={
+                  <AnalyticsLoadingCard className="h-80" isDark={isDark} />
+                }
               >
                 <LazyAnalyticsStatusBreakdown
                   title={t('admin.analytics.roomBreakdown' as never)}
@@ -625,7 +632,9 @@ function AdminDashboard() {
           >
             <motion.div variants={itemVariants}>
               <Suspense
-                fallback={<AnalyticsLoadingCard className="h-96" isDark={isDark} />}
+                fallback={
+                  <AnalyticsLoadingCard className="h-96" isDark={isDark} />
+                }
               >
                 <LazyAnalyticsOccupancyCard
                   title={t('admin.analytics.occupancyTrend' as never)}
@@ -784,4 +793,3 @@ function AdminDashboard() {
     </motion.div>
   )
 }
-
