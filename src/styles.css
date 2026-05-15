@@ -401,13 +401,13 @@ html[data-theme='light'] .landing-subtitle {
 }
 
 html[data-theme='light'] .landing-primary-cta {
-  background: rgb(15 23 42);
+  background: rgb(124 58 237);
   color: rgb(255 255 255);
-  box-shadow: 0 14px 34px rgb(15 23 42 / 0.2);
+  box-shadow: 0 14px 34px rgb(124 58 237 / 0.25);
 }
 
 html[data-theme='light'] .landing-primary-cta:hover {
-  background: rgb(30 41 59);
+  background: rgb(139 92 246);
 }
 
 html[data-theme='light'] .landing-secondary-cta {

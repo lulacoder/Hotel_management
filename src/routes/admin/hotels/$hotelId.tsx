@@ -1,7 +1,6 @@
 // Hotel details management route inside admin, including room-level controls.
 import { Link, createFileRoute } from '@tanstack/react-router'
 import { useUser } from '@clerk/clerk-react'
-import { useMutation, useQuery } from '@/integrations/convex/hooks'
 import {
   ArrowLeft,
   Building2,
@@ -22,16 +21,18 @@ import {
 import { useEffect, useState } from 'react'
 
 import { api } from '../../../../convex/_generated/api'
-import { RoomModal } from './$hotelId/components/-RoomModal'
-import { HotelEditModal } from './$hotelId/components/-HotelEditModal'
-import { BankAccountModal } from './$hotelId/components/-BankAccountModal'
-import type { Id } from '../../../../convex/_generated/dataModel'
 import { useI18n } from '../../../lib/i18n'
 import { useTheme } from '../../../lib/theme'
 import {
   normalizeAnalyticsWindow,
   normalizeRoomOperationalStatusFilter,
 } from '../../../lib/adminAnalytics'
+import { RoomModal } from './$hotelId/components/-RoomModal'
+import { HotelEditModal } from './$hotelId/components/-HotelEditModal'
+import { BankAccountModal } from './$hotelId/components/-BankAccountModal'
+import type { Id } from '../../../../convex/_generated/dataModel'
+import { useMutation, useQuery } from '@/integrations/convex/hooks'
+import { Button } from '@/components/ui/button'
 
 export const Route = createFileRoute('/admin/hotels/$hotelId')({
   validateSearch: (search: Record<string, unknown>) => ({
@@ -289,13 +290,16 @@ function HotelDetailPage() {
               {hotel.city}, {hotel.country}
             </p>
           </div>
-          <button
+          <Button
+            type="button"
+            variant="outline"
+            size="lg"
             onClick={() => setShowEditHotel(true)}
-            className="admin-button-secondary flex items-center gap-2 px-4 py-2"
+            className="gap-2 px-4"
           >
             <Edit className="w-4 h-4" />
             {t('admin.hotels.editHotel')}
-          </button>
+          </Button>
         </div>
       </div>
 
@@ -314,16 +318,18 @@ function HotelDetailPage() {
                 {t('admin.hotels.payment.description')}
               </p>
             </div>
-            <button
+            <Button
               type="button"
+              variant="secondary"
+              size="lg"
               onClick={() => {
                 setEditingBankAccount(null)
                 setShowBankAccountModal(true)
               }}
-              className="admin-button-soft px-4 py-2 font-medium"
+              className="px-4"
             >
               {t('admin.hotels.payment.addAccount')}
-            </button>
+            </Button>
           </div>
 
           {bankAccounts === undefined ? (
@@ -358,23 +364,25 @@ function HotelDetailPage() {
                     </p>
                   </div>
                   <div className="flex items-center gap-2">
-                    <button
+                    <Button
                       type="button"
+                      variant="outline"
+                      size="sm"
                       onClick={() => {
                         setEditingBankAccount(account)
                         setShowBankAccountModal(true)
                       }}
-                      className="admin-button-secondary px-3 py-1.5 text-sm"
                     >
                       {t('admin.hotels.payment.editAccount')}
-                    </button>
-                    <button
+                    </Button>
+                    <Button
                       type="button"
+                      variant="destructive"
+                      size="sm"
                       onClick={() => handleDeleteBankAccount(account)}
-                      className="admin-button-destructive px-3 py-1.5 text-sm"
                     >
                       {t('admin.hotels.payment.deleteAccount')}
-                    </button>
+                    </Button>
                   </div>
                 </div>
               ))}
@@ -406,13 +414,16 @@ function HotelDetailPage() {
         >
           {t('admin.nav.rooms')}
         </h2>
-        <button
+        <Button
+          type="button"
+          variant="default"
+          size="lg"
           onClick={() => setShowCreateRoom(true)}
-          className="admin-button-primary flex items-center gap-2 px-4 py-2"
+          className="gap-2 px-4"
         >
           <Plus className="w-5 h-5" />
           {t('admin.hotels.addRoom')}
-        </button>
+        </Button>
       </div>
 
       {/* Rooms Grid */}
@@ -437,13 +448,16 @@ function HotelDetailPage() {
           <p className={`mb-6 ${isDark ? 'text-slate-500' : 'text-slate-500'}`}>
             {t('admin.hotels.noRoomsDescription')}
           </p>
-          <button
+          <Button
+            type="button"
+            variant="secondary"
+            size="lg"
             onClick={() => setShowCreateRoom(true)}
-            className="admin-button-soft inline-flex items-center gap-2 px-5 py-2.5"
+            className="gap-2 px-5"
           >
             <Plus className="w-5 h-5" />
             {t('admin.hotels.addFirstRoom')}
-          </button>
+          </Button>
         </div>
       ) : rooms.filter((room) => {
           if (search.operationalStatus === 'all') {
@@ -484,18 +498,23 @@ function HotelDetailPage() {
               return (
                 <div
                   key={room._id}
-                  className={`${cardClass} p-5 transition-all relative ${
+                  className={`${cardClass} p-5 transition-all relative overflow-visible ${
+                    activeMenu === room._id ? 'z-40' : 'z-0'
+                  } ${
                     isDark
                       ? 'hover:border-slate-700/70 hover:bg-slate-900/80'
                       : 'hover:border-slate-300/80 hover:shadow-md'
                   }`}
                 >
                   {/* Menu Button */}
-                  <div className="absolute top-4 right-4">
+                  <div className="absolute top-4 right-4 z-50">
                     <button
+                      type="button"
                       onClick={() =>
                         setActiveMenu(activeMenu === room._id ? null : room._id)
                       }
+                      aria-haspopup="menu"
+                      aria-expanded={activeMenu === room._id}
                       className={`p-1.5 rounded-lg transition-colors ${isDark ? 'hover:bg-slate-800' : 'hover:bg-slate-100'}`}
                     >
                       <MoreVertical
@@ -504,8 +523,12 @@ function HotelDetailPage() {
                     </button>
 
                     {activeMenu === room._id && (
-                      <div className="admin-menu-panel absolute right-0 top-8 w-52 shadow-xl z-10 overflow-hidden">
+                      <div
+                        className="admin-menu-panel absolute right-0 top-8 z-[60] w-52 overflow-hidden shadow-xl"
+                        onClick={(event) => event.stopPropagation()}
+                      >
                         <button
+                          type="button"
                           onClick={() => {
                             setEditingRoom(room._id)
                             setActiveMenu(null)
@@ -529,6 +552,7 @@ function HotelDetailPage() {
                           return (
                             <button
                               key={key}
+                              type="button"
                               onClick={() => handleStatusChange(room._id, key)}
                               className={`admin-menu-item flex items-center gap-3 px-4 py-2 w-full text-sm ${
                                 room.operationalStatus === key
@@ -547,6 +571,7 @@ function HotelDetailPage() {
                           className={`border-t my-1 ${isDark ? 'border-slate-700' : 'border-slate-100'}`}
                         ></div>
                         <button
+                          type="button"
                           onClick={() => handleDeleteRoom(room._id)}
                           className={`admin-menu-item flex items-center gap-3 px-4 py-2.5 text-red-400 w-full text-sm ${
                             isDark ? 'hover:bg-slate-700' : 'hover:bg-red-50'
@@ -766,7 +791,7 @@ function HotelDetailPage() {
       {/* Click outside to close menu */}
       {activeMenu && (
         <div
-          className="fixed inset-0 z-0"
+          className="fixed inset-0 z-30"
           onClick={() => setActiveMenu(null)}
         />
       )}

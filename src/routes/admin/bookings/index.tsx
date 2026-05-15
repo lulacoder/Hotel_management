@@ -15,11 +15,9 @@ import {
   XCircle,
 } from 'lucide-react'
 import { useEffect, useMemo, useState } from 'react'
-import { useMutation, useQuery } from '@/integrations/convex/hooks'
 import { motion } from 'motion/react'
 import { api } from '../../../../convex/_generated/api'
 import { useI18n } from '../../../lib/i18n'
-import { useTheme } from '@/lib/theme'
 import {
   normalizeAnalyticsWindow,
   normalizeBookingStatusFilter,
@@ -31,6 +29,9 @@ import {
 } from '../../../lib/packages'
 import { OutsourceModal } from './components/-OutsourceModal'
 import type { Id } from '../../../../convex/_generated/dataModel'
+import { useTheme } from '@/lib/theme'
+import { useMutation, useQuery } from '@/integrations/convex/hooks'
+import { Button } from '@/components/ui/button'
 
 export const Route = createFileRoute('/admin/bookings/')({
   validateSearch: (search: Record<string, unknown>) => ({
@@ -415,8 +416,7 @@ function BookingsPage() {
           {filteredBookings?.map((item) => {
             const booking = item.booking
             const status =
-              statusConfig[booking.status as keyof typeof statusConfig] ??
-              statusConfig.held
+              statusConfig[booking.status as keyof typeof statusConfig]
             const StatusIcon = status.icon
             const canManageBookings = canManageBooking(booking.hotelId)
 
@@ -516,57 +516,75 @@ function BookingsPage() {
                     </div>
 
                     <div className="flex flex-wrap gap-2 md:justify-end md:w-80">
-                      <button
+                      <Button
+                        type="button"
+                        variant="outline"
+                        size="lg"
                         onClick={() => setSelectedBookingId(booking._id)}
-                        className="admin-button-secondary px-3 py-2 text-sm inline-flex items-center gap-2"
+                        className="gap-2 px-4"
                       >
                         <Eye className="w-4 h-4" />
                         {t('admin.bookings.viewDetail')}
-                      </button>
+                      </Button>
 
-                      <Link
-                        to="/admin/bookings/$bookingId"
-                        params={{ bookingId: booking._id }}
-                        className="admin-button-secondary px-3 py-2 text-sm"
+                      <Button
+                        asChild
+                        variant="outline"
+                        size="lg"
+                        className="px-4"
                       >
-                        {t('admin.bookings.openPage')}
-                      </Link>
+                        <Link
+                          to="/admin/bookings/$bookingId"
+                          params={{ bookingId: booking._id }}
+                        >
+                          {t('admin.bookings.openPage')}
+                        </Link>
+                      </Button>
 
                       {canManageBookings &&
                         booking.paymentStatus !== 'paid' &&
                         ['confirmed', 'checked_in'].includes(
                           booking.status,
                         ) && (
-                          <button
+                          <Button
+                            type="button"
+                            variant="secondary"
+                            size="lg"
                             onClick={() => handleAcceptCashPayment(booking._id)}
-                            className="admin-button-soft px-3 py-2 text-sm inline-flex items-center gap-2 border-emerald-500/20 text-emerald-400 hover:bg-emerald-500/20"
+                            className="gap-2 px-4 text-emerald-400"
                           >
                             <CircleDollarSign className="w-4 h-4" />
                             {t('admin.bookings.acceptCash')}
-                          </button>
+                          </Button>
                         )}
 
                       {canManageBookings &&
                         getAllowedTransitions(booking.status).map(
                           (nextStatus) =>
                             nextStatus === 'cancelled' ? (
-                              <button
+                              <Button
                                 key={`${booking._id}-${nextStatus}`}
+                                type="button"
+                                variant="destructive"
+                                size="lg"
                                 onClick={() => handleCancel(booking._id)}
-                                className="admin-button-destructive px-3 py-2 text-sm"
+                                className="px-4"
                               >
                                 {transitionLabel[nextStatus]}
-                              </button>
+                              </Button>
                             ) : (
-                              <button
+                              <Button
                                 key={`${booking._id}-${nextStatus}`}
+                                type="button"
+                                variant="secondary"
+                                size="lg"
                                 onClick={() =>
                                   handleStatusChange(booking._id, nextStatus)
                                 }
-                                className="admin-button-soft px-3 py-2 text-sm"
+                                className="px-4"
                               >
                                 {transitionLabel[nextStatus]}
-                              </button>
+                              </Button>
                             ),
                         )}
 
@@ -575,13 +593,16 @@ function BookingsPage() {
                         ['confirmed', 'checked_in'].includes(
                           booking.status,
                         ) && (
-                          <button
+                          <Button
+                            type="button"
+                            variant="secondary"
+                            size="lg"
                             onClick={() => setOutsourceBookingId(booking._id)}
-                            className="admin-button-soft px-3 py-2 text-sm inline-flex items-center gap-2 border-purple-500/20 text-purple-400 hover:bg-purple-500/20"
+                            className="gap-2 px-4 text-purple-400"
                           >
                             <Hotel className="w-4 h-4" />
                             {t('admin.bookings.outsource')}
-                          </button>
+                          </Button>
                         )}
                     </div>
                   </div>
@@ -835,17 +856,20 @@ function BookingsPage() {
                       ['confirmed', 'checked_in'].includes(
                         selectedBookingDetail.booking.status,
                       ) && (
-                        <button
+                        <Button
+                          type="button"
+                          variant="secondary"
+                          size="lg"
                           onClick={() =>
                             setOutsourceBookingId(
                               selectedBookingDetail.booking._id,
                             )
                           }
-                          className="admin-button-soft px-4 py-2 text-sm inline-flex items-center gap-2 border-purple-500/20 text-purple-400 hover:bg-purple-500/20"
+                          className="gap-2 px-4 text-purple-400"
                         >
                           <Hotel className="w-4 h-4" />
                           {t('admin.bookings.outsource')}
-                        </button>
+                        </Button>
                       )}
                     <Link
                       to="/admin/bookings/$bookingId"

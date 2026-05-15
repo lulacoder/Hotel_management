@@ -1,7 +1,6 @@
 // User administration route for assigning and managing staff access.
 import { createFileRoute } from '@tanstack/react-router'
 import { useUser } from '@clerk/clerk-react'
-import { useMutation, useQuery } from '@/integrations/convex/hooks'
 import { Building2, Search } from 'lucide-react'
 import { useMemo, useState } from 'react'
 import { motion } from 'motion/react'
@@ -10,6 +9,8 @@ import { useI18n } from '../../../lib/i18n'
 import { useTheme } from '../../../lib/theme'
 import { AssignModal } from './components/-AssignModal'
 import type { Id } from '../../../../convex/_generated/dataModel'
+import { useMutation, useQuery } from '@/integrations/convex/hooks'
+import { Button } from '@/components/ui/button'
 
 export const Route = createFileRoute('/admin/users/')({
   // Register staff/user assignment route (room_admin only).
@@ -120,7 +121,7 @@ function AdminUsersPage() {
 
       {/* Search input for filtering users by email. */}
       <motion.div
-        className="relative mb-6"
+        className="relative mb-6 w-full min-w-0"
         initial={{ opacity: 0, y: 8 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.45, delay: 0.08, ease: [0.22, 1, 0.36, 1] }}
@@ -133,7 +134,7 @@ function AdminUsersPage() {
           placeholder={t('admin.users.searchPlaceholder')}
           value={searchQuery}
           onChange={(e) => setSearchQuery(e.target.value)}
-          className="admin-field pl-12"
+          className="admin-field w-full min-w-0 !pl-12"
         />
       </motion.div>
 
@@ -145,7 +146,7 @@ function AdminUsersPage() {
         transition={{ duration: 0.5, delay: 0.1 }}
       >
         <div className="overflow-x-auto">
-          <table className="w-full">
+          <table className="w-full min-w-[900px]">
             <thead>
               <tr
                 className={`border-b text-left ${isDark ? 'border-slate-800/70' : 'border-slate-100'}`}
@@ -203,10 +204,13 @@ function AdminUsersPage() {
                     key={listedUser._id}
                     className="admin-table-row last:border-b-0"
                   >
-                    <td
-                      className={`px-6 py-4 ${isDark ? 'text-slate-200' : 'text-slate-700'}`}
-                    >
-                      {listedUser.email}
+                    <td className="px-6 py-4">
+                      <span
+                        className={`block max-w-[280px] truncate ${isDark ? 'text-slate-200' : 'text-slate-700'}`}
+                        title={listedUser.email}
+                      >
+                        {listedUser.email}
+                      </span>
                     </td>
                     <td className="px-6 py-4">
                       <span
@@ -221,15 +225,18 @@ function AdminUsersPage() {
                         {roleLabelByCode[listedUser.role] || listedUser.role}
                       </span>
                     </td>
-                    <td
-                      className={`px-6 py-4 text-sm ${isDark ? 'text-slate-300' : 'text-slate-600'}`}
-                    >
+                    <td className="px-6 py-4 text-sm">
                       {listedUser.assignment ? (
-                        <div className="flex items-center gap-2">
+                        <div
+                          className={`flex min-w-0 items-center gap-2 ${isDark ? 'text-slate-300' : 'text-slate-600'}`}
+                        >
                           <Building2
                             className={`w-4 h-4 ${isDark ? 'text-slate-500' : 'text-slate-400'}`}
                           />
-                          <span>
+                          <span
+                            className="block truncate"
+                            title={`${listedUser.assignment.hotelName}, ${listedUser.assignment.hotelCity}`}
+                          >
                             {listedUser.assignment.hotelName},{' '}
                             {listedUser.assignment.hotelCity}
                           </span>
@@ -264,19 +271,25 @@ function AdminUsersPage() {
                     </td>
                     <td className="px-6 py-4">
                       {listedUser.assignment ? (
-                        <button
+                        <Button
+                          type="button"
+                          variant="destructive"
+                          size="lg"
                           onClick={() => handleUnassign(listedUser._id)}
-                          className="admin-button-destructive px-3 py-1.5 text-xs"
+                          className="px-4"
                         >
                           {t('admin.users.unassign')}
-                        </button>
+                        </Button>
                       ) : (
-                        <button
+                        <Button
+                          type="button"
+                          variant="secondary"
+                          size="lg"
                           onClick={() => setSelectedUserId(listedUser._id)}
-                          className="admin-button-soft px-3 py-1.5 text-xs"
+                          className="px-4"
                         >
                           {t('admin.users.assign')}
-                        </button>
+                        </Button>
                       )}
                     </td>
                   </tr>

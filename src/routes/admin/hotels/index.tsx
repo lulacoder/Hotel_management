@@ -19,6 +19,7 @@ import { Id } from '../../../../convex/_generated/dataModel'
 import { HotelModal } from './index/components/-HotelModal'
 import { useI18n } from '../../../lib/i18n'
 import { useTheme } from '../../../lib/theme'
+import { Button } from '@/components/ui/button'
 
 export const Route = createFileRoute('/admin/hotels/')({
   // Register hotels management route in admin section.
@@ -100,23 +101,22 @@ function HotelsPage() {
           </p>
         </div>
         {canAddHotel && (
-          <button
+          <Button
+            type="button"
+            variant="default"
+            size="lg"
             onClick={() => setShowCreateModal(true)}
-            className={`flex items-center gap-2 px-5 py-2.5 font-medium rounded-xl transition-all duration-200 shadow-lg ${
-              isDark
-                ? 'bg-white text-slate-900 hover:bg-slate-100 shadow-white/10'
-                : 'bg-slate-900 text-white hover:bg-slate-800 shadow-slate-900/20'
-            }`}
+            className="gap-2 px-4"
           >
             <Plus className="w-5 h-5" />
             {t('admin.hotels.addHotel')}
-          </button>
+          </Button>
         )}
       </motion.div>
 
       {/* Search */}
       <motion.div
-        className="relative mb-6"
+        className="relative mb-6 w-full min-w-0"
         initial={{ opacity: 0, y: 8 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.45, delay: 0.08, ease: [0.22, 1, 0.36, 1] }}
@@ -129,7 +129,7 @@ function HotelsPage() {
           placeholder={t('admin.hotels.searchPlaceholder')}
           value={searchTerm}
           onChange={(e) => setSearchTerm(e.target.value)}
-          className="admin-field pl-12"
+          className="admin-field w-full min-w-0 !pl-12"
         />
       </motion.div>
 

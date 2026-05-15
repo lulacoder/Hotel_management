@@ -125,7 +125,7 @@ function LandingPage() {
                 <Link
                   to="/select-location"
                   search={DEFAULT_SELECT_LOCATION_SEARCH}
-                  className="landing-primary-cta group inline-flex items-center gap-3 rounded-2xl bg-white px-8 py-4 font-semibold text-slate-900 shadow-xl shadow-black/10 transition-all duration-300 hover:bg-slate-50 hover:shadow-black/15 hover:scale-[1.02] active:scale-[0.98]"
+                  className="landing-primary-cta group inline-flex items-center gap-3 rounded-xl bg-violet-600 px-8 py-4 font-semibold text-white shadow-lg shadow-violet-600/25 transition-all duration-300 hover:bg-violet-500 hover:shadow-violet-500/30 hover:scale-[1.02] active:scale-[0.98] cursor-pointer"
                 >
                   <MapPin size={20} />
                   <span>{t('landing.browseHotels')}</span>
@@ -137,7 +137,7 @@ function LandingPage() {
                 <Link
                   to="/sign-up"
                   search={DEFAULT_AUTH_SEARCH}
-                  className="landing-secondary-cta inline-flex items-center gap-2 rounded-2xl border border-slate-700/80 bg-slate-900/50 backdrop-blur-sm px-8 py-4 font-semibold text-slate-200 transition-all duration-300 hover:border-slate-600 hover:bg-slate-800/60 hover:text-white"
+                  className="landing-secondary-cta inline-flex items-center gap-2 rounded-xl border border-slate-700/80 bg-slate-900/50 backdrop-blur-sm px-8 py-4 font-semibold text-slate-200 transition-all duration-300 hover:border-slate-600 hover:bg-slate-800/60 hover:text-white cursor-pointer"
                 >
                   {t('landing.createFreeAccount')}
                 </Link>
