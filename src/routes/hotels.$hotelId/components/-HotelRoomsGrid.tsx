@@ -1,7 +1,6 @@
 import {
   Bed,
   Building2,
-  CheckCircle,
   Cigarette,
   CigaretteOff,
   Coffee,
@@ -175,12 +174,12 @@ export function HotelRoomsGrid({
 
                   {amenities.length > 0 && (
                     <div className="mb-3 flex flex-wrap gap-2">
-                      {amenities.slice(0, 4).map((amenity) => {
-                        const Icon = amenityIcons[amenity] || CheckCircle
+                      {amenities.slice(0, 4).map((amenity, index) => {
+                        const Icon = amenityIcons[amenity]
 
                         return (
                           <div
-                            key={amenity}
+                            key={`${room._id}-${amenity}-${index}`}
                             className="flex items-center gap-1 rounded bg-slate-800 px-2 py-1 text-xs text-slate-400"
                           >
                             <Icon className="h-3 w-3" />

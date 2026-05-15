@@ -642,9 +642,9 @@ function HotelDetailPage() {
                       className={`mt-4 pt-4 border-t ${isDark ? 'border-slate-800' : 'border-slate-100'}`}
                     >
                       <div className="flex flex-wrap gap-2">
-                        {room.amenities.slice(0, 3).map((amenity) => (
+                        {room.amenities.slice(0, 3).map((amenity, index) => (
                           <span
-                            key={amenity}
+                            key={`${room._id}-${amenity}-${index}`}
                             className={`px-2 py-1 rounded text-xs ${isDark ? 'bg-slate-800 text-slate-400' : 'bg-slate-100 text-slate-500'}`}
                           >
                             {amenity}
