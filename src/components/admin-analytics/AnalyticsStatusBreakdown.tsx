@@ -1,8 +1,8 @@
-import { useState, useCallback } from 'react'
+import { useCallback, useState } from 'react'
 import { motion } from 'motion/react'
-import { ResponsiveContainer, PieChart, Pie, Cell, Tooltip } from 'recharts'
-import { useTheme } from '@/lib/theme'
+import { Cell, Pie, PieChart, ResponsiveContainer, Tooltip } from 'recharts'
 import { AnalyticsEmptyState } from './AnalyticsEmptyState'
+import { useTheme } from '@/lib/theme'
 
 interface Item {
   key: string
@@ -11,7 +11,7 @@ interface Item {
 
 interface Props {
   title: string
-  items: Item[] | undefined
+  items: Array<Item> | undefined
   labels: Record<string, string>
   onItemClick?: (item: Item) => void
   emptyTitle: string

@@ -82,14 +82,14 @@ function RoomsPage() {
 
       {/* Search — frosted glass */}
       <motion.div
-        className="relative mb-8 group/search"
+        className="relative mb-8 group/search w-full min-w-0"
         initial={{ opacity: 0, y: 8 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.45, delay: 0.08, ease: [0.22, 1, 0.36, 1] }}
       >
         <div
           className={`
-            relative rounded-xl border backdrop-blur-md transition-all duration-300
+            relative rounded-xl border backdrop-blur-md transition-all duration-300 w-full
             ${
               isDark
                 ? searchFocused
@@ -125,7 +125,7 @@ function RoomsPage() {
             onChange={(e) => setSearchTerm(e.target.value)}
             onFocus={() => setSearchFocused(true)}
             onBlur={() => setSearchFocused(false)}
-            className={`admin-field w-full pl-12 pr-4 py-3.5 bg-transparent ${
+            className={`admin-field w-full min-w-0 !pl-12 pr-4 py-3.5 bg-transparent ${
               isDark
                 ? 'text-slate-200 placeholder-slate-500'
                 : 'text-slate-900 placeholder-slate-400'

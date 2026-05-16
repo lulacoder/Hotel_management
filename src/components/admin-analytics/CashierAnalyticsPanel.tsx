@@ -1,10 +1,10 @@
 import { motion } from 'motion/react'
 import { Wallet } from 'lucide-react'
-import type { Locale } from '@/lib/i18n'
-import { useTheme } from '@/lib/theme'
 import { AnalyticsMetricCard } from './AnalyticsMetricCard'
 import { AnalyticsStatusBreakdown } from './AnalyticsStatusBreakdown'
 import { AnalyticsTrendChart } from './AnalyticsTrendChart'
+import type { Locale } from '@/lib/i18n'
+import { useTheme } from '@/lib/theme'
 
 interface Metric {
   key:
@@ -29,10 +29,10 @@ interface BreakdownItem {
 
 interface Props {
   locale: Locale
-  metrics: Metric[]
-  bookingTrend: Point[] | undefined
-  paymentStatuses: BreakdownItem[] | undefined
-  bookingStatuses: BreakdownItem[] | undefined
+  metrics: Array<Metric>
+  bookingTrend: Array<Point> | undefined
+  paymentStatuses: Array<BreakdownItem> | undefined
+  bookingStatuses: Array<BreakdownItem> | undefined
   labels: Record<string, string>
   onMetricClick: (metricKey: string) => void
   onStatusClick: (statusKey: string, type: 'booking' | 'payment') => void

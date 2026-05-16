@@ -1,17 +1,17 @@
 import { motion } from 'motion/react'
 import {
-  ResponsiveContainer,
-  BarChart,
   Bar,
+  BarChart,
+  CartesianGrid,
+  Cell,
+  ResponsiveContainer,
+  Tooltip,
   XAxis,
   YAxis,
-  Tooltip,
-  Cell,
-  CartesianGrid,
 } from 'recharts'
+import { AnalyticsEmptyState } from './AnalyticsEmptyState'
 import { useTheme } from '@/lib/theme'
 import { formatAnalyticsPercent } from '@/lib/adminAnalytics'
-import { AnalyticsEmptyState } from './AnalyticsEmptyState'
 
 interface Point {
   key: string
@@ -23,7 +23,7 @@ interface Point {
 
 interface Props {
   title: string
-  points: Point[] | undefined
+  points: Array<Point> | undefined
   emptyTitle: string
   emptyDescription: string
 }

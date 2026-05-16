@@ -1,21 +1,21 @@
-import { useState, useCallback } from 'react'
+import { useCallback, useState } from 'react'
 import { motion } from 'motion/react'
 import {
-  ResponsiveContainer,
-  AreaChart,
   Area,
+  AreaChart,
+  CartesianGrid,
+  ResponsiveContainer,
+  Tooltip,
   XAxis,
   YAxis,
-  CartesianGrid,
-  Tooltip,
 } from 'recharts'
+import { AnalyticsEmptyState } from './AnalyticsEmptyState'
 import type { Locale } from '@/lib/i18n'
 import { useTheme } from '@/lib/theme'
 import {
   formatAnalyticsCount,
   formatAnalyticsCurrency,
 } from '@/lib/adminAnalytics'
-import { AnalyticsEmptyState } from './AnalyticsEmptyState'
 
 interface Point {
   key: string
@@ -25,7 +25,7 @@ interface Point {
 
 interface Props {
   title: string
-  points: Point[] | undefined
+  points: Array<Point> | undefined
   locale: Locale
   format: 'currency' | 'count'
   onPointClick?: (point: Point) => void
@@ -98,7 +98,7 @@ export function AnalyticsTrendChart({
   const isDark = theme === 'dark'
   const [activeIndex, setActiveIndex] = useState<number | null>(null)
 
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+   
   const handleClick = useCallback(
     (data: any) => {
       if (onPointClick && data?.activePayload?.[0]) {
@@ -178,7 +178,7 @@ export function AnalyticsTrendChart({
             data={points}
             margin={{ top: 8, right: 8, left: -12, bottom: 0 }}
             onClick={handleClick}
-            // eslint-disable-next-line @typescript-eslint/no-explicit-any
+             
             onMouseMove={(state: any) => {
               if (state?.activeTooltipIndex !== undefined) {
                 setActiveIndex(Number(state.activeTooltipIndex))

@@ -12,13 +12,26 @@ const config = defineConfig({
   build: {
     rolldownOptions: {
       output: {
-        // Keep auth UI/runtime separated from the app entry chunk.
-        manualChunks(id) {
-          if (id.includes('node_modules/@clerk/')) {
-            return 'vendor-clerk'
-          }
-
-          return undefined
+        // Prefer Rolldown code-splitting groups over deprecated manualChunks.
+        codeSplitting: {
+          groups: [
+            {
+              name: 'vendor-clerk',
+              test: /node_modules[\\/]@clerk[\\/]/,
+              priority: 30,
+            },
+            {
+              name: 'vendor-charts',
+              test: /node_modules[\\/](recharts|d3[^\\/]*)([\\/]|$)/,
+              priority: 20,
+            },
+            {
+              name: 'vendor-convex',
+              test: /node_modules[\\/](convex|convex-helpers|@convex-dev)([\\/]|$)/,
+              minShareCount: 2,
+              priority: 10,
+            },
+          ],
         },
       },
     },
@@ -31,7 +44,9 @@ const config = defineConfig({
       },
     }),
     tailwindcss(),
-    tanstackRouter(),
+    tanstackRouter({
+      autoCodeSplitting: true,
+    }),
     viteReact(),
   ],
 })

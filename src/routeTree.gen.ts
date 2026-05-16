@@ -71,7 +71,7 @@ const AdminIndexRoute = AdminIndexRouteImport.update({
   id: '/',
   path: '/',
   getParentRoute: () => AdminRoute,
-} as any)
+} as any).lazy(() => import('./routes/admin/index.lazy').then((d) => d.Route))
 const SignUpSplatRoute = SignUpSplatRouteImport.update({
   id: '/$',
   path: '/$',
