@@ -182,7 +182,7 @@ export function HotelRoomsGrid({
                             key={`${room._id}-${amenity}-${index}`}
                             className="flex items-center gap-1 rounded bg-slate-800 px-2 py-1 text-xs text-slate-400"
                           >
-                            <Icon className="h-3 w-3" />
+                            {Icon && <Icon className="h-3 w-3" />}
                             {amenity}
                           </div>
                         )
