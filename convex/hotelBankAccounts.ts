@@ -52,13 +52,15 @@ export const listByHotel = query({
     }),
   ),
   handler: async (ctx, args): Promise<BankAccountSummary[]> => {
+    // Use compound index to fetch only non-deleted accounts, avoiding in-memory filtering
     const accounts = await ctx.db
       .query('hotelBankAccounts')
-      .withIndex('by_hotel', (q) => q.eq('hotelId', args.hotelId))
+      .withIndex('by_hotel_and_is_deleted', (q) =>
+        q.eq('hotelId', args.hotelId).eq('isDeleted', false),
+      )
       .collect()
 
     return accounts
-      .filter((account) => !account.isDeleted)
       .map((account) => ({
         _id: account._id,
         bankName: account.bankName?.trim() || DEFAULT_BANK_NAME,

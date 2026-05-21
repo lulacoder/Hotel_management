@@ -193,10 +193,23 @@ export const getByHotel = query({
     let rooms
 
     if (args.status) {
+      // Status filter: use by_hotel_and_status, then filter isDeleted in memory
+      // (no 3-column compound index exists for hotelId+operationalStatus+isDeleted)
       rooms = await ctx.db
         .query('rooms')
         .withIndex('by_hotel_and_status', (q) =>
           q.eq('hotelId', args.hotelId).eq('operationalStatus', args.status!),
+        )
+        .collect()
+      if (!args.includeDeleted) {
+        rooms = rooms.filter((room) => !room.isDeleted)
+      }
+    } else if (!args.includeDeleted) {
+      // Efficient: use compound index to only fetch non-deleted rooms
+      rooms = await ctx.db
+        .query('rooms')
+        .withIndex('by_hotel_and_is_deleted', (q) =>
+          q.eq('hotelId', args.hotelId).eq('isDeleted', false),
         )
         .collect()
     } else {
@@ -204,11 +217,6 @@ export const getByHotel = query({
         .query('rooms')
         .withIndex('by_hotel', (q) => q.eq('hotelId', args.hotelId))
         .collect()
-    }
-
-    // Filter deleted unless explicitly requested
-    if (!args.includeDeleted) {
-      rooms = rooms.filter((room) => !room.isDeleted)
     }
 
     return await Promise.all(rooms.map((room) => attachRoomImageUrl(ctx, room)))
@@ -228,10 +236,18 @@ export const getByHotelWithLiveState = query({
   handler: async (ctx, args) => {
     await requireHotelAccess(ctx, args.hotelId)
 
-    let rooms = await ctx.db
-      .query('rooms')
-      .withIndex('by_hotel', (q) => q.eq('hotelId', args.hotelId))
-      .collect()
+    // Use compound index to skip deleted rooms when not requested
+    const rooms = args.includeDeleted
+      ? await ctx.db
+          .query('rooms')
+          .withIndex('by_hotel', (q) => q.eq('hotelId', args.hotelId))
+          .collect()
+      : await ctx.db
+          .query('rooms')
+          .withIndex('by_hotel_and_is_deleted', (q) =>
+            q.eq('hotelId', args.hotelId).eq('isDeleted', false),
+          )
+          .collect()
 
     const hotelBookings = await ctx.db
       .query('bookings')
@@ -259,10 +275,6 @@ export const getByHotelWithLiveState = query({
       } else {
         bookingsByRoomId.set(booking.roomId, [liveBooking])
       }
-    }
-
-    if (!args.includeDeleted) {
-      rooms = rooms.filter((room) => !room.isDeleted)
     }
 
     const roomsWithLiveState = []

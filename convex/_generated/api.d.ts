@@ -8,79 +8,79 @@
  * @module
  */
 
-import type * as analytics from '../analytics.js'
-import type * as announcements from '../announcements.js'
-import type * as audit from '../audit.js'
-import type * as bookings from '../bookings.js'
-import type * as bookingsInternal from '../bookingsInternal.js'
-import type * as chapaActions from '../chapaActions.js'
-import type * as chapaInternal from '../chapaInternal.js'
-import type * as chapaQueries from '../chapaQueries.js'
-import type * as clerk from '../clerk.js'
-import type * as complaints from '../complaints.js'
-import type * as crons from '../crons.js'
-import type * as files from '../files.js'
-import type * as filesInternal from '../filesInternal.js'
-import type * as guestProfiles from '../guestProfiles.js'
-import type * as hotelBankAccounts from '../hotelBankAccounts.js'
-import type * as hotelStaff from '../hotelStaff.js'
-import type * as hotels from '../hotels.js'
-import type * as http from '../http.js'
-import type * as lib_adminAnalyticsMetrics from '../lib/adminAnalyticsMetrics.js'
-import type * as lib_adminAnalyticsQueryBuilders from '../lib/adminAnalyticsQueryBuilders.js'
-import type * as lib_adminAnalyticsScope from '../lib/adminAnalyticsScope.js'
-import type * as lib_adminAnalyticsWindow from '../lib/adminAnalyticsWindow.js'
-import type * as lib_arrays from '../lib/arrays.js'
-import type * as lib_auth from '../lib/auth.js'
-import type * as lib_dates from '../lib/dates.js'
-import type * as notifications from '../notifications.js'
-import type * as notificationsInternal from '../notificationsInternal.js'
-import type * as paymentEmails from '../paymentEmails.js'
-import type * as ratings from '../ratings.js'
-import type * as rooms from '../rooms.js'
-import type * as seed from '../seed.js'
-import type * as users from '../users.js'
+import type * as analytics from "../analytics.js";
+import type * as announcements from "../announcements.js";
+import type * as audit from "../audit.js";
+import type * as bookings from "../bookings.js";
+import type * as bookingsInternal from "../bookingsInternal.js";
+import type * as chapaActions from "../chapaActions.js";
+import type * as chapaInternal from "../chapaInternal.js";
+import type * as chapaQueries from "../chapaQueries.js";
+import type * as clerk from "../clerk.js";
+import type * as complaints from "../complaints.js";
+import type * as crons from "../crons.js";
+import type * as files from "../files.js";
+import type * as filesInternal from "../filesInternal.js";
+import type * as guestProfiles from "../guestProfiles.js";
+import type * as hotelBankAccounts from "../hotelBankAccounts.js";
+import type * as hotelStaff from "../hotelStaff.js";
+import type * as hotels from "../hotels.js";
+import type * as http from "../http.js";
+import type * as lib_adminAnalyticsMetrics from "../lib/adminAnalyticsMetrics.js";
+import type * as lib_adminAnalyticsQueryBuilders from "../lib/adminAnalyticsQueryBuilders.js";
+import type * as lib_adminAnalyticsScope from "../lib/adminAnalyticsScope.js";
+import type * as lib_adminAnalyticsWindow from "../lib/adminAnalyticsWindow.js";
+import type * as lib_arrays from "../lib/arrays.js";
+import type * as lib_auth from "../lib/auth.js";
+import type * as lib_dates from "../lib/dates.js";
+import type * as notifications from "../notifications.js";
+import type * as notificationsInternal from "../notificationsInternal.js";
+import type * as paymentEmails from "../paymentEmails.js";
+import type * as ratings from "../ratings.js";
+import type * as rooms from "../rooms.js";
+import type * as seed from "../seed.js";
+import type * as users from "../users.js";
 
 import type {
   ApiFromModules,
   FilterApi,
   FunctionReference,
-} from 'convex/server'
+} from "convex/server";
 
 declare const fullApi: ApiFromModules<{
-  analytics: typeof analytics
-  announcements: typeof announcements
-  audit: typeof audit
-  bookings: typeof bookings
-  bookingsInternal: typeof bookingsInternal
-  chapaActions: typeof chapaActions
-  chapaInternal: typeof chapaInternal
-  chapaQueries: typeof chapaQueries
-  clerk: typeof clerk
-  complaints: typeof complaints
-  crons: typeof crons
-  files: typeof files
-  filesInternal: typeof filesInternal
-  guestProfiles: typeof guestProfiles
-  hotelBankAccounts: typeof hotelBankAccounts
-  hotelStaff: typeof hotelStaff
-  hotels: typeof hotels
-  http: typeof http
-  'lib/adminAnalyticsMetrics': typeof lib_adminAnalyticsMetrics
-  'lib/adminAnalyticsQueryBuilders': typeof lib_adminAnalyticsQueryBuilders
-  'lib/adminAnalyticsScope': typeof lib_adminAnalyticsScope
-  'lib/adminAnalyticsWindow': typeof lib_adminAnalyticsWindow
-  'lib/arrays': typeof lib_arrays
-  'lib/auth': typeof lib_auth
-  'lib/dates': typeof lib_dates
-  notifications: typeof notifications
-  notificationsInternal: typeof notificationsInternal
-  paymentEmails: typeof paymentEmails
-  ratings: typeof ratings
-  rooms: typeof rooms
-  seed: typeof seed
-  users: typeof users
-}>
+  analytics: typeof analytics;
+  announcements: typeof announcements;
+  audit: typeof audit;
+  bookings: typeof bookings;
+  bookingsInternal: typeof bookingsInternal;
+  chapaActions: typeof chapaActions;
+  chapaInternal: typeof chapaInternal;
+  chapaQueries: typeof chapaQueries;
+  clerk: typeof clerk;
+  complaints: typeof complaints;
+  crons: typeof crons;
+  files: typeof files;
+  filesInternal: typeof filesInternal;
+  guestProfiles: typeof guestProfiles;
+  hotelBankAccounts: typeof hotelBankAccounts;
+  hotelStaff: typeof hotelStaff;
+  hotels: typeof hotels;
+  http: typeof http;
+  "lib/adminAnalyticsMetrics": typeof lib_adminAnalyticsMetrics;
+  "lib/adminAnalyticsQueryBuilders": typeof lib_adminAnalyticsQueryBuilders;
+  "lib/adminAnalyticsScope": typeof lib_adminAnalyticsScope;
+  "lib/adminAnalyticsWindow": typeof lib_adminAnalyticsWindow;
+  "lib/arrays": typeof lib_arrays;
+  "lib/auth": typeof lib_auth;
+  "lib/dates": typeof lib_dates;
+  notifications: typeof notifications;
+  notificationsInternal: typeof notificationsInternal;
+  paymentEmails: typeof paymentEmails;
+  ratings: typeof ratings;
+  rooms: typeof rooms;
+  seed: typeof seed;
+  users: typeof users;
+}>;
 
 /**
  * A utility for referencing Convex functions in your app's public API.
@@ -92,8 +92,8 @@ declare const fullApi: ApiFromModules<{
  */
 export declare const api: FilterApi<
   typeof fullApi,
-  FunctionReference<any, 'public'>
->
+  FunctionReference<any, "public">
+>;
 
 /**
  * A utility for referencing Convex functions in your app's internal API.
@@ -105,9 +105,9 @@ export declare const api: FilterApi<
  */
 export declare const internal: FilterApi<
   typeof fullApi,
-  FunctionReference<any, 'internal'>
->
+  FunctionReference<any, "internal">
+>;
 
 export declare const components: {
-  resend: import('@convex-dev/resend/_generated/component.js').ComponentApi<'resend'>
-}
+  resend: import("@convex-dev/resend/_generated/component.js").ComponentApi<"resend">;
+};

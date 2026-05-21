@@ -221,16 +221,20 @@ export const getByUser = query({
       targetUserId = args.userId
     }
 
-    let bookings = await ctx.db
-      .query('bookings')
-      .withIndex('by_user', (q) => q.eq('userId', targetUserId))
-      .order('desc')
-      .collect()
-
-    // Filter by status if provided
-    if (args.status) {
-      bookings = bookings.filter((b) => b.status === args.status)
-    }
+    // Use compound index when status is provided to avoid in-memory filtering
+    const bookings = args.status
+      ? await ctx.db
+          .query('bookings')
+          .withIndex('by_user_and_status', (q) =>
+            q.eq('userId', targetUserId).eq('status', args.status!),
+          )
+          .order('desc')
+          .collect()
+      : await ctx.db
+          .query('bookings')
+          .withIndex('by_user', (q) => q.eq('userId', targetUserId))
+          .order('desc')
+          .collect()
 
     return bookings
   },
@@ -265,18 +269,27 @@ export const getByHotel = query({
       }
     }
 
-    let bookings =
-      args.hotelId !== undefined
+    let bookings: Array<import('./_generated/dataModel').Doc<'bookings'>>
+
+    if (args.hotelId !== undefined) {
+      // Use compound index when status is provided to avoid in-memory filtering
+      bookings = args.status
         ? await ctx.db
+            .query('bookings')
+            .withIndex('by_hotel_and_status', (q) =>
+              q.eq('hotelId', args.hotelId!).eq('status', args.status!),
+            )
+            .order('desc')
+            .collect()
+        : await ctx.db
             .query('bookings')
             .withIndex('by_hotel', (q) => q.eq('hotelId', args.hotelId!))
             .order('desc')
             .collect()
-        : await ctx.db.query('bookings').order('desc').collect()
-
-    // Filter by status if provided
-    if (args.status) {
-      bookings = bookings.filter((b) => b.status === args.status)
+    } else {
+      // room_admin listing all hotels: full table scan with optional in-memory filter
+      const all = await ctx.db.query('bookings').order('desc').collect()
+      bookings = args.status ? all.filter((b) => b.status === args.status) : all
     }
 
     const guestProfileIds = uniqueIds(
@@ -354,16 +367,20 @@ export const getByRoom = query({
 
     await requireHotelAccess(ctx, room.hotelId)
 
-    let bookings = await ctx.db
-      .query('bookings')
-      .withIndex('by_room', (q) => q.eq('roomId', args.roomId))
-      .order('desc')
-      .collect()
-
-    // Filter by status if provided
-    if (args.status) {
-      bookings = bookings.filter((b) => b.status === args.status)
-    }
+    // Use compound index when status is provided to avoid in-memory filtering
+    const bookings = args.status
+      ? await ctx.db
+          .query('bookings')
+          .withIndex('by_room_and_status', (q) =>
+            q.eq('roomId', args.roomId).eq('status', args.status!),
+          )
+          .order('desc')
+          .collect()
+      : await ctx.db
+          .query('bookings')
+          .withIndex('by_room', (q) => q.eq('roomId', args.roomId))
+          .order('desc')
+          .collect()
 
     return bookings
   },
@@ -1601,16 +1618,20 @@ export const getMyBookingsEnriched = query({
   handler: async (ctx, args) => {
     const user = await requireUser(ctx)
 
-    let bookings = await ctx.db
-      .query('bookings')
-      .withIndex('by_user', (q) => q.eq('userId', user._id))
-      .order('desc')
-      .collect()
-
-    // Filter by status if provided
-    if (args.status) {
-      bookings = bookings.filter((b) => b.status === args.status)
-    }
+    // Use compound index when status is provided to avoid in-memory filtering
+    const bookings = args.status
+      ? await ctx.db
+          .query('bookings')
+          .withIndex('by_user_and_status', (q) =>
+            q.eq('userId', user._id).eq('status', args.status!),
+          )
+          .order('desc')
+          .collect()
+      : await ctx.db
+          .query('bookings')
+          .withIndex('by_user', (q) => q.eq('userId', user._id))
+          .order('desc')
+          .collect()
 
     // Enrich with room and hotel data
     const roomIds = uniqueIds(bookings.map((booking) => booking.roomId))
