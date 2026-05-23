@@ -19,6 +19,7 @@ import type * as chapaQueries from "../chapaQueries.js";
 import type * as clerk from "../clerk.js";
 import type * as complaints from "../complaints.js";
 import type * as crons from "../crons.js";
+import type * as fileTracking from "../fileTracking.js";
 import type * as files from "../files.js";
 import type * as filesInternal from "../filesInternal.js";
 import type * as guestProfiles from "../guestProfiles.js";
@@ -59,6 +60,7 @@ declare const fullApi: ApiFromModules<{
   clerk: typeof clerk;
   complaints: typeof complaints;
   crons: typeof crons;
+  fileTracking: typeof fileTracking;
   files: typeof files;
   filesInternal: typeof filesInternal;
   guestProfiles: typeof guestProfiles;

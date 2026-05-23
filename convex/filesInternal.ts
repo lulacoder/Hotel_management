@@ -5,7 +5,7 @@ import { internalMutation } from './_generated/server'
 // Internal mutation to clean up orphaned file uploads that were never assigned to a resource.
 // Finds all 'pending' fileUploads older than the specified grace period (default 2 hours).
 // Before deleting the file from Convex storage, it performs a fallback check by scanning
-// all active hotels and rooms. If the file is actually in use, it corrects the status to 'assigned'.
+// all active hotels, rooms, and bookings. If the file is actually in use, it corrects the status to 'assigned'.
 // Otherwise, the file is deleted from storage and the record is marked as 'deleted'.
 // Returns the count of deleted files.
 export const cleanupOrphanUploads = internalMutation({
@@ -30,6 +30,7 @@ export const cleanupOrphanUploads = internalMutation({
       .withIndex('by_is_deleted', (q) => q.eq('isDeleted', false))
       .collect()
     const allRooms = await ctx.db.query('rooms').collect()
+    const allBookings = await ctx.db.query('bookings').collect()
 
     let deletedCount = 0
 
@@ -40,10 +41,15 @@ export const cleanupOrphanUploads = internalMutation({
       const linkedRoom = allRooms.find(
         (room) => !room.isDeleted && room.imageStorageId === upload.storageId,
       )
+      const linkedBooking = allBookings.find(
+        (booking) => booking.nationalIdStorageId === upload.storageId,
+      )
 
-      if (linkedHotel || linkedRoom) {
+      if (linkedHotel || linkedRoom || linkedBooking) {
         await ctx.db.patch(upload._id, {
           status: 'assigned',
+          resourceType: linkedHotel ? 'hotel' : linkedRoom ? 'room' : 'booking',
+          resourceId: (linkedHotel ?? linkedRoom ?? linkedBooking)?._id,
           assignedAt: now,
         })
         continue

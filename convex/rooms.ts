@@ -1,9 +1,10 @@
 import { ConvexError, v } from 'convex/values'
-import { MutationCtx, QueryCtx, mutation, query } from './_generated/server'
+import { QueryCtx, mutation, query } from './_generated/server'
 import { requireHotelAccess } from './lib/auth'
 import { createAuditLog } from './audit'
 import { datesOverlap, isHoldExpired } from './lib/dates'
 import { Doc, Id } from './_generated/dataModel'
+import * as fileTracking from './fileTracking'
 
 // Room type validator
 const roomTypeValidator = v.union(
@@ -76,73 +77,6 @@ const attachRoomImageUrl = async (
     ...room,
     imageUrl,
   }
-}
-
-const markUploadAssigned = async (
-  ctx: MutationCtx,
-  uploadedBy: Id<'users'>,
-  storageId: Id<'_storage'>,
-  resourceId: Id<'rooms'>,
-) => {
-  const existing = await ctx.db
-    .query('fileUploads')
-    .withIndex('by_storage_id', (q) => q.eq('storageId', storageId))
-    .unique()
-  const now = Date.now()
-
-  if (existing) {
-    await ctx.db.replace(existing._id, {
-      storageId,
-      uploadedBy,
-      status: 'assigned',
-      resourceType: 'room',
-      resourceId,
-      uploadedAt: existing.uploadedAt,
-      assignedAt: now,
-    })
-    return
-  }
-
-  await ctx.db.insert('fileUploads', {
-    storageId,
-    uploadedBy,
-    status: 'assigned',
-    resourceType: 'room',
-    resourceId,
-    uploadedAt: now,
-    assignedAt: now,
-  })
-}
-
-const markUploadDeleted = async (
-  ctx: MutationCtx,
-  uploadedBy: Id<'users'>,
-  storageId: Id<'_storage'>,
-) => {
-  const existing = await ctx.db
-    .query('fileUploads')
-    .withIndex('by_storage_id', (q) => q.eq('storageId', storageId))
-    .unique()
-  const now = Date.now()
-
-  if (existing) {
-    await ctx.db.replace(existing._id, {
-      storageId,
-      uploadedBy,
-      status: 'deleted',
-      uploadedAt: existing.uploadedAt,
-      deletedAt: now,
-    })
-    return
-  }
-
-  await ctx.db.insert('fileUploads', {
-    storageId,
-    uploadedBy,
-    status: 'deleted',
-    uploadedAt: now,
-    deletedAt: now,
-  })
 }
 
 function getDerivedLiveState(
@@ -541,7 +475,12 @@ export const create = mutation({
     })
 
     if (args.imageStorageId) {
-      await markUploadAssigned(ctx, user._id, args.imageStorageId, roomId)
+      await fileTracking.assign(ctx, {
+        uploadedBy: user._id,
+        storageId: args.imageStorageId,
+        resourceType: 'room',
+        resourceId: roomId,
+      })
     }
 
     // Log the creation
@@ -691,11 +630,19 @@ export const update = mutation({
         previousImageStorageId !== nextImageStorageId
       ) {
         await ctx.storage.delete(previousImageStorageId)
-        await markUploadDeleted(ctx, user._id, previousImageStorageId)
+        await fileTracking.markDeleted(ctx, {
+          uploadedBy: user._id,
+          storageId: previousImageStorageId,
+        })
       }
 
       if (nextImageStorageId && nextImageStorageId !== previousImageStorageId) {
-        await markUploadAssigned(ctx, user._id, nextImageStorageId, args.roomId)
+        await fileTracking.assign(ctx, {
+          uploadedBy: user._id,
+          storageId: nextImageStorageId,
+          resourceType: 'room',
+          resourceId: args.roomId,
+        })
       }
     }
 

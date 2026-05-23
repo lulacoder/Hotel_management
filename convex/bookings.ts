@@ -20,8 +20,7 @@ import {
   isHoldExpired,
   validateBookingDates,
 } from './lib/dates'
-import type { MutationCtx } from './_generated/server'
-import type { Id } from './_generated/dataModel'
+import * as fileTracking from './fileTracking'
 
 // Status validators
 const bookingStatusValidator = v.union(
@@ -53,74 +52,6 @@ const packageAddOnByType = {
   with_breakfast: 1500,
   full_package: 4000,
 } as const
-
-const markUploadAssignedToBooking = async (
-  ctx: MutationCtx,
-  uploadedBy: Id<'users'>,
-  storageId: Id<'_storage'>,
-  bookingId: Id<'bookings'>,
-) => {
-  const existing = await ctx.db
-    .query('fileUploads')
-    .withIndex('by_storage_id', (q) => q.eq('storageId', storageId))
-    .unique()
-
-  const now = Date.now()
-
-  if (existing) {
-    await ctx.db.replace(existing._id, {
-      storageId,
-      uploadedBy,
-      status: 'assigned',
-      resourceType: 'booking',
-      resourceId: bookingId,
-      uploadedAt: existing.uploadedAt,
-      assignedAt: now,
-    })
-    return
-  }
-
-  await ctx.db.insert('fileUploads', {
-    storageId,
-    uploadedBy,
-    status: 'assigned',
-    resourceType: 'booking',
-    resourceId: bookingId,
-    uploadedAt: now,
-    assignedAt: now,
-  })
-}
-
-const markUploadDeleted = async (
-  ctx: MutationCtx,
-  uploadedBy: Id<'users'>,
-  storageId: Id<'_storage'>,
-) => {
-  const existing = await ctx.db
-    .query('fileUploads')
-    .withIndex('by_storage_id', (q) => q.eq('storageId', storageId))
-    .unique()
-  const now = Date.now()
-
-  if (existing) {
-    await ctx.db.replace(existing._id, {
-      storageId,
-      uploadedBy,
-      status: 'deleted',
-      uploadedAt: existing.uploadedAt,
-      deletedAt: now,
-    })
-    return
-  }
-
-  await ctx.db.insert('fileUploads', {
-    storageId,
-    uploadedBy,
-    status: 'deleted',
-    uploadedAt: now,
-    deletedAt: now,
-  })
-}
 
 // Booking document validator for return types
 const bookingValidator = v.object({
@@ -809,16 +740,19 @@ export const submitPaymentProof = mutation({
       updatedBy: customer._id,
     })
 
-    await markUploadAssignedToBooking(
-      ctx,
-      customer._id,
-      args.nationalIdStorageId,
-      args.bookingId,
-    )
+    await fileTracking.assign(ctx, {
+      uploadedBy: customer._id,
+      storageId: args.nationalIdStorageId,
+      resourceType: 'booking',
+      resourceId: args.bookingId,
+    })
 
     if (previousStorageId && previousStorageId !== args.nationalIdStorageId) {
       await ctx.storage.delete(previousStorageId)
-      await markUploadDeleted(ctx, customer._id, previousStorageId)
+      await fileTracking.markDeleted(ctx, {
+        uploadedBy: customer._id,
+        storageId: previousStorageId,
+      })
     }
 
     await createAuditLog(ctx, {
@@ -1216,7 +1150,10 @@ export const rejectPayment = mutation({
 
     if (booking.nationalIdStorageId) {
       await ctx.storage.delete(booking.nationalIdStorageId)
-      await markUploadDeleted(ctx, user._id, booking.nationalIdStorageId)
+      await fileTracking.markDeleted(ctx, {
+        uploadedBy: user._id,
+        storageId: booking.nationalIdStorageId,
+      })
     }
 
     await createAuditLog(ctx, {
