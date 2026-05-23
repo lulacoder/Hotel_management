@@ -62,7 +62,7 @@ function SignInPage() {
           <Link to="/" className="inline-flex items-center group">
             <div className="brand-logo-shell h-12 px-1 flex items-center justify-center group-hover:shadow-violet-500/40 transition-all duration-300">
               <img
-                src="/logo.png"
+                src="/logo.webp"
                 alt="TripWays Hotels"
                 className="h-9 w-auto object-contain logo-tight"
               />
@@ -105,7 +105,7 @@ function SignInPage() {
             <ThemeToggle compact />
             <div className="brand-logo-shell h-8 px-1 flex items-center justify-center">
               <img
-                src="/logo.png"
+                src="/logo.webp"
                 alt="Luxe Hotels"
                 className="h-6 w-auto object-contain logo-tight"
               />

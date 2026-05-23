@@ -74,7 +74,7 @@ export function BookingsHeader({ userName }: BookingsHeaderProps) {
                 <div className="flex items-center gap-3">
                   <div className="brand-logo-shell h-10 px-1">
                     <img
-                      src="/logo.png"
+                      src="/logo.webp"
                       alt="Luxe Hotels"
                       className="h-8 w-auto object-contain logo-tight"
                     />

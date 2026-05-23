@@ -263,7 +263,7 @@ function AdminLayout() {
           <div className="flex items-center gap-3">
             <div className="brand-logo-shell h-10 px-1 flex items-center justify-center">
               <img
-                src="/logo.png"
+                src="/logo.webp"
                 alt="Luxe Hotels"
                 className="h-8 w-auto object-contain logo-tight"
               />
@@ -398,7 +398,7 @@ function AdminLayout() {
           <div className="flex items-center gap-3">
             <div className="brand-logo-shell h-10 px-1 flex items-center justify-center">
               <img
-                src="/logo.png"
+                src="/logo.webp"
                 alt="Luxe Hotels"
                 className="h-8 w-auto object-contain logo-tight"
               />

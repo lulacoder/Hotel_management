@@ -48,61 +48,132 @@ export function SearchFilters({
     ? 'text-slate-200 focus:bg-violet-500/15 focus:text-slate-50'
     : 'text-slate-700 focus:bg-violet-50 focus:text-violet-950'
 
+  const chipBaseClass = isDark
+    ? 'rounded-lg border border-slate-700/50 bg-slate-800/50 text-slate-300 text-xs font-medium px-3 py-1.5 whitespace-nowrap transition-colors hover:border-violet-500/40 hover:text-slate-100'
+    : 'rounded-lg border border-slate-300/80 bg-white/80 text-slate-600 text-xs font-medium px-3 py-1.5 whitespace-nowrap transition-colors hover:border-violet-400 hover:text-slate-800'
+
+  const chipActiveClass = isDark
+    ? 'border-violet-500/50 bg-violet-500/15 text-violet-300'
+    : 'border-violet-400/60 bg-violet-50 text-violet-700'
+
+  const sortOptions: Array<{ value: SortOption; label: string }> = [
+    { value: 'name', label: t('select.sortByName') },
+    { value: 'rating', label: t('select.sortByRating') },
+    ...(hasUserLocation ? [{ value: 'distance' as SortOption, label: t('select.sortByDistance') }] : []),
+  ]
+
   return (
-    <div className="flex flex-col sm:flex-row gap-3">
-      <Select value={selectedCity} onValueChange={onCityChange}>
-        <SelectTrigger className={triggerClass}>
-          <SelectValue placeholder={t('select.allCities')} />
-        </SelectTrigger>
-        <SelectContent className={contentClass} position="popper">
-          <SelectItem className={itemClass} value="all">
-            {t('select.allCities')}
-          </SelectItem>
-          {cities.map((city) => (
-            <SelectItem className={itemClass} key={city} value={city}>
-              {city}
+    <>
+      {/* Mobile: horizontal scrollable chips */}
+      <div className="flex sm:hidden gap-2 overflow-x-auto pb-1 -mx-1 px-1 scrollbar-hide">
+        {/* City chip */}
+        <Select value={selectedCity} onValueChange={onCityChange}>
+          <SelectTrigger className={`h-auto py-1.5 px-3 min-w-0 ${selectedCity !== 'all' ? chipActiveClass : chipBaseClass}`}>
+            <SelectValue placeholder={t('select.allCities')} />
+          </SelectTrigger>
+          <SelectContent className={contentClass} position="popper">
+            <SelectItem className={itemClass} value="all">
+              {t('select.allCities')}
             </SelectItem>
-          ))}
-        </SelectContent>
-      </Select>
+            {cities.map((city) => (
+              <SelectItem className={itemClass} key={city} value={city}>
+                {city}
+              </SelectItem>
+            ))}
+          </SelectContent>
+        </Select>
 
-      <Select value={selectedCategory} onValueChange={onCategoryChange}>
-        <SelectTrigger className={triggerClass}>
-          <SelectValue placeholder={t('select.allCategories')} />
-        </SelectTrigger>
-        <SelectContent className={contentClass} position="popper">
-          <SelectItem className={itemClass} value="all">
-            {t('select.allCategories')}
-          </SelectItem>
-          {categories.map((cat) => (
-            <SelectItem className={itemClass} key={cat} value={cat}>
-              {getHotelCategoryLabel(cat, t)}
+        {/* Category chip */}
+        <Select value={selectedCategory} onValueChange={onCategoryChange}>
+          <SelectTrigger className={`h-auto py-1.5 px-3 min-w-0 ${selectedCategory !== 'all' ? chipActiveClass : chipBaseClass}`}>
+            <SelectValue placeholder={t('select.allCategories')} />
+          </SelectTrigger>
+          <SelectContent className={contentClass} position="popper">
+            <SelectItem className={itemClass} value="all">
+              {t('select.allCategories')}
             </SelectItem>
-          ))}
-        </SelectContent>
-      </Select>
+            {categories.map((cat) => (
+              <SelectItem className={itemClass} key={cat} value={cat}>
+                {getHotelCategoryLabel(cat, t)}
+              </SelectItem>
+            ))}
+          </SelectContent>
+        </Select>
 
-      <Select
-        value={sortBy}
-        onValueChange={(value) => onSortChange(value as SortOption)}
-      >
-        <SelectTrigger className={triggerClass}>
-          <SelectValue placeholder={t('select.sortByName')} />
-        </SelectTrigger>
-        <SelectContent className={contentClass} position="popper">
-          <SelectItem className={itemClass} value="name">
-            {t('select.sortByName')}
-          </SelectItem>
-          <SelectItem className={itemClass} value="rating">
-            {t('select.sortByRating')}
-          </SelectItem>
-          {hasUserLocation && (
-            <SelectItem className={itemClass} value="distance">
-              {t('select.sortByDistance')}
+        {/* Sort chip */}
+        <Select
+          value={sortBy}
+          onValueChange={(value) => onSortChange(value as SortOption)}
+        >
+          <SelectTrigger className={`h-auto py-1.5 px-3 min-w-0 ${chipBaseClass}`}>
+            <SelectValue />
+          </SelectTrigger>
+          <SelectContent className={contentClass} position="popper">
+            {sortOptions.map((option) => (
+              <SelectItem className={itemClass} key={option.value} value={option.value}>
+                {option.label}
+              </SelectItem>
+            ))}
+          </SelectContent>
+        </Select>
+      </div>
+
+      {/* Desktop: stacked dropdowns */}
+      <div className="hidden sm:flex sm:flex-row gap-3">
+        <Select value={selectedCity} onValueChange={onCityChange}>
+          <SelectTrigger className={triggerClass}>
+            <SelectValue placeholder={t('select.allCities')} />
+          </SelectTrigger>
+          <SelectContent className={contentClass} position="popper">
+            <SelectItem className={itemClass} value="all">
+              {t('select.allCities')}
             </SelectItem>
-          )}
-        </SelectContent>
-      </Select>
-    </div>
+            {cities.map((city) => (
+              <SelectItem className={itemClass} key={city} value={city}>
+                {city}
+              </SelectItem>
+            ))}
+          </SelectContent>
+        </Select>
+
+        <Select value={selectedCategory} onValueChange={onCategoryChange}>
+          <SelectTrigger className={triggerClass}>
+            <SelectValue placeholder={t('select.allCategories')} />
+          </SelectTrigger>
+          <SelectContent className={contentClass} position="popper">
+            <SelectItem className={itemClass} value="all">
+              {t('select.allCategories')}
+            </SelectItem>
+            {categories.map((cat) => (
+              <SelectItem className={itemClass} key={cat} value={cat}>
+                {getHotelCategoryLabel(cat, t)}
+              </SelectItem>
+            ))}
+          </SelectContent>
+        </Select>
+
+        <Select
+          value={sortBy}
+          onValueChange={(value) => onSortChange(value as SortOption)}
+        >
+          <SelectTrigger className={triggerClass}>
+            <SelectValue placeholder={t('select.sortByName')} />
+          </SelectTrigger>
+          <SelectContent className={contentClass} position="popper">
+            <SelectItem className={itemClass} value="name">
+              {t('select.sortByName')}
+            </SelectItem>
+            <SelectItem className={itemClass} value="rating">
+              {t('select.sortByRating')}
+            </SelectItem>
+            {hasUserLocation && (
+              <SelectItem className={itemClass} value="distance">
+                {t('select.sortByDistance')}
+              </SelectItem>
+            )}
+          </SelectContent>
+        </Select>
+      </div>
+    </>
   )
 }

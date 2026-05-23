@@ -105,7 +105,7 @@ export default function Header() {
                   <div className="flex items-center gap-3">
                     <div className="brand-logo-shell h-9 px-1">
                       <img
-                        src="/logo.png"
+                        src="/logo.webp"
                         alt="TripWays Hotels"
                         className="logo-tight h-full w-auto object-contain"
                       />
@@ -188,7 +188,7 @@ export default function Header() {
             <Link to="/" className="group flex items-center">
               <div className="brand-logo-shell h-9 px-1 transition-all duration-300 group-hover:opacity-90">
                 <img
-                  src="/logo.png"
+                  src="/logo.webp"
                   alt="TripWays Hotels"
                   className="logo-tight h-full w-auto object-contain"
                 />
