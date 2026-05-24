@@ -15,11 +15,11 @@ import {
 import { uniqueIds } from './lib/arrays'
 import { createAuditLog } from './audit'
 import {
-  datesOverlap,
   getHoldExpirationTime,
   isHoldExpired,
   validateBookingDates,
 } from './lib/dates'
+import { assertRoomAvailable } from './lib/availability'
 import * as fileTracking from './fileTracking'
 
 // Status validators
@@ -365,40 +365,10 @@ export const holdRoom = mutation({
       })
     }
 
-    // Check for overlapping bookings (atomic check)
-    const existingBookings = await ctx.db
-      .query('bookings')
-      .withIndex('by_room_and_dates', (q) =>
-        q.eq('roomId', args.roomId).lt('checkIn', args.checkOut),
-      )
-      .collect()
-
-    const requestedRange = { checkIn: args.checkIn, checkOut: args.checkOut }
-
-    for (const booking of existingBookings) {
-      // Skip cancelled, expired, or checked_out bookings
-      if (['cancelled', 'expired', 'checked_out'].includes(booking.status)) {
-        continue
-      }
-
-      // Skip expired holds
-      if (booking.status === 'held' && isHoldExpired(booking.holdExpiresAt)) {
-        continue
-      }
-
-      const bookingRange = {
-        checkIn: booking.checkIn,
-        checkOut: booking.checkOut,
-      }
-
-      if (datesOverlap(requestedRange, bookingRange)) {
-        throw new ConvexError({
-          code: 'CONFLICT',
-          message:
-            'Room is not available for the selected dates. Please choose different dates.',
-        })
-      }
-    }
+    await assertRoomAvailable(ctx, args.roomId, {
+      checkIn: args.checkIn,
+      checkOut: args.checkOut,
+    })
 
     const packageType = args.packageType ?? 'room_only'
     const expectedPackageAddOn = packageAddOnByType[packageType]
@@ -523,37 +493,10 @@ export const walkInBooking = mutation({
       })
     }
 
-    const existingBookings = await ctx.db
-      .query('bookings')
-      .withIndex('by_room_and_dates', (q) =>
-        q.eq('roomId', args.roomId).lt('checkIn', args.checkOut),
-      )
-      .collect()
-
-    const requestedRange = { checkIn: args.checkIn, checkOut: args.checkOut }
-
-    for (const booking of existingBookings) {
-      if (['cancelled', 'expired', 'checked_out'].includes(booking.status)) {
-        continue
-      }
-
-      if (booking.status === 'held' && isHoldExpired(booking.holdExpiresAt)) {
-        continue
-      }
-
-      const bookingRange = {
-        checkIn: booking.checkIn,
-        checkOut: booking.checkOut,
-      }
-
-      if (datesOverlap(requestedRange, bookingRange)) {
-        throw new ConvexError({
-          code: 'CONFLICT',
-          message:
-            'Room is not available for the selected dates. Please choose different dates.',
-        })
-      }
-    }
+    await assertRoomAvailable(ctx, args.roomId, {
+      checkIn: args.checkIn,
+      checkOut: args.checkOut,
+    })
 
     const expectedPackageAddOn = packageAddOnByType[args.packageType]
 

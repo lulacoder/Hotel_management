@@ -2,7 +2,8 @@ import { ConvexError, v } from 'convex/values'
 import { QueryCtx, mutation, query } from './_generated/server'
 import { requireHotelAccess } from './lib/auth'
 import { createAuditLog } from './audit'
-import { datesOverlap, isHoldExpired } from './lib/dates'
+import { isHoldExpired } from './lib/dates'
+import { checkRoomAvailability, findBlockedRoomIds } from './lib/availability'
 import { Doc, Id } from './_generated/dataModel'
 import * as fileTracking from './fileTracking'
 
@@ -245,7 +246,7 @@ export const get = query({
 
 // Checks whether a specific room is available for booking during a given date range.
 // Requires the room to exist, not be soft-deleted, and be in 'available' operational status.
-// Uses `datesOverlap` to check for conflicting bookings (active or held, excluding expired holds).
+// Delegates conflict detection to checkRoomAvailability in lib/availability.ts.
 export const checkAvailability = query({
   args: {
     roomId: v.id('rooms'),
@@ -270,42 +271,10 @@ export const checkAvailability = query({
       }
     }
 
-    // Get all bookings for this room that could overlap
-    const bookings = await ctx.db
-      .query('bookings')
-      .withIndex('by_room_and_dates', (q) =>
-        q.eq('roomId', args.roomId).lt('checkIn', args.checkOut),
-      )
-      .collect()
-
-    // Check for overlapping active bookings
-    const requestedRange = { checkIn: args.checkIn, checkOut: args.checkOut }
-
-    for (const booking of bookings) {
-      // Skip cancelled, expired, or checked_out bookings
-      if (['cancelled', 'expired', 'checked_out'].includes(booking.status)) {
-        continue
-      }
-
-      // Skip expired holds
-      if (booking.status === 'held' && isHoldExpired(booking.holdExpiresAt)) {
-        continue
-      }
-
-      const bookingRange = {
-        checkIn: booking.checkIn,
-        checkOut: booking.checkOut,
-      }
-
-      if (datesOverlap(requestedRange, bookingRange)) {
-        return {
-          available: false,
-          reason: 'Room is already booked for these dates',
-        }
-      }
-    }
-
-    return { available: true }
+    return checkRoomAvailability(ctx, args.roomId, {
+      checkIn: args.checkIn,
+      checkOut: args.checkOut,
+    })
   },
 })
 
@@ -348,43 +317,14 @@ export const getAvailableRooms = query({
       return []
     }
 
-    // Fetch potentially overlapping bookings once per hotel, then group in-memory.
     const requestedRange = { checkIn: args.checkIn, checkOut: args.checkOut }
     const roomIds = new Set(rooms.map((room) => room._id))
-    const blockedRoomIds = new Set<Id<'rooms'>>()
-
-    const candidateBookings = await ctx.db
-      .query('bookings')
-      .withIndex('by_hotel_and_check_in', (q) =>
-        q.eq('hotelId', args.hotelId).lt('checkIn', args.checkOut),
-      )
-      .collect()
-
-    for (const booking of candidateBookings) {
-      if (!roomIds.has(booking.roomId)) {
-        continue
-      }
-
-      // Skip cancelled, expired, or checked_out bookings
-      if (['cancelled', 'expired', 'checked_out'].includes(booking.status)) {
-        continue
-      }
-
-      // Skip expired holds
-      if (booking.status === 'held' && isHoldExpired(booking.holdExpiresAt)) {
-        continue
-      }
-
-      const bookingRange = {
-        checkIn: booking.checkIn,
-        checkOut: booking.checkOut,
-      }
-
-      if (datesOverlap(requestedRange, bookingRange)) {
-        blockedRoomIds.add(booking.roomId)
-      }
-    }
-
+    const blockedRoomIds = await findBlockedRoomIds(
+      ctx,
+      args.hotelId,
+      roomIds,
+      requestedRange,
+    )
     const availableRooms = rooms.filter((room) => !blockedRoomIds.has(room._id))
 
     return await Promise.all(
