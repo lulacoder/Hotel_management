@@ -1,13 +1,12 @@
 // Booking details route for a specific booking record in the admin area.
 import { Link, createFileRoute } from '@tanstack/react-router'
 import { useUser } from '@clerk/clerk-react'
-import { useMutation, useQuery } from '@/integrations/convex/hooks'
 import {
   ArrowLeft,
   CheckCircle,
-  Copy,
   CircleDollarSign,
   Clock,
+  Copy,
   Hotel,
   Image,
   LogIn,
@@ -18,14 +17,17 @@ import { useState } from 'react'
 import { motion } from 'motion/react'
 
 import { api } from '../../../../convex/_generated/api'
+import { getAllowedBookingTransitions } from '../../../../convex/lib/bookingLifecycle'
 import { useI18n } from '../../../lib/i18n'
-import { useTheme } from '@/lib/theme'
 import {
   formatPackageAddOn,
   getPackageLabelOrDefault,
 } from '../../../lib/packages'
 import { OutsourceModal } from './components/-OutsourceModal'
+import type { ManualBookingTransitionStatus } from '../../../../convex/lib/bookingLifecycle'
 import type { Id } from '../../../../convex/_generated/dataModel'
+import { useTheme } from '@/lib/theme'
+import { useMutation, useQuery } from '@/integrations/convex/hooks'
 
 export const Route = createFileRoute('/admin/bookings/$bookingId')({
   // Register admin booking detail route for status/payment operations.
@@ -99,19 +101,7 @@ function BookingDetailPage() {
       : 'skip',
   )
 
-  const getAllowedTransitions = (status: string) => {
-    // Encode valid status transitions for action buttons.
-    if (status === 'held') return ['cancelled'] as const
-    if (status === 'confirmed') return ['checked_in', 'cancelled'] as const
-    if (status === 'checked_in') return ['checked_out'] as const
-    return [] as const
-  }
-
-  const transitionLabel: Record<
-    'confirmed' | 'checked_in' | 'checked_out' | 'cancelled',
-    string
-  > = {
-    confirmed: t('booking.transition.confirm'),
+  const transitionLabel: Record<ManualBookingTransitionStatus, string> = {
     checked_in: t('booking.transition.checkIn'),
     checked_out: t('booking.transition.checkOut'),
     cancelled: t('booking.transition.cancel'),
@@ -189,7 +179,7 @@ function BookingDetailPage() {
     ['hotel_admin', 'hotel_cashier'].includes(hotelAssignment.role)
 
   const handleStatusChange = async (
-    nextStatus: 'confirmed' | 'checked_in' | 'checked_out' | 'cancelled',
+    nextStatus: ManualBookingTransitionStatus,
   ) => {
     if (!user?.id) return
     await updateBookingStatus({
@@ -624,7 +614,7 @@ function BookingDetailPage() {
                 </button>
               )}
 
-            {getAllowedTransitions(bookingDetail.booking.status).map(
+            {getAllowedBookingTransitions(bookingDetail.booking.status).map(
               (nextStatus) => (
                 <button
                   key={nextStatus}
@@ -643,7 +633,7 @@ function BookingDetailPage() {
         </motion.div>
       )}
 
-      {showOutsourceModal && bookingDetail && (
+      {showOutsourceModal && (
         <OutsourceModal
           bookingDetail={bookingDetail}
           onClose={() => setShowOutsourceModal(false)}

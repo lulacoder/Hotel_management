@@ -20,7 +20,18 @@ import {
   validateBookingDates,
 } from './lib/dates'
 import { assertRoomAvailable } from './lib/availability'
+import {
+  canAcceptBookingPayment,
+  canOutsourceBooking,
+  canTransitionBooking,
+  canUseHeldBooking,
+  canVerifySubmittedPayment,
+  getInvalidBookingTransitionMessage,
+  isCancelledOrExpiredBookingStatus,
+  isCompletedBookingStatus,
+} from './lib/bookingLifecycle'
 import * as fileTracking from './fileTracking'
+import type { Doc } from './_generated/dataModel'
 
 // Status validators
 const bookingStatusValidator = v.union(
@@ -200,7 +211,7 @@ export const getByHotel = query({
       }
     }
 
-    let bookings: Array<import('./_generated/dataModel').Doc<'bookings'>>
+    let bookings: Array<Doc<'bookings'>>
 
     if (args.hotelId !== undefined) {
       // Use compound index when status is provided to avoid in-memory filtering
@@ -586,7 +597,7 @@ export const confirmBooking = mutation({
     }
 
     // Verify booking is in held status
-    if (booking.status !== 'held') {
+    if (!canUseHeldBooking(booking.status)) {
       throw new ConvexError({
         code: 'INVALID_STATE',
         message: `Cannot confirm booking with status '${booking.status}'. Only held bookings can be confirmed.`,
@@ -650,7 +661,7 @@ export const submitPaymentProof = mutation({
       })
     }
 
-    if (booking.status !== 'held') {
+    if (!canUseHeldBooking(booking.status)) {
       throw new ConvexError({
         code: 'INVALID_STATE',
         message: `Cannot submit payment proof for booking status '${booking.status}'.`,
@@ -760,13 +771,13 @@ export const cancelBooking = mutation({
     }
 
     // Cannot cancel already cancelled or expired bookings
-    if (['cancelled', 'expired'].includes(booking.status)) {
+    if (isCancelledOrExpiredBookingStatus(booking.status)) {
       // Idempotent - already in terminal state
       return null
     }
 
     // Cannot cancel checked_out or outsourced bookings
-    if (booking.status === 'checked_out' || booking.status === 'outsourced') {
+    if (isCompletedBookingStatus(booking.status)) {
       throw new ConvexError({
         code: 'INVALID_STATE',
         message: 'Cannot cancel a completed booking.',
@@ -846,22 +857,13 @@ export const updateStatus = mutation({
       return null
     }
 
-    const allowedTransitions: Record<string, Array<string>> = {
-      held: ['cancelled'],
-      pending_payment: [],
-      confirmed: ['checked_in', 'cancelled'],
-      checked_in: ['checked_out'],
-      checked_out: [],
-      cancelled: [],
-      expired: [],
-      outsourced: [],
-    }
-
-    const allowedNextStatuses = allowedTransitions[booking.status] ?? []
-    if (!allowedNextStatuses.includes(args.nextStatus)) {
+    if (!canTransitionBooking(booking.status, args.nextStatus)) {
       throw new ConvexError({
         code: 'INVALID_STATE',
-        message: `Cannot transition booking from '${booking.status}' to '${args.nextStatus}'.`,
+        message: getInvalidBookingTransitionMessage(
+          booking.status,
+          args.nextStatus,
+        ),
       })
     }
 
@@ -934,11 +936,7 @@ export const acceptCashPayment = mutation({
       return null
     }
 
-    if (
-      booking.status === 'cancelled' ||
-      booking.status === 'expired' ||
-      booking.status === 'outsourced'
-    ) {
+    if (!canAcceptBookingPayment(booking.status)) {
       throw new ConvexError({
         code: 'INVALID_STATE',
         message:
@@ -993,7 +991,7 @@ export const verifyPayment = mutation({
       })
     }
 
-    if (booking.status !== 'pending_payment') {
+    if (!canVerifySubmittedPayment(booking.status)) {
       throw new ConvexError({
         code: 'INVALID_STATE',
         message: `Cannot verify payment for booking status '${booking.status}'.`,
@@ -1074,7 +1072,7 @@ export const rejectPayment = mutation({
       })
     }
 
-    if (booking.status !== 'pending_payment') {
+    if (!canVerifySubmittedPayment(booking.status)) {
       throw new ConvexError({
         code: 'INVALID_STATE',
         message: `Cannot reject payment for booking status '${booking.status}'.`,
@@ -1173,7 +1171,7 @@ export const outsourceBooking = mutation({
       })
     }
 
-    if (!['confirmed', 'checked_in'].includes(booking.status)) {
+    if (!canOutsourceBooking(booking.status)) {
       throw new ConvexError({
         code: 'INVALID_STATE',
         message: 'Only confirmed or checked-in bookings can be outsourced.',
@@ -1279,7 +1277,7 @@ export const confirmChapaPayment = internalMutation({
       return 'synchronized'
     }
 
-    if (booking.status !== 'held') {
+    if (!canUseHeldBooking(booking.status)) {
       return 'invalid_state'
     }
 

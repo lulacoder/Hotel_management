@@ -17,6 +17,7 @@ import {
 import { useEffect, useMemo, useState } from 'react'
 import { motion } from 'motion/react'
 import { api } from '../../../../convex/_generated/api'
+import { getAllowedBookingTransitions } from '../../../../convex/lib/bookingLifecycle'
 import { useI18n } from '../../../lib/i18n'
 import {
   normalizeAnalyticsWindow,
@@ -28,6 +29,7 @@ import {
   getPackageLabelOrDefault,
 } from '../../../lib/packages'
 import { OutsourceModal } from './components/-OutsourceModal'
+import type { ManualBookingTransitionStatus } from '../../../../convex/lib/bookingLifecycle'
 import type { Id } from '../../../../convex/_generated/dataModel'
 import { useTheme } from '@/lib/theme'
 import { useMutation, useQuery } from '@/integrations/convex/hooks'
@@ -160,7 +162,7 @@ function BookingsPage() {
 
   const handleStatusChange = async (
     bookingId: Id<'bookings'>,
-    nextStatus: 'confirmed' | 'checked_in' | 'checked_out' | 'cancelled',
+    nextStatus: ManualBookingTransitionStatus,
   ) => {
     if (!user?.id) return
     await updateBookingStatus({ bookingId, nextStatus })
@@ -171,19 +173,7 @@ function BookingsPage() {
     await acceptCashPayment({ bookingId })
   }
 
-  const getAllowedTransitions = (status: string) => {
-    // Keep transition rules consistent with backend booking workflow.
-    if (status === 'held') return ['cancelled'] as const
-    if (status === 'confirmed') return ['checked_in', 'cancelled'] as const
-    if (status === 'checked_in') return ['checked_out'] as const
-    return [] as const
-  }
-
-  const transitionLabel: Record<
-    'confirmed' | 'checked_in' | 'checked_out' | 'cancelled',
-    string
-  > = {
-    confirmed: t('booking.transition.confirm'),
+  const transitionLabel: Record<ManualBookingTransitionStatus, string> = {
     checked_in: t('booking.transition.checkIn'),
     checked_out: t('booking.transition.checkOut'),
     cancelled: t('booking.transition.cancel'),
@@ -559,7 +549,7 @@ function BookingsPage() {
                         )}
 
                       {canManageBookings &&
-                        getAllowedTransitions(booking.status).map(
+                        getAllowedBookingTransitions(booking.status).map(
                           (nextStatus) =>
                             nextStatus === 'cancelled' ? (
                               <Button

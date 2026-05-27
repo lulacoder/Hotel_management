@@ -1,24 +1,9 @@
 import { ConvexError } from 'convex/values'
-import { QueryCtx } from '../_generated/server'
-import { Id } from '../_generated/dataModel'
-import { DateRange, datesOverlap, isHoldExpired } from './dates'
-
-/**
- * Booking statuses that mean the booking is over and no longer holds the room.
- * Bookings in these states are skipped during date-conflict checks.
- * NOTE: 'outsourced' is intentionally included — the guest was moved to another
- * hotel so the original room is free.
- */
-export const TERMINAL_STATUSES = [
-  'cancelled',
-  'expired',
-  'checked_out',
-  'outsourced',
-] as const
-
-function isTerminal(status: string): boolean {
-  return (TERMINAL_STATUSES as readonly string[]).includes(status)
-}
+import { datesOverlap, isHoldExpired } from './dates'
+import { isTerminalBookingStatus } from './bookingLifecycle'
+import type { QueryCtx } from '../_generated/server'
+import type { Id } from '../_generated/dataModel'
+import type { DateRange } from './dates'
 
 /**
  * Throws a CONFLICT ConvexError if the room has any active booking that
@@ -38,7 +23,7 @@ export async function assertRoomAvailable(
     .collect()
 
   for (const booking of existingBookings) {
-    if (isTerminal(booking.status)) continue
+    if (isTerminalBookingStatus(booking.status)) continue
     if (booking.status === 'held' && isHoldExpired(booking.holdExpiresAt))
       continue
 
@@ -74,7 +59,7 @@ export async function checkRoomAvailability(
     .collect()
 
   for (const booking of existingBookings) {
-    if (isTerminal(booking.status)) continue
+    if (isTerminalBookingStatus(booking.status)) continue
     if (booking.status === 'held' && isHoldExpired(booking.holdExpiresAt))
       continue
 
@@ -84,7 +69,10 @@ export async function checkRoomAvailability(
         checkOut: booking.checkOut,
       })
     ) {
-      return { available: false, reason: 'Room is already booked for these dates' }
+      return {
+        available: false,
+        reason: 'Room is already booked for these dates',
+      }
     }
   }
 
@@ -114,7 +102,7 @@ export async function findBlockedRoomIds(
 
   for (const booking of candidateBookings) {
     if (!candidateRoomIds.has(booking.roomId)) continue
-    if (isTerminal(booking.status)) continue
+    if (isTerminalBookingStatus(booking.status)) continue
     if (booking.status === 'held' && isHoldExpired(booking.holdExpiresAt))
       continue
 

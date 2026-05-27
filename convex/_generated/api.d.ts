@@ -34,6 +34,7 @@ import type * as lib_adminAnalyticsWindow from "../lib/adminAnalyticsWindow.js";
 import type * as lib_arrays from "../lib/arrays.js";
 import type * as lib_auth from "../lib/auth.js";
 import type * as lib_availability from "../lib/availability.js";
+import type * as lib_bookingLifecycle from "../lib/bookingLifecycle.js";
 import type * as lib_dates from "../lib/dates.js";
 import type * as notifications from "../notifications.js";
 import type * as notificationsInternal from "../notificationsInternal.js";
@@ -76,6 +77,7 @@ declare const fullApi: ApiFromModules<{
   "lib/arrays": typeof lib_arrays;
   "lib/auth": typeof lib_auth;
   "lib/availability": typeof lib_availability;
+  "lib/bookingLifecycle": typeof lib_bookingLifecycle;
   "lib/dates": typeof lib_dates;
   notifications: typeof notifications;
   notificationsInternal: typeof notificationsInternal;
