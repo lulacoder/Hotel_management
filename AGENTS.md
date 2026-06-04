@@ -37,6 +37,9 @@ npm run format
 # Check and fix both (recommended before commits)
 npm run check
 
+# React Doctor audit (use the latest real tool output)
+npx react-doctor@latest --verbose
+
 # Convex development server (run in separate terminal)
 npx convex dev
 
@@ -189,6 +192,13 @@ throw new ConvexError({
 - Single quotes for strings
 - No semicolons (Prettier default)
 
+### Developer Experience Comments
+
+- When adding or refactoring a non-trivial component, hook, route helper, or domain function, add a short comment immediately before it that explains what it is responsible for in plain product language.
+- Add inline comments for complex flows, side effects, permission checks, multi-step form state, React Doctor fixes, and data transformations where a future maintainer would otherwise need to reverse-engineer intent.
+- Keep comments useful and specific. Do not add noisy comments for obvious JSX, simple setters, basic imports, or one-line wrappers.
+- Prefer comments that explain why the code exists or what user/business case it protects, not comments that merely restate the syntax.
+
 ### Authentication Patterns
 
 **CRITICAL: Identity is always derived from the JWT token — NEVER from client-supplied arguments.**
@@ -301,6 +311,13 @@ await requireHotelAccess(ctx, args.hotelId)
 4. Audit logging: Use `createAuditLog()` for admin mutations
 5. Soft deletes: Use `isDeleted` boolean, never hard delete
 6. **NEVER pass `clerkUserId` as an argument** to any public Convex function — identity MUST be derived from the JWT via `ctx.auth.getUserIdentity()` inside the handler
+
+### React Doctor Workflow
+
+- When asked to audit or improve React Doctor findings, run `npx react-doctor@latest --verbose` and use the full diagnostics folder it prints as the source of truth.
+- If the task is frontend/performance cleanup, do not edit files under `convex/` unless the user explicitly allows Convex changes for that pass. Treat Convex diagnostics as out of scope and report them separately so backend behavior is not changed accidentally.
+- Do not delete files only because React Doctor or deslop reports `unused-file`. First prove they are unreachable from TanStack's generated route tree, `src/router.tsx`, app providers, dynamic imports, and build tooling. If reachability is uncertain, leave the file in place and explain the likely false positive.
+- For performance findings, prefer root-cause fixes that preserve app behavior. Re-run React Doctor after changes and also run `npm run build` before handing the work back.
 
 # Agent guidance for this repo
 
