@@ -1,12 +1,11 @@
-import { useMutation, useQuery } from '@/integrations/convex/hooks'
 import { useAuth } from '@clerk/clerk-react'
 import { useEffect, useRef, useState } from 'react'
 import { Bell, BellOff, Check, CheckCheck, Trash2 } from 'lucide-react'
 import { toast } from 'sonner'
 
 import { api } from '../../convex/_generated/api'
-import type { Id } from '../../convex/_generated/dataModel'
 import { cn } from '../lib/utils'
+import { LoadMoreButton } from './LoadMoreButton'
 import { Button } from './ui/button'
 import {
   DropdownMenu,
@@ -14,6 +13,12 @@ import {
   DropdownMenuTrigger,
 } from './ui/dropdown-menu'
 import { ScrollArea } from './ui/scroll-area'
+import type { Id } from '../../convex/_generated/dataModel'
+import {
+  useMutation,
+  usePaginatedQuery,
+  useQuery,
+} from '@/integrations/convex/hooks'
 
 const notificationMeta = {
   booking_payment_proof_submitted: {
@@ -72,10 +77,12 @@ export function NotificationBell({
   const [open, setOpen] = useState(false)
   const prevCountRef = useRef<number | undefined>(undefined)
 
-  const notifications = useQuery(
+  const notificationsPage = usePaginatedQuery(
     api.notifications.getMyNotifications,
     isSignedIn ? {} : 'skip',
+    { initialNumItems: 20 },
   )
+  const notifications = notificationsPage.results
   const unreadCount = useQuery(
     api.notifications.getUnreadCount,
     isSignedIn ? {} : 'skip',
@@ -90,9 +97,9 @@ export function NotificationBell({
 
     if (
       prevCountRef.current !== undefined &&
-      unreadCount > prevCountRef.current
+      unreadCount.count > prevCountRef.current
     ) {
-      const diff = unreadCount - prevCountRef.current
+      const diff = unreadCount.count - prevCountRef.current
       toast.info(
         diff === 1
           ? 'You have a new notification'
@@ -101,12 +108,13 @@ export function NotificationBell({
       )
     }
 
-    prevCountRef.current = unreadCount
+    prevCountRef.current = unreadCount.count
   }, [unreadCount])
 
   if (!isSignedIn) return null
 
-  const count = unreadCount ?? 0
+  const count = unreadCount?.count ?? 0
+  const unreadLabel = unreadCount?.hasMore ? `${count}+` : String(count)
   const side = dropDirection === 'up' ? 'top' : 'bottom'
 
   return (
@@ -116,12 +124,12 @@ export function NotificationBell({
           variant="ghost"
           size="icon-sm"
           className="relative rounded-xl border border-transparent hover:border-border hover:bg-accent/60"
-          aria-label={`Notifications${count > 0 ? ` (${count} unread)` : ''}`}
+          aria-label={`Notifications${count > 0 ? ` (${unreadLabel} unread)` : ''}`}
         >
           <Bell className="size-5 text-slate-500 dark:text-slate-300" />
           {count > 0 && (
             <span className="absolute -right-1 -top-1 inline-flex h-[18px] min-w-[18px] items-center justify-center rounded-full bg-red-500 px-1 text-[10px] font-bold leading-none text-white shadow-lg shadow-red-500/40">
-              {count > 99 ? '99+' : count}
+              {unreadLabel}
             </span>
           )}
         </Button>
@@ -140,7 +148,7 @@ export function NotificationBell({
             </span>
             {count > 0 && (
               <span className="rounded-full border border-amber-500/20 bg-amber-500/10 px-2 py-0.5 text-xs font-medium text-amber-500 dark:text-amber-400">
-                {count} unread
+                {unreadLabel} unread
               </span>
             )}
           </div>
@@ -155,7 +163,7 @@ export function NotificationBell({
                 <CheckCheck size={14} />
               </Button>
             )}
-            {(notifications?.length ?? 0) > 0 && (
+            {notifications.length > 0 && (
               <Button
                 variant="ghost"
                 size="icon-xs"
@@ -170,24 +178,25 @@ export function NotificationBell({
         </div>
 
         <ScrollArea className="max-h-[420px]">
-          {notifications === undefined && (
+          {notificationsPage.status === 'LoadingFirstPage' && (
             <div className="flex items-center justify-center py-10">
               <div className="size-6 animate-spin rounded-full border-2 border-violet-500/20 border-t-violet-500" />
             </div>
           )}
 
-          {notifications?.length === 0 && (
-            <div className="flex flex-col items-center justify-center gap-3 px-4 py-10 text-center">
-              <div className="rounded-xl bg-muted p-3">
-                <BellOff size={22} className="text-muted-foreground" />
+          {notificationsPage.status !== 'LoadingFirstPage' &&
+            notifications.length === 0 && (
+              <div className="flex flex-col items-center justify-center gap-3 px-4 py-10 text-center">
+                <div className="rounded-xl bg-muted p-3">
+                  <BellOff size={22} className="text-muted-foreground" />
+                </div>
+                <p className="text-sm font-medium text-muted-foreground">
+                  No notifications yet
+                </p>
               </div>
-              <p className="text-sm font-medium text-muted-foreground">
-                No notifications yet
-              </p>
-            </div>
-          )}
+            )}
 
-          {notifications?.map((notification) => {
+          {notifications.map((notification) => {
             const meta = notificationMeta[notification.type]
             const link = bookingLink(notification.type, notification.bookingId)
 
@@ -259,6 +268,13 @@ export function NotificationBell({
               </a>
             )
           })}
+
+          <div className="px-4 pb-4">
+            <LoadMoreButton
+              status={notificationsPage.status}
+              loadMore={notificationsPage.loadMore}
+            />
+          </div>
         </ScrollArea>
       </DropdownMenuContent>
     </DropdownMenu>

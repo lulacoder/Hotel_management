@@ -1,6 +1,5 @@
-import { createFileRoute, Link, useNavigate } from '@tanstack/react-router'
+import { Link, createFileRoute, useNavigate } from '@tanstack/react-router'
 import { useUser } from '@clerk/clerk-react'
-import { useQuery } from '@/integrations/convex/hooks'
 import { Calendar, Car, Star, Tag } from 'lucide-react'
 import { useState } from 'react'
 
@@ -15,6 +14,7 @@ import { HotelPageChrome } from './hotels.$hotelId/components/-HotelPageChrome'
 import { HotelRoomsGrid } from './hotels.$hotelId/components/-HotelRoomsGrid'
 import { useHotelBookingState } from './hotels.$hotelId/components/-useHotelBookingState'
 import type { Id } from '../../convex/_generated/dataModel'
+import { usePaginatedQuery, useQuery } from '@/integrations/convex/hooks'
 
 export const Route = createFileRoute('/hotels/$hotelId')({
   validateSearch: (search: Record<string, unknown>) => ({
@@ -57,10 +57,12 @@ export function HotelDetailPage() {
     hotelId: hotelId as Id<'hotels'>,
   })
   const profile = useQuery(api.users.getMe, user?.id ? {} : 'skip')
-  const announcements = useQuery(
+  const announcementsPage = usePaginatedQuery(
     api.announcements.getActiveAnnouncementsForHotel,
     { hotelId: hotelId as Id<'hotels'> },
+    { initialNumItems: 20 },
   )
+  const announcements = announcementsPage.results
   const resumeBooking = useQuery(
     api.bookings.get,
     search.resumeBookingId
@@ -199,17 +201,12 @@ export function HotelDetailPage() {
         </div>
 
         <HotelAnnouncementsPreview
-          announcements={
-            announcements?.map((announcement) => ({
-              _id: announcement._id,
-              body: announcement.body,
-              priority: announcement.priority as
-                | 'normal'
-                | 'important'
-                | 'urgent',
-              title: announcement.title,
-            })) ?? []
-          }
+          announcements={announcements.map((announcement) => ({
+            _id: announcement._id,
+            body: announcement.body,
+            priority: announcement.priority,
+            title: announcement.title,
+          }))}
           hotelId={hotelId}
         />
 

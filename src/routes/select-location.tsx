@@ -1,7 +1,6 @@
 // Hotel discovery route with geolocation, search filters, sorting, and rating workflow.
 import { createFileRoute, useNavigate } from '@tanstack/react-router'
 import { useUser } from '@clerk/clerk-react'
-import { useMutation, useQuery } from '@/integrations/convex/hooks'
 import { useEffect, useMemo, useRef, useState } from 'react'
 import { MessageSquarePlus } from 'lucide-react'
 
@@ -25,6 +24,11 @@ import type { ComplaintFormValues } from './select-location/components/-Complain
 import type { SortOption } from './select-location/components/-helpers'
 import type { RatingFormValues } from './select-location/components/-RatingModal'
 import type { Id } from '../../convex/_generated/dataModel'
+import {
+  useMutation,
+  usePaginatedQuery,
+  useQuery,
+} from '@/integrations/convex/hooks'
 
 export const Route = createFileRoute('/select-location')({
   validateSearch: (search: Record<string, unknown>) => ({
@@ -75,10 +79,12 @@ export function SelectLocationPage() {
     user?.id && activeRatingHotelId ? { hotelId: activeRatingHotelId } : 'skip',
   )
 
-  const myBookings = useQuery(
+  const myBookingsPage = usePaginatedQuery(
     api.bookings.getMyBookingsEnriched,
     user?.id ? {} : 'skip',
+    { initialNumItems: 50 },
   )
+  const myBookings = myBookingsPage.results
 
   // Geolocation hook
   const {
@@ -247,7 +253,7 @@ export function SelectLocationPage() {
   const complaintRedirect = '/select-location'
 
   const complaintBookingOptions = useMemo(() => {
-    if (!myBookings) {
+    if (myBookingsPage.status === 'LoadingFirstPage') {
       return []
     }
 
@@ -258,7 +264,7 @@ export function SelectLocationPage() {
       checkOut: booking.checkOut,
       status: booking.status,
     }))
-  }, [myBookings])
+  }, [myBookings, myBookingsPage.status])
 
   const updateSearch = (
     nextSearch: Partial<{

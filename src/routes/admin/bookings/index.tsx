@@ -32,8 +32,13 @@ import { OutsourceModal } from './components/-OutsourceModal'
 import type { ManualBookingTransitionStatus } from '../../../../convex/lib/bookingLifecycle'
 import type { Id } from '../../../../convex/_generated/dataModel'
 import { useTheme } from '@/lib/theme'
-import { useMutation, useQuery } from '@/integrations/convex/hooks'
+import {
+  useMutation,
+  usePaginatedQuery,
+  useQuery,
+} from '@/integrations/convex/hooks'
 import { Button } from '@/components/ui/button'
+import { LoadMoreButton } from '@/components/LoadMoreButton'
 
 export const Route = createFileRoute('/admin/bookings/')({
   validateSearch: (search: Record<string, unknown>) => ({
@@ -66,6 +71,20 @@ const etbCurrencyFormatter = new Intl.NumberFormat('en-ET', {
 
 function formatEtbAmount(amountMinor: number) {
   return etbCurrencyFormatter.format(amountMinor / 100)
+}
+
+type AdminBookingListItem = {
+  booking: any
+  guestProfile?: {
+    _id: Id<'guestProfiles'>
+    name: string
+    phone?: string
+    email?: string
+  }
+  linkedUser?: {
+    _id: Id<'users'>
+    email: string
+  }
 }
 
 function BookingsPage() {
@@ -111,7 +130,7 @@ function BookingsPage() {
     setPaymentStatusFilter(search.paymentStatus)
   }, [search.paymentStatus])
 
-  const bookings = useQuery(
+  const bookingsPage = usePaginatedQuery(
     (api as any).bookings.getByHotel,
     user?.id
       ? {
@@ -119,23 +138,17 @@ function BookingsPage() {
             selectedHotel !== 'all'
               ? (selectedHotel as Id<'hotels'>)
               : undefined,
+          status: statusFilter !== 'all' ? statusFilter : undefined,
         }
       : 'skip',
-  ) as
-    | Array<{
-        booking: any
-        guestProfile?: {
-          _id: Id<'guestProfiles'>
-          name: string
-          phone?: string
-          email?: string
-        }
-        linkedUser?: {
-          _id: Id<'users'>
-          email: string
-        }
-      }>
-    | undefined
+    { initialNumItems: 20 },
+  ) as {
+    results: Array<AdminBookingListItem>
+    status: 'LoadingFirstPage' | 'CanLoadMore' | 'LoadingMore' | 'Exhausted'
+    loadMore: (numItems: number) => void
+  }
+  const bookings = bookingsPage.results
+  const isBookingsLoading = bookingsPage.status === 'LoadingFirstPage'
 
   const cancelBooking = useMutation(api.bookings.cancelBooking)
   const updateBookingStatus = useMutation(api.bookings.updateStatus)
@@ -239,7 +252,7 @@ function BookingsPage() {
   }
 
   const filteredBookings = useMemo(() => {
-    return bookings?.filter((item) => {
+    return bookings.filter((item) => {
       if (statusFilter !== 'all' && item.booking.status !== statusFilter) {
         return false
       }
@@ -377,13 +390,13 @@ function BookingsPage() {
       </m.div>
 
       {/* Content */}
-      {bookings === undefined ? (
+      {isBookingsLoading ? (
         <div className="flex items-center justify-center py-20">
           <div
             className={`animate-spin rounded-full size-8 border-2 ${isDark ? 'border-violet-500/20 border-t-violet-500' : 'border-violet-500/20 border-t-violet-500'}`}
           ></div>
         </div>
-      ) : filteredBookings?.length === 0 ? (
+      ) : filteredBookings.length === 0 ? (
         <m.div variants={itemVariants} className="admin-empty-state p-12">
           <div className="admin-empty-icon">
             <Calendar
@@ -403,7 +416,7 @@ function BookingsPage() {
         </m.div>
       ) : (
         <m.div className="space-y-4" variants={containerVariants}>
-          {filteredBookings?.map((item) => {
+          {filteredBookings.map((item) => {
             const booking = item.booking
             const status =
               statusConfig[booking.status as keyof typeof statusConfig]
@@ -601,6 +614,13 @@ function BookingsPage() {
             )
           })}
         </m.div>
+      )}
+
+      {!isBookingsLoading && (
+        <LoadMoreButton
+          status={bookingsPage.status}
+          loadMore={bookingsPage.loadMore}
+        />
       )}
 
       {/* Booking Detail Modal */}

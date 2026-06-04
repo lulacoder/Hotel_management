@@ -1,6 +1,5 @@
 import { createFileRoute } from '@tanstack/react-router'
 import { useUser } from '@clerk/clerk-react'
-import { useMutation, useQuery } from '@/integrations/convex/hooks'
 import {
   AlertCircle,
   AlertTriangle,
@@ -16,10 +15,16 @@ import { useState } from 'react'
 import { toast } from 'sonner'
 
 import { api } from '../../../../convex/_generated/api'
+import { LoadMoreButton } from '../../../components/LoadMoreButton'
 import { useI18n } from '../../../lib/i18n/provider'
 import { useTheme } from '../../../lib/theme'
 import { AnnouncementForm } from './components/-AnnouncementForm'
 import type { Id } from '../../../../convex/_generated/dataModel'
+import {
+  useMutation,
+  usePaginatedQuery,
+  useQuery,
+} from '@/integrations/convex/hooks'
 
 export const Route = createFileRoute('/admin/announcements/')({
   component: AdminAnnouncementsPage,
@@ -97,10 +102,12 @@ function AdminAnnouncementsPage() {
     hotelAssignment?.hotelId ? { hotelId: hotelAssignment.hotelId } : 'skip',
   )
 
-  const announcements = useQuery(
+  const announcementsPage = usePaginatedQuery(
     api.announcements.getHotelAnnouncements,
     canManage ? {} : 'skip',
+    { initialNumItems: 20 },
   )
+  const announcements = announcementsPage.results
 
   const toggleActive = useMutation(api.announcements.toggleActive)
   const remove = useMutation(api.announcements.remove)
@@ -237,7 +244,7 @@ function AdminAnnouncementsPage() {
       </div>
 
       {/* Content */}
-      {announcements === undefined ? (
+      {announcementsPage.status === 'LoadingFirstPage' ? (
         <div className="flex items-center justify-center py-12">
           <div className="animate-spin rounded-full size-8 border-2 border-violet-500/20 border-t-violet-500" />
         </div>
@@ -452,6 +459,13 @@ function AdminAnnouncementsPage() {
             )
           })}
         </div>
+      )}
+
+      {announcementsPage.status !== 'LoadingFirstPage' && (
+        <LoadMoreButton
+          status={announcementsPage.status}
+          loadMore={announcementsPage.loadMore}
+        />
       )}
 
       {/* Create / Edit modal */}

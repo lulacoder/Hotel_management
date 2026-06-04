@@ -1,6 +1,5 @@
 import { Link, createFileRoute } from '@tanstack/react-router'
 import { UserButton, useUser } from '@clerk/clerk-react'
-import { useQuery } from '@/integrations/convex/hooks'
 import {
   AlertCircle,
   AlertTriangle,
@@ -16,6 +15,7 @@ import {
 import { useState } from 'react'
 
 import { api } from '../../../convex/_generated/api'
+import { LoadMoreButton } from '../../components/LoadMoreButton'
 import { LanguageSwitcher } from '../../components/LanguageSwitcher'
 import { ThemeToggle } from '../../components/ThemeToggle'
 import { useI18n } from '../../lib/i18n/provider'
@@ -25,6 +25,7 @@ import {
 } from '../../lib/navigationSearch'
 import { useTheme } from '../../lib/theme'
 import type { Id } from '../../../convex/_generated/dataModel'
+import { usePaginatedQuery, useQuery } from '@/integrations/convex/hooks'
 
 // ---------------------------------------------------------------------------
 // Route
@@ -115,14 +116,16 @@ export function CustomerAnnouncementsPage() {
     hotelId ? { hotelId: hotelId as Id<'hotels'> } : 'skip',
   )
 
-  const announcements = useQuery(
+  const announcementsPage = usePaginatedQuery(
     api.announcements.getActiveAnnouncementsForHotel,
     hotelId ? { hotelId: hotelId as Id<'hotels'> } : 'skip',
+    { initialNumItems: 20 },
   )
+  const announcements = announcementsPage.results
 
   const { user, isSignedIn } = useUser()
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false)
-  const isLoading = announcements === undefined
+  const isLoading = announcementsPage.status === 'LoadingFirstPage'
 
   return (
     <div
@@ -478,106 +481,114 @@ export function CustomerAnnouncementsPage() {
 
         {/* Announcement feed */}
         {!isLoading && announcements.length > 0 && (
-          <div className="space-y-4">
-            {announcements.map((ann) => {
-              const cfg = priorityConfig[ann.priority as Priority]
-              const Icon = cfg.icon
+          <>
+            <div className="space-y-4">
+              {announcements.map((ann) => {
+                const cfg = priorityConfig[ann.priority as Priority]
+                const Icon = cfg.icon
 
-              return (
-                <article
-                  key={ann._id}
-                  className={`relative rounded-2xl border overflow-hidden transition-colors ${
-                    isDark
-                      ? `${cfg.cardBg} ${cfg.cardBorder}`
-                      : ann.priority === 'urgent'
-                        ? 'bg-red-50/70 border-red-200'
-                        : ann.priority === 'important'
-                          ? 'bg-amber-50/70 border-amber-200'
-                          : 'bg-white/80 border-slate-200/80 shadow-sm backdrop-blur-sm'
-                  }`}
-                >
-                  {/* Priority accent bar */}
-                  <div
-                    className={`absolute left-0 top-0 bottom-0 w-1 ${cfg.barColor}`}
-                  />
-
-                  <div className="pl-5 pr-5 py-5">
-                    {/* Badge row */}
-                    <div className="flex items-center justify-between gap-3 mb-3">
-                      <span
-                        className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded-lg text-xs font-semibold uppercase tracking-wide ${cfg.badgeBg} ${cfg.badgeText}`}
-                      >
-                        <Icon size={11} />
-                        {t(cfg.labelKey as Parameters<typeof t>[0])}
-                      </span>
-                      <time
-                        className={`text-xs shrink-0 ${
-                          isDark ? 'text-slate-500' : 'text-slate-500'
-                        }`}
-                        dateTime={new Date(ann.createdAt).toISOString()}
-                      >
-                        {timeAgo(ann.createdAt)}
-                      </time>
-                    </div>
-
-                    {/* Title */}
-                    <h3
-                      className={`text-base font-semibold mb-2 leading-snug ${
-                        isDark ? 'text-slate-100' : 'text-slate-900'
-                      }`}
-                    >
-                      {ann.title}
-                    </h3>
-
-                    {/* Body */}
-                    <p
-                      className={`text-sm leading-relaxed whitespace-pre-wrap ${
-                        isDark ? 'text-slate-300' : 'text-slate-700'
-                      }`}
-                    >
-                      {ann.body}
-                    </p>
-
-                    {/* Footer */}
+                return (
+                  <article
+                    key={ann._id}
+                    className={`relative rounded-2xl border overflow-hidden transition-colors ${
+                      isDark
+                        ? `${cfg.cardBg} ${cfg.cardBorder}`
+                        : ann.priority === 'urgent'
+                          ? 'bg-red-50/70 border-red-200'
+                          : ann.priority === 'important'
+                            ? 'bg-amber-50/70 border-amber-200'
+                            : 'bg-white/80 border-slate-200/80 shadow-sm backdrop-blur-sm'
+                    }`}
+                  >
+                    {/* Priority accent bar */}
                     <div
-                      className={`flex items-center gap-1.5 mt-4 pt-3 border-t ${
-                        isDark ? 'border-slate-700/40' : 'border-slate-200'
-                      }`}
-                    >
-                      <Building2
-                        size={11}
-                        className={isDark ? 'text-slate-600' : 'text-slate-500'}
-                      />
-                      <span
-                        className={`text-xs ${isDark ? 'text-slate-500' : 'text-slate-500'}`}
+                      className={`absolute left-0 top-0 bottom-0 w-1 ${cfg.barColor}`}
+                    />
+
+                    <div className="pl-5 pr-5 py-5">
+                      {/* Badge row */}
+                      <div className="flex items-center justify-between gap-3 mb-3">
+                        <span
+                          className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded-lg text-xs font-semibold uppercase tracking-wide ${cfg.badgeBg} ${cfg.badgeText}`}
+                        >
+                          <Icon size={11} />
+                          {t(cfg.labelKey as Parameters<typeof t>[0])}
+                        </span>
+                        <time
+                          className={`text-xs shrink-0 ${
+                            isDark ? 'text-slate-500' : 'text-slate-500'
+                          }`}
+                          dateTime={new Date(ann.createdAt).toISOString()}
+                        >
+                          {timeAgo(ann.createdAt)}
+                        </time>
+                      </div>
+
+                      {/* Title */}
+                      <h3
+                        className={`text-base font-semibold mb-2 leading-snug ${
+                          isDark ? 'text-slate-100' : 'text-slate-900'
+                        }`}
                       >
-                        {t('announcements.from')}
-                      </span>
-                      {ann.updatedAt !== ann.createdAt && (
-                        <>
-                          <span
-                            className={`text-xs ${
-                              isDark ? 'text-slate-700' : 'text-slate-300'
-                            }`}
-                          >
-                            ·
-                          </span>
-                          <span
-                            className={`text-xs ${
-                              isDark ? 'text-slate-600' : 'text-slate-500'
-                            }`}
-                          >
-                            {t('admin.announcements.updatedAt')}{' '}
-                            {timeAgo(ann.updatedAt)}
-                          </span>
-                        </>
-                      )}
+                        {ann.title}
+                      </h3>
+
+                      {/* Body */}
+                      <p
+                        className={`text-sm leading-relaxed whitespace-pre-wrap ${
+                          isDark ? 'text-slate-300' : 'text-slate-700'
+                        }`}
+                      >
+                        {ann.body}
+                      </p>
+
+                      {/* Footer */}
+                      <div
+                        className={`flex items-center gap-1.5 mt-4 pt-3 border-t ${
+                          isDark ? 'border-slate-700/40' : 'border-slate-200'
+                        }`}
+                      >
+                        <Building2
+                          size={11}
+                          className={
+                            isDark ? 'text-slate-600' : 'text-slate-500'
+                          }
+                        />
+                        <span
+                          className={`text-xs ${isDark ? 'text-slate-500' : 'text-slate-500'}`}
+                        >
+                          {t('announcements.from')}
+                        </span>
+                        {ann.updatedAt !== ann.createdAt && (
+                          <>
+                            <span
+                              className={`text-xs ${
+                                isDark ? 'text-slate-700' : 'text-slate-300'
+                              }`}
+                            >
+                              ·
+                            </span>
+                            <span
+                              className={`text-xs ${
+                                isDark ? 'text-slate-600' : 'text-slate-500'
+                              }`}
+                            >
+                              {t('admin.announcements.updatedAt')}{' '}
+                              {timeAgo(ann.updatedAt)}
+                            </span>
+                          </>
+                        )}
+                      </div>
                     </div>
-                  </div>
-                </article>
-              )
-            })}
-          </div>
+                  </article>
+                )
+              })}
+            </div>
+            <LoadMoreButton
+              status={announcementsPage.status}
+              loadMore={announcementsPage.loadMore}
+            />
+          </>
         )}
       </main>
     </div>

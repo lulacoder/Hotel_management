@@ -1,7 +1,6 @@
 // Customer bookings route with filtering and list rendering.
 import { Link, createFileRoute, useNavigate } from '@tanstack/react-router'
 import { useUser } from '@clerk/clerk-react'
-import { useMutation, useQuery } from '@/integrations/convex/hooks'
 import {
   AlertTriangle,
   Calendar,
@@ -13,6 +12,7 @@ import {
 import { useEffect, useState } from 'react'
 
 import { api } from '../../../convex/_generated/api'
+import { LoadMoreButton } from '../../components/LoadMoreButton'
 import { useI18n } from '../../lib/i18n/provider'
 import { DEFAULT_SELECT_LOCATION_SEARCH } from '../../lib/navigationSearch'
 
@@ -20,6 +20,11 @@ import { BookingsHeader } from './bookings/components/-BookingsHeader'
 import { BookingsFilters } from './bookings/components/-BookingsFilters'
 import { BookingsList } from './bookings/components/-BookingsList'
 import type { Id } from '../../../convex/_generated/dataModel'
+import {
+  useMutation,
+  usePaginatedQuery,
+  useQuery,
+} from '@/integrations/convex/hooks'
 
 export const Route = createFileRoute('/_authenticated/bookings')({
   validateSearch: (search: Record<string, unknown>) => ({
@@ -48,10 +53,16 @@ export function BookingsPage() {
   )
   const [statusFilter, setStatusFilter] = useState<string>('all')
 
-  const bookings = useQuery(
+  const bookingsPage = usePaginatedQuery(
     api.bookings.getMyBookingsEnriched,
-    user?.id ? {} : 'skip',
+    user?.id
+      ? {
+          status: statusFilter !== 'all' ? (statusFilter as any) : undefined,
+        }
+      : 'skip',
+    { initialNumItems: 20 },
   )
+  const bookings = bookingsPage.results
   const trackedPayment = useQuery(
     api.chapaQueries.getCheckoutStatus,
     user?.id && search.payment === 'processing' && search.tx_ref
@@ -84,12 +95,12 @@ export function BookingsPage() {
     }
   }
 
-  const filteredBookings = bookings?.filter((b) => {
+  const filteredBookings = bookings.filter((b) => {
     if (statusFilter === 'all') return true
     return b.booking.status === statusFilter
   })
 
-  const isLoading = bookings === undefined
+  const isLoading = bookingsPage.status === 'LoadingFirstPage'
   const showPaymentBanner =
     search.payment === 'processing' &&
     Boolean(search.tx_ref) &&
@@ -212,7 +223,7 @@ export function BookingsPage() {
         )}
 
         {/* Empty State */}
-        {!isLoading && filteredBookings?.length === 0 && (
+        {!isLoading && filteredBookings.length === 0 && (
           <div className="rounded-2xl border border-slate-800/50 bg-slate-900/50 p-12 text-center">
             <Calendar className="size-16 text-slate-600 mx-auto mb-4" />
             <h2 className="text-xl font-semibold text-white mb-2">
@@ -238,11 +249,18 @@ export function BookingsPage() {
         )}
 
         {/* Bookings List */}
-        {!isLoading && filteredBookings && filteredBookings.length > 0 && (
+        {!isLoading && filteredBookings.length > 0 && (
           <BookingsList
             bookings={filteredBookings}
             cancellingId={cancellingId}
             onCancel={handleCancel}
+          />
+        )}
+
+        {!isLoading && (
+          <LoadMoreButton
+            status={bookingsPage.status}
+            loadMore={bookingsPage.loadMore}
           />
         )}
       </main>
