@@ -244,6 +244,7 @@ export default defineSchema({
     .index('by_hotel_and_check_in', ['hotelId', 'checkIn'])
     .index('by_hotel_and_check_out', ['hotelId', 'checkOut'])
     .index('by_room_and_status', ['roomId', 'status'])
+    .index('by_room_and_check_out', ['roomId', 'checkOut'])
     .index('by_room_and_dates', ['roomId', 'checkIn', 'checkOut'])
     .index('by_hold_expires', ['holdExpiresAt'])
     .index('by_user_and_status', ['userId', 'status'])

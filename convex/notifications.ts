@@ -1,3 +1,7 @@
+import {
+  paginationOptsValidator,
+  paginationResultValidator,
+} from 'convex/server'
 import { ConvexError, v } from 'convex/values'
 import { internalMutation, mutation, query } from './_generated/server'
 import { requireUser } from './lib/auth'
@@ -25,29 +29,36 @@ const notificationValidator = v.object({
   createdAt: v.number(),
 })
 
+const MAX_UNREAD_BADGE_COUNT = 99
+
 // ---------------------------------------------------------------------------
 // Queries
 // ---------------------------------------------------------------------------
 
 // Returns all notifications for the authenticated user, newest first.
 export const getMyNotifications = query({
-  args: {},
-  returns: v.array(notificationValidator),
-  handler: async (ctx) => {
+  args: {
+    paginationOpts: paginationOptsValidator,
+  },
+  returns: paginationResultValidator(notificationValidator),
+  handler: async (ctx, args) => {
     const user = await requireUser(ctx)
 
     return await ctx.db
       .query('notifications')
       .withIndex('by_user', (q) => q.eq('userId', user._id))
       .order('desc')
-      .collect()
+      .paginate(args.paginationOpts)
   },
 })
 
 // Returns the count of unread notifications for the authenticated user.
 export const getUnreadCount = query({
   args: {},
-  returns: v.number(),
+  returns: v.object({
+    count: v.number(),
+    hasMore: v.boolean(),
+  }),
   handler: async (ctx) => {
     const user = await requireUser(ctx)
 
@@ -56,9 +67,12 @@ export const getUnreadCount = query({
       .withIndex('by_user_and_is_read', (q) =>
         q.eq('userId', user._id).eq('isRead', false),
       )
-      .collect()
+      .take(MAX_UNREAD_BADGE_COUNT + 1)
 
-    return unread.length
+    return {
+      count: Math.min(unread.length, MAX_UNREAD_BADGE_COUNT),
+      hasMore: unread.length > MAX_UNREAD_BADGE_COUNT,
+    }
   },
 })
 

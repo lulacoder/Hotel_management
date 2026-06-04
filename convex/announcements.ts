@@ -1,3 +1,7 @@
+import {
+  paginationOptsValidator,
+  paginationResultValidator,
+} from 'convex/server'
 import { ConvexError, v } from 'convex/values'
 import { mutation, query } from './_generated/server'
 import { getHotelAssignment, requireUser } from './lib/auth'
@@ -24,6 +28,10 @@ const announcementValidator = v.object({
   createdAt: v.number(),
   updatedAt: v.number(),
   updatedBy: v.optional(v.id('users')),
+})
+
+const announcementWithCreatorValidator = announcementValidator.extend({
+  createdByEmail: v.string(),
 })
 
 // ---------------------------------------------------------------------------
@@ -59,36 +67,23 @@ async function requireAnnouncementAccess(
 // Returns ALL announcements (active + inactive) for the staff member's hotel.
 // Used by the admin management view.
 export const getHotelAnnouncements = query({
-  args: {},
-  returns: v.array(
-    v.object({
-      _id: v.id('announcements'),
-      _creationTime: v.number(),
-      hotelId: v.id('hotels'),
-      createdBy: v.id('users'),
-      title: v.string(),
-      body: v.string(),
-      priority: priorityValidator,
-      isActive: v.boolean(),
-      createdAt: v.number(),
-      updatedAt: v.number(),
-      updatedBy: v.optional(v.id('users')),
-      createdByEmail: v.string(),
-    }),
-  ),
-  handler: async (ctx) => {
+  args: {
+    paginationOpts: paginationOptsValidator,
+  },
+  returns: paginationResultValidator(announcementWithCreatorValidator),
+  handler: async (ctx, args) => {
     const { assignment } = await requireAnnouncementAccess(ctx)
 
-    const announcements = await ctx.db
+    const paginatedAnnouncements = await ctx.db
       .query('announcements')
       .withIndex('by_hotel_and_created_at', (q) =>
         q.eq('hotelId', assignment.hotelId),
       )
       .order('desc')
-      .collect()
+      .paginate(args.paginationOpts)
 
-    return await Promise.all(
-      announcements.map(async (ann) => {
+    const page = await Promise.all(
+      paginatedAnnouncements.page.map(async (ann) => {
         const creator = await ctx.db.get(ann.createdBy)
         return {
           ...ann,
@@ -96,14 +91,22 @@ export const getHotelAnnouncements = query({
         }
       }),
     )
+
+    return {
+      ...paginatedAnnouncements,
+      page,
+    }
   },
 })
 
 // Returns only ACTIVE announcements for a hotel. Public — no auth required.
 // Used by the customer-facing announcements view.
 export const getActiveAnnouncementsForHotel = query({
-  args: { hotelId: v.id('hotels') },
-  returns: v.array(announcementValidator),
+  args: {
+    hotelId: v.id('hotels'),
+    paginationOpts: paginationOptsValidator,
+  },
+  returns: paginationResultValidator(announcementValidator),
   handler: async (ctx, args) => {
     return await ctx.db
       .query('announcements')
@@ -111,7 +114,7 @@ export const getActiveAnnouncementsForHotel = query({
         q.eq('hotelId', args.hotelId).eq('isActive', true),
       )
       .order('desc')
-      .collect()
+      .paginate(args.paginationOpts)
   },
 })
 

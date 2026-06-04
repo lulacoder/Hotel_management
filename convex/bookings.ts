@@ -1,3 +1,7 @@
+import {
+  paginationOptsValidator,
+  paginationResultValidator,
+} from 'convex/server'
 import { ConvexError, v } from 'convex/values'
 import {
   internalMutation,
@@ -31,7 +35,6 @@ import {
   isCompletedBookingStatus,
 } from './lib/bookingLifecycle'
 import * as fileTracking from './fileTracking'
-import type { Doc } from './_generated/dataModel'
 
 // Status validators
 const bookingStatusValidator = v.union(
@@ -93,6 +96,8 @@ const bookingValidator = v.object({
   updatedBy: v.optional(v.id('users')),
 })
 
+const paginatedBookingsValidator = paginationResultValidator(bookingValidator)
+
 const guestProfileSummaryValidator = v.object({
   _id: v.id('guestProfiles'),
   name: v.string(),
@@ -104,6 +109,32 @@ const guestProfileSummaryValidator = v.object({
 const linkedUserSummaryValidator = v.object({
   _id: v.id('users'),
   email: v.string(),
+})
+
+const bookingWithGuestInfoValidator = v.object({
+  booking: bookingValidator,
+  guestProfile: v.optional(guestProfileSummaryValidator),
+  linkedUser: v.optional(linkedUserSummaryValidator),
+})
+
+const enrichedCustomerBookingValidator = v.object({
+  booking: bookingValidator,
+  room: v.object({
+    _id: v.id('rooms'),
+    roomNumber: v.string(),
+    type: v.union(
+      v.literal('budget'),
+      v.literal('standard'),
+      v.literal('suite'),
+      v.literal('deluxe'),
+    ),
+  }),
+  hotel: v.object({
+    _id: v.id('hotels'),
+    name: v.string(),
+    address: v.string(),
+    city: v.string(),
+  }),
 })
 
 // Fetches a single booking by its ID.
@@ -145,8 +176,9 @@ export const getByUser = query({
   args: {
     userId: v.optional(v.id('users')), // Admin can query for any user
     status: v.optional(bookingStatusValidator),
+    paginationOpts: paginationOptsValidator,
   },
-  returns: v.array(bookingValidator),
+  returns: paginatedBookingsValidator,
   handler: async (ctx, args) => {
     const user = await requireUser(ctx)
 
@@ -164,21 +196,19 @@ export const getByUser = query({
     }
 
     // Use compound index when status is provided to avoid in-memory filtering
-    const bookings = args.status
+    return args.status
       ? await ctx.db
           .query('bookings')
           .withIndex('by_user_and_status', (q) =>
             q.eq('userId', targetUserId).eq('status', args.status!),
           )
           .order('desc')
-          .collect()
+          .paginate(args.paginationOpts)
       : await ctx.db
           .query('bookings')
           .withIndex('by_user', (q) => q.eq('userId', targetUserId))
           .order('desc')
-          .collect()
-
-    return bookings
+          .paginate(args.paginationOpts)
   },
 })
 
@@ -190,14 +220,9 @@ export const getByHotel = query({
   args: {
     hotelId: v.optional(v.id('hotels')),
     status: v.optional(bookingStatusValidator),
+    paginationOpts: paginationOptsValidator,
   },
-  returns: v.array(
-    v.object({
-      booking: bookingValidator,
-      guestProfile: v.optional(guestProfileSummaryValidator),
-      linkedUser: v.optional(linkedUserSummaryValidator),
-    }),
-  ),
+  returns: paginationResultValidator(bookingWithGuestInfoValidator),
   handler: async (ctx, args) => {
     if (args.hotelId !== undefined) {
       await requireHotelAccess(ctx, args.hotelId)
@@ -211,28 +236,34 @@ export const getByHotel = query({
       }
     }
 
-    let bookings: Array<Doc<'bookings'>>
+    const paginatedBookings =
+      args.hotelId !== undefined
+        ? args.status
+          ? await ctx.db
+              .query('bookings')
+              .withIndex('by_hotel_and_status', (q) =>
+                q.eq('hotelId', args.hotelId!).eq('status', args.status!),
+              )
+              .order('desc')
+              .paginate(args.paginationOpts)
+          : await ctx.db
+              .query('bookings')
+              .withIndex('by_hotel', (q) => q.eq('hotelId', args.hotelId!))
+              .order('desc')
+              .paginate(args.paginationOpts)
+        : args.status
+          ? await ctx.db
+              .query('bookings')
+              .withIndex('by_status', (q) => q.eq('status', args.status!))
+              .order('desc')
+              .paginate(args.paginationOpts)
+          : await ctx.db
+              .query('bookings')
+              .withIndex('by_created_at')
+              .order('desc')
+              .paginate(args.paginationOpts)
 
-    if (args.hotelId !== undefined) {
-      // Use compound index when status is provided to avoid in-memory filtering
-      bookings = args.status
-        ? await ctx.db
-            .query('bookings')
-            .withIndex('by_hotel_and_status', (q) =>
-              q.eq('hotelId', args.hotelId!).eq('status', args.status!),
-            )
-            .order('desc')
-            .collect()
-        : await ctx.db
-            .query('bookings')
-            .withIndex('by_hotel', (q) => q.eq('hotelId', args.hotelId!))
-            .order('desc')
-            .collect()
-    } else {
-      // room_admin listing all hotels: full table scan with optional in-memory filter
-      const all = await ctx.db.query('bookings').order('desc').collect()
-      bookings = args.status ? all.filter((b) => b.status === args.status) : all
-    }
+    const bookings = paginatedBookings.page
 
     const guestProfileIds = uniqueIds(
       bookings.map((booking) => booking.guestProfileId),
@@ -259,7 +290,7 @@ export const getByHotel = query({
         .map((linkedUser) => [linkedUser._id, linkedUser]),
     )
 
-    return bookings.map((booking) => {
+    const page = bookings.map((booking) => {
       const guestProfile = booking.guestProfileId
         ? guestProfileMap.get(booking.guestProfileId)
         : null
@@ -286,6 +317,11 @@ export const getByHotel = query({
           : undefined,
       }
     })
+
+    return {
+      ...paginatedBookings,
+      page,
+    }
   },
 })
 
@@ -296,8 +332,9 @@ export const getByRoom = query({
   args: {
     roomId: v.id('rooms'),
     status: v.optional(bookingStatusValidator),
+    paginationOpts: paginationOptsValidator,
   },
-  returns: v.array(bookingValidator),
+  returns: paginatedBookingsValidator,
   handler: async (ctx, args) => {
     const room = await ctx.db.get(args.roomId)
     if (!room) {
@@ -310,21 +347,19 @@ export const getByRoom = query({
     await requireHotelAccess(ctx, room.hotelId)
 
     // Use compound index when status is provided to avoid in-memory filtering
-    const bookings = args.status
+    return args.status
       ? await ctx.db
           .query('bookings')
           .withIndex('by_room_and_status', (q) =>
             q.eq('roomId', args.roomId).eq('status', args.status!),
           )
           .order('desc')
-          .collect()
+          .paginate(args.paginationOpts)
       : await ctx.db
           .query('bookings')
           .withIndex('by_room', (q) => q.eq('roomId', args.roomId))
           .order('desc')
-          .collect()
-
-    return bookings
+          .paginate(args.paginationOpts)
   },
 })
 
@@ -1471,45 +1506,28 @@ export const getEnriched = query({
 export const getMyBookingsEnriched = query({
   args: {
     status: v.optional(bookingStatusValidator),
+    paginationOpts: paginationOptsValidator,
   },
-  returns: v.array(
-    v.object({
-      booking: bookingValidator,
-      room: v.object({
-        _id: v.id('rooms'),
-        roomNumber: v.string(),
-        type: v.union(
-          v.literal('budget'),
-          v.literal('standard'),
-          v.literal('suite'),
-          v.literal('deluxe'),
-        ),
-      }),
-      hotel: v.object({
-        _id: v.id('hotels'),
-        name: v.string(),
-        address: v.string(),
-        city: v.string(),
-      }),
-    }),
-  ),
+  returns: paginationResultValidator(enrichedCustomerBookingValidator),
   handler: async (ctx, args) => {
     const user = await requireUser(ctx)
 
     // Use compound index when status is provided to avoid in-memory filtering
-    const bookings = args.status
+    const paginatedBookings = args.status
       ? await ctx.db
           .query('bookings')
           .withIndex('by_user_and_status', (q) =>
             q.eq('userId', user._id).eq('status', args.status!),
           )
           .order('desc')
-          .collect()
+          .paginate(args.paginationOpts)
       : await ctx.db
           .query('bookings')
           .withIndex('by_user', (q) => q.eq('userId', user._id))
           .order('desc')
-          .collect()
+          .paginate(args.paginationOpts)
+
+    const bookings = paginatedBookings.page
 
     // Enrich with room and hotel data
     const roomIds = uniqueIds(bookings.map((booking) => booking.roomId))
@@ -1529,7 +1547,7 @@ export const getMyBookingsEnriched = query({
         .map((hotel) => [hotel._id, hotel]),
     )
 
-    return bookings.flatMap((booking) => {
+    const page = bookings.flatMap((booking) => {
       const room = roomMap.get(booking.roomId)
       const hotel = hotelMap.get(booking.hotelId)
 
@@ -1554,5 +1572,10 @@ export const getMyBookingsEnriched = query({
         },
       ]
     })
+
+    return {
+      ...paginatedBookings,
+      page,
+    }
   },
 })

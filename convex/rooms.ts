@@ -1,11 +1,12 @@
 import { ConvexError, v } from 'convex/values'
-import { QueryCtx, mutation, query } from './_generated/server'
+import { mutation, query } from './_generated/server'
 import { requireHotelAccess } from './lib/auth'
 import { createAuditLog } from './audit'
 import { isHoldExpired } from './lib/dates'
 import { checkRoomAvailability, findBlockedRoomIds } from './lib/availability'
-import { Doc, Id } from './_generated/dataModel'
 import * as fileTracking from './fileTracking'
+import type { Doc, Id } from './_generated/dataModel'
+import type { QueryCtx} from './_generated/server';
 
 // Room type validator
 const roomTypeValidator = v.union(
@@ -135,7 +136,7 @@ export const getByHotel = query({
         .withIndex('by_hotel_and_status', (q) =>
           q.eq('hotelId', args.hotelId).eq('operationalStatus', args.status!),
         )
-        .collect()
+        .take(500)
       if (!args.includeDeleted) {
         rooms = rooms.filter((room) => !room.isDeleted)
       }
@@ -146,12 +147,12 @@ export const getByHotel = query({
         .withIndex('by_hotel_and_is_deleted', (q) =>
           q.eq('hotelId', args.hotelId).eq('isDeleted', false),
         )
-        .collect()
+        .take(500)
     } else {
       rooms = await ctx.db
         .query('rooms')
         .withIndex('by_hotel', (q) => q.eq('hotelId', args.hotelId))
-        .collect()
+        .take(500)
     }
 
     return await Promise.all(rooms.map((room) => attachRoomImageUrl(ctx, room)))
@@ -176,13 +177,13 @@ export const getByHotelWithLiveState = query({
       ? await ctx.db
           .query('rooms')
           .withIndex('by_hotel', (q) => q.eq('hotelId', args.hotelId))
-          .collect()
+          .take(500)
       : await ctx.db
           .query('rooms')
           .withIndex('by_hotel_and_is_deleted', (q) =>
             q.eq('hotelId', args.hotelId).eq('isDeleted', false),
           )
-          .collect()
+          .take(500)
 
     const hotelBookings = await ctx.db
       .query('bookings')

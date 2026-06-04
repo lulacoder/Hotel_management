@@ -17,8 +17,8 @@ export async function assertRoomAvailable(
 ): Promise<void> {
   const existingBookings = await ctx.db
     .query('bookings')
-    .withIndex('by_room_and_dates', (q) =>
-      q.eq('roomId', roomId).lt('checkIn', range.checkOut),
+    .withIndex('by_room_and_check_out', (q) =>
+      q.eq('roomId', roomId).gte('checkOut', range.checkIn),
     )
     .collect()
 
@@ -53,8 +53,8 @@ export async function checkRoomAvailability(
 ): Promise<{ available: boolean; reason?: string }> {
   const existingBookings = await ctx.db
     .query('bookings')
-    .withIndex('by_room_and_dates', (q) =>
-      q.eq('roomId', roomId).lt('checkIn', range.checkOut),
+    .withIndex('by_room_and_check_out', (q) =>
+      q.eq('roomId', roomId).gte('checkOut', range.checkIn),
     )
     .collect()
 
@@ -95,8 +95,8 @@ export async function findBlockedRoomIds(
 
   const candidateBookings = await ctx.db
     .query('bookings')
-    .withIndex('by_hotel_and_check_in', (q) =>
-      q.eq('hotelId', hotelId).lt('checkIn', range.checkOut),
+    .withIndex('by_hotel_and_check_out', (q) =>
+      q.eq('hotelId', hotelId).gte('checkOut', range.checkIn),
     )
     .collect()
 
