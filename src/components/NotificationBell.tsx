@@ -172,7 +172,7 @@ export function NotificationBell({
         <ScrollArea className="max-h-[420px]">
           {notifications === undefined && (
             <div className="flex items-center justify-center py-10">
-              <div className="h-6 w-6 animate-spin rounded-full border-2 border-violet-500/20 border-t-violet-500" />
+              <div className="size-6 animate-spin rounded-full border-2 border-violet-500/20 border-t-violet-500" />
             </div>
           )}
 
@@ -211,7 +211,7 @@ export function NotificationBell({
                 <div className="mt-1.5 shrink-0">
                   <div
                     className={cn(
-                      'h-2 w-2 rounded-full',
+                      'size-2 rounded-full',
                       notification.isRead ? 'bg-transparent' : meta.dot,
                     )}
                   />

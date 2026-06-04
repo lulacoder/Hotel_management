@@ -33,7 +33,7 @@ export const Route = createFileRoute('/_authenticated')({
   component: AuthenticatedLayout,
 })
 
-function AuthenticatedLayout() {
+export function AuthenticatedLayout() {
   // Gather auth state and profile data used for redirect decisions.
   const { user, isLoaded, isSignedIn } = useUser()
   const location = useLocation()
@@ -51,7 +51,7 @@ function AuthenticatedLayout() {
   if (!isLoaded || profile === undefined) {
     return (
       <div className="flex min-h-screen items-center justify-center">
-        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600"></div>
+        <div className="animate-spin rounded-full size-8 border-b-2 border-blue-600"></div>
       </div>
     )
   }

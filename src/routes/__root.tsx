@@ -4,6 +4,7 @@ import {
   Outlet,
   createRootRouteWithContext,
 } from '@tanstack/react-router'
+import { LazyMotion, domAnimation } from 'motion/react'
 import { Suspense, lazy } from 'react'
 
 import Header from '../components/Header'
@@ -14,7 +15,7 @@ import { TooltipProvider } from '../components/ui/tooltip'
 import ClerkProvider from '../integrations/clerk/provider'
 
 import ConvexProvider from '../integrations/convex/provider'
-import { I18nProvider, useI18n } from '../lib/i18n'
+import { I18nProvider, useI18n } from '../lib/i18n/provider'
 import { ThemeProvider } from '../lib/theme'
 import type { AppRouterContext } from '../lib/routerContext'
 
@@ -34,7 +35,7 @@ export const Route = createRootRouteWithContext<AppRouterContext>()({
   component: RootAppShell,
 })
 
-function RootNotFound() {
+export function RootNotFound() {
   // Lightweight fallback page for unknown paths.
   const { t } = useI18n()
 
@@ -54,32 +55,34 @@ function RootNotFound() {
   )
 }
 
-function RootAppShell() {
+export function RootAppShell() {
   // Root app shell that wraps every matched route component.
   return (
     <I18nProvider>
       <ThemeProvider>
         <ClerkProvider>
           <ConvexProvider>
-            <TooltipProvider>
-              <Header />
-              <Outlet />
-              <Toaster
-                position="bottom-right"
-                toastOptions={{
-                  style: {
-                    background: 'var(--popover)',
-                    border: '1px solid var(--border)',
-                    color: 'var(--popover-foreground)',
-                  },
-                }}
-              />
-              {RootDevtools ? (
-                <Suspense fallback={null}>
-                  <RootDevtools />
-                </Suspense>
-              ) : null}
-            </TooltipProvider>
+            <LazyMotion features={domAnimation}>
+              <TooltipProvider>
+                <Header />
+                <Outlet />
+                <Toaster
+                  position="bottom-right"
+                  toastOptions={{
+                    style: {
+                      background: 'var(--popover)',
+                      border: '1px solid var(--border)',
+                      color: 'var(--popover-foreground)',
+                    },
+                  }}
+                />
+                {RootDevtools ? (
+                  <Suspense fallback={null}>
+                    <RootDevtools />
+                  </Suspense>
+                ) : null}
+              </TooltipProvider>
+            </LazyMotion>
           </ConvexProvider>
         </ClerkProvider>
       </ThemeProvider>

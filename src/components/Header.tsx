@@ -4,7 +4,7 @@ import { useEffect, useState } from 'react'
 import { CalendarCheck, Home, MapPin, Menu } from 'lucide-react'
 
 import ClerkHeader from '../integrations/clerk/header-user'
-import { useI18n } from '../lib/i18n'
+import { useI18n } from '../lib/i18n/provider'
 import {
   DEFAULT_AUTH_SEARCH,
   DEFAULT_SELECT_LOCATION_SEARCH,
@@ -43,7 +43,7 @@ export default function Header() {
 
   useEffect(() => {
     const handleScroll = () => setScrolled(window.scrollY > 20)
-    window.addEventListener('scroll', handleScroll)
+    window.addEventListener('scroll', handleScroll, { passive: true })
     return () => window.removeEventListener('scroll', handleScroll)
   }, [])
 

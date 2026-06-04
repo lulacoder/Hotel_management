@@ -6,8 +6,8 @@
 
 import {
   createContext,
+  use,
   useCallback,
-  useContext,
   useEffect,
   useMemo,
   useState,
@@ -153,7 +153,7 @@ export function I18nProvider({ children }: { children: React.ReactNode }) {
  * Usage: const { t, locale, setLocale } = useI18n();
  */
 export function useI18n() {
-  const context = useContext(I18nContext)
+  const context = use(I18nContext)
   if (!context) {
     throw new Error('useI18n must be used within I18nProvider')
   }

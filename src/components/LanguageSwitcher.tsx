@@ -1,5 +1,5 @@
 import { cn } from '../lib/utils'
-import { useI18n } from '../lib/i18n'
+import { useI18n } from '../lib/i18n/provider'
 import { Button } from './ui/button'
 
 interface LanguageSwitcherProps {
@@ -14,14 +14,13 @@ export function LanguageSwitcher({
   const { locale, setLocale, t } = useI18n()
 
   return (
-    <div
+    <fieldset
       className={cn(
         'inline-flex items-center rounded-xl border border-border bg-card/80 p-1 shadow-sm backdrop-blur-sm',
         className,
       )}
-      role="group"
-      aria-label={t('language.switcherLabel')}
     >
+      <legend className="sr-only">{t('language.switcherLabel')}</legend>
       <Button
         onClick={() => setLocale('en')}
         variant={locale === 'en' ? 'secondary' : 'ghost'}
@@ -46,6 +45,6 @@ export function LanguageSwitcher({
       >
         አማ
       </Button>
-    </div>
+    </fieldset>
   )
 }

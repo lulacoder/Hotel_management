@@ -527,6 +527,7 @@ html[data-theme='light'] .landing-light-theme {
   top: -4px;
   right: -28px;
   color: rgb(139 92 246 / 0.5);
+  animation: landingSparkle 3s ease-in-out infinite;
 }
 
 /* ── Subtitle ── */
@@ -752,6 +753,7 @@ html[data-theme='light'] .landing-light-theme {
   height: 400px;
   top: 10%;
   left: 4%;
+  animation: landingGalleryFloat1 8s ease-in-out infinite;
 }
 
 .landing-gallery-card--top {
@@ -761,6 +763,7 @@ html[data-theme='light'] .landing-light-theme {
   height: 170px;
   top: 0%;
   right: 2%;
+  animation: landingGalleryFloat2 9s ease-in-out infinite;
 }
 
 .landing-gallery-card--bottom {
@@ -770,6 +773,7 @@ html[data-theme='light'] .landing-light-theme {
   height: 190px;
   bottom: 2%;
   right: 0%;
+  animation: landingGalleryFloat3 10s ease-in-out infinite;
 }
 
 .landing-gallery-img {
@@ -864,11 +868,13 @@ html[data-theme='light'] .landing-light-theme {
 .landing-float-badge--rating {
   top: -2%;
   left: -6%;
+  animation: landingGalleryFloat2 7s ease-in-out infinite;
 }
 
 .landing-float-badge--verified {
   bottom: 10%;
   left: -10%;
+  animation: landingGalleryFloat3 8s ease-in-out infinite;
 }
 
 .landing-float-badge-icon {
@@ -1226,7 +1232,10 @@ html[data-theme='light'] .landing-light-theme {
   border-radius: 1.25rem;
   background: rgb(255 255 255 / 0.78);
   padding: 1.15rem 1.25rem;
-  transition: border-color 0.25s ease, box-shadow 0.25s ease, transform 0.25s ease;
+  transition:
+    border-color 0.25s ease,
+    box-shadow 0.25s ease,
+    transform 0.25s ease;
 }
 
 .landing-marketplace-point:hover {
@@ -1296,7 +1305,9 @@ html[data-theme='light'] .landing-light-theme {
   background: rgb(241 245 249);
   box-shadow: 0 18px 48px -34px rgb(15 23 42 / 0.22);
   cursor: pointer;
-  transition: box-shadow 0.35s ease, transform 0.35s ease;
+  transition:
+    box-shadow 0.35s ease,
+    transform 0.35s ease;
 }
 
 .landing-stay-card:hover {
@@ -1396,7 +1407,6 @@ html[data-theme='light'] .landing-light-theme {
   top: 6rem;
 }
 
-
 .landing-flow-steps {
   display: grid;
   gap: 1rem;
@@ -1412,7 +1422,10 @@ html[data-theme='light'] .landing-light-theme {
   border-radius: 1.25rem;
   background: rgb(255 255 255 / 0.82);
   padding: 1.25rem;
-  transition: border-color 0.25s ease, box-shadow 0.25s ease, transform 0.25s ease;
+  transition:
+    border-color 0.25s ease,
+    box-shadow 0.25s ease,
+    transform 0.25s ease;
 }
 
 .landing-flow-step:hover {
@@ -1613,7 +1626,6 @@ html:not([data-theme='light']) .landing-search-divider {
   background: rgb(51 65 85 / 0.7);
 }
 
-
 html:not([data-theme='light']) .landing-trust-pill {
   border-color: rgb(51 65 85 / 0.5);
   background: rgb(15 23 42 / 0.4);
@@ -1712,7 +1724,6 @@ html:not([data-theme='light']) .landing-browser-chip {
 html:not([data-theme='light']) .landing-browser-chip:hover {
   border-color: rgb(139 92 246 / 0.45);
 }
-
 
 html:not([data-theme='light']) .landing-marketplace-point-icon,
 html:not([data-theme='light']) .landing-flow-step-icon {

@@ -1,6 +1,6 @@
 import { Moon, Sun } from 'lucide-react'
 import { Button } from './ui/button'
-import { useI18n } from '../lib/i18n'
+import { useI18n } from '../lib/i18n/provider'
 import { useTheme } from '../lib/theme'
 
 interface ThemeToggleProps {
@@ -41,7 +41,7 @@ export function ThemeToggle({
             : 'border-slate-300 bg-white/95 text-slate-700 hover:border-violet-500/70 hover:bg-violet-50 hover:text-violet-700'
       } ${!compact ? 'px-3.5' : ''} ${className}`}
     >
-      {isDark ? <Sun className="h-4 w-4" /> : <Moon className="h-4 w-4" />}
+      {isDark ? <Sun className="size-4" /> : <Moon className="size-4" />}
       {!compact && <span className="text-sm font-medium">{label}</span>}
     </Button>
   )

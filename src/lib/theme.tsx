@@ -1,4 +1,11 @@
-import { createContext, useContext, useEffect, useMemo, useState } from 'react'
+import {
+  createContext,
+  use,
+  useCallback,
+  useEffect,
+  useMemo,
+  useState,
+} from 'react'
 
 export type Theme = 'dark' | 'light'
 
@@ -55,34 +62,36 @@ interface ThemeContextValue {
 const ThemeContext = createContext<ThemeContextValue | null>(null)
 
 export function ThemeProvider({ children }: { children: React.ReactNode }) {
-  const [theme, setThemeState] = useState<Theme>('dark')
+  const [theme, setThemeState] = useState<Theme>(getStoredTheme)
 
   useEffect(() => {
     const nextTheme = getStoredTheme()
-    setThemeState(nextTheme)
     applyThemeToDocument(nextTheme)
   }, [])
 
-  const setTheme = (nextTheme: Theme) => {
+  const setTheme = useCallback((nextTheme: Theme) => {
     setThemeState(nextTheme)
     applyThemeToDocument(nextTheme)
 
     if (typeof window !== 'undefined') {
       window.localStorage.setItem(THEME_STORAGE_KEY, nextTheme)
     }
-  }
+  }, [])
 
-  const toggleTheme = () => {
+  const toggleTheme = useCallback(() => {
     setTheme(theme === 'dark' ? 'light' : 'dark')
-  }
+  }, [setTheme, theme])
 
-  const value = useMemo(() => ({ theme, setTheme, toggleTheme }), [theme])
+  const value = useMemo(
+    () => ({ theme, setTheme, toggleTheme }),
+    [theme, setTheme, toggleTheme],
+  )
 
   return <ThemeContext.Provider value={value}>{children}</ThemeContext.Provider>
 }
 
 export function useTheme() {
-  const context = useContext(ThemeContext)
+  const context = use(ThemeContext)
 
   if (!context) {
     throw new Error('useTheme must be used within a ThemeProvider')
