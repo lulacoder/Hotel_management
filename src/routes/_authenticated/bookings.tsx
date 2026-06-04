@@ -13,7 +13,7 @@ import {
 import { useEffect, useState } from 'react'
 
 import { api } from '../../../convex/_generated/api'
-import { useI18n } from '../../lib/i18n'
+import { useI18n } from '../../lib/i18n/provider'
 import { DEFAULT_SELECT_LOCATION_SEARCH } from '../../lib/navigationSearch'
 
 import { BookingsHeader } from './bookings/components/-BookingsHeader'
@@ -36,7 +36,7 @@ export const Route = createFileRoute('/_authenticated/bookings')({
   // Child route mounted under authenticated layout for customer booking history.
 })
 
-function BookingsPage() {
+export function BookingsPage() {
   const { user } = useUser()
   // Load current user profile/bookings and derive filter-ready display data.
   const { t } = useI18n()
@@ -178,7 +178,7 @@ function BookingsPage() {
             <div className="flex items-start justify-between gap-4">
               <div className="flex items-start gap-3">
                 <PaymentBannerIcon
-                  className={`mt-0.5 h-5 w-5 shrink-0 ${paymentBanner.iconClassName}`}
+                  className={`mt-0.5 size-5 shrink-0 ${paymentBanner.iconClassName}`}
                 />
                 <div>
                   <p className="font-semibold">{paymentBanner.title}</p>
@@ -192,7 +192,7 @@ function BookingsPage() {
                 onClick={clearPaymentSearch}
                 className="cursor-pointer rounded-lg p-1 text-current/80 transition-colors hover:bg-black/10 hover:text-current"
               >
-                <X className="h-4 w-4" />
+                <X className="size-4" />
               </button>
             </div>
           </div>
@@ -207,14 +207,14 @@ function BookingsPage() {
         {/* Loading State */}
         {isLoading && (
           <div className="flex items-center justify-center py-20">
-            <Loader2 className="w-8 h-8 text-violet-400 animate-spin" />
+            <Loader2 className="size-8 text-violet-400 animate-spin" />
           </div>
         )}
 
         {/* Empty State */}
         {!isLoading && filteredBookings?.length === 0 && (
           <div className="rounded-2xl border border-slate-800/50 bg-slate-900/50 p-12 text-center">
-            <Calendar className="w-16 h-16 text-slate-600 mx-auto mb-4" />
+            <Calendar className="size-16 text-slate-600 mx-auto mb-4" />
             <h2 className="text-xl font-semibold text-white mb-2">
               {statusFilter === 'all'
                 ? t('bookings.noBookingsYet')

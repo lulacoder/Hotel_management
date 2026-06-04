@@ -15,7 +15,7 @@ import {
   SheetTitle,
   SheetTrigger,
 } from '../../../components/ui/sheet'
-import { useI18n } from '../../../lib/i18n'
+import { useI18n } from '../../../lib/i18n/provider'
 import {
   DEFAULT_AUTH_SEARCH,
   DEFAULT_SELECT_LOCATION_SEARCH,
@@ -35,7 +35,7 @@ export function SelectLocationHeader({
 
   return (
     <header className="sticky top-0 z-50 border-b border-slate-800/50 bg-slate-900/80 backdrop-blur-xl">
-      <div className="mx-auto flex max-w-7xl items-center justify-between px-4 py-4">
+      <div className="mx-auto flex max-w-7xl items-center justify-between p-4">
         <div className="flex items-center gap-3">
           <div className="brand-logo-shell h-10 px-1">
             <img

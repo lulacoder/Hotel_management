@@ -15,7 +15,7 @@ import {
   SheetTitle,
   SheetTrigger,
 } from '../../../../components/ui/sheet'
-import { useI18n } from '../../../../lib/i18n'
+import { useI18n } from '../../../../lib/i18n/provider'
 import { DEFAULT_SELECT_LOCATION_SEARCH } from '../../../../lib/navigationSearch'
 
 interface BookingsHeaderProps {
@@ -28,7 +28,7 @@ export function BookingsHeader({ userName }: BookingsHeaderProps) {
 
   return (
     <header className="sticky top-0 z-10 border-b border-slate-800/50 bg-slate-900/90 backdrop-blur-xl">
-      <div className="mx-auto flex max-w-7xl items-center justify-between px-4 py-4">
+      <div className="mx-auto flex max-w-7xl items-center justify-between p-4">
         <div className="flex items-center gap-4">
           <Button
             asChild

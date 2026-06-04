@@ -5,7 +5,7 @@ import { useQuery } from '@/integrations/convex/hooks'
 import { api } from '../../convex/_generated/api'
 import { sanitizeRedirect } from '../lib/authRouting'
 import { Card, CardContent } from '../components/ui/card'
-import { useI18n } from '../lib/i18n'
+import { useI18n } from '../lib/i18n/provider'
 import { DEFAULT_ADMIN_DASHBOARD_SEARCH } from '../lib/navigationSearch'
 
 export const Route = createFileRoute('/post-login')({
@@ -17,7 +17,7 @@ export const Route = createFileRoute('/post-login')({
   component: PostLoginPage,
 })
 
-function PostLoginPage() {
+export function PostLoginPage() {
   // Pull auth/profile + redirect query params used for role-based routing.
   const { user, isLoaded: isClerkLoaded } = useUser()
   const search = Route.useSearch()
@@ -55,7 +55,7 @@ function PostLoginPage() {
     <div className="flex min-h-screen items-center justify-center bg-slate-950 px-4">
       <Card className="w-full max-w-md rounded-3xl border-slate-800 bg-slate-900/80 shadow-2xl shadow-black/30 backdrop-blur-xl">
         <CardContent className="py-10 text-center">
-          <div className="mx-auto mb-4 h-12 w-12 animate-spin rounded-full border-2 border-violet-500/20 border-t-violet-500" />
+          <div className="mx-auto mb-4 size-12 animate-spin rounded-full border-2 border-violet-500/20 border-t-violet-500" />
           <p className="text-lg text-slate-200">
             {t('postLogin.loadingProfile')}
           </p>

@@ -5,7 +5,7 @@ import { useState } from 'react'
 
 import { LanguageSwitcher } from '../../../components/LanguageSwitcher'
 import { ThemeToggle } from '../../../components/ThemeToggle'
-import { useI18n } from '../../../lib/i18n'
+import { useI18n } from '../../../lib/i18n/provider'
 import {
   DEFAULT_AUTH_SEARCH,
   DEFAULT_SELECT_LOCATION_SEARCH,
@@ -26,13 +26,13 @@ export function HotelPageChrome({
   return (
     <>
       <header className="sticky top-0 z-50 border-b border-slate-800/50 bg-slate-900/80 backdrop-blur-xl">
-        <div className="mx-auto flex max-w-7xl items-center justify-between px-4 py-4">
+        <div className="mx-auto flex max-w-7xl items-center justify-between p-4">
           <Link
             to="/select-location"
             search={DEFAULT_SELECT_LOCATION_SEARCH}
             className="flex items-center gap-2 text-slate-400 transition-colors hover:text-slate-200"
           >
-            <MapPin className="h-5 w-5" />
+            <MapPin className="size-5" />
             <span className="hidden md:inline">{t('hotel.backToHotels')}</span>
           </Link>
 
@@ -80,6 +80,7 @@ export function HotelPageChrome({
               </Link>
             )}
             <button
+              type="button"
               onClick={() => setIsMobileMenuOpen(true)}
               className="group cursor-pointer rounded-xl p-2.5 transition-all duration-300 hover:bg-white/10"
               aria-label={t('header.openMenu')}
@@ -112,6 +113,7 @@ export function HotelPageChrome({
             </p>
           </div>
           <button
+            type="button"
             onClick={() => setIsMobileMenuOpen(false)}
             className="group cursor-pointer rounded-xl p-2.5 transition-all duration-300 hover:bg-white/5"
             aria-label={t('header.closeMenu')}
@@ -210,7 +212,9 @@ export function HotelPageChrome({
         )}
       </aside>
 
-      <div
+      <button
+        type="button"
+        aria-label={t('header.closeMenu')}
         className={`fixed inset-0 z-[55] bg-black/60 backdrop-blur-sm transition-all duration-500 ${
           isMobileMenuOpen ? 'opacity-100' : 'pointer-events-none opacity-0'
         }`}

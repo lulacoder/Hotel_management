@@ -2,13 +2,13 @@
 import { createFileRoute, useNavigate } from '@tanstack/react-router'
 import { useUser } from '@clerk/clerk-react'
 import { useMutation, useQuery } from '@/integrations/convex/hooks'
-import { useEffect, useMemo, useState } from 'react'
+import { useEffect, useMemo, useRef, useState } from 'react'
 import { MessageSquarePlus } from 'lucide-react'
 
 import { api } from '../../convex/_generated/api'
 import { useGeolocation } from '../hooks/useGeolocation'
 import { calculateDistance } from '../lib/distance'
-import { useI18n } from '../lib/i18n'
+import { useI18n } from '../lib/i18n/provider'
 import { DEFAULT_SELECT_LOCATION_SEARCH } from '../lib/navigationSearch'
 import { SelectLocationHeader } from './select-location/components/-SelectLocationHeader'
 import { HeroSection } from './select-location/components/-HeroSection'
@@ -38,13 +38,13 @@ export const Route = createFileRoute('/select-location')({
   component: SelectLocationPage,
 })
 
-function SelectLocationPage() {
+export function SelectLocationPage() {
   // Local UI state for filters, geolocation state, and rating modal flow.
   const { user, isSignedIn } = useUser()
   const search = Route.useSearch()
   const { t } = useI18n()
   const navigate = useNavigate()
-  const [locationRequested, setLocationRequested] = useState(false)
+  const locationRequestedRef = useRef(false)
   const [activeRatingHotelId, setActiveRatingHotelId] =
     useState<Id<'hotels'> | null>(null)
   const [ratingError, setRatingError] = useState('')
@@ -92,11 +92,11 @@ function SelectLocationPage() {
 
   // Request location on mount
   useEffect(() => {
-    if (locationSupported && !locationRequested) {
-      setLocationRequested(true)
+    if (locationSupported && !locationRequestedRef.current) {
+      locationRequestedRef.current = true
       requestLocation()
     }
-  }, [locationSupported, locationRequested, requestLocation])
+  }, [locationSupported, requestLocation])
 
   useEffect(() => {
     if (!hotels || !search.rate) {
@@ -163,7 +163,7 @@ function SelectLocationPage() {
     const values = hotels.flatMap((hotel) =>
       hotel.category ? [hotel.category] : [],
     )
-    return [...new Set(values)].sort()
+    return [...new Set(values)].toSorted()
   }, [hotels])
 
   // Filter and sort hotels
@@ -186,8 +186,7 @@ function SelectLocationPage() {
       return matchesSearch && matchesCity && matchesCategory
     })
 
-    // Sort
-    result.sort((a, b) => {
+    return result.toSorted((a, b) => {
       switch (sortBy) {
         case 'distance':
           // Hotels without location go to the end
@@ -209,8 +208,6 @@ function SelectLocationPage() {
           return a.name.localeCompare(b.name)
       }
     })
-
-    return result
   }, [
     hotelsWithDistance,
     searchTerm,
@@ -405,7 +402,7 @@ function SelectLocationPage() {
         className="fixed bottom-6 right-6 z-40 inline-flex cursor-pointer items-center gap-2 rounded-full bg-white px-4 py-3 font-semibold text-slate-900 shadow-lg shadow-white/20 transition-all hover:bg-slate-100"
         aria-label={t('complaint.fab')}
       >
-        <MessageSquarePlus className="w-5 h-5" />
+        <MessageSquarePlus className="size-5" />
         <span className="hidden sm:inline">{t('complaint.fab')}</span>
       </button>
 

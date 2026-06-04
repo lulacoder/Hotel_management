@@ -1,5 +1,5 @@
 // Search and filter controls for city/category selection and sorting.
-import { useI18n } from '../../../lib/i18n'
+import { useI18n } from '../../../lib/i18n/provider'
 import { getHotelCategoryLabel } from '../../../lib/hotelCategories'
 import { useTheme } from '../../../lib/theme'
 import {
@@ -59,7 +59,9 @@ export function SearchFilters({
   const sortOptions: Array<{ value: SortOption; label: string }> = [
     { value: 'name', label: t('select.sortByName') },
     { value: 'rating', label: t('select.sortByRating') },
-    ...(hasUserLocation ? [{ value: 'distance' as SortOption, label: t('select.sortByDistance') }] : []),
+    ...(hasUserLocation
+      ? [{ value: 'distance' as SortOption, label: t('select.sortByDistance') }]
+      : []),
   ]
 
   return (
@@ -68,7 +70,9 @@ export function SearchFilters({
       <div className="flex sm:hidden gap-2 overflow-x-auto pb-1 -mx-1 px-1 scrollbar-hide">
         {/* City chip */}
         <Select value={selectedCity} onValueChange={onCityChange}>
-          <SelectTrigger className={`h-auto py-1.5 px-3 min-w-0 ${selectedCity !== 'all' ? chipActiveClass : chipBaseClass}`}>
+          <SelectTrigger
+            className={`h-auto py-1.5 px-3 min-w-0 ${selectedCity !== 'all' ? chipActiveClass : chipBaseClass}`}
+          >
             <SelectValue placeholder={t('select.allCities')} />
           </SelectTrigger>
           <SelectContent className={contentClass} position="popper">
@@ -85,7 +89,9 @@ export function SearchFilters({
 
         {/* Category chip */}
         <Select value={selectedCategory} onValueChange={onCategoryChange}>
-          <SelectTrigger className={`h-auto py-1.5 px-3 min-w-0 ${selectedCategory !== 'all' ? chipActiveClass : chipBaseClass}`}>
+          <SelectTrigger
+            className={`h-auto py-1.5 px-3 min-w-0 ${selectedCategory !== 'all' ? chipActiveClass : chipBaseClass}`}
+          >
             <SelectValue placeholder={t('select.allCategories')} />
           </SelectTrigger>
           <SelectContent className={contentClass} position="popper">
@@ -105,12 +111,18 @@ export function SearchFilters({
           value={sortBy}
           onValueChange={(value) => onSortChange(value as SortOption)}
         >
-          <SelectTrigger className={`h-auto py-1.5 px-3 min-w-0 ${chipBaseClass}`}>
+          <SelectTrigger
+            className={`h-auto py-1.5 px-3 min-w-0 ${chipBaseClass}`}
+          >
             <SelectValue />
           </SelectTrigger>
           <SelectContent className={contentClass} position="popper">
             {sortOptions.map((option) => (
-              <SelectItem className={itemClass} key={option.value} value={option.value}>
+              <SelectItem
+                className={itemClass}
+                key={option.value}
+                value={option.value}
+              >
                 {option.label}
               </SelectItem>
             ))}

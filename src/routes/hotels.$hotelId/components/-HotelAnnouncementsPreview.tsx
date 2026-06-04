@@ -1,7 +1,7 @@
 import { Link } from '@tanstack/react-router'
 import { AlertCircle, AlertTriangle, Info, Megaphone } from 'lucide-react'
 
-import { useI18n } from '../../../lib/i18n'
+import { useI18n } from '../../../lib/i18n/provider'
 import { useTheme } from '../../../lib/theme'
 
 interface AnnouncementPreview {
@@ -32,7 +32,7 @@ export function HotelAnnouncementsPreview({
     <div className="mb-8">
       <div className="mb-3 flex items-center justify-between">
         <div className="flex items-center gap-2">
-          <Megaphone className="h-4 w-4 text-violet-400" />
+          <Megaphone className="size-4 text-violet-400" />
           <h2
             className={`text-base font-semibold ${
               isDark ? 'text-slate-200' : 'text-slate-800'

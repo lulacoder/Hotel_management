@@ -20,7 +20,7 @@ import {
   SelectValue,
 } from '../../../components/ui/select'
 import { Textarea } from '../../../components/ui/textarea'
-import { useI18n } from '../../../lib/i18n'
+import { useI18n } from '../../../lib/i18n/provider'
 import { useTheme } from '../../../lib/theme'
 import { cn } from '../../../lib/utils'
 import type { Id } from '../../../../convex/_generated/dataModel'

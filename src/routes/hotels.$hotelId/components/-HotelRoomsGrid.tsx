@@ -10,7 +10,7 @@ import {
   Wind,
 } from 'lucide-react'
 
-import { useI18n } from '../../../lib/i18n'
+import { useI18n } from '../../../lib/i18n/provider'
 import type { Id } from '../../../../convex/_generated/dataModel'
 
 interface RoomSummary {
@@ -70,12 +70,12 @@ export function HotelRoomsGrid({
 
       {rooms === undefined ? (
         <div className="flex items-center justify-center py-12">
-          <div className="h-8 w-8 animate-spin rounded-full border-2 border-violet-500/20 border-t-violet-500"></div>
+          <div className="size-8 animate-spin rounded-full border-2 border-violet-500/20 border-t-violet-500"></div>
         </div>
       ) : rooms.length === 0 ? (
         <div className="rounded-2xl border border-slate-800/50 bg-slate-900/50 p-12 text-center">
-          <div className="mx-auto mb-4 flex h-16 w-16 items-center justify-center rounded-2xl bg-slate-800">
-            <Building2 className="h-8 w-8 text-slate-600" />
+          <div className="mx-auto mb-4 flex size-16 items-center justify-center rounded-2xl bg-slate-800">
+            <Building2 className="size-8 text-slate-600" />
           </div>
           <h3 className="mb-2 text-lg font-semibold text-slate-300">
             {t('hotel.noRoomsAvailable')}
@@ -106,10 +106,10 @@ export function HotelRoomsGrid({
                       fetchPriority="low"
                       width={640}
                       height={360}
-                      className="absolute inset-0 h-full w-full object-cover"
+                      className="absolute inset-0 size-full object-cover"
                     />
                   ) : (
-                    <Building2 className="h-12 w-12 text-slate-700" />
+                    <Building2 className="size-12 text-slate-700" />
                   )}
                 </div>
 
@@ -140,14 +140,14 @@ export function HotelRoomsGrid({
 
                   <div className="mb-3 flex flex-wrap items-center gap-3 text-sm text-slate-400">
                     <div className="flex items-center gap-1">
-                      <Users className="h-4 w-4" />
+                      <Users className="size-4" />
                       <span>
                         {t('hotel.upTo', { count: room.maxOccupancy })}
                       </span>
                     </div>
                     {room.bedOptions && (
                       <div className="flex items-center gap-1">
-                        <Bed className="h-4 w-4" />
+                        <Bed className="size-4" />
                         <span>{room.bedOptions}</span>
                       </div>
                     )}
@@ -155,14 +155,14 @@ export function HotelRoomsGrid({
                       <div className="flex items-center gap-1">
                         {room.smokingAllowed ? (
                           <>
-                            <Cigarette className="h-4 w-4 text-amber-500" />
+                            <Cigarette className="size-4 text-amber-500" />
                             <span className="text-amber-500">
                               {t('hotel.smoking')}
                             </span>
                           </>
                         ) : (
                           <>
-                            <CigaretteOff className="h-4 w-4 text-emerald-500" />
+                            <CigaretteOff className="size-4 text-emerald-500" />
                             <span className="text-emerald-500">
                               {t('hotel.nonSmoking')}
                             </span>
@@ -182,7 +182,7 @@ export function HotelRoomsGrid({
                             key={`${room._id}-${amenity}-${index}`}
                             className="flex items-center gap-1 rounded bg-slate-800 px-2 py-1 text-xs text-slate-400"
                           >
-                            {Icon && <Icon className="h-3 w-3" />}
+                            {Icon && <Icon className="size-3" />}
                             {amenity}
                           </div>
                         )
@@ -205,6 +205,7 @@ export function HotelRoomsGrid({
                   )}
 
                   <button
+                    type="button"
                     onClick={() => onBookRoom(room._id)}
                     disabled={!selectedDates.checkIn || !selectedDates.checkOut}
                     className="room-book-button w-full rounded-xl border border-slate-700/40 bg-white py-2.5 font-semibold text-slate-900 transition-all hover:bg-slate-100 disabled:cursor-not-allowed disabled:opacity-50"

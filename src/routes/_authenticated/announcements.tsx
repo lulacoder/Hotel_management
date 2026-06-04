@@ -18,7 +18,7 @@ import { useState } from 'react'
 import { api } from '../../../convex/_generated/api'
 import { LanguageSwitcher } from '../../components/LanguageSwitcher'
 import { ThemeToggle } from '../../components/ThemeToggle'
-import { useI18n } from '../../lib/i18n'
+import { useI18n } from '../../lib/i18n/provider'
 import {
   DEFAULT_AUTH_SEARCH,
   DEFAULT_SELECT_LOCATION_SEARCH,
@@ -104,7 +104,7 @@ const priorityConfig: Record<
 // Page component
 // ---------------------------------------------------------------------------
 
-function CustomerAnnouncementsPage() {
+export function CustomerAnnouncementsPage() {
   const { hotelId } = Route.useSearch()
   const { t } = useI18n()
   const { theme } = useTheme()
@@ -140,7 +140,7 @@ function CustomerAnnouncementsPage() {
             : 'bg-white/85 border-slate-200/80'
         }`}
       >
-        <div className="max-w-7xl mx-auto px-4 py-4 flex justify-between items-center">
+        <div className="max-w-7xl mx-auto p-4 flex justify-between items-center">
           {/* Left: back link */}
           <Link
             to={hotelId ? '/hotels/$hotelId' : '/'}
@@ -152,7 +152,7 @@ function CustomerAnnouncementsPage() {
                 : 'text-slate-500 hover:text-slate-800'
             }`}
           >
-            <ArrowLeft className="w-5 h-5" />
+            <ArrowLeft className="size-5" />
             <span className="hidden md:inline">
               {hotelId
                 ? (hotel?.name ?? t('hotel.backToHotels'))
@@ -206,6 +206,7 @@ function CustomerAnnouncementsPage() {
               </Link>
             )}
             <button
+              type="button"
               onClick={() => setIsMobileMenuOpen(true)}
               className={`cursor-pointer p-2.5 rounded-xl transition-all duration-300 group ${
                 isDark ? 'hover:bg-white/10' : 'hover:bg-slate-100'
@@ -251,6 +252,7 @@ function CustomerAnnouncementsPage() {
             </p>
           </div>
           <button
+            type="button"
             onClick={() => setIsMobileMenuOpen(false)}
             className={`cursor-pointer p-2.5 rounded-xl transition-all duration-300 group ${
               isDark ? 'hover:bg-white/5' : 'hover:bg-slate-100'
@@ -376,7 +378,9 @@ function CustomerAnnouncementsPage() {
       </aside>
 
       {/* Backdrop Overlay */}
-      <div
+      <button
+        type="button"
+        aria-label={t('header.closeMenu')}
         className={`fixed inset-0 bg-black/60 backdrop-blur-sm z-[55] transition-all duration-500 ${
           isMobileMenuOpen ? 'opacity-100' : 'opacity-0 pointer-events-none'
         }`}
@@ -390,8 +394,8 @@ function CustomerAnnouncementsPage() {
         {/* Page header */}
         <div className="mb-8">
           <div className="flex items-start gap-4">
-            <div className="w-12 h-12 rounded-2xl bg-violet-500/10 border border-violet-500/20 flex items-center justify-center shrink-0">
-              <Megaphone className="w-6 h-6 text-violet-400" />
+            <div className="size-12 rounded-2xl bg-violet-500/10 border border-violet-500/20 flex items-center justify-center shrink-0">
+              <Megaphone className="size-6 text-violet-400" />
             </div>
             <div>
               <h1
@@ -433,7 +437,7 @@ function CustomerAnnouncementsPage() {
         {/* Loading skeleton */}
         {isLoading && (
           <div className="flex items-center justify-center py-24">
-            <div className="animate-spin rounded-full h-8 w-8 border-2 border-violet-500/20 border-t-violet-500" />
+            <div className="animate-spin rounded-full size-8 border-2 border-violet-500/20 border-t-violet-500" />
           </div>
         )}
 
@@ -447,12 +451,12 @@ function CustomerAnnouncementsPage() {
             }`}
           >
             <div
-              className={`w-16 h-16 rounded-2xl flex items-center justify-center mx-auto mb-4 ${
+              className={`size-16 rounded-2xl flex items-center justify-center mx-auto mb-4 ${
                 isDark ? 'bg-slate-800' : 'bg-slate-100'
               }`}
             >
               <Megaphone
-                className={`w-8 h-8 ${isDark ? 'text-slate-600' : 'text-slate-400'}`}
+                className={`size-8 ${isDark ? 'text-slate-600' : 'text-slate-400'}`}
               />
             </div>
             <h2

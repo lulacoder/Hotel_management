@@ -1,4 +1,4 @@
-import { useI18n } from '../../../lib/i18n'
+import { useI18n } from '../../../lib/i18n/provider'
 
 interface HotelDateSelectionProps {
   checkIn: string
@@ -49,6 +49,7 @@ export function HotelDateSelection({
             {t('booking.checkIn')}
           </label>
           <input
+            aria-label={t('booking.checkIn')}
             type="date"
             value={checkIn}
             min={today}
@@ -71,6 +72,7 @@ export function HotelDateSelection({
             {t('booking.checkOut')}
           </label>
           <input
+            aria-label={t('booking.checkOut')}
             type="date"
             value={checkOut}
             min={minCheckOut}

@@ -1,3 +1,4 @@
+import { CURRENT_YEAR } from '../lib/currentYear'
 // Canonical sign-in route with redirect handling for protected destinations.
 import { Link, createFileRoute, redirect } from '@tanstack/react-router'
 import { SignIn } from '@clerk/clerk-react'
@@ -5,7 +6,7 @@ import { ArrowLeft } from 'lucide-react'
 import { Button } from '../components/ui/button'
 import { ThemeToggle } from '../components/ThemeToggle'
 import { buildRedirectSearch, sanitizeRedirect } from '../lib/authRouting'
-import { useI18n } from '../lib/i18n'
+import { useI18n } from '../lib/i18n/provider'
 import { getClerkAuthAppearance } from '../lib/clerkAppearance'
 import { useTheme } from '../lib/theme'
 
@@ -50,9 +51,9 @@ function SignInPage() {
         <div className="absolute inset-0 bg-gradient-to-br from-violet-500/20 via-slate-900 to-slate-950" />
 
         {/* Animated Gradient Orbs */}
-        <div className="absolute top-1/3 right-1/4 w-96 h-96 bg-violet-500/30 rounded-full blur-3xl animate-pulse" />
+        <div className="absolute top-1/3 right-1/4 size-96 bg-violet-500/30 rounded-full blur-3xl animate-pulse" />
         <div
-          className="absolute bottom-1/3 left-1/4 w-80 h-80 bg-indigo-500/20 rounded-full blur-3xl animate-pulse"
+          className="absolute bottom-1/3 left-1/4 size-80 bg-indigo-500/20 rounded-full blur-3xl animate-pulse"
           style={{ animationDelay: '1s' }}
         />
 
@@ -81,7 +82,7 @@ function SignInPage() {
 
           {/* Footer */}
           <p className="text-slate-600 text-sm">
-            &copy; {new Date().getFullYear()} TripWays Hotels.{' '}
+            &copy; {CURRENT_YEAR} TripWays Hotels.{' '}
             {t('common.allRightsReserved')}
           </p>
         </div>

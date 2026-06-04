@@ -2,7 +2,7 @@
 import { Loader2, Navigation, Search } from 'lucide-react'
 
 import { getGeolocationErrorMessage } from '../../../hooks/useGeolocation'
-import { useI18n } from '../../../lib/i18n'
+import { useI18n } from '../../../lib/i18n/provider'
 import { useTheme } from '../../../lib/theme'
 import type { ReactNode } from 'react'
 
@@ -45,7 +45,7 @@ export function HeroSection({
         src="/assets/trifways-lakeside-hotel.webp"
         alt=""
         aria-hidden="true"
-        className="absolute inset-0 h-full w-full object-cover object-center"
+        className="absolute inset-0 size-full object-cover object-center"
       />
       <div
         className={`absolute inset-0 ${
@@ -78,12 +78,12 @@ export function HeroSection({
           {locationSupported &&
             (locationLoading ? (
               <div className="selector-location-loading inline-flex items-center gap-2 rounded-lg bg-slate-800/50 px-3 py-1.5 text-xs text-slate-400 md:text-sm">
-                <Loader2 className="w-4 h-4 animate-spin" />
+                <Loader2 className="size-4 animate-spin" />
                 {t('select.gettingLocation')}
               </div>
             ) : hasUserLocation ? (
               <div className="selector-location-enabled inline-flex items-center gap-2 rounded-lg border border-emerald-500/30 bg-emerald-500/10 px-3 py-1.5 text-xs text-emerald-400 md:text-sm">
-                <Navigation className="w-4 h-4" />
+                <Navigation className="size-4" />
                 {t('select.locationEnabled')}
               </div>
             ) : locationError ? (
@@ -93,7 +93,7 @@ export function HeroSection({
                 title={locationErrorMessage}
                 className="selector-location-retry inline-flex cursor-pointer items-center gap-2 rounded-lg bg-slate-800/50 px-3 py-1.5 text-xs text-slate-400 transition-colors hover:bg-slate-700/50 md:text-sm"
               >
-                <Navigation className="w-4 h-4" />
+                <Navigation className="size-4" />
                 {locationErrorPreview}
                 <span className="selector-location-retry-link ml-1 text-violet-400">
                   {t('select.tryAgain')}
@@ -111,11 +111,12 @@ export function HeroSection({
         >
           <div className="relative">
             <Search
-              className={`absolute left-3 sm:left-4 top-1/2 h-4 w-4 sm:h-5 sm:w-5 -translate-y-1/2 ${
+              className={`absolute left-3 sm:left-4 top-1/2 size-4 sm:h-5 sm:w-5 -translate-y-1/2 ${
                 isDark ? 'text-slate-500' : 'text-slate-400'
               }`}
             />
             <input
+              aria-label={t('select.searchPlaceholder')}
               type="text"
               placeholder={t('select.searchPlaceholder')}
               value={searchTerm}

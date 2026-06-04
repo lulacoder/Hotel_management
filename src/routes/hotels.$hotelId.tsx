@@ -5,7 +5,7 @@ import { Calendar, Car, Star, Tag } from 'lucide-react'
 import { useState } from 'react'
 
 import { api } from '../../convex/_generated/api'
-import { useI18n } from '../lib/i18n'
+import { useI18n } from '../lib/i18n/provider'
 import { getHotelCategoryLabel } from '../lib/hotelCategories'
 import { DEFAULT_SELECT_LOCATION_SEARCH } from '../lib/navigationSearch'
 import { BookingModal } from './hotels.$hotelId/components/-BookingModal'
@@ -45,7 +45,7 @@ function getHotelCategoryBadgeClass(category: string): string {
   }
 }
 
-function HotelDetailPage() {
+export function HotelDetailPage() {
   const { hotelId } = Route.useParams()
   const search = Route.useSearch()
   const { user, isSignedIn } = useUser()
@@ -109,7 +109,7 @@ function HotelDetailPage() {
   if (hotel === undefined) {
     return (
       <div className="flex min-h-screen items-center justify-center bg-slate-950">
-        <div className="h-10 w-10 animate-spin rounded-full border-2 border-violet-500/20 border-t-violet-500"></div>
+        <div className="size-10 animate-spin rounded-full border-2 border-violet-500/20 border-t-violet-500"></div>
       </div>
     )
   }
@@ -153,7 +153,7 @@ function HotelDetailPage() {
                 </h1>
                 {hotel.rating !== undefined && (
                   <div className="flex items-center gap-1 rounded-lg bg-slate-800 px-2 py-1">
-                    <Star className="h-4 w-4 fill-amber-400 text-amber-400" />
+                    <Star className="size-4 fill-amber-400 text-amber-400" />
                     <span className="text-sm font-medium text-slate-200">
                       {hotel.rating.toFixed(1)}
                     </span>
@@ -181,13 +181,13 @@ function HotelDetailPage() {
               <div className="mt-3 flex flex-wrap gap-2">
                 {hotel.parkingIncluded && (
                   <div className="flex items-center gap-1 rounded-lg border border-emerald-500/20 bg-emerald-500/10 px-2 py-1 text-xs text-emerald-400">
-                    <Car className="h-3 w-3" />
+                    <Car className="size-3" />
                     {t('hotel.freeParking')}
                   </div>
                 )}
                 {hotel.lastRenovationDate && (
                   <div className="flex items-center gap-1 rounded-lg bg-slate-800 px-2 py-1 text-xs text-slate-400">
-                    <Calendar className="h-3 w-3" />
+                    <Calendar className="size-3" />
                     {t('hotel.renovated', {
                       year: hotel.lastRenovationDate.split('-')[0],
                     })}
@@ -271,7 +271,7 @@ function HotelDetailPage() {
                     key={tag}
                     className="flex items-center gap-1 rounded bg-slate-800 px-2 py-1 text-xs text-slate-400"
                   >
-                    <Tag className="h-3 w-3" />
+                    <Tag className="size-3" />
                     {tag}
                   </span>
                 ))}

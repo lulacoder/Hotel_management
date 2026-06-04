@@ -12,7 +12,7 @@ import {
 
 import { formatDistance } from '../../../lib/distance'
 import { getHotelCategoryLabel } from '../../../lib/hotelCategories'
-import { useI18n } from '../../../lib/i18n'
+import { useI18n } from '../../../lib/i18n/provider'
 import { DEFAULT_HOTEL_DETAIL_SEARCH } from '../../../lib/navigationSearch'
 import { categoryColors } from './-helpers'
 import type { SortOption } from './-helpers'
@@ -58,7 +58,7 @@ export function HotelGrid({
   if (isLoading) {
     return (
       <div className="flex items-center justify-center py-20">
-        <div className="animate-spin rounded-full h-10 w-10 border-2 border-violet-500/20 border-t-violet-500"></div>
+        <div className="animate-spin rounded-full size-10 border-2 border-violet-500/20 border-t-violet-500"></div>
       </div>
     )
   }
@@ -69,8 +69,8 @@ export function HotelGrid({
 
     return (
       <div className="bg-slate-900/50 border border-slate-800/50 rounded-2xl p-16 text-center">
-        <div className="w-20 h-20 rounded-2xl bg-slate-800 flex items-center justify-center mx-auto mb-6">
-          <Building2 className="w-10 h-10 text-slate-600" />
+        <div className="size-20 rounded-2xl bg-slate-800 flex items-center justify-center mx-auto mb-6">
+          <Building2 className="size-10 text-slate-600" />
         </div>
         <h3 className="text-xl font-semibold text-slate-300 mb-3">
           {isFiltered ? t('grid.noHotelsFound') : t('grid.noHotelsAvailable')}
@@ -92,7 +92,7 @@ export function HotelGrid({
           })}
         </h3>
         <div className="flex items-center gap-2 text-slate-500 text-sm">
-          <ArrowUpDown className="w-4 h-4" />
+          <ArrowUpDown className="size-4" />
           {t('grid.sortedBy', {
             value:
               sortBy === 'distance'
@@ -134,13 +134,13 @@ export function HotelGrid({
                       fetchPriority="low"
                       width={640}
                       height={360}
-                      className="absolute inset-0 w-full h-full object-cover transition duration-500 group-hover:scale-[1.03]"
+                      className="absolute inset-0 size-full object-cover transition duration-500 group-hover:scale-[1.03]"
                     />
                   )}
                   <div className="absolute inset-0 bg-gradient-to-t from-slate-950/78 via-slate-900/8 to-transparent"></div>
                   {!hotel.imageUrl && (
                     <div className="absolute inset-0 flex items-center justify-center">
-                      <Building2 className="w-16 h-16 text-slate-700" />
+                      <Building2 className="size-16 text-slate-700" />
                     </div>
                   )}
 
@@ -155,7 +155,7 @@ export function HotelGrid({
 
                     {displayRating !== undefined && (
                       <div className="flex items-center gap-1 bg-slate-900/80 backdrop-blur-sm px-2 py-1 rounded-lg">
-                        <Star className="w-4 h-4 text-amber-400 fill-amber-400" />
+                        <Star className="size-4 text-amber-400 fill-amber-400" />
                         <span className="text-sm text-slate-200 font-medium">
                           {displayRating.toFixed(1)}
                         </span>
@@ -170,7 +170,7 @@ export function HotelGrid({
 
                   {hotel.distance !== null && (
                     <div className="absolute bottom-4 left-4 flex items-center gap-1.5 bg-slate-900/80 backdrop-blur-sm px-2.5 py-1.5 rounded-lg">
-                      <Navigation className="w-3.5 h-3.5 text-emerald-400" />
+                      <Navigation className="size-3.5 text-emerald-400" />
                       <span className="text-sm text-slate-200 font-medium">
                         {formatDistance(hotel.distance)}
                       </span>
@@ -179,7 +179,7 @@ export function HotelGrid({
 
                   {hotel.parkingIncluded && (
                     <div className="absolute bottom-4 right-4 flex items-center gap-1 bg-emerald-500/20 backdrop-blur-sm px-2 py-1 rounded-lg border border-emerald-500/30">
-                      <Car className="w-3.5 h-3.5 text-emerald-400" />
+                      <Car className="size-3.5 text-emerald-400" />
                       <span className="text-xs text-emerald-300">
                         {t('grid.freeParking')}
                       </span>
@@ -192,7 +192,7 @@ export function HotelGrid({
                     {hotel.name}
                   </h4>
                   <div className="flex items-center gap-2 text-slate-400 text-sm mb-3">
-                    <MapPin className="w-4 h-4" />
+                    <MapPin className="size-4" />
                     <span>
                       {hotel.city}
                       {hotel.stateProvince && `, ${hotel.stateProvince}`}
@@ -213,7 +213,7 @@ export function HotelGrid({
                           key={tag}
                           className="inline-flex items-center gap-1 px-2 py-0.5 bg-slate-800 rounded text-xs text-slate-400"
                         >
-                          <Tag className="w-3 h-3" />
+                          <Tag className="size-3" />
                           {tag}
                         </span>
                       ))}

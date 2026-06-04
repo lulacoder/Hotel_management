@@ -1,5 +1,5 @@
 // Filter controls used to narrow down customer bookings.
-import { useI18n } from '../../../../lib/i18n'
+import { useI18n } from '../../../../lib/i18n/provider'
 import { useTheme } from '../../../../lib/theme'
 import { cn } from '../../../../lib/utils'
 
@@ -42,6 +42,7 @@ export function BookingsFilters({
           const isActive = statusFilter === filter.value
           return (
             <button
+              type="button"
               key={filter.value}
               onClick={() => onFilterChange(filter.value)}
               className={cn(

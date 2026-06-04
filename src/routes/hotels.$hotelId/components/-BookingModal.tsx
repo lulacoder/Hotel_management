@@ -26,7 +26,7 @@ import {
   getPackageInclusions,
   getPackageLabel,
 } from '../../../lib/packages'
-import { useI18n } from '../../../lib/i18n'
+import { useI18n } from '../../../lib/i18n/provider'
 import type { Id } from '../../../../convex/_generated/dataModel'
 import type { PackageType } from '../../../lib/packages'
 
@@ -164,9 +164,7 @@ export function BookingModal({
                 path: ['guestEmail'],
                 message: t('bookingModal.email'),
               })
-            } else if (
-              !z.string().email().safeParse(value.guestEmail.trim()).success
-            ) {
+            } else if (!z.email().safeParse(value.guestEmail.trim()).success) {
               ctx.addIssue({
                 code: 'custom',
                 path: ['guestEmail'],
@@ -412,7 +410,7 @@ export function BookingModal({
     }
 
     await navigator.clipboard.writeText(
-      `${selectedBankAccount.bankName} — ${selectedBankAccount.accountNumber}`,
+      `${selectedBankAccount.bankName} - ${selectedBankAccount.accountNumber}`,
     )
     setCopied(true)
     window.setTimeout(() => setCopied(false), 1800)
@@ -516,6 +514,7 @@ export function BookingModal({
                 {t('bookingModal.guestName')}
               </label>
               <input
+                aria-label={t('bookingModal.guestName')}
                 type="text"
                 value={field.state.value}
                 onChange={(event) => field.handleChange(event.target.value)}
@@ -544,6 +543,7 @@ export function BookingModal({
                 {t('bookingModal.email')}
               </label>
               <input
+                aria-label={t('bookingModal.email')}
                 type="email"
                 value={field.state.value}
                 onChange={(event) => field.handleChange(event.target.value)}
@@ -569,6 +569,7 @@ export function BookingModal({
               {t('bookingModal.specialRequests')}
             </label>
             <textarea
+              aria-label={t('bookingModal.specialRequests')}
               rows={3}
               value={field.state.value}
               onChange={(event) => field.handleChange(event.target.value)}
@@ -635,7 +636,7 @@ export function BookingModal({
     <div className="space-y-4">
       <div className="booking-success-card rounded-xl border border-emerald-500/20 bg-emerald-500/10 p-4">
         <div className="mb-2 flex items-center gap-2 text-emerald-400">
-          <CheckCircle className="h-5 w-5" />
+          <CheckCircle className="size-5" />
           <span className="font-semibold">
             {t('bookingModal.paymentProofSubmitted')}
           </span>
@@ -677,7 +678,7 @@ export function BookingModal({
     <div className="space-y-4">
       <div className="booking-success-card rounded-xl border border-emerald-500/20 bg-emerald-500/10 p-4">
         <div className="mb-2 flex items-center gap-2 text-emerald-400">
-          <CheckCircle className="h-5 w-5" />
+          <CheckCircle className="size-5" />
           <span className="font-semibold">{t('bookingModal.heldSuccess')}</span>
         </div>
         <p className="text-sm text-slate-400">
@@ -721,7 +722,7 @@ export function BookingModal({
             className="booking-payment-option booking-payment-option--chapa w-full cursor-pointer rounded-xl border border-slate-700 bg-slate-800/40 p-4 text-left transition-colors hover:border-violet-500/40 hover:bg-violet-500/10"
           >
             <div className="mb-1 flex items-center gap-3 text-slate-100">
-              <CreditCard className="booking-payment-option-icon h-5 w-5 text-violet-400" />
+              <CreditCard className="booking-payment-option-icon size-5 text-violet-400" />
               <span className="booking-payment-option-title font-semibold">
                 {t('bookingModal.payWithChapa')}
               </span>
@@ -737,7 +738,7 @@ export function BookingModal({
             className="booking-payment-option booking-payment-option--bank w-full cursor-pointer rounded-xl border border-slate-700 bg-slate-800/40 p-4 text-left transition-colors hover:border-emerald-500/40 hover:bg-emerald-500/10"
           >
             <div className="mb-1 flex items-center gap-3 text-slate-100">
-              <Landmark className="booking-payment-option-icon h-5 w-5 text-emerald-400" />
+              <Landmark className="booking-payment-option-icon size-5 text-emerald-400" />
               <span className="booking-payment-option-title font-semibold">
                 {t('bookingModal.payWithBank')}
               </span>
@@ -831,7 +832,7 @@ export function BookingModal({
                         {bankAccounts && bankAccounts.length > 0 ? (
                           bankAccounts.map((account) => (
                             <option key={account._id} value={account._id}>
-                              {account.bankName} — {account.accountNumber}
+                              {account.bankName} - {account.accountNumber}
                             </option>
                           ))
                         ) : (
@@ -857,7 +858,7 @@ export function BookingModal({
                   </p>
                   <p className="break-all font-semibold text-slate-100">
                     {selectedBankAccount
-                      ? `${selectedBankAccount.bankName} — ${selectedBankAccount.accountNumber}`
+                      ? `${selectedBankAccount.bankName} - ${selectedBankAccount.accountNumber}`
                       : t('bookingModal.paymentNotConfigured')}
                   </p>
                 </div>
@@ -868,9 +869,9 @@ export function BookingModal({
                     className="booking-copy-button inline-flex cursor-pointer items-center gap-2 rounded-lg border border-slate-700 bg-slate-800 px-3 py-2 text-sm text-slate-300 transition-colors hover:bg-slate-700"
                   >
                     {copied ? (
-                      <Check className="h-4 w-4" />
+                      <Check className="size-4" />
                     ) : (
-                      <Copy className="h-4 w-4" />
+                      <Copy className="size-4" />
                     )}
                     {copied ? t('common.copied') : t('common.copy')}
                   </button>
@@ -889,6 +890,7 @@ export function BookingModal({
                     {t('bookingModal.uploadNationalId')}
                   </label>
                   <input
+                    aria-label={t('bookingModal.uploadNationalId')}
                     type="file"
                     accept="image/*"
                     onChange={(event) =>
@@ -924,6 +926,7 @@ export function BookingModal({
                     {t('bookingModal.transactionId')}
                   </label>
                   <input
+                    aria-label={t('bookingModal.transactionId')}
                     type="text"
                     value={field.state.value}
                     onChange={(event) => field.handleChange(event.target.value)}
@@ -998,8 +1001,8 @@ export function BookingModal({
         <div className="flex-1 overflow-y-auto p-4 overscroll-contain scroll-smooth sm:p-5">
           <div className="booking-summary-card mb-4 rounded-xl bg-slate-800/50 p-4">
             <div className="mb-3 flex items-center gap-3">
-              <div className="booking-summary-icon-wrap flex h-12 w-12 items-center justify-center rounded-lg bg-slate-700">
-                <Building2 className="booking-summary-icon h-6 w-6 text-slate-400" />
+              <div className="booking-summary-icon-wrap flex size-12 items-center justify-center rounded-lg bg-slate-700">
+                <Building2 className="booking-summary-icon size-6 text-slate-400" />
               </div>
               <div>
                 <p className="booking-summary-hotel font-semibold text-slate-200">

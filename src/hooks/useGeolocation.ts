@@ -1,4 +1,4 @@
-import { useState, useEffect, useCallback } from 'react'
+import { useState, useEffect, useCallback, useMemo } from 'react'
 
 export interface GeolocationState {
   latitude: number | null
@@ -35,7 +35,7 @@ const defaultOptions: UseGeolocationOptions = {
  * }, [requestLocation])
  */
 export function useGeolocation(options: UseGeolocationOptions = {}) {
-  const opts = { ...defaultOptions, ...options }
+  const opts = useMemo(() => ({ ...defaultOptions, ...options }), [options])
 
   const [state, setState] = useState<GeolocationState>({
     latitude: null,
@@ -102,7 +102,7 @@ export function useGeolocation(options: UseGeolocationOptions = {}) {
     if (!opts.watchOnMount || !state.supported) return
 
     requestLocation()
-  }, []) // eslint-disable-line react-hooks/exhaustive-deps
+  }, [opts.watchOnMount, requestLocation, state.supported])
 
   return {
     ...state,

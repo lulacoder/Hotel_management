@@ -18,7 +18,7 @@ import {
   formatPackageAddOn,
   getPackageLabelOrDefault,
 } from '../../../../lib/packages'
-import { useI18n } from '../../../../lib/i18n'
+import { useI18n } from '../../../../lib/i18n/provider'
 import { canCancel, formatDate, formatPrice, formatTime } from './-helpers'
 import type { Id } from '../../../../../convex/_generated/dataModel'
 import type { PackageType } from '../../../../lib/packages'
@@ -58,49 +58,49 @@ function StatusBadge({ status }: { status: string }) {
     case 'held':
       return (
         <Badge className="inline-flex items-center gap-1 border border-blue-500/30 bg-blue-500/20 text-blue-400">
-          <Clock className="w-3 h-3" />
+          <Clock className="size-3" />
           {t('booking.status.held')}
         </Badge>
       )
     case 'pending_payment':
       return (
         <Badge className="inline-flex items-center gap-1 border border-blue-500/30 bg-blue-500/20 text-blue-400">
-          <Clock className="w-3 h-3" />
+          <Clock className="size-3" />
           {t('booking.status.pendingPayment')}
         </Badge>
       )
     case 'confirmed':
       return (
         <Badge className="inline-flex items-center gap-1 border border-green-500/30 bg-green-500/20 text-green-400">
-          <CheckCircle className="w-3 h-3" />
+          <CheckCircle className="size-3" />
           {t('booking.status.confirmed')}
         </Badge>
       )
     case 'checked_in':
       return (
         <Badge className="inline-flex items-center gap-1 border border-blue-500/30 bg-blue-500/20 text-blue-400">
-          <CheckCircle className="w-3 h-3" />
+          <CheckCircle className="size-3" />
           {t('booking.status.checkedIn')}
         </Badge>
       )
     case 'checked_out':
       return (
         <Badge className="inline-flex items-center gap-1 border border-slate-500/30 bg-slate-500/20 text-slate-400">
-          <CheckCircle className="w-3 h-3" />
+          <CheckCircle className="size-3" />
           {t('booking.status.checkedOut')}
         </Badge>
       )
     case 'cancelled':
       return (
         <Badge className="inline-flex items-center gap-1 border border-red-500/30 bg-red-500/20 text-red-400">
-          <XCircle className="w-3 h-3" />
+          <XCircle className="size-3" />
           {t('booking.status.cancelled')}
         </Badge>
       )
     case 'expired':
       return (
         <Badge className="inline-flex items-center gap-1 border border-slate-500/30 bg-slate-500/20 text-slate-400">
-          <AlertCircle className="w-3 h-3" />
+          <AlertCircle className="size-3" />
           {t('booking.status.expired')}
         </Badge>
       )
@@ -139,7 +139,7 @@ export function BookingCard({
                   {hotel.name}
                 </h3>
                 <div className="mt-1 flex items-center gap-1 text-sm text-slate-400">
-                  <MapPin className="w-4 h-4" />
+                  <MapPin className="size-4" />
                   {hotel.address}, {hotel.city}
                 </div>
               </div>
@@ -147,7 +147,7 @@ export function BookingCard({
             </div>
 
             <div className="mb-4 flex items-center gap-2 text-slate-300">
-              <BedDouble className="w-4 h-4 text-violet-400" />
+              <BedDouble className="size-4 text-violet-400" />
               <span>
                 {roomTypeLabel} - {t('hotel.room')} {room.roomNumber}
               </span>
@@ -203,7 +203,7 @@ export function BookingCard({
             {booking.status === 'held' && booking.holdExpiresAt && (
               <div className="mt-4 rounded-lg border border-blue-500/30 bg-blue-500/10 p-3">
                 <div className="flex items-center gap-2 text-sm text-blue-400">
-                  <Clock className="w-4 h-4" />
+                  <Clock className="size-4" />
                   <span>
                     {t('booking.holdExpires', {
                       time: formatTime(booking.holdExpiresAt, locale),
@@ -239,12 +239,12 @@ export function BookingCard({
             >
               {cancellingId === booking._id ? (
                 <>
-                  <Loader2 className="w-4 h-4 animate-spin" />
+                  <Loader2 className="size-4 animate-spin" />
                   {t('booking.cancelling')}
                 </>
               ) : (
                 <>
-                  <X className="w-4 h-4" />
+                  <X className="size-4" />
                   {t('booking.cancel')}
                 </>
               )}

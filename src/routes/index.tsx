@@ -20,11 +20,17 @@ import {
   Users,
 } from 'lucide-react'
 import { Button } from '@/components/ui/button'
-import { useI18n } from '../lib/i18n'
+import { useI18n } from '../lib/i18n/provider'
+import { CURRENT_YEAR } from '../lib/currentYear'
 import {
   DEFAULT_AUTH_SEARCH,
   DEFAULT_SELECT_LOCATION_SEARCH,
 } from '../lib/navigationSearch'
+
+const RATING_SEARCH = {
+  ...DEFAULT_SELECT_LOCATION_SEARCH,
+  sort: 'rating' as const,
+}
 
 export const Route = createFileRoute('/')({
   // Route definition for public landing experience.
@@ -36,10 +42,6 @@ function LandingPage() {
   // Resolve auth state first to avoid showing guest CTA to signed-in users.
   const { isSignedIn, isLoaded } = useAuth()
   const { t } = useI18n()
-  const ratingSearch = {
-    ...DEFAULT_SELECT_LOCATION_SEARCH,
-    sort: 'rating' as const,
-  }
 
   // Signed-in users should continue to role-aware post-login routing.
   if (isLoaded && isSignedIn) {
@@ -47,8 +49,8 @@ function LandingPage() {
       <div className="min-h-screen flex items-center justify-center bg-slate-950">
         <div className="text-center">
           <div className="relative mx-auto mb-6">
-            <div className="animate-spin rounded-full h-12 w-12 border-2 border-violet-500/20 border-t-violet-500"></div>
-            <div className="absolute inset-0 animate-ping rounded-full h-12 w-12 border border-violet-500/10"></div>
+            <div className="animate-spin rounded-full size-12 border-2 border-violet-500/20 border-t-violet-500"></div>
+            <div className="absolute inset-0 animate-ping rounded-full size-12 border border-violet-500/10"></div>
           </div>
           <p className="text-slate-400 mb-2">{t('landing.redirecting')}</p>
           <Link
@@ -112,13 +114,7 @@ function LandingPage() {
                     />
                   </svg>
                 </span>
-                <Sparkles
-                  size={20}
-                  className="landing-title-sparkle"
-                  style={{
-                    animation: 'landingSparkle 3s ease-in-out infinite',
-                  }}
-                />
+                <Sparkles size={20} className="landing-title-sparkle" />
               </h1>
 
               {/* Subtitle */}
@@ -199,20 +195,29 @@ function LandingPage() {
                 className="flex flex-wrap items-center gap-3 pt-2"
                 style={{ animation: 'landingFadeUp 0.7s ease-out 0.40s both' }}
               >
-                <Button asChild size="lg" className="group h-11 px-6 rounded-xl text-sm font-semibold gap-2 bg-violet-600 hover:bg-violet-500 shadow-lg shadow-violet-600/25 hover:shadow-violet-500/35 hover:-translate-y-0.5 active:translate-y-0 transition-all duration-300">
+                <Button
+                  asChild
+                  size="lg"
+                  className="group h-11 px-6 rounded-xl text-sm font-semibold gap-2 bg-violet-600 hover:bg-violet-500 shadow-lg shadow-violet-600/25 hover:shadow-violet-500/35 hover:-translate-y-0.5 active:translate-y-0 transition-all duration-300"
+                >
                   <Link
                     to="/select-location"
                     search={DEFAULT_SELECT_LOCATION_SEARCH}
                   >
                     {t('landing.browseHotels')}
-                    <ArrowRight size={18} className="group-hover:translate-x-1 transition-transform duration-300" />
+                    <ArrowRight
+                      size={18}
+                      className="group-hover:translate-x-1 transition-transform duration-300"
+                    />
                   </Link>
                 </Button>
-                <Button asChild variant="outline" size="lg" className="h-11 px-6 rounded-xl text-sm font-semibold border-slate-900 dark:border-slate-300 text-slate-900 dark:text-slate-100 hover:bg-slate-900 hover:text-white dark:hover:bg-slate-100 dark:hover:text-slate-900 hover:-translate-y-0.5 active:translate-y-0 hover:shadow-md transition-all duration-300">
-                  <Link
-                    to="/sign-up"
-                    search={DEFAULT_AUTH_SEARCH}
-                  >
+                <Button
+                  asChild
+                  variant="outline"
+                  size="lg"
+                  className="h-11 px-6 rounded-xl text-sm font-semibold border-slate-900 dark:border-slate-300 text-slate-900 dark:text-slate-100 hover:bg-slate-900 hover:text-white dark:hover:bg-slate-100 dark:hover:text-slate-900 hover:-translate-y-0.5 active:translate-y-0 hover:shadow-md transition-all duration-300"
+                >
+                  <Link to="/sign-up" search={DEFAULT_AUTH_SEARCH}>
                     {t('landing.createFreeAccount')}
                   </Link>
                 </Button>
@@ -249,8 +254,7 @@ function LandingPage() {
                 <div
                   className="landing-gallery-card landing-gallery-card--main"
                   style={{
-                    animation:
-                      'landingGalleryFloat1 8s ease-in-out infinite, landingFadeUp 0.8s ease-out 0.3s both',
+                    animation: 'landingFadeUp 0.8s ease-out 0.3s both',
                   }}
                 >
                   <img
@@ -278,8 +282,7 @@ function LandingPage() {
                 <div
                   className="landing-gallery-card landing-gallery-card--top"
                   style={{
-                    animation:
-                      'landingGalleryFloat2 9s ease-in-out infinite, landingFadeUp 0.8s ease-out 0.45s both',
+                    animation: 'landingFadeUp 0.8s ease-out 0.45s both',
                   }}
                 >
                   <img
@@ -303,8 +306,7 @@ function LandingPage() {
                 <div
                   className="landing-gallery-card landing-gallery-card--bottom"
                   style={{
-                    animation:
-                      'landingGalleryFloat3 10s ease-in-out infinite, landingFadeUp 0.8s ease-out 0.55s both',
+                    animation: 'landingFadeUp 0.8s ease-out 0.55s both',
                   }}
                 >
                   <img
@@ -328,8 +330,7 @@ function LandingPage() {
                 <div
                   className="landing-float-badge landing-float-badge--rating"
                   style={{
-                    animation:
-                      'landingGalleryFloat2 7s ease-in-out infinite, landingFadeUp 0.6s ease-out 0.7s both',
+                    animation: 'landingFadeUp 0.6s ease-out 0.7s both',
                   }}
                 >
                   <div className="landing-float-badge-icon landing-float-badge-icon--gold">
@@ -349,8 +350,7 @@ function LandingPage() {
                 <div
                   className="landing-float-badge landing-float-badge--verified"
                   style={{
-                    animation:
-                      'landingGalleryFloat3 8s ease-in-out infinite, landingFadeUp 0.6s ease-out 0.8s both',
+                    animation: 'landingFadeUp 0.6s ease-out 0.8s both',
                   }}
                 >
                   <div className="landing-float-badge-icon landing-float-badge-icon--green">
@@ -446,12 +446,20 @@ function LandingPage() {
                     {t('landing.browserTitle')}
                   </p>
                 </div>
-                <Button asChild variant="outline" size="lg" className="group h-10 px-4 rounded-xl text-sm font-semibold gap-2 border-violet-200/80 bg-violet-50/80 text-violet-700 hover:bg-violet-100 hover:border-violet-300 dark:border-violet-500/30 dark:bg-violet-500/10 dark:text-violet-300 dark:hover:bg-violet-500/20 hover:-translate-y-0.5 active:translate-y-0 hover:shadow-sm transition-all duration-300">
+                <Button
+                  asChild
+                  variant="outline"
+                  size="lg"
+                  className="group h-10 px-4 rounded-xl text-sm font-semibold gap-2 border-violet-200/80 bg-violet-50/80 text-violet-700 hover:bg-violet-100 hover:border-violet-300 dark:border-violet-500/30 dark:bg-violet-500/10 dark:text-violet-300 dark:hover:bg-violet-500/20 hover:-translate-y-0.5 active:translate-y-0 hover:shadow-sm transition-all duration-300"
+                >
                   <Link
                     to="/select-location"
                     search={DEFAULT_SELECT_LOCATION_SEARCH}
                   >
-                    <Search size={16} className="group-hover:scale-110 transition-transform duration-300" />
+                    <Search
+                      size={16}
+                      className="group-hover:scale-110 transition-transform duration-300"
+                    />
                     {t('landing.browserAction')}
                   </Link>
                 </Button>
@@ -459,7 +467,9 @@ function LandingPage() {
 
               <div className="landing-browser-search">
                 <Search size={17} />
-                <span className="text-sm sm:text-base">{t('select.searchPlaceholder')}</span>
+                <span className="text-sm sm:text-base">
+                  {t('select.searchPlaceholder')}
+                </span>
               </div>
 
               <div className="landing-browser-controls">
@@ -482,7 +492,7 @@ function LandingPage() {
                     to="/select-location"
                     search={
                       item.label === t('select.sortByRating')
-                        ? ratingSearch
+                        ? RATING_SEARCH
                         : DEFAULT_SELECT_LOCATION_SEARCH
                     }
                     className="landing-browser-chip"
@@ -500,8 +510,12 @@ function LandingPage() {
                   className="landing-browser-preview-img"
                 />
                 <div className="landing-browser-preview-copy">
-                  <p className="text-base sm:text-lg font-bold">{t('landing.browserPreviewTitle')}</p>
-                  <span className="text-sm">{t('landing.browserPreviewDesc')}</span>
+                  <p className="text-base sm:text-lg font-bold">
+                    {t('landing.browserPreviewTitle')}
+                  </p>
+                  <span className="text-sm">
+                    {t('landing.browserPreviewDesc')}
+                  </span>
                 </div>
               </div>
             </div>
@@ -590,7 +604,9 @@ function LandingPage() {
                   className="landing-stay-card-img"
                 />
                 <div className="landing-stay-card-copy">
-                  <p className="text-base sm:text-lg font-bold tracking-tight">{stay.title}</p>
+                  <p className="text-base sm:text-lg font-bold tracking-tight">
+                    {stay.title}
+                  </p>
                   <span className="text-sm">{stay.desc}</span>
                 </div>
                 <ArrowRight size={18} className="landing-stay-card-arrow" />
@@ -614,13 +630,21 @@ function LandingPage() {
             <p className="mt-3 text-base sm:text-lg text-slate-500 dark:text-slate-400 leading-relaxed">
               {t('landing.flowDesc')}
             </p>
-            <Button asChild variant="outline" size="lg" className="group mt-3 h-10 px-5 rounded-xl text-sm font-semibold gap-2 border-violet-200/80 bg-violet-50/80 text-violet-700 hover:bg-violet-100 hover:border-violet-300 dark:border-violet-500/30 dark:bg-violet-500/10 dark:text-violet-300 dark:hover:bg-violet-500/20 hover:-translate-y-0.5 active:translate-y-0 hover:shadow-sm w-fit transition-all duration-300">
+            <Button
+              asChild
+              variant="outline"
+              size="lg"
+              className="group mt-3 h-10 px-5 rounded-xl text-sm font-semibold gap-2 border-violet-200/80 bg-violet-50/80 text-violet-700 hover:bg-violet-100 hover:border-violet-300 dark:border-violet-500/30 dark:bg-violet-500/10 dark:text-violet-300 dark:hover:bg-violet-500/20 hover:-translate-y-0.5 active:translate-y-0 hover:shadow-sm w-fit transition-all duration-300"
+            >
               <Link
                 to="/select-location"
                 search={DEFAULT_SELECT_LOCATION_SEARCH}
               >
                 {t('landing.flowCta')}
-                <ArrowRight size={17} className="group-hover:translate-x-1 transition-transform duration-300" />
+                <ArrowRight
+                  size={17}
+                  className="group-hover:translate-x-1 transition-transform duration-300"
+                />
               </Link>
             </Button>
           </div>
@@ -671,23 +695,34 @@ function LandingPage() {
             <p className="landing-final-cta-kicker">
               {t('landing.finalKicker')}
             </p>
-            <h2 className="text-xl sm:text-2xl lg:text-3xl font-extrabold tracking-tight text-slate-900 dark:text-slate-100">{t('landing.finalTitle')}</h2>
+            <h2 className="text-xl sm:text-2xl lg:text-3xl font-extrabold tracking-tight text-slate-900 dark:text-slate-100">
+              {t('landing.finalTitle')}
+            </h2>
           </div>
           <div className="landing-final-actions">
-            <Button asChild size="lg" className="group h-10 px-5 rounded-xl text-sm font-semibold gap-2 bg-violet-600 hover:bg-violet-500 shadow-lg shadow-violet-600/25 hover:shadow-violet-500/35 hover:-translate-y-0.5 active:translate-y-0 transition-all duration-300">
+            <Button
+              asChild
+              size="lg"
+              className="group h-10 px-5 rounded-xl text-sm font-semibold gap-2 bg-violet-600 hover:bg-violet-500 shadow-lg shadow-violet-600/25 hover:shadow-violet-500/35 hover:-translate-y-0.5 active:translate-y-0 transition-all duration-300"
+            >
               <Link
                 to="/select-location"
                 search={DEFAULT_SELECT_LOCATION_SEARCH}
               >
                 {t('landing.browseHotels')}
-                <ArrowRight size={18} className="group-hover:translate-x-1 transition-transform duration-300" />
+                <ArrowRight
+                  size={18}
+                  className="group-hover:translate-x-1 transition-transform duration-300"
+                />
               </Link>
             </Button>
-            <Button asChild variant="outline" size="lg" className="h-10 px-5 rounded-xl text-sm font-semibold border-slate-900 dark:border-slate-300 text-slate-900 dark:text-slate-100 hover:bg-slate-900 hover:text-white dark:hover:bg-slate-100 dark:hover:text-slate-900 hover:-translate-y-0.5 active:translate-y-0 hover:shadow-md transition-all duration-300">
-              <Link
-                to="/sign-in"
-                search={DEFAULT_AUTH_SEARCH}
-              >
+            <Button
+              asChild
+              variant="outline"
+              size="lg"
+              className="h-10 px-5 rounded-xl text-sm font-semibold border-slate-900 dark:border-slate-300 text-slate-900 dark:text-slate-100 hover:bg-slate-900 hover:text-white dark:hover:bg-slate-100 dark:hover:text-slate-900 hover:-translate-y-0.5 active:translate-y-0 hover:shadow-md transition-all duration-300"
+            >
+              <Link to="/sign-in" search={DEFAULT_AUTH_SEARCH}>
                 {t('landing.alreadyHaveAccount')}
               </Link>
             </Button>
@@ -706,7 +741,7 @@ function LandingPage() {
             />
           </div>
           <p className="landing-footer-copyright">
-            &copy; {new Date().getFullYear()} TripWays Hotels.{' '}
+            &copy; {CURRENT_YEAR} TripWays Hotels.{' '}
             {t('common.allRightsReserved')}
           </p>
         </div>

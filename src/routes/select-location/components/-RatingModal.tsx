@@ -14,7 +14,7 @@ import {
 } from '../../../components/ui/dialog'
 import { Label } from '../../../components/ui/label'
 import { Textarea } from '../../../components/ui/textarea'
-import { useI18n } from '../../../lib/i18n'
+import { useI18n } from '../../../lib/i18n/provider'
 
 export interface RatingFormValues {
   rating: number
@@ -120,7 +120,7 @@ export function RatingModal({
   return (
     <Dialog open onOpenChange={(open) => !open && onClose()}>
       <DialogContent className="max-w-lg border-slate-800 bg-slate-900 p-0 text-slate-100 sm:max-w-lg">
-        <DialogHeader className="border-b border-slate-800 px-6 py-6">
+        <DialogHeader className="border-b border-slate-800 p-6">
           <DialogTitle id="rating-modal-title" className="text-xl">
             {hasExistingRating ? t('rating.updateTitle') : t('rating.newTitle')}
           </DialogTitle>
