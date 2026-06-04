@@ -35,26 +35,24 @@ export const getSummaries = query({
     }),
   ),
   handler: async (ctx, args) => {
-    const summaries = []
+    return await Promise.all(
+      args.hotelIds.map(async (hotelId) => {
+        const ratings = await ctx.db
+          .query('hotelRatings')
+          .withIndex('by_hotel_and_is_deleted', (q) =>
+            q.eq('hotelId', hotelId).eq('isDeleted', false),
+          )
+          .collect()
 
-    for (const hotelId of args.hotelIds) {
-      const ratings = await ctx.db
-        .query('hotelRatings')
-        .withIndex('by_hotel_and_is_deleted', (q) =>
-          q.eq('hotelId', hotelId).eq('isDeleted', false),
-        )
-        .collect()
+        const count = ratings.length
+        const average =
+          count === 0
+            ? 0
+            : ratings.reduce((sum, rating) => sum + rating.rating, 0) / count
 
-      const count = ratings.length
-      const average =
-        count === 0
-          ? 0
-          : ratings.reduce((sum, rating) => sum + rating.rating, 0) / count
-
-      summaries.push({ hotelId, average, count })
-    }
-
-    return summaries
+        return { hotelId, average, count }
+      }),
+    )
   },
 })
 
@@ -258,26 +256,23 @@ export const getHotelRatingsAdmin = query({
       .order('desc')
       .take(limit)
 
-    const results = []
-
-    for (const rating of ratings) {
-      if (rating.isDeleted) {
-        continue
-      }
-      const user = await ctx.db.get(rating.userId)
-      results.push({
-        ...rating,
-        user: user
-          ? {
-              _id: user._id,
-              clerkUserId: user.clerkUserId,
-              email: user.email,
-              role: user.role,
-            }
-          : null,
-      })
-    }
-
-    return results
+    return await Promise.all(
+      ratings
+        .filter((rating) => !rating.isDeleted)
+        .map(async (rating) => {
+          const user = await ctx.db.get(rating.userId)
+          return {
+            ...rating,
+            user: user
+              ? {
+                  _id: user._id,
+                  clerkUserId: user.clerkUserId,
+                  email: user.email,
+                  role: user.role,
+                }
+              : null,
+          }
+        }),
+    )
   },
 })

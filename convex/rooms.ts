@@ -212,19 +212,20 @@ export const getByHotelWithLiveState = query({
       }
     }
 
-    const roomsWithLiveState = []
+    return await Promise.all(
+      rooms.map(async (room) => {
+        const roomWithImage = await attachRoomImageUrl(ctx, room)
+        const activeBookings = bookingsByRoomId.get(room._id) ?? []
 
-    for (const room of rooms) {
-      const roomWithImage = await attachRoomImageUrl(ctx, room)
-      const activeBookings = bookingsByRoomId.get(room._id) ?? []
-
-      roomsWithLiveState.push({
-        ...roomWithImage,
-        liveState: getDerivedLiveState(room.operationalStatus, activeBookings),
-      })
-    }
-
-    return roomsWithLiveState
+        return {
+          ...roomWithImage,
+          liveState: getDerivedLiveState(
+            room.operationalStatus,
+            activeBookings,
+          ),
+        }
+      }),
+    )
   },
 })
 

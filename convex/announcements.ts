@@ -87,16 +87,15 @@ export const getHotelAnnouncements = query({
       .order('desc')
       .collect()
 
-    const result = []
-    for (const ann of announcements) {
-      const creator = await ctx.db.get(ann.createdBy)
-      result.push({
-        ...ann,
-        createdByEmail: creator?.email ?? 'Unknown',
-      })
-    }
-
-    return result
+    return await Promise.all(
+      announcements.map(async (ann) => {
+        const creator = await ctx.db.get(ann.createdBy)
+        return {
+          ...ann,
+          createdByEmail: creator?.email ?? 'Unknown',
+        }
+      }),
+    )
   },
 })
 

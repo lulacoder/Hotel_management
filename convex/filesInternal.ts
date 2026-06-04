@@ -32,36 +32,45 @@ export const cleanupOrphanUploads = internalMutation({
     const allRooms = await ctx.db.query('rooms').collect()
     const allBookings = await ctx.db.query('bookings').collect()
 
-    let deletedCount = 0
+    const cleanupResults = await Promise.all(
+      candidates.map(async (upload) => {
+        const linkedHotel = activeHotels.find(
+          (hotel) => hotel.imageStorageId === upload.storageId,
+        )
+        const linkedRoom = allRooms.find(
+          (room) => !room.isDeleted && room.imageStorageId === upload.storageId,
+        )
+        const linkedBooking = allBookings.find(
+          (booking) => booking.nationalIdStorageId === upload.storageId,
+        )
 
-    for (const upload of candidates) {
-      const linkedHotel = activeHotels.find(
-        (hotel) => hotel.imageStorageId === upload.storageId,
-      )
-      const linkedRoom = allRooms.find(
-        (room) => !room.isDeleted && room.imageStorageId === upload.storageId,
-      )
-      const linkedBooking = allBookings.find(
-        (booking) => booking.nationalIdStorageId === upload.storageId,
-      )
+        if (linkedHotel || linkedRoom || linkedBooking) {
+          await ctx.db.patch(upload._id, {
+            status: 'assigned',
+            resourceType: linkedHotel
+              ? 'hotel'
+              : linkedRoom
+                ? 'room'
+                : 'booking',
+            resourceId: (linkedHotel ?? linkedRoom ?? linkedBooking)?._id,
+            assignedAt: now,
+          })
+          return 0
+        }
 
-      if (linkedHotel || linkedRoom || linkedBooking) {
+        await ctx.storage.delete(upload.storageId)
         await ctx.db.patch(upload._id, {
-          status: 'assigned',
-          resourceType: linkedHotel ? 'hotel' : linkedRoom ? 'room' : 'booking',
-          resourceId: (linkedHotel ?? linkedRoom ?? linkedBooking)?._id,
-          assignedAt: now,
+          status: 'deleted',
+          deletedAt: now,
         })
-        continue
-      }
+        return 1
+      }),
+    )
 
-      await ctx.storage.delete(upload.storageId)
-      await ctx.db.patch(upload._id, {
-        status: 'deleted',
-        deletedAt: now,
-      })
-      deletedCount++
-    }
+    const deletedCount = cleanupResults.reduce<number>(
+      (sum, count) => sum + count,
+      0,
+    )
 
     if (deletedCount > 0) {
       console.log(`Deleted ${deletedCount} orphan uploads`)

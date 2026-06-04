@@ -26,11 +26,12 @@ export const cleanupExpiredHolds = internalMutation({
     // Combine held and pending payment bookings to check for expirations in one pass.
     const candidates = [...heldBookings, ...pendingPaymentBookings]
 
-    let expiredCount = 0
+    const expiredBookings = candidates.filter(
+      (booking) => booking.holdExpiresAt && booking.holdExpiresAt < now,
+    )
 
-    // Process each candidate booking to determine if it has expired.
-    for (const booking of candidates) {
-      if (booking.holdExpiresAt && booking.holdExpiresAt < now) {
+    await Promise.all(
+      expiredBookings.map(async (booking) => {
         await ctx.db.patch(booking._id, {
           status: 'expired',
           paymentStatus: 'failed',
@@ -52,10 +53,10 @@ export const cleanupExpiredHolds = internalMutation({
             timestamp: now,
           })
         }
+      }),
+    )
 
-        expiredCount++
-      }
-    }
+    const expiredCount = expiredBookings.length
 
     if (expiredCount > 0) {
       console.log(`Expired ${expiredCount} held/pending-payment bookings`)

@@ -162,34 +162,32 @@ export const listForAssignedHotel = query({
       .order('desc')
       .take(limit)
 
-    const result = []
+    return await Promise.all(
+      complaints.map(async (complaint) => {
+        const [customer, booking] = await Promise.all([
+          ctx.db.get(complaint.userId),
+          complaint.bookingId ? ctx.db.get(complaint.bookingId) : null,
+        ])
 
-    for (const complaint of complaints) {
-      const customer = await ctx.db.get(complaint.userId)
-      const booking = complaint.bookingId
-        ? await ctx.db.get(complaint.bookingId)
-        : null
-
-      result.push({
-        complaint,
-        customer: customer
-          ? {
-              _id: customer._id,
-              email: customer.email,
-            }
-          : null,
-        booking: booking
-          ? {
-              _id: booking._id,
-              checkIn: booking.checkIn,
-              checkOut: booking.checkOut,
-              status: booking.status,
-            }
-          : null,
-      })
-    }
-
-    return result
+        return {
+          complaint,
+          customer: customer
+            ? {
+                _id: customer._id,
+                email: customer.email,
+              }
+            : null,
+          booking: booking
+            ? {
+                _id: booking._id,
+                checkIn: booking.checkIn,
+                checkOut: booking.checkOut,
+                status: booking.status,
+              }
+            : null,
+        }
+      }),
+    )
   },
 })
 

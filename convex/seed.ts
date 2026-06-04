@@ -127,29 +127,29 @@ export const seedHotel = mutation({
     })
 
     // Insert rooms with auto-generated room numbers
-    let roomNumber = 101
-    for (const room of h.Rooms) {
-      // Convert price from dollars to cents
-      const basePrice = Math.round(room.BaseRate * 100)
+    await Promise.all(
+      h.Rooms.map(async (room, index) => {
+        // Convert price from dollars to cents
+        const basePrice = Math.round(room.BaseRate * 100)
+        const roomNumber = 101 + index
 
-      await ctx.db.insert('rooms', {
-        hotelId,
-        roomNumber: String(roomNumber),
-        type: mapRoomType(room.Type),
-        basePrice,
-        maxOccupancy: room.SleepsCount,
-        operationalStatus: 'available',
-        amenities: room.Tags,
-        description: room.Description,
-        bedOptions: room.BedOptions,
-        smokingAllowed: room.SmokingAllowed,
-        isDeleted: false,
-        createdAt: now,
-        updatedAt: now,
-      })
-
-      roomNumber++
-    }
+        await ctx.db.insert('rooms', {
+          hotelId,
+          roomNumber: String(roomNumber),
+          type: mapRoomType(room.Type),
+          basePrice,
+          maxOccupancy: room.SleepsCount,
+          operationalStatus: 'available',
+          amenities: room.Tags,
+          description: room.Description,
+          bedOptions: room.BedOptions,
+          smokingAllowed: room.SmokingAllowed,
+          isDeleted: false,
+          createdAt: now,
+          updatedAt: now,
+        })
+      }),
+    )
 
     return {
       hotelId,
@@ -170,15 +170,11 @@ export const clearAllHotelsAndRooms = mutation({
   handler: async (ctx) => {
     // Delete all rooms
     const rooms = await ctx.db.query('rooms').collect()
-    for (const room of rooms) {
-      await ctx.db.delete(room._id)
-    }
+    await Promise.all(rooms.map((room) => ctx.db.delete(room._id)))
 
     // Delete all hotels
     const hotels = await ctx.db.query('hotels').collect()
-    for (const hotel of hotels) {
-      await ctx.db.delete(hotel._id)
-    }
+    await Promise.all(hotels.map((hotel) => ctx.db.delete(hotel._id)))
 
     return {
       hotelsDeleted: hotels.length,

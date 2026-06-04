@@ -241,27 +241,29 @@ export const backfillDefaultName = mutation({
 
     const now = Date.now()
 
-    for (const account of accounts) {
-      const nextBankName = account.bankName?.trim() || DEFAULT_BANK_NAME
-      const nextCreatedAt = account.createdAt ?? account._creationTime
-      const nextIsDeleted = account.isDeleted ?? false
+    await Promise.all(
+      accounts.map(async (account) => {
+        const nextBankName = account.bankName?.trim() || DEFAULT_BANK_NAME
+        const nextCreatedAt = account.createdAt ?? account._creationTime
+        const nextIsDeleted = account.isDeleted ?? false
 
-      if (
-        account.bankName?.trim() === nextBankName &&
-        account.createdAt === nextCreatedAt &&
-        account.isDeleted === nextIsDeleted
-      ) {
-        continue
-      }
+        if (
+          account.bankName?.trim() === nextBankName &&
+          account.createdAt === nextCreatedAt &&
+          account.isDeleted === nextIsDeleted
+        ) {
+          return
+        }
 
-      await ctx.db.patch(account._id, {
-        bankName: nextBankName,
-        createdAt: nextCreatedAt,
-        isDeleted: nextIsDeleted,
-        updatedAt: now,
-        setBy: user._id,
-      })
-    }
+        await ctx.db.patch(account._id, {
+          bankName: nextBankName,
+          createdAt: nextCreatedAt,
+          isDeleted: nextIsDeleted,
+          updatedAt: now,
+          setBy: user._id,
+        })
+      }),
+    )
 
     return null
   },
