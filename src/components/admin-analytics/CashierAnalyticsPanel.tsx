@@ -1,4 +1,4 @@
-import { motion } from 'motion/react'
+import { m } from 'motion/react'
 import { Wallet } from 'lucide-react'
 import { AnalyticsMetricCard } from './AnalyticsMetricCard'
 import { AnalyticsStatusBreakdown } from './AnalyticsStatusBreakdown'
@@ -106,17 +106,14 @@ export function CashierAnalyticsPanel({
   const accents = isDark ? METRIC_ACCENTS_DARK : METRIC_ACCENTS_LIGHT
 
   return (
-    <motion.div
+    <m.div
       variants={containerVariants}
       initial="hidden"
       animate="visible"
       className="space-y-8"
     >
       {/* ── Section header ── */}
-      <motion.div
-        variants={sectionVariants}
-        className="flex items-center gap-3"
-      >
+      <m.div variants={sectionVariants} className="flex items-center gap-3">
         <div
           className={`flex h-9 w-9 items-center justify-center rounded-xl border shadow-inner ${
             isDark
@@ -150,10 +147,10 @@ export function CashierAnalyticsPanel({
               : 'from-slate-300/60 via-slate-200/30 to-transparent'
           }`}
         />
-      </motion.div>
+      </m.div>
 
       {/* ── Metric cards ── */}
-      <motion.div
+      <m.div
         variants={sectionVariants}
         className="grid grid-cols-1 gap-4 sm:grid-cols-2 xl:grid-cols-4"
       >
@@ -168,10 +165,10 @@ export function CashierAnalyticsPanel({
             onClick={() => onMetricClick(metric.key)}
           />
         ))}
-      </motion.div>
+      </m.div>
 
       {/* ── Gradient divider ── */}
-      <motion.div
+      <m.div
         variants={sectionVariants}
         aria-hidden
         className="flex items-center gap-3"
@@ -189,10 +186,10 @@ export function CashierAnalyticsPanel({
             isDark ? 'via-slate-700/50' : 'via-slate-300/60'
           }`}
         />
-      </motion.div>
+      </m.div>
 
       {/* ── Charts & breakdowns ── */}
-      <motion.div
+      <m.div
         variants={sectionVariants}
         className="grid grid-cols-1 gap-6 lg:grid-cols-2 xl:grid-cols-[1.4fr_1fr_1fr]"
       >
@@ -225,7 +222,7 @@ export function CashierAnalyticsPanel({
           emptyTitle={emptyTitle}
           emptyDescription={emptyDescription}
         />
-      </motion.div>
-    </motion.div>
+      </m.div>
+    </m.div>
   )
 }

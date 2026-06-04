@@ -14,10 +14,10 @@ import {
   Eye,
 } from 'lucide-react'
 import { useState } from 'react'
-import { motion } from 'motion/react'
+import { m } from 'motion/react'
 import { Id } from '../../../../convex/_generated/dataModel'
 import { HotelModal } from './index/components/-HotelModal'
-import { useI18n } from '../../../lib/i18n'
+import { useI18n } from '../../../lib/i18n/provider'
 import { useTheme } from '../../../lib/theme'
 import { Button } from '@/components/ui/button'
 
@@ -83,7 +83,7 @@ function HotelsPage() {
   return (
     <div className="max-w-7xl mx-auto">
       {/* Header */}
-      <motion.div
+      <m.div
         className="flex items-center justify-between mb-8"
         initial={{ opacity: 0, y: -12 }}
         animate={{ opacity: 1, y: 0 }}
@@ -108,40 +108,41 @@ function HotelsPage() {
             onClick={() => setShowCreateModal(true)}
             className="gap-2 px-4"
           >
-            <Plus className="w-5 h-5" />
+            <Plus className="size-5" />
             {t('admin.hotels.addHotel')}
           </Button>
         )}
-      </motion.div>
+      </m.div>
 
       {/* Search */}
-      <motion.div
+      <m.div
         className="relative mb-6 w-full min-w-0"
         initial={{ opacity: 0, y: 8 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.45, delay: 0.08, ease: [0.22, 1, 0.36, 1] }}
       >
         <Search
-          className={`absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 ${isDark ? 'text-slate-500' : 'text-slate-400'}`}
+          className={`absolute left-4 top-1/2 -translate-y-1/2 size-5 ${isDark ? 'text-slate-500' : 'text-slate-400'}`}
         />
         <input
+          aria-label={t('admin.hotels.searchPlaceholder')}
           type="text"
           placeholder={t('admin.hotels.searchPlaceholder')}
           value={searchTerm}
           onChange={(e) => setSearchTerm(e.target.value)}
           className="admin-field w-full min-w-0 !pl-12"
         />
-      </motion.div>
+      </m.div>
 
       {/* Hotels Grid */}
       {visibleHotels === undefined ? (
         <div className="flex items-center justify-center py-20">
           <div
-            className={`animate-spin rounded-full h-8 w-8 border-2 ${isDark ? 'border-violet-500/20 border-t-violet-500' : 'border-violet-500/20 border-t-violet-500'}`}
+            className={`animate-spin rounded-full size-8 border-2 ${isDark ? 'border-violet-500/20 border-t-violet-500' : 'border-violet-500/20 border-t-violet-500'}`}
           ></div>
         </div>
       ) : filteredHotels?.length === 0 ? (
-        <motion.div
+        <m.div
           className="admin-empty-state p-12"
           initial={{ opacity: 0, scale: 0.97 }}
           animate={{ opacity: 1, scale: 1 }}
@@ -149,7 +150,7 @@ function HotelsPage() {
         >
           <div className="admin-empty-icon">
             <Building2
-              className={`w-8 h-8 ${isDark ? 'text-slate-600' : 'text-slate-400'}`}
+              className={`size-8 ${isDark ? 'text-slate-600' : 'text-slate-400'}`}
             />
           </div>
           <h3
@@ -166,23 +167,24 @@ function HotelsPage() {
           </p>
           {!searchTerm && canAddHotel && (
             <button
+              type="button"
               onClick={() => setShowCreateModal(true)}
               className="admin-button-soft inline-flex items-center gap-2 px-5 py-2.5"
             >
-              <Plus className="w-5 h-5" />
+              <Plus className="size-5" />
               {t('admin.hotels.addFirst')}
             </button>
           )}
-        </motion.div>
+        </m.div>
       ) : (
-        <motion.div
+        <m.div
           className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6"
           variants={containerVariants}
           initial="hidden"
           animate="visible"
         >
           {filteredHotels?.map((hotel) => (
-            <motion.div
+            <m.div
               key={hotel._id}
               variants={itemVariants}
               className={`admin-surface group rounded-2xl p-6 transition-all duration-200 relative ${
@@ -194,13 +196,14 @@ function HotelsPage() {
               {/* Menu Button */}
               <div className="absolute top-4 right-4">
                 <button
+                  type="button"
                   onClick={() =>
                     setActiveMenu(activeMenu === hotel._id ? null : hotel._id)
                   }
                   className={`p-2 rounded-lg transition-colors ${isDark ? 'hover:bg-slate-800' : 'hover:bg-slate-100'}`}
                 >
                   <MoreVertical
-                    className={`w-5 h-5 ${isDark ? 'text-slate-500' : 'text-slate-400'}`}
+                    className={`size-5 ${isDark ? 'text-slate-500' : 'text-slate-400'}`}
                   />
                 </button>
 
@@ -213,29 +216,31 @@ function HotelsPage() {
                       search={{ operationalStatus: 'all', window: '30d' }}
                       className="admin-menu-item flex items-center gap-3 px-4 py-3"
                     >
-                      <Eye className="w-4 h-4" />
+                      <Eye className="size-4" />
                       {t('admin.hotels.viewDetails')}
                     </Link>
                     {canEditHotel && (
                       <button
+                        type="button"
                         onClick={() => {
                           setEditingHotel(hotel._id)
                           setActiveMenu(null)
                         }}
                         className="admin-menu-item flex items-center gap-3 px-4 py-3 w-full"
                       >
-                        <Pencil className="w-4 h-4" />
+                        <Pencil className="size-4" />
                         {t('admin.hotels.editHotel')}
                       </button>
                     )}
                     {canAddHotel && (
                       <button
+                        type="button"
                         onClick={() => handleDelete(hotel._id)}
                         className={`admin-menu-item flex items-center gap-3 px-4 py-3 text-red-400 w-full ${
                           isDark ? 'hover:bg-slate-700' : 'hover:bg-red-50'
                         }`}
                       >
-                        <Trash2 className="w-4 h-4" />
+                        <Trash2 className="size-4" />
                         {t('admin.hotels.deleteHotel')}
                       </button>
                     )}
@@ -253,7 +258,7 @@ function HotelsPage() {
                 <div
                   className={`flex items-center gap-2 text-sm ${isDark ? 'text-slate-400' : 'text-slate-500'}`}
                 >
-                  <MapPin className="w-4 h-4" />
+                  <MapPin className="size-4" />
                   <span>
                     {hotel.city}, {hotel.country}
                   </span>
@@ -279,9 +284,9 @@ function HotelsPage() {
                 {t('admin.hotels.manageRooms')}
                 <span className="text-lg">→</span>
               </Link>
-            </motion.div>
+            </m.div>
           ))}
-        </motion.div>
+        </m.div>
       )}
 
       {/* Create/Edit Modal */}
@@ -297,7 +302,9 @@ function HotelsPage() {
 
       {/* Click outside to close menu */}
       {activeMenu && (
-        <div
+        <button
+          type="button"
+          aria-label={t('common.close')}
           className="fixed inset-0 z-0"
           onClick={() => setActiveMenu(null)}
         />

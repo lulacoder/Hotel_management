@@ -1,4 +1,4 @@
-import { motion } from 'motion/react'
+import { m } from 'motion/react'
 import { Building2, DollarSign, Calendar, BarChart3 } from 'lucide-react'
 import type { Locale } from '@/lib/i18n'
 import { useTheme } from '@/lib/theme'
@@ -55,7 +55,7 @@ function RankBadge({ rank }: { rank: number }) {
     const style = RANK_STYLES[rank - 1]
     return (
       <span
-        className={`inline-flex h-8 w-8 items-center justify-center rounded-full bg-gradient-to-br ${style.gradient} text-xs font-bold text-slate-950 ${style.glow}`}
+        className={`inline-flex size-8 items-center justify-center rounded-full bg-gradient-to-br ${style.gradient} text-xs font-bold text-slate-950 ${style.glow}`}
       >
         {rank}
       </span>
@@ -63,7 +63,7 @@ function RankBadge({ rank }: { rank: number }) {
   }
 
   return (
-    <span className="inline-flex h-8 w-8 items-center justify-center rounded-full border border-slate-700/80 bg-slate-800/60 text-xs font-semibold text-slate-400">
+    <span className="inline-flex size-8 items-center justify-center rounded-full border border-slate-700/80 bg-slate-800/60 text-xs font-semibold text-slate-400">
       {rank}
     </span>
   )
@@ -94,7 +94,7 @@ function OccupancyBar({ rate, isDark }: { rate: number; isDark: boolean }) {
       <div
         className={`h-1.5 w-16 overflow-hidden rounded-full ${isDark ? 'bg-slate-800/80' : 'bg-slate-200'}`}
       >
-        <motion.div
+        <m.div
           initial={{ width: 0 }}
           animate={{ width: `${percent}%` }}
           transition={{ duration: 0.8, ease: [0.23, 1, 0.32, 1], delay: 0.3 }}
@@ -157,7 +157,7 @@ export function AnalyticsTopHotelsTable({
   }
 
   return (
-    <motion.div
+    <m.div
       initial={{ opacity: 0, y: 12, scale: 0.97 }}
       animate={{ opacity: 1, y: 0, scale: 1 }}
       transition={{ duration: 0.45, ease: [0.23, 1, 0.32, 1] }}
@@ -243,7 +243,7 @@ export function AnalyticsTopHotelsTable({
                     : 'text-slate-700'
 
                 return (
-                  <motion.tr
+                  <m.tr
                     key={row.hotelId}
                     initial={{ opacity: 0, x: -8 }}
                     animate={{ opacity: 1, x: 0 }}
@@ -319,13 +319,13 @@ export function AnalyticsTopHotelsTable({
                         />
                       </div>
                     </td>
-                  </motion.tr>
+                  </m.tr>
                 )
               })}
             </tbody>
           </table>
         </div>
       </div>
-    </motion.div>
+    </m.div>
   )
 }

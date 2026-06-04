@@ -4,7 +4,7 @@ import { useQuery } from '@/integrations/convex/hooks'
 import { AlertTriangle, MessageSquareText } from 'lucide-react'
 
 import { api } from '../../../../convex/_generated/api'
-import { useI18n } from '../../../lib/i18n'
+import { useI18n } from '../../../lib/i18n/provider'
 import { useTheme } from '../../../lib/theme'
 
 export const Route = createFileRoute('/admin/complaints/')({
@@ -42,7 +42,7 @@ function AdminComplaintsPage() {
   if (profile === undefined || hotelAssignment === undefined) {
     return (
       <div className="flex items-center justify-center py-20">
-        <div className="animate-spin rounded-full h-8 w-8 border-2 border-violet-500/20 border-t-violet-500"></div>
+        <div className="animate-spin rounded-full size-8 border-2 border-violet-500/20 border-t-violet-500"></div>
       </div>
     )
   }
@@ -51,8 +51,8 @@ function AdminComplaintsPage() {
     return (
       <div className="max-w-7xl mx-auto">
         <div className="admin-empty-state border-red-500/20 p-10">
-          <div className="w-16 h-16 rounded-2xl bg-red-500/10 border border-red-500/20 flex items-center justify-center mx-auto mb-4">
-            <AlertTriangle className="w-8 h-8 text-red-400" />
+          <div className="size-16 rounded-2xl bg-red-500/10 border border-red-500/20 flex items-center justify-center mx-auto mb-4">
+            <AlertTriangle className="size-8 text-red-400" />
           </div>
           <h2 className="text-xl font-semibold text-red-400 mb-2">
             {t('admin.complaints.accessDeniedTitle')}
@@ -87,12 +87,12 @@ function AdminComplaintsPage() {
 
       {complaints === undefined ? (
         <div className="flex items-center justify-center py-12">
-          <div className="animate-spin rounded-full h-8 w-8 border-2 border-violet-500/20 border-t-violet-500"></div>
+          <div className="animate-spin rounded-full size-8 border-2 border-violet-500/20 border-t-violet-500"></div>
         </div>
       ) : complaints.length === 0 ? (
         <div className="admin-empty-state p-12">
           <div className="admin-empty-icon">
-            <MessageSquareText className="w-8 h-8 text-slate-500" />
+            <MessageSquareText className="size-8 text-slate-500" />
           </div>
           <h2
             className={`text-lg font-semibold mb-2 ${isDark ? 'text-slate-200' : 'text-slate-800'}`}

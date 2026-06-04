@@ -1,4 +1,4 @@
-import { motion } from 'motion/react'
+import { m } from 'motion/react'
 import { ArrowRight } from 'lucide-react'
 import { Card, CardContent } from '@/components/ui/card'
 import type { Locale } from '@/lib/i18n'
@@ -50,7 +50,7 @@ export function AnalyticsMetricCard({
   const isDark = theme === 'dark'
 
   const content = (
-    <motion.div
+    <m.div
       initial={{ opacity: 0, y: 12, scale: 0.97 }}
       animate={{ opacity: 1, y: 0, scale: 1 }}
       transition={{ duration: 0.45, ease: [0.23, 1, 0.32, 1] }}
@@ -175,7 +175,7 @@ export function AnalyticsMetricCard({
           </div>
         </CardContent>
       </Card>
-    </motion.div>
+    </m.div>
   )
 
   if (!onClick) {

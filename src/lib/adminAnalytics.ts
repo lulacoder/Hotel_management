@@ -32,6 +32,21 @@ const localeMap: Record<Locale, string> = {
   am: 'am-ET',
 }
 
+const currencyFormatters: Record<Locale, Intl.NumberFormat> = {
+  en: new Intl.NumberFormat(localeMap.en, {
+    style: 'currency',
+    currency: 'USD',
+    minimumFractionDigits: 2,
+  }),
+  am: new Intl.NumberFormat(localeMap.am, {
+    style: 'currency',
+    currency: 'USD',
+    minimumFractionDigits: 2,
+  }),
+}
+
+const countFormatter = new Intl.NumberFormat('en-US')
+
 export const analyticsWindowOptions: Array<{
   value: AnalyticsWindow
   labelKey:
@@ -96,11 +111,7 @@ export function normalizeRoomOperationalStatusFilter(
 }
 
 export function formatAnalyticsCurrency(cents: number, locale: Locale): string {
-  return new Intl.NumberFormat(localeMap[locale], {
-    style: 'currency',
-    currency: 'USD',
-    minimumFractionDigits: 2,
-  }).format(cents / 100)
+  return currencyFormatters[locale].format(cents / 100)
 }
 
 export function formatAnalyticsPercent(value: number): string {
@@ -108,5 +119,5 @@ export function formatAnalyticsPercent(value: number): string {
 }
 
 export function formatAnalyticsCount(value: number): string {
-  return new Intl.NumberFormat('en-US').format(value)
+  return countFormatter.format(value)
 }

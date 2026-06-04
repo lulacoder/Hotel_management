@@ -1,4 +1,4 @@
-import { motion } from 'motion/react'
+import { m } from 'motion/react'
 import { useTheme } from '@/lib/theme'
 
 interface Props {
@@ -11,7 +11,7 @@ export function AnalyticsEmptyState({ title, description }: Props) {
   const isDark = theme === 'dark'
 
   return (
-    <motion.div
+    <m.div
       initial={{ opacity: 0, y: 8 }}
       animate={{ opacity: 1, y: 0 }}
       transition={{ duration: 0.5, ease: [0.23, 1, 0.32, 1] }}
@@ -39,7 +39,7 @@ export function AnalyticsEmptyState({ title, description }: Props) {
       />
 
       {/* Decorative bar-chart illustration */}
-      <motion.svg
+      <m.svg
         initial={{ opacity: 0, scale: 0.92 }}
         animate={{ opacity: 1, scale: 1 }}
         transition={{ duration: 0.6, delay: 0.15, ease: [0.23, 1, 0.32, 1] }}
@@ -91,16 +91,16 @@ export function AnalyticsEmptyState({ title, description }: Props) {
           fill="none"
           className={isDark ? 'text-slate-700' : 'text-slate-300'}
         />
-      </motion.svg>
+      </m.svg>
 
       {/* Title */}
       <div className="mb-2 flex items-center justify-center gap-2.5">
-        <span className="relative flex h-2 w-2">
+        <span className="relative flex size-2">
           <span
-            className={`absolute inline-flex h-full w-full animate-ping rounded-full ${isDark ? 'bg-violet-400/40' : 'bg-violet-500/30'}`}
+            className={`absolute inline-flex size-full animate-ping rounded-full ${isDark ? 'bg-violet-400/40' : 'bg-violet-500/30'}`}
           />
           <span
-            className={`relative inline-flex h-2 w-2 rounded-full ${isDark ? 'bg-violet-400/70' : 'bg-violet-500/60'}`}
+            className={`relative inline-flex size-2 rounded-full ${isDark ? 'bg-violet-400/70' : 'bg-violet-500/60'}`}
           />
         </span>
 
@@ -117,6 +117,6 @@ export function AnalyticsEmptyState({ title, description }: Props) {
       >
         {description}
       </p>
-    </motion.div>
+    </m.div>
   )
 }

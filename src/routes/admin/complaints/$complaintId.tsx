@@ -2,10 +2,10 @@ import { Link, createFileRoute } from '@tanstack/react-router'
 import { useUser } from '@clerk/clerk-react'
 import { useQuery } from '@/integrations/convex/hooks'
 import { AlertTriangle, ArrowLeft, MessageSquareText } from 'lucide-react'
-import { motion } from 'motion/react'
+import { m } from 'motion/react'
 
 import { api } from '../../../../convex/_generated/api'
-import { useI18n } from '../../../lib/i18n'
+import { useI18n } from '../../../lib/i18n/provider'
 import { useTheme } from '@/lib/theme'
 import type { Id } from '../../../../convex/_generated/dataModel'
 
@@ -27,7 +27,7 @@ const itemVariants = {
   },
 }
 
-function ComplaintDetailPage() {
+export function ComplaintDetailPage() {
   const { complaintId } = Route.useParams()
   const typedComplaintId = complaintId as Id<'complaints'>
   const { user } = useUser()
@@ -61,7 +61,7 @@ function ComplaintDetailPage() {
     return (
       <div className="flex items-center justify-center py-20">
         <div
-          className={`animate-spin rounded-full h-8 w-8 border-2 ${isDark ? 'border-violet-500/20 border-t-violet-500' : 'border-violet-500/20 border-t-violet-500'}`}
+          className={`animate-spin rounded-full size-8 border-2 ${isDark ? 'border-violet-500/20 border-t-violet-500' : 'border-violet-500/20 border-t-violet-500'}`}
         ></div>
       </div>
     )
@@ -73,8 +73,8 @@ function ComplaintDetailPage() {
         <div
           className={`border border-red-500/20 rounded-2xl p-10 text-center backdrop-blur-sm ${isDark ? 'bg-slate-900/50' : 'bg-white/80 shadow-sm'}`}
         >
-          <div className="w-16 h-16 rounded-2xl bg-red-500/10 border border-red-500/20 flex items-center justify-center mx-auto mb-4">
-            <AlertTriangle className="w-8 h-8 text-red-400" />
+          <div className="size-16 rounded-2xl bg-red-500/10 border border-red-500/20 flex items-center justify-center mx-auto mb-4">
+            <AlertTriangle className="size-8 text-red-400" />
           </div>
           <h2 className="text-xl font-semibold text-red-400 mb-2">
             {t('admin.complaints.accessDeniedTitle')}
@@ -91,7 +91,7 @@ function ComplaintDetailPage() {
     return (
       <div className="flex items-center justify-center py-20">
         <div
-          className={`animate-spin rounded-full h-8 w-8 border-2 ${isDark ? 'border-violet-500/20 border-t-violet-500' : 'border-violet-500/20 border-t-violet-500'}`}
+          className={`animate-spin rounded-full size-8 border-2 ${isDark ? 'border-violet-500/20 border-t-violet-500' : 'border-violet-500/20 border-t-violet-500'}`}
         ></div>
       </div>
     )
@@ -110,7 +110,7 @@ function ComplaintDetailPage() {
             to="/admin/complaints"
             className="admin-button-secondary inline-flex items-center gap-2"
           >
-            <ArrowLeft className="w-4 h-4" />
+            <ArrowLeft className="size-4" />
             {t('admin.complaints.backToComplaints')}
           </Link>
         </div>
@@ -121,23 +121,23 @@ function ComplaintDetailPage() {
   const booking = complaintDetail.booking
 
   return (
-    <motion.div
+    <m.div
       className="max-w-4xl mx-auto"
       variants={containerVariants}
       initial="hidden"
       animate="visible"
     >
-      <motion.div variants={itemVariants}>
+      <m.div variants={itemVariants}>
         <Link
           to="/admin/complaints"
           className={`inline-flex items-center gap-2 transition-colors mb-6 ${isDark ? 'text-slate-400 hover:text-slate-200' : 'text-slate-500 hover:text-slate-900'}`}
         >
-          <ArrowLeft className="w-4 h-4" />
+          <ArrowLeft className="size-4" />
           {t('admin.complaints.backToComplaints')}
         </Link>
-      </motion.div>
+      </m.div>
 
-      <motion.div variants={itemVariants} className="admin-surface p-6 mb-6">
+      <m.div variants={itemVariants} className="admin-surface p-6 mb-6">
         <div className="flex items-start justify-between gap-4 mb-4">
           <div>
             <h1
@@ -155,7 +155,7 @@ function ComplaintDetailPage() {
             )}
           </div>
           <div className="inline-flex items-center gap-2 px-3 py-1 rounded-lg text-sm font-medium bg-blue-500/10 text-blue-400 border border-blue-500/20">
-            <MessageSquareText className="w-3.5 h-3.5" />
+            <MessageSquareText className="size-3.5" />
             {t('admin.nav.complaints')}
           </div>
         </div>
@@ -241,7 +241,7 @@ function ComplaintDetailPage() {
             </p>
           )}
         </div>
-      </motion.div>
-    </motion.div>
+      </m.div>
+    </m.div>
   )
 }

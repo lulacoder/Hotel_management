@@ -5,7 +5,7 @@ import { useMutation, useQuery } from '@/integrations/convex/hooks'
 
 import { api } from '../../../../../convex/_generated/api'
 import type { Id } from '../../../../../convex/_generated/dataModel'
-import { useI18n } from '../../../../lib/i18n'
+import { useI18n } from '../../../../lib/i18n/provider'
 import { useTheme } from '../../../../lib/theme'
 
 interface EnrichedBooking {
@@ -117,11 +117,11 @@ export function OutsourceModal({
 
   return (
     <div className="fixed inset-0 bg-black/60 backdrop-blur-sm flex items-center justify-center z-50 p-4">
-      <div
+      <button
+        type="button"
+        aria-label={t('admin.bookings.outsourceModal.errorFallback')}
         className="absolute inset-0"
         onClick={isSubmitting ? undefined : onClose}
-        role="button"
-        tabIndex={-1}
       />
       <div className="admin-modal-panel relative w-full max-w-lg">
         <div className="admin-modal-header">
@@ -131,11 +131,12 @@ export function OutsourceModal({
             {t('admin.bookings.outsourceModal.title')}
           </h3>
           <button
+            type="button"
             onClick={onClose}
             disabled={isSubmitting}
             className={`p-2 rounded-lg transition-colors disabled:opacity-50 ${isDark ? 'hover:bg-slate-800 text-slate-400 hover:text-slate-200' : 'hover:bg-slate-100 text-slate-500 hover:text-slate-700'}`}
           >
-            <X className="w-5 h-5" />
+            <X className="size-5" />
           </button>
         </div>
 
@@ -224,6 +225,7 @@ export function OutsourceModal({
 
           <div className="admin-modal-footer">
             <button
+              type="button"
               onClick={onClose}
               disabled={isSubmitting}
               className="admin-button-secondary text-sm disabled:opacity-50"
@@ -231,11 +233,12 @@ export function OutsourceModal({
               {t('common.cancel')}
             </button>
             <button
+              type="button"
               onClick={handleSubmit}
               disabled={!destinationHotelId || isSubmitting || isSuccess}
               className="admin-button-primary text-sm disabled:opacity-50 disabled:cursor-not-allowed inline-flex items-center gap-2"
             >
-              {isSubmitting && <Loader2 className="w-4 h-4 animate-spin" />}
+              {isSubmitting && <Loader2 className="size-4 animate-spin" />}
               {isSuccess
                 ? t('admin.bookings.outsourceModal.success')
                 : t('admin.bookings.outsourceModal.submit')}

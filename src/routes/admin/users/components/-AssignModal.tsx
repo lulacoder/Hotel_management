@@ -6,7 +6,7 @@ import { z } from 'zod'
 
 import { api } from '../../../../../convex/_generated/api'
 import type { Id } from '../../../../../convex/_generated/dataModel'
-import { useI18n } from '../../../../lib/i18n'
+import { useI18n } from '../../../../lib/i18n/provider'
 import { useTheme } from '../../../../lib/theme'
 
 interface AssignModalProps {

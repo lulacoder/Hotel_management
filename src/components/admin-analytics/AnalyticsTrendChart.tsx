@@ -1,5 +1,5 @@
 import { useCallback, useState } from 'react'
-import { motion } from 'motion/react'
+import { m } from 'motion/react'
 import {
   Area,
   AreaChart,
@@ -98,8 +98,7 @@ export function AnalyticsTrendChart({
   const isDark = theme === 'dark'
   const [activeIndex, setActiveIndex] = useState<number | null>(null)
 
-   
-  const handleClick = useCallback(
+  const selectActivePoint = useCallback(
     (data: any) => {
       if (onPointClick && data?.activePayload?.[0]) {
         onPointClick(data.activePayload[0].payload as Point)
@@ -146,7 +145,7 @@ export function AnalyticsTrendChart({
   const axisTickColor = isDark ? '#64748b' : '#94a3b8'
 
   return (
-    <motion.div
+    <m.div
       initial={{ opacity: 0, y: 18 }}
       animate={{ opacity: 1, y: 0 }}
       transition={{ duration: 0.5, ease: [0.22, 1, 0.36, 1] }}
@@ -177,8 +176,7 @@ export function AnalyticsTrendChart({
           <AreaChart
             data={points}
             margin={{ top: 8, right: 8, left: -12, bottom: 0 }}
-            onClick={handleClick}
-             
+            onClick={selectActivePoint}
             onMouseMove={(state: any) => {
               if (state?.activeTooltipIndex !== undefined) {
                 setActiveIndex(Number(state.activeTooltipIndex))
@@ -378,6 +376,6 @@ export function AnalyticsTrendChart({
           )
         })}
       </div>
-    </motion.div>
+    </m.div>
   )
 }

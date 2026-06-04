@@ -14,7 +14,7 @@ import {
   TrendingUp,
   Zap,
 } from 'lucide-react'
-import { motion } from 'motion/react'
+import { m } from 'motion/react'
 import { api } from '../../../convex/_generated/api'
 import type {
   AnalyticsWindow,
@@ -30,13 +30,13 @@ import { AnalyticsTimeWindowTabs } from '@/components/admin-analytics/AnalyticsT
 import { AnalyticsTopHotelsTable } from '@/components/admin-analytics/AnalyticsTopHotelsTable'
 import { AnalyticsEmptyState } from '@/components/admin-analytics/AnalyticsEmptyState'
 
-const LazyAnalyticsTrendChart = lazy(() =>
+export const LazyAnalyticsTrendChart = lazy(() =>
   import('@/components/admin-analytics/AnalyticsTrendChart').then((module) => ({
     default: module.AnalyticsTrendChart,
   })),
 )
 
-const LazyAnalyticsStatusBreakdown = lazy(() =>
+export const LazyAnalyticsStatusBreakdown = lazy(() =>
   import('@/components/admin-analytics/AnalyticsStatusBreakdown').then(
     (module) => ({
       default: module.AnalyticsStatusBreakdown,
@@ -44,7 +44,7 @@ const LazyAnalyticsStatusBreakdown = lazy(() =>
   ),
 )
 
-const LazyAnalyticsOccupancyCard = lazy(() =>
+export const LazyAnalyticsOccupancyCard = lazy(() =>
   import('@/components/admin-analytics/AnalyticsOccupancyCard').then(
     (module) => ({
       default: module.AnalyticsOccupancyCard,
@@ -52,7 +52,7 @@ const LazyAnalyticsOccupancyCard = lazy(() =>
   ),
 )
 
-const LazyCashierAnalyticsPanel = lazy(() =>
+export const LazyCashierAnalyticsPanel = lazy(() =>
   import('@/components/admin-analytics/CashierAnalyticsPanel').then(
     (module) => ({
       default: module.CashierAnalyticsPanel,
@@ -84,7 +84,7 @@ const itemVariants = {
   },
 }
 
-function AnalyticsLoadingCard({
+export function AnalyticsLoadingCard({
   className,
   isDark,
 }: {
@@ -105,7 +105,7 @@ function AnalyticsLoadingCard({
 /* ------------------------------------------------------------------ */
 /*  Section header component                                           */
 /* ------------------------------------------------------------------ */
-function SectionHeader({
+export function SectionHeader({
   icon: Icon,
   label,
   isDark,
@@ -115,7 +115,7 @@ function SectionHeader({
   isDark: boolean
 }) {
   return (
-    <motion.div variants={itemVariants} className="flex items-center gap-3">
+    <m.div variants={itemVariants} className="flex items-center gap-3">
       <div
         className={`w-1 h-5 rounded-full bg-gradient-to-b ${
           isDark ? 'from-amber-400 to-amber-600' : 'from-amber-500 to-amber-600'
@@ -130,7 +130,7 @@ function SectionHeader({
       >
         {label}
       </span>
-    </motion.div>
+    </m.div>
   )
 }
 
@@ -147,7 +147,7 @@ function getGreeting(): string {
 /* ------------------------------------------------------------------ */
 /*  Main dashboard                                                     */
 /* ------------------------------------------------------------------ */
-function AdminDashboard() {
+export function AdminDashboard() {
   const { user } = useUser()
   const { t, locale } = useI18n()
   const { theme } = useTheme()
@@ -298,7 +298,7 @@ function AdminDashboard() {
   /*  Welcome header                                                 */
   /* -------------------------------------------------------------- */
   const summaryHeader = (
-    <motion.div
+    <m.div
       variants={itemVariants}
       className="mb-10 flex flex-col gap-5 lg:flex-row lg:items-center lg:justify-between"
     >
@@ -323,11 +323,11 @@ function AdminDashboard() {
         </p>
       </div>
       <AnalyticsTimeWindowTabs value={window} onChange={handleWindowChange} />
-    </motion.div>
+    </m.div>
   )
 
   return (
-    <motion.div
+    <m.div
       className="mx-auto max-w-7xl"
       variants={containerVariants}
       initial="hidden"
@@ -337,7 +337,7 @@ function AdminDashboard() {
 
       {/* Hotel assignment banner */}
       {hotelAssignment && assignedHotel && profile?.role !== 'room_admin' && (
-        <motion.div
+        <m.div
           variants={itemVariants}
           className={`relative mb-10 overflow-hidden rounded-2xl border backdrop-blur-sm ${
             isDark
@@ -376,7 +376,7 @@ function AdminDashboard() {
               </p>
             </div>
           </div>
-        </motion.div>
+        </m.div>
       )}
 
       {summary === undefined ? (
@@ -385,18 +385,18 @@ function AdminDashboard() {
           description={t('admin.analytics.loadingDescription' as never)}
         />
       ) : isCashier ? (
-        <motion.div variants={itemVariants} className="mb-8">
+        <m.div variants={itemVariants} className="mb-8">
           <Suspense
             fallback={
               <AnalyticsLoadingCard className="h-[24rem]" isDark={isDark} />
             }
           >
-              <LazyCashierAnalyticsPanel
-                locale={locale}
-                metrics={
-                  summary.primaryKpis.filter(
-                    (metric) => metric.format === 'count',
-                  ) as Array<{
+            <LazyCashierAnalyticsPanel
+              locale={locale}
+              metrics={
+                summary.primaryKpis.filter(
+                  (metric) => metric.format === 'count',
+                ) as Array<{
                   key:
                     | 'pendingPaymentBookings'
                     | 'totalBookings'
@@ -442,17 +442,17 @@ function AdminDashboard() {
               )}
             />
           </Suspense>
-        </motion.div>
+        </m.div>
       ) : (
         <div className="mb-10 space-y-8">
           {/* --- Key Metrics --- */}
           <SectionHeader icon={BarChart3} label="Key Metrics" isDark={isDark} />
-          <motion.div
+          <m.div
             variants={containerVariants}
             className="grid grid-cols-1 gap-4 md:grid-cols-2 xl:grid-cols-4"
           >
             {revenueMetric && (
-              <motion.div variants={itemVariants}>
+              <m.div variants={itemVariants}>
                 <AnalyticsMetricCard
                   label={metricLabels[revenueMetric.key]}
                   value={revenueMetric.value}
@@ -470,10 +470,10 @@ function AdminDashboard() {
                       : 'from-violet-500/10 to-fuchsia-500/5 text-violet-700 border-violet-300/50'
                   }
                 />
-              </motion.div>
+              </m.div>
             )}
             {operationsMetrics?.map((metric) => (
-              <motion.div key={metric.key} variants={itemVariants}>
+              <m.div key={metric.key} variants={itemVariants}>
                 <AnalyticsMetricCard
                   label={metricLabels[metric.key]}
                   value={metric.value}
@@ -493,9 +493,9 @@ function AdminDashboard() {
                     }
                   }}
                 />
-              </motion.div>
+              </m.div>
             ))}
-          </motion.div>
+          </m.div>
 
           {/* --- Trends & Activity --- */}
           <SectionHeader
@@ -503,11 +503,11 @@ function AdminDashboard() {
             label="Trends & Activity"
             isDark={isDark}
           />
-          <motion.div
+          <m.div
             variants={containerVariants}
             className="grid grid-cols-1 gap-6 xl:grid-cols-2"
           >
-            <motion.div variants={itemVariants}>
+            <m.div variants={itemVariants}>
               <Suspense
                 fallback={
                   <AnalyticsLoadingCard className="h-80" isDark={isDark} />
@@ -525,8 +525,8 @@ function AdminDashboard() {
                   )}
                 />
               </Suspense>
-            </motion.div>
-            <motion.div variants={itemVariants}>
+            </m.div>
+            <m.div variants={itemVariants}>
               <Suspense
                 fallback={
                   <AnalyticsLoadingCard className="h-80" isDark={isDark} />
@@ -543,8 +543,8 @@ function AdminDashboard() {
                   )}
                 />
               </Suspense>
-            </motion.div>
-          </motion.div>
+            </m.div>
+          </m.div>
 
           {/* --- Status Overview --- */}
           <SectionHeader
@@ -552,11 +552,11 @@ function AdminDashboard() {
             label="Status Overview"
             isDark={isDark}
           />
-          <motion.div
+          <m.div
             variants={containerVariants}
             className="grid grid-cols-1 gap-6 xl:grid-cols-3"
           >
-            <motion.div variants={itemVariants}>
+            <m.div variants={itemVariants}>
               <Suspense
                 fallback={
                   <AnalyticsLoadingCard className="h-80" isDark={isDark} />
@@ -575,8 +575,8 @@ function AdminDashboard() {
                   )}
                 />
               </Suspense>
-            </motion.div>
-            <motion.div variants={itemVariants}>
+            </m.div>
+            <m.div variants={itemVariants}>
               <Suspense
                 fallback={
                   <AnalyticsLoadingCard className="h-80" isDark={isDark} />
@@ -595,8 +595,8 @@ function AdminDashboard() {
                   )}
                 />
               </Suspense>
-            </motion.div>
-            <motion.div variants={itemVariants}>
+            </m.div>
+            <m.div variants={itemVariants}>
               <Suspense
                 fallback={
                   <AnalyticsLoadingCard className="h-80" isDark={isDark} />
@@ -613,8 +613,8 @@ function AdminDashboard() {
                   )}
                 />
               </Suspense>
-            </motion.div>
-          </motion.div>
+            </m.div>
+          </m.div>
 
           {/* --- Property Performance --- */}
           <SectionHeader
@@ -622,11 +622,11 @@ function AdminDashboard() {
             label="Property Performance"
             isDark={isDark}
           />
-          <motion.div
+          <m.div
             variants={containerVariants}
             className="grid grid-cols-1 gap-6 xl:grid-cols-[1.1fr_1fr]"
           >
-            <motion.div variants={itemVariants}>
+            <m.div variants={itemVariants}>
               <Suspense
                 fallback={
                   <AnalyticsLoadingCard className="h-96" isDark={isDark} />
@@ -641,8 +641,8 @@ function AdminDashboard() {
                   )}
                 />
               </Suspense>
-            </motion.div>
-            <motion.div variants={itemVariants}>
+            </m.div>
+            <m.div variants={itemVariants}>
               {profile?.role === 'room_admin' ? (
                 <AnalyticsTopHotelsTable
                   rows={(topHotels?.hotels ?? []).map((hotel) => ({
@@ -677,22 +677,22 @@ function AdminDashboard() {
                   )}
                 />
               )}
-            </motion.div>
-          </motion.div>
+            </m.div>
+          </m.div>
         </div>
       )}
 
       {/* Quick Actions */}
-      <motion.div variants={itemVariants} className="mb-10">
+      <m.div variants={itemVariants} className="mb-10">
         <SectionHeader icon={Zap} label="Quick Actions" isDark={isDark} />
-        <motion.div
+        <m.div
           variants={containerVariants}
           initial="hidden"
           animate="visible"
           className="mt-5 grid grid-cols-1 gap-4 md:grid-cols-3"
         >
           {quickActions.map((action, i) => (
-            <motion.div key={action.label} variants={itemVariants} custom={i}>
+            <m.div key={action.label} variants={itemVariants} custom={i}>
               <Link
                 to={action.to}
                 className={`group relative block overflow-hidden rounded-2xl border p-6 backdrop-blur-sm transition-all duration-300 ${
@@ -740,13 +740,13 @@ function AdminDashboard() {
                   {action.description}
                 </p>
               </Link>
-            </motion.div>
+            </m.div>
           ))}
-        </motion.div>
-      </motion.div>
+        </m.div>
+      </m.div>
 
       {/* Info Banner */}
-      <motion.div
+      <m.div
         variants={itemVariants}
         className={`relative overflow-hidden rounded-2xl border backdrop-blur-sm ${
           isDark
@@ -785,7 +785,7 @@ function AdminDashboard() {
             </p>
           </div>
         </div>
-      </motion.div>
-    </motion.div>
+      </m.div>
+    </m.div>
   )
 }

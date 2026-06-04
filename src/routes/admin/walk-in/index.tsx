@@ -4,7 +4,7 @@ import { useUser } from '@clerk/clerk-react'
 import { useMemo, useState } from 'react'
 import { useMutation, useQuery } from '@/integrations/convex/hooks'
 import { Calendar, CheckCircle, Search, UserRound } from 'lucide-react'
-import { motion } from 'motion/react'
+import { m } from 'motion/react'
 
 import { api } from '../../../../convex/_generated/api'
 import {
@@ -14,7 +14,7 @@ import {
 } from '../../../lib/packages'
 import type { Id } from '../../../../convex/_generated/dataModel'
 import type { PackageType } from '../../../lib/packages'
-import { useI18n } from '../../../lib/i18n'
+import { useI18n } from '../../../lib/i18n/provider'
 import { useTheme } from '../../../lib/theme'
 
 export const Route = createFileRoute('/admin/walk-in/')({
@@ -221,7 +221,7 @@ function WalkInBookingPage() {
     return (
       <div className="flex items-center justify-center py-20">
         <div
-          className={`animate-spin rounded-full h-8 w-8 border-2 ${isDark ? 'border-violet-500/20 border-t-violet-500' : 'border-violet-500/20 border-t-violet-500'}`}
+          className={`animate-spin rounded-full size-8 border-2 ${isDark ? 'border-violet-500/20 border-t-violet-500' : 'border-violet-500/20 border-t-violet-500'}`}
         ></div>
       </div>
     )
@@ -248,7 +248,7 @@ function WalkInBookingPage() {
 
   return (
     <div className="max-w-7xl mx-auto space-y-6">
-      <motion.div
+      <m.div
         initial={{ opacity: 0, y: -12 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.5, ease: [0.22, 1, 0.36, 1] }}
@@ -262,7 +262,7 @@ function WalkInBookingPage() {
         <p className={isDark ? 'text-slate-400' : 'text-slate-500'}>
           {t('admin.walkIn.description')}
         </p>
-      </motion.div>
+      </m.div>
 
       {bookingError && (
         <div className="bg-red-500/10 border border-red-500/20 rounded-xl p-4 text-red-400 text-sm">
@@ -271,7 +271,7 @@ function WalkInBookingPage() {
       )}
 
       {/* Step 1 — Guest */}
-      <motion.div
+      <m.div
         className={sectionCardClass}
         initial={{ opacity: 0, y: 12 }}
         animate={{ opacity: 1, y: 0 }}
@@ -279,7 +279,7 @@ function WalkInBookingPage() {
       >
         <div className="flex items-center gap-2 mb-4">
           <Search
-            className={`w-5 h-5 ${isDark ? 'text-violet-400' : 'text-violet-500'}`}
+            className={`size-5 ${isDark ? 'text-violet-400' : 'text-violet-500'}`}
           />
           <h2
             className={`text-lg font-semibold ${isDark ? 'text-slate-100' : 'text-slate-900'}`}
@@ -290,6 +290,7 @@ function WalkInBookingPage() {
 
         <div className="flex gap-3 mb-4">
           <input
+            aria-label={t('admin.walkIn.step1')}
             value={searchTerm}
             onChange={(e) => setSearchTerm(e.target.value)}
             placeholder={t('admin.walkIn.searchPlaceholder')}
@@ -344,18 +345,21 @@ function WalkInBookingPage() {
         {!selectedGuest && (
           <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
             <input
+              aria-label="Form control"
               value={guestName}
               onChange={(e) => setGuestName(e.target.value)}
               placeholder={t('admin.walkIn.guestName')}
               className={`px-4 py-3 rounded-xl focus:outline-none transition-all ${inputClass}`}
             />
             <input
+              aria-label={t('admin.walkIn.guestName')}
               value={guestPhone}
               onChange={(e) => setGuestPhone(e.target.value)}
               placeholder={t('admin.walkIn.phone')}
               className={`px-4 py-3 rounded-xl focus:outline-none transition-all ${inputClass}`}
             />
             <input
+              aria-label={t('admin.walkIn.phone')}
               value={guestEmail}
               onChange={(e) => setGuestEmail(e.target.value)}
               placeholder={t('admin.walkIn.email')}
@@ -374,7 +378,7 @@ function WalkInBookingPage() {
 
         {selectedGuest && (
           <div className="mt-3 p-3 rounded-xl border border-emerald-500/30 bg-emerald-500/10 flex items-center gap-3">
-            <UserRound className="w-5 h-5 text-emerald-400" />
+            <UserRound className="size-5 text-emerald-400" />
             <div>
               <p className="text-emerald-300 font-medium">
                 {selectedGuest.name}
@@ -386,10 +390,10 @@ function WalkInBookingPage() {
             </div>
           </div>
         )}
-      </motion.div>
+      </m.div>
 
       {/* Step 2 — Dates & Room */}
-      <motion.div
+      <m.div
         className={sectionCardClass}
         initial={{ opacity: 0, y: 12 }}
         animate={{ opacity: 1, y: 0 }}
@@ -397,7 +401,7 @@ function WalkInBookingPage() {
       >
         <div className="flex items-center gap-2 mb-4">
           <Calendar
-            className={`w-5 h-5 ${isDark ? 'text-violet-400' : 'text-violet-500'}`}
+            className={`size-5 ${isDark ? 'text-violet-400' : 'text-violet-500'}`}
           />
           <h2
             className={`text-lg font-semibold ${isDark ? 'text-slate-100' : 'text-slate-900'}`}
@@ -408,12 +412,14 @@ function WalkInBookingPage() {
 
         <div className="grid grid-cols-1 md:grid-cols-2 gap-3 mb-4">
           <input
+            aria-label={t('admin.walkIn.step2')}
             type="date"
             value={checkIn}
             onChange={(e) => setCheckIn(e.target.value)}
             className={`hotel-date-input px-4 py-3 rounded-xl focus:outline-none transition-all ${inputClass}`}
           />
           <input
+            aria-label={t('admin.walkIn.step2')}
             type="date"
             value={checkOut}
             onChange={(e) => setCheckOut(e.target.value)}
@@ -428,7 +434,7 @@ function WalkInBookingPage() {
         ) : availableRooms === undefined ? (
           <div className="flex items-center justify-center py-8">
             <div
-              className={`animate-spin rounded-full h-7 w-7 border-2 ${isDark ? 'border-violet-500/20 border-t-violet-500' : 'border-violet-500/20 border-t-violet-500'}`}
+              className={`animate-spin rounded-full size-7 border-2 ${isDark ? 'border-violet-500/20 border-t-violet-500' : 'border-violet-500/20 border-t-violet-500'}`}
             ></div>
           </div>
         ) : availableRooms.length === 0 ? (
@@ -467,10 +473,10 @@ function WalkInBookingPage() {
             ))}
           </div>
         )}
-      </motion.div>
+      </m.div>
 
       {/* Step 3 — Package & Confirm */}
-      <motion.div
+      <m.div
         className={sectionCardClass}
         initial={{ opacity: 0, y: 12 }}
         animate={{ opacity: 1, y: 0 }}
@@ -478,7 +484,7 @@ function WalkInBookingPage() {
       >
         <div className="flex items-center gap-2 mb-4">
           <CheckCircle
-            className={`w-5 h-5 ${isDark ? 'text-violet-400' : 'text-violet-500'}`}
+            className={`size-5 ${isDark ? 'text-violet-400' : 'text-violet-500'}`}
           />
           <h2
             className={`text-lg font-semibold ${isDark ? 'text-slate-100' : 'text-slate-900'}`}
@@ -514,6 +520,7 @@ function WalkInBookingPage() {
         </div>
 
         <textarea
+          aria-label={t('hotel.night')}
           value={specialRequests}
           onChange={(e) => setSpecialRequests(e.target.value)}
           placeholder={t('bookingModal.specialRequestsPlaceholder')}
@@ -554,7 +561,7 @@ function WalkInBookingPage() {
             ? t('admin.walkIn.booking')
             : t('admin.walkIn.bookConfirm')}
         </button>
-      </motion.div>
+      </m.div>
     </div>
   )
 }

@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from 'react'
+import { useMemo, useState } from 'react'
 import { useMutation, useQuery } from '@/integrations/convex/hooks'
 import { useForm, useStore } from '@tanstack/react-form'
 import { z } from 'zod'
@@ -10,7 +10,7 @@ import {
   uploadImageToConvex,
   validateImageFile,
 } from '../../../../../lib/imageUpload'
-import { useI18n } from '../../../../../lib/i18n'
+import { useI18n } from '../../../../../lib/i18n/provider'
 import { useTheme } from '../../../../../lib/theme'
 
 interface RoomModalProps {
@@ -43,6 +43,8 @@ function buildRoomDefaultValues(
         description?: string
         bedOptions?: string
         smokingAllowed?: boolean
+        imageUrl?: string
+        imageStorageId?: Id<'_storage'>
       }
     | null
     | undefined,
@@ -84,12 +86,36 @@ function getFirstErrorMessage(errors: unknown[] | undefined): string | null {
   return null
 }
 
+type RoomModalRoom = Parameters<typeof buildRoomDefaultValues>[0]
+
 export function RoomModal({ hotelId, roomId, onClose }: RoomModalProps) {
+  const room = useQuery(api.rooms.get, roomId ? { roomId } : 'skip')
+
+  if (roomId && room === undefined) {
+    return null
+  }
+
+  return (
+    <RoomModalContent
+      key={roomId ?? 'new-room'}
+      hotelId={hotelId}
+      roomId={roomId}
+      room={room}
+      onClose={onClose}
+    />
+  )
+}
+
+function RoomModalContent({
+  hotelId,
+  roomId,
+  room,
+  onClose,
+}: RoomModalProps & { room: RoomModalRoom }) {
   const { user } = useUser()
   const { t } = useI18n()
   const { theme } = useTheme()
   const isDark = theme === 'dark'
-  const room = useQuery(api.rooms.get, roomId ? { roomId } : 'skip')
   const createRoom = useMutation(api.rooms.create)
   const updateRoom = useMutation(api.rooms.update)
   const generateUploadUrl = useMutation(api.files.generateUploadUrl)
@@ -98,9 +124,9 @@ export function RoomModal({ hotelId, roomId, onClose }: RoomModalProps) {
   const [submitError, setSubmitError] = useState('')
   const [uploadingImage, setUploadingImage] = useState(false)
   const [selectedImageFile, setSelectedImageFile] = useState<File | null>(null)
-  const [imagePreviewUrl, setImagePreviewUrl] = useState('')
+  const [imagePreviewUrl, setImagePreviewUrl] = useState(room?.imageUrl ?? '')
   const [imageStorageId, setImageStorageId] = useState<Id<'_storage'> | null>(
-    null,
+    room?.imageStorageId ?? null,
   )
   const [imageChanged, setImageChanged] = useState(false)
   const [clearImage, setClearImage] = useState(false)
@@ -165,10 +191,10 @@ export function RoomModal({ hotelId, roomId, onClose }: RoomModalProps) {
           type: value.type,
           basePrice: Math.round(Number(value.basePrice.trim()) * 100),
           maxOccupancy: Number.parseInt(value.maxOccupancy.trim(), 10),
-          amenities: value.amenities
-            .split(',')
-            .map((item) => item.trim())
-            .filter(Boolean),
+          amenities: value.amenities.split(',').flatMap((item) => {
+            const trimmedItem = item.trim()
+            return trimmedItem ? [trimmedItem] : []
+          }),
           description: value.description.trim() || undefined,
           bedOptions: value.bedOptions.trim() || undefined,
           smokingAllowed: value.smokingAllowed,
@@ -215,16 +241,6 @@ export function RoomModal({ hotelId, roomId, onClose }: RoomModalProps) {
       }
     },
   })
-
-  useEffect(() => {
-    form.reset(buildRoomDefaultValues(room))
-    setSelectedImageFile(null)
-    setImagePreviewUrl(room?.imageUrl ?? '')
-    setImageStorageId(room?.imageStorageId ?? null)
-    setImageChanged(false)
-    setClearImage(false)
-    setSubmitError('')
-  }, [form, room, roomId])
 
   const isSubmitting = useStore(form.store, (state) => state.isSubmitting)
   const roomNumberError = getFirstErrorMessage(
@@ -297,6 +313,7 @@ export function RoomModal({ hotelId, roomId, onClose }: RoomModalProps) {
                     {t('admin.hotels.roomModal.roomNumber')}
                   </label>
                   <input
+                    aria-label={t('admin.hotels.roomModal.roomNumber')}
                     type="text"
                     value={field.state.value}
                     onChange={(event) => field.handleChange(event.target.value)}
@@ -351,6 +368,7 @@ export function RoomModal({ hotelId, roomId, onClose }: RoomModalProps) {
                     {t('admin.hotels.roomModal.pricePerNight')}
                   </label>
                   <input
+                    aria-label={t('admin.hotels.roomModal.pricePerNight')}
                     type="number"
                     min="1"
                     step="0.01"
@@ -380,6 +398,7 @@ export function RoomModal({ hotelId, roomId, onClose }: RoomModalProps) {
                     {t('admin.hotels.roomModal.maxOccupancy')}
                   </label>
                   <input
+                    aria-label={t('admin.hotels.roomModal.maxOccupancy')}
                     type="number"
                     min="1"
                     value={field.state.value}
@@ -409,6 +428,7 @@ export function RoomModal({ hotelId, roomId, onClose }: RoomModalProps) {
               {t('admin.hotels.roomModal.roomImageOptional')}
             </label>
             <input
+              aria-label={t('admin.hotels.roomModal.roomImageOptional')}
               type="file"
               accept="image/*"
               onChange={handleImageSelection}
@@ -457,6 +477,7 @@ export function RoomModal({ hotelId, roomId, onClose }: RoomModalProps) {
                   {t('admin.hotels.roomModal.amenities')}
                 </label>
                 <input
+                  aria-label={t('admin.hotels.roomModal.amenities')}
                   type="text"
                   value={field.state.value}
                   onChange={(event) => field.handleChange(event.target.value)}
@@ -471,8 +492,12 @@ export function RoomModal({ hotelId, roomId, onClose }: RoomModalProps) {
           <form.Field name="description">
             {(field) => (
               <div>
-                <label className={labelClass}>Description</label>
+                <label htmlFor="room-description" className={labelClass}>
+                  Description
+                </label>
                 <textarea
+                  id="room-description"
+                  aria-label={t('admin.hotels.roomModal.amenitiesPlaceholder')}
                   rows={4}
                   value={field.state.value}
                   onChange={(event) => field.handleChange(event.target.value)}
@@ -488,8 +513,12 @@ export function RoomModal({ hotelId, roomId, onClose }: RoomModalProps) {
             <form.Field name="bedOptions">
               {(field) => (
                 <div>
-                  <label className={labelClass}>Bed Options</label>
+                  <label htmlFor="room-bed-options" className={labelClass}>
+                    Bed Options
+                  </label>
                   <input
+                    id="room-bed-options"
+                    aria-label="Bed Options"
                     type="text"
                     value={field.state.value}
                     onChange={(event) => field.handleChange(event.target.value)}

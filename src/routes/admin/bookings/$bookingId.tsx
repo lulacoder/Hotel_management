@@ -14,11 +14,11 @@ import {
   XCircle,
 } from 'lucide-react'
 import { useState } from 'react'
-import { motion } from 'motion/react'
+import { m } from 'motion/react'
 
 import { api } from '../../../../convex/_generated/api'
 import { getAllowedBookingTransitions } from '../../../../convex/lib/bookingLifecycle'
-import { useI18n } from '../../../lib/i18n'
+import { useI18n } from '../../../lib/i18n/provider'
 import {
   formatPackageAddOn,
   getPackageLabelOrDefault,
@@ -57,7 +57,7 @@ function formatEtbAmount(amountMinor: number) {
   return etbCurrencyFormatter.format(amountMinor / 100)
 }
 
-function BookingDetailPage() {
+export function BookingDetailPage() {
   // Fetch booking graph + role context used for permissions and actions.
   const { bookingId } = Route.useParams()
   const typedBookingId = bookingId as Id<'bookings'>
@@ -214,7 +214,7 @@ function BookingDetailPage() {
     return (
       <div className="flex items-center justify-center py-20">
         <div
-          className={`animate-spin rounded-full h-8 w-8 border-2 ${isDark ? 'border-violet-500/20 border-t-violet-500' : 'border-violet-500/20 border-t-violet-500'}`}
+          className={`animate-spin rounded-full size-8 border-2 ${isDark ? 'border-violet-500/20 border-t-violet-500' : 'border-violet-500/20 border-t-violet-500'}`}
         ></div>
       </div>
     )
@@ -234,7 +234,7 @@ function BookingDetailPage() {
             search={{ status: 'all', paymentStatus: 'all', window: '30d' }}
             className="admin-button-secondary inline-flex items-center gap-2"
           >
-            <ArrowLeft className="w-4 h-4" />
+            <ArrowLeft className="size-4" />
             {t('admin.bookings.backToBookings')}
           </Link>
         </div>
@@ -246,24 +246,24 @@ function BookingDetailPage() {
   const StatusIcon = status.icon
 
   return (
-    <motion.div
+    <m.div
       className="max-w-4xl mx-auto"
       variants={containerVariants}
       initial="hidden"
       animate="visible"
     >
-      <motion.div variants={itemVariants}>
+      <m.div variants={itemVariants}>
         <Link
           to="/admin/bookings"
           search={{ status: 'all', paymentStatus: 'all', window: '30d' }}
           className={`inline-flex items-center gap-2 transition-colors mb-6 ${isDark ? 'text-slate-400 hover:text-slate-200' : 'text-slate-500 hover:text-slate-900'}`}
         >
-          <ArrowLeft className="w-4 h-4" />
+          <ArrowLeft className="size-4" />
           {t('admin.bookings.backToBookings')}
         </Link>
-      </motion.div>
+      </m.div>
 
-      <motion.div variants={itemVariants} className="admin-surface p-6 mb-6">
+      <m.div variants={itemVariants} className="admin-surface p-6 mb-6">
         <div className="flex items-center justify-between gap-4 mb-4">
           <h1
             className={`text-2xl font-semibold ${isDark ? 'text-slate-100' : 'text-slate-900'}`}
@@ -274,7 +274,7 @@ function BookingDetailPage() {
           <div
             className={`inline-flex items-center gap-2 px-3 py-1 rounded-lg text-sm font-medium ${status.bg} ${status.color} ${status.border} border`}
           >
-            <StatusIcon className="w-3.5 h-3.5" />
+            <StatusIcon className="size-3.5" />
             {status.label}
           </div>
         </div>
@@ -420,10 +420,10 @@ function BookingDetailPage() {
             </div>
           )}
         </div>
-      </motion.div>
+      </m.div>
 
       {chapaPayment && (
-        <motion.div variants={itemVariants} className="admin-surface p-6 mb-6">
+        <m.div variants={itemVariants} className="admin-surface p-6 mb-6">
           <h2
             className={`text-lg font-semibold mb-4 ${isDark ? 'text-slate-200' : 'text-slate-800'}`}
           >
@@ -496,15 +496,12 @@ function BookingDetailPage() {
               </p>
             </div>
           </div>
-        </motion.div>
+        </m.div>
       )}
 
       {canVerifyPayment &&
         bookingDetail.booking.status === 'pending_payment' && (
-          <motion.div
-            variants={itemVariants}
-            className="admin-surface p-6 mb-6"
-          >
+          <m.div variants={itemVariants} className="admin-surface p-6 mb-6">
             <h2
               className={`text-lg font-semibold mb-4 ${isDark ? 'text-slate-200' : 'text-slate-800'}`}
             >
@@ -531,7 +528,7 @@ function BookingDetailPage() {
                       onClick={handleCopyTransactionId}
                       className="admin-button-secondary inline-flex items-center gap-2 px-3 py-2 text-sm"
                     >
-                      <Copy className="w-4 h-4" />
+                      <Copy className="size-4" />
                       {t('common.copy')}
                     </button>
                   )}
@@ -554,7 +551,7 @@ function BookingDetailPage() {
                   <div
                     className={`flex items-center gap-2 text-sm ${isDark ? 'text-slate-400' : 'text-slate-500'}`}
                   >
-                    <Image className="w-4 h-4" />
+                    <Image className="size-4" />
                     <span>{t('admin.bookings.nationalIdUnavailable')}</span>
                   </div>
                 )}
@@ -562,26 +559,28 @@ function BookingDetailPage() {
 
               <div className="flex flex-wrap gap-2">
                 <button
+                  type="button"
                   onClick={handleVerifyPayment}
                   className="admin-button-soft px-3 py-2 text-sm inline-flex items-center gap-2 border-emerald-500/20 text-emerald-400 hover:bg-emerald-500/20"
                 >
-                  <CheckCircle className="w-4 h-4" />
+                  <CheckCircle className="size-4" />
                   {t('admin.bookings.approvePayment')}
                 </button>
                 <button
+                  type="button"
                   onClick={handleRejectPayment}
                   className="admin-button-destructive px-3 py-2 text-sm inline-flex items-center gap-2"
                 >
-                  <XCircle className="w-4 h-4" />
+                  <XCircle className="size-4" />
                   {t('admin.bookings.rejectPayment')}
                 </button>
               </div>
             </div>
-          </motion.div>
+          </m.div>
         )}
 
       {canManageBookings && (
-        <motion.div variants={itemVariants} className="admin-surface p-6">
+        <m.div variants={itemVariants} className="admin-surface p-6">
           <h2
             className={`text-lg font-semibold mb-4 ${isDark ? 'text-slate-200' : 'text-slate-800'}`}
           >
@@ -593,10 +592,11 @@ function BookingDetailPage() {
                 bookingDetail.booking.status,
               ) && (
                 <button
+                  type="button"
                   onClick={handleAcceptCashPayment}
                   className="admin-button-soft px-3 py-2 text-sm inline-flex items-center gap-2 border-emerald-500/20 text-emerald-400 hover:bg-emerald-500/20"
                 >
-                  <CircleDollarSign className="w-4 h-4" />
+                  <CircleDollarSign className="size-4" />
                   {t('admin.bookings.acceptCashPayment')}
                 </button>
               )}
@@ -606,10 +606,11 @@ function BookingDetailPage() {
                 bookingDetail.booking.status,
               ) && (
                 <button
+                  type="button"
                   onClick={() => setShowOutsourceModal(true)}
                   className="admin-button-soft px-3 py-2 text-sm inline-flex items-center gap-2 border-purple-500/20 text-purple-400 hover:bg-purple-500/20"
                 >
-                  <Hotel className="w-4 h-4" />
+                  <Hotel className="size-4" />
                   {t('admin.bookings.outsource')}
                 </button>
               )}
@@ -617,6 +618,7 @@ function BookingDetailPage() {
             {getAllowedBookingTransitions(bookingDetail.booking.status).map(
               (nextStatus) => (
                 <button
+                  type="button"
                   key={nextStatus}
                   onClick={() => handleStatusChange(nextStatus)}
                   className={`px-3 py-2 rounded-lg transition-colors text-sm font-medium border ${
@@ -630,7 +632,7 @@ function BookingDetailPage() {
               ),
             )}
           </div>
-        </motion.div>
+        </m.div>
       )}
 
       {showOutsourceModal && (
@@ -640,6 +642,6 @@ function BookingDetailPage() {
           onSuccess={() => setShowOutsourceModal(false)}
         />
       )}
-    </motion.div>
+    </m.div>
   )
 }

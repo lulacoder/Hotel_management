@@ -12,7 +12,7 @@ import {
   SlidersHorizontal,
 } from 'lucide-react'
 import { useState } from 'react'
-import { motion } from 'motion/react'
+import { m } from 'motion/react'
 import { useI18n } from '@/lib/i18n'
 import { useTheme } from '@/lib/theme'
 import {
@@ -61,7 +61,7 @@ function RoomsPage() {
   return (
     <div className="max-w-7xl mx-auto">
       {/* Header */}
-      <motion.div
+      <m.div
         className="mb-10"
         initial={{ opacity: 0, y: -12 }}
         animate={{ opacity: 1, y: 0 }}
@@ -78,10 +78,10 @@ function RoomsPage() {
         >
           {t('admin.rooms.description')}
         </p>
-      </motion.div>
+      </m.div>
 
       {/* Search — frosted glass */}
-      <motion.div
+      <m.div
         className="relative mb-8 group/search w-full min-w-0"
         initial={{ opacity: 0, y: 8 }}
         animate={{ opacity: 1, y: 0 }}
@@ -101,13 +101,13 @@ function RoomsPage() {
             }
           `}
         >
-          <motion.div
+          <m.div
             className="absolute left-4 top-1/2 -translate-y-1/2"
             animate={{ scale: searchFocused ? 1.15 : 1 }}
             transition={{ type: 'spring', stiffness: 400, damping: 20 }}
           >
             <Search
-              className={`w-5 h-5 transition-colors duration-300 ${
+              className={`size-5 transition-colors duration-300 ${
                 isDark
                   ? searchFocused
                     ? 'text-violet-400'
@@ -117,8 +117,9 @@ function RoomsPage() {
                     : 'text-slate-400'
               }`}
             />
-          </motion.div>
+          </m.div>
           <input
+            aria-label={t('admin.rooms.searchPlaceholder')}
             type="text"
             placeholder={t('admin.rooms.searchPlaceholder')}
             value={searchTerm}
@@ -132,11 +133,11 @@ function RoomsPage() {
             }`}
           />
         </div>
-      </motion.div>
+      </m.div>
 
       {/* Filter notice banner */}
       {search.operationalStatus !== 'all' && (
-        <motion.div
+        <m.div
           className={`mb-7 flex items-center gap-3 rounded-xl border px-5 py-3.5 text-sm overflow-hidden relative ${
             isDark
               ? 'border-violet-500/15 bg-violet-950/20 backdrop-blur-sm text-violet-100'
@@ -151,7 +152,7 @@ function RoomsPage() {
             className={`absolute left-0 top-0 bottom-0 w-[3px] rounded-l-xl ${isDark ? 'bg-gradient-to-b from-violet-400 to-violet-500' : 'bg-gradient-to-b from-violet-400 to-violet-600'}`}
           />
           <SlidersHorizontal
-            className={`h-4 w-4 flex-shrink-0 ml-1 ${isDark ? 'text-violet-300' : 'text-violet-600'}`}
+            className={`size-4 flex-shrink-0 ml-1 ${isDark ? 'text-violet-300' : 'text-violet-600'}`}
           />
           <span className={isDark ? 'text-violet-100/90' : 'text-violet-700'}>
             {t('admin.rooms.analyticsFilterNotice' as never, {
@@ -164,7 +165,7 @@ function RoomsPage() {
               ),
             })}
           </span>
-        </motion.div>
+        </m.div>
       )}
 
       {/* Hotels List */}
@@ -172,7 +173,7 @@ function RoomsPage() {
         <div className="flex items-center justify-center py-24">
           <div className="relative">
             <div
-              className={`animate-spin rounded-full h-9 w-9 border-2 ${isDark ? 'border-violet-500/20 border-t-violet-400' : 'border-violet-500/20 border-t-violet-500'}`}
+              className={`animate-spin rounded-full size-9 border-2 ${isDark ? 'border-violet-500/20 border-t-violet-400' : 'border-violet-500/20 border-t-violet-500'}`}
             />
             <div
               className={`absolute inset-0 rounded-full animate-ping opacity-20 border ${isDark ? 'border-violet-400' : 'border-violet-400'}`}
@@ -180,7 +181,7 @@ function RoomsPage() {
           </div>
         </div>
       ) : filteredHotels?.length === 0 ? (
-        <motion.div
+        <m.div
           className={`admin-empty-state relative p-14 overflow-hidden ${isDark ? '' : 'bg-white/80'}`}
           initial={{ opacity: 0, scale: 0.97 }}
           animate={{ opacity: 1, scale: 1 }}
@@ -195,14 +196,14 @@ function RoomsPage() {
 
           <div className="relative z-10">
             <div
-              className={`w-16 h-16 rounded-2xl flex items-center justify-center mx-auto mb-5 ${
+              className={`size-16 rounded-2xl flex items-center justify-center mx-auto mb-5 ${
                 isDark
                   ? 'bg-gradient-to-br from-slate-800 to-slate-800/60 border border-slate-700/40 shadow-lg shadow-slate-950/50'
                   : 'bg-slate-100 border border-slate-200'
               }`}
             >
               <Hotel
-                className={`w-8 h-8 ${isDark ? 'text-slate-500' : 'text-slate-400'}`}
+                className={`size-8 ${isDark ? 'text-slate-500' : 'text-slate-400'}`}
               />
             </div>
             <h3
@@ -230,15 +231,15 @@ function RoomsPage() {
                 }`}
               >
                 {t('admin.rooms.goToHotels')}
-                <ChevronRight className="w-4 h-4 transition-transform duration-300 group-hover/btn:translate-x-0.5" />
+                <ChevronRight className="size-4 transition-transform duration-300 group-hover/btn:translate-x-0.5" />
               </Link>
             )}
           </div>
-        </motion.div>
+        </m.div>
       ) : (
         <div className="space-y-3">
           {filteredHotels?.map((hotel, index) => (
-            <motion.div
+            <m.div
               key={hotel._id}
               initial={{ opacity: 0, y: 16 }}
               animate={{ opacity: 1, y: 0 }}
@@ -273,14 +274,14 @@ function RoomsPage() {
                 <div className="flex items-center gap-4">
                   {/* Icon with gradient background */}
                   <div
-                    className={`w-12 h-12 rounded-xl flex items-center justify-center transition-all duration-300 ${
+                    className={`size-12 rounded-xl flex items-center justify-center transition-all duration-300 ${
                       isDark
                         ? 'bg-gradient-to-br from-slate-800 to-violet-950/60 border border-slate-700/30 group-hover:border-violet-500/20 shadow-sm'
                         : 'bg-slate-100 border border-slate-200 group-hover:border-violet-300'
                     }`}
                   >
                     <Building2
-                      className={`w-6 h-6 transition-colors duration-300 ${isDark ? 'text-slate-400 group-hover:text-violet-400' : 'text-slate-400 group-hover:text-violet-500'}`}
+                      className={`size-6 transition-colors duration-300 ${isDark ? 'text-slate-400 group-hover:text-violet-400' : 'text-slate-400 group-hover:text-violet-500'}`}
                     />
                   </div>
                   <div>
@@ -298,7 +299,7 @@ function RoomsPage() {
                     <div
                       className={`flex items-center gap-2 text-sm mt-0.5 ${isDark ? 'text-slate-500' : 'text-slate-400'}`}
                     >
-                      <MapPin className="w-3.5 h-3.5" />
+                      <MapPin className="size-3.5" />
                       <span>
                         {hotel.city}, {hotel.country}
                       </span>
@@ -306,10 +307,10 @@ function RoomsPage() {
                   </div>
                 </div>
                 <ChevronRight
-                  className={`w-5 h-5 transition-all duration-300 group-hover:translate-x-1 ${isDark ? 'text-slate-600 group-hover:text-violet-400' : 'text-slate-400 group-hover:text-violet-500'}`}
+                  className={`size-5 transition-all duration-300 group-hover:translate-x-1 ${isDark ? 'text-slate-600 group-hover:text-violet-400' : 'text-slate-400 group-hover:text-violet-500'}`}
                 />
               </Link>
-            </motion.div>
+            </m.div>
           ))}
         </div>
       )}

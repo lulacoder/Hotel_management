@@ -26,7 +26,7 @@ import { api } from '../../convex/_generated/api'
 import { LanguageSwitcher } from '../components/LanguageSwitcher'
 import { ThemeToggle } from '../components/ThemeToggle'
 import { NotificationBell } from '../components/NotificationBell'
-import { useI18n } from '../lib/i18n'
+import { useI18n } from '../lib/i18n/provider'
 import { useTheme } from '../lib/theme'
 import { buildRedirectSearch } from '../lib/authRouting'
 import {
@@ -108,7 +108,7 @@ const ADMIN_NAV_ITEMS: Array<AdminNavItem> = [
   },
 ]
 
-function AdminLayout() {
+export function AdminLayout() {
   const { user, isLoaded, isSignedIn } = useUser()
   const location = useLocation()
   const { t } = useI18n()
@@ -133,8 +133,8 @@ function AdminLayout() {
         className={`flex min-h-screen items-center justify-center ${isDark ? 'bg-slate-950' : 'bg-slate-50'}`}
       >
         <div className="relative">
-          <div className="animate-spin rounded-full h-12 w-12 border-2 border-violet-500/20 border-t-violet-500"></div>
-          <div className="absolute inset-0 animate-ping rounded-full h-12 w-12 border border-violet-500/10"></div>
+          <div className="animate-spin rounded-full size-12 border-2 border-violet-500/20 border-t-violet-500"></div>
+          <div className="absolute inset-0 animate-ping rounded-full size-12 border border-violet-500/10"></div>
         </div>
       </div>
     )
@@ -152,8 +152,8 @@ function AdminLayout() {
         className={`flex min-h-screen items-center justify-center ${isDark ? 'bg-slate-950' : 'bg-slate-50'}`}
       >
         <div className="relative">
-          <div className="animate-spin rounded-full h-12 w-12 border-2 border-violet-500/20 border-t-violet-500"></div>
-          <div className="absolute inset-0 animate-ping rounded-full h-12 w-12 border border-violet-500/10"></div>
+          <div className="animate-spin rounded-full size-12 border-2 border-violet-500/20 border-t-violet-500"></div>
+          <div className="absolute inset-0 animate-ping rounded-full size-12 border border-violet-500/10"></div>
         </div>
       </div>
     )
@@ -172,8 +172,8 @@ function AdminLayout() {
               : 'bg-white shadow-slate-300/30'
           }`}
         >
-          <div className="w-20 h-20 bg-gradient-to-br from-red-500/20 to-red-600/10 rounded-2xl flex items-center justify-center mx-auto mb-6 border border-red-500/20">
-            <LogOut className="w-10 h-10 text-red-400" />
+          <div className="size-20 bg-gradient-to-br from-red-500/20 to-red-600/10 rounded-2xl flex items-center justify-center mx-auto mb-6 border border-red-500/20">
+            <LogOut className="size-10 text-red-400" />
           </div>
           <h1 className="text-2xl font-semibold text-red-400 mb-3 tracking-tight">
             {t('admin.accessDenied')}
@@ -237,6 +237,7 @@ function AdminLayout() {
     >
       {/* Mobile Menu Button - Only visible on small screens */}
       <button
+        type="button"
         onClick={() => setMobileMenuOpen(true)}
         className="md:hidden fixed top-4 left-4 z-[80] p-2.5 hover:bg-white/10 rounded-xl transition-all duration-300 group"
         aria-label={t('header.openMenu')}
@@ -282,6 +283,7 @@ function AdminLayout() {
             </div>
           </div>
           <button
+            type="button"
             onClick={() => setMobileMenuOpen(false)}
             className={`p-2.5 rounded-xl transition-all duration-300 group ${
               isDark ? 'hover:bg-white/5' : 'hover:bg-slate-100'
@@ -337,7 +339,7 @@ function AdminLayout() {
                 {({ isActive }) => (
                   <>
                     <item.icon
-                      className={`h-5 w-5 ${isActive ? 'text-violet-400' : ''}`}
+                      className={`size-5 ${isActive ? 'text-violet-400' : ''}`}
                     />
                     {t(`admin.nav.${item.key}` as never)}
                   </>
@@ -355,7 +357,7 @@ function AdminLayout() {
               afterSignOutUrl="/"
               appearance={{
                 elements: {
-                  avatarBox: 'w-9 h-9',
+                  avatarBox: 'size-9',
                 },
               }}
             />
@@ -377,7 +379,9 @@ function AdminLayout() {
       </aside>
 
       {/* Mobile Backdrop */}
-      <div
+      <button
+        type="button"
+        aria-label={t('header.closeMenu')}
         className={`md:hidden fixed inset-0 bg-black/60 backdrop-blur-sm z-[70] transition-all duration-500 ${
           mobileMenuOpen ? 'opacity-100' : 'opacity-0 pointer-events-none'
         }`}
@@ -455,7 +459,7 @@ function AdminLayout() {
                 {({ isActive }) => (
                   <>
                     <item.icon
-                      className={`h-5 w-5 ${isActive ? 'text-violet-400' : ''}`}
+                      className={`size-5 ${isActive ? 'text-violet-400' : ''}`}
                     />
                     {t(`admin.nav.${item.key}` as never)}
                   </>
@@ -474,7 +478,7 @@ function AdminLayout() {
               afterSignOutUrl="/"
               appearance={{
                 elements: {
-                  avatarBox: 'w-8 h-8',
+                  avatarBox: 'size-8',
                 },
               }}
             />

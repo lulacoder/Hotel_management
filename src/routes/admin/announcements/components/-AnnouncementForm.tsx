@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from 'react'
+import { useMemo, useState } from 'react'
 import { useMutation } from 'convex/react'
 import { toast } from 'sonner'
 import { AlertCircle, AlertTriangle, Info, Megaphone, X } from 'lucide-react'
@@ -6,7 +6,7 @@ import { useForm, useStore } from '@tanstack/react-form'
 import { z } from 'zod'
 
 import { api } from '../../../../../convex/_generated/api'
-import { useI18n } from '../../../../lib/i18n'
+import { useI18n } from '../../../../lib/i18n/provider'
 import { useTheme } from '../../../../lib/theme'
 import type { Id } from '../../../../../convex/_generated/dataModel'
 
@@ -141,15 +141,6 @@ export function AnnouncementForm({ editing, onClose }: AnnouncementFormProps) {
     },
   })
 
-  useEffect(() => {
-    form.reset({
-      title: editing?.title ?? '',
-      body: editing?.body ?? '',
-      priority: editing?.priority ?? 'normal',
-    })
-    setSubmitError('')
-  }, [editing?._id, editing?.body, editing?.priority, editing?.title, form])
-
   const isSubmitting = useStore(form.store, (state) => state.isSubmitting)
   const titleValue = useStore(form.store, (state) => state.values.title)
   const bodyValue = useStore(form.store, (state) => state.values.body)
@@ -160,19 +151,19 @@ export function AnnouncementForm({ editing, onClose }: AnnouncementFormProps) {
   const PriorityIcon = priorityConfig[priorityValue].icon
 
   return (
-    <div
-      className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 p-3 backdrop-blur-sm sm:p-4"
-      onClick={(event) => {
-        if (event.target === event.currentTarget) {
-          onClose()
-        }
-      }}
-    >
-      <div className="admin-modal-panel w-full max-w-lg max-h-[88vh] sm:max-h-[90vh]">
+    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 p-3 backdrop-blur-sm sm:p-4">
+      <button
+        type="button"
+        aria-label={t('common.close')}
+        className="absolute inset-0"
+        onClick={onClose}
+        disabled={isSubmitting}
+      />
+      <div className="admin-modal-panel relative w-full max-w-lg max-h-[88vh] sm:max-h-[90vh]">
         <div className="admin-modal-header px-5 py-4 sm:px-6">
           <div className="flex items-center gap-3">
-            <div className="flex h-9 w-9 items-center justify-center rounded-xl border border-violet-500/20 bg-violet-500/10">
-              <Megaphone className="h-4 w-4 text-violet-400" />
+            <div className="flex size-9 items-center justify-center rounded-xl border border-violet-500/20 bg-violet-500/10">
+              <Megaphone className="size-4 text-violet-400" />
             </div>
             <div>
               <h2
@@ -393,7 +384,7 @@ export function AnnouncementForm({ editing, onClose }: AnnouncementFormProps) {
               }`}
             >
               {isSubmitting ? (
-                <span className="h-3.5 w-3.5 animate-spin rounded-full border-2 border-white/30 border-t-white" />
+                <span className="size-3.5 animate-spin rounded-full border-2 border-white/30 border-t-white" />
               ) : null}
               {isSubmitting
                 ? isEditing

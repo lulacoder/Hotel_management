@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from 'react'
+import { useMemo, useState } from 'react'
 import { useMutation, useQuery } from '@/integrations/convex/hooks'
 import { useForm, useStore } from '@tanstack/react-form'
 import { z } from 'zod'
@@ -10,7 +10,7 @@ import {
   uploadImageToConvex,
   validateImageFile,
 } from '../../../../../lib/imageUpload'
-import { useI18n } from '../../../../../lib/i18n'
+import { useI18n } from '../../../../../lib/i18n/provider'
 import { getHotelCategoryLabel } from '../../../../../lib/hotelCategories'
 import { useTheme } from '../../../../../lib/theme'
 
@@ -69,6 +69,8 @@ function buildHotelDefaultValues(
         postalCode?: string
         lastRenovationDate?: string
         metadata?: Record<string, unknown>
+        imageUrl?: string
+        imageStorageId?: Id<'_storage'>
       }
     | null
     | undefined,
@@ -118,12 +120,34 @@ function getFirstErrorMessage(errors: unknown[] | undefined): string | null {
   return null
 }
 
+type HotelModalHotel = Parameters<typeof buildHotelDefaultValues>[0]
+
 export function HotelModal({ hotelId, onClose }: HotelModalProps) {
+  const hotel = useQuery(api.hotels.get, hotelId ? { hotelId } : 'skip')
+
+  if (hotelId && hotel === undefined) {
+    return null
+  }
+
+  return (
+    <HotelModalContent
+      key={hotelId ?? 'new-hotel'}
+      hotelId={hotelId}
+      hotel={hotel}
+      onClose={onClose}
+    />
+  )
+}
+
+function HotelModalContent({
+  hotelId,
+  hotel,
+  onClose,
+}: HotelModalProps & { hotel: HotelModalHotel }) {
   const { user } = useUser()
   const { t } = useI18n()
   const { theme } = useTheme()
   const isDark = theme === 'dark'
-  const hotel = useQuery(api.hotels.get, hotelId ? { hotelId } : 'skip')
   const createHotel = useMutation(api.hotels.create)
   const updateHotel = useMutation(api.hotels.update)
   const generateUploadUrl = useMutation(api.files.generateUploadUrl)
@@ -132,9 +156,9 @@ export function HotelModal({ hotelId, onClose }: HotelModalProps) {
   const [submitError, setSubmitError] = useState('')
   const [uploadingImage, setUploadingImage] = useState(false)
   const [selectedImageFile, setSelectedImageFile] = useState<File | null>(null)
-  const [imagePreviewUrl, setImagePreviewUrl] = useState('')
+  const [imagePreviewUrl, setImagePreviewUrl] = useState(hotel?.imageUrl ?? '')
   const [imageStorageId, setImageStorageId] = useState<Id<'_storage'> | null>(
-    null,
+    hotel?.imageStorageId ?? null,
   )
   const [imageChanged, setImageChanged] = useState(false)
   const [clearImage, setClearImage] = useState(false)
@@ -285,10 +309,10 @@ export function HotelModal({ hotelId, onClose }: HotelModalProps) {
           externalId: value.externalId.trim() || undefined,
           description: value.description.trim() || undefined,
           category: value.category || undefined,
-          tags: value.tags
-            .split(',')
-            .map((tag) => tag.trim())
-            .filter(Boolean),
+          tags: value.tags.split(',').flatMap((tag) => {
+            const trimmedTag = tag.trim()
+            return trimmedTag ? [trimmedTag] : []
+          }),
           parkingIncluded: value.parkingIncluded,
           rating,
           stateProvince: value.stateProvince.trim() || undefined,
@@ -335,16 +359,6 @@ export function HotelModal({ hotelId, onClose }: HotelModalProps) {
       }
     },
   })
-
-  useEffect(() => {
-    form.reset(buildHotelDefaultValues(hotel))
-    setSelectedImageFile(null)
-    setImagePreviewUrl(hotel?.imageUrl ?? '')
-    setImageStorageId(hotel?.imageStorageId ?? null)
-    setImageChanged(false)
-    setClearImage(false)
-    setSubmitError('')
-  }, [form, hotel, hotelId])
 
   const isSubmitting = useStore(form.store, (state) => state.isSubmitting)
   const labelClass = `mb-2 block text-sm font-medium ${
@@ -433,6 +447,7 @@ export function HotelModal({ hotelId, onClose }: HotelModalProps) {
                   {t('admin.hotels.modal.hotelName')}
                 </label>
                 <input
+                  aria-label={t('admin.hotels.modal.hotelName')}
                   type="text"
                   value={field.state.value}
                   onChange={(event) => field.handleChange(event.target.value)}
@@ -456,6 +471,7 @@ export function HotelModal({ hotelId, onClose }: HotelModalProps) {
                   {t('admin.hotels.modal.address')}
                 </label>
                 <input
+                  aria-label={t('admin.hotels.modal.address')}
                   type="text"
                   value={field.state.value}
                   onChange={(event) => field.handleChange(event.target.value)}
@@ -482,6 +498,7 @@ export function HotelModal({ hotelId, onClose }: HotelModalProps) {
                     {t('admin.hotels.modal.city')}
                   </label>
                   <input
+                    aria-label={t('admin.hotels.modal.city')}
                     type="text"
                     value={field.state.value}
                     onChange={(event) => field.handleChange(event.target.value)}
@@ -507,6 +524,7 @@ export function HotelModal({ hotelId, onClose }: HotelModalProps) {
                     {t('admin.hotels.modal.country')}
                   </label>
                   <input
+                    aria-label={t('admin.hotels.modal.country')}
                     type="text"
                     value={field.state.value}
                     onChange={(event) => field.handleChange(event.target.value)}
@@ -534,6 +552,7 @@ export function HotelModal({ hotelId, onClose }: HotelModalProps) {
                     {t('admin.hotels.modal.latitude')}
                   </label>
                   <input
+                    aria-label={t('admin.hotels.modal.latitude')}
                     type="number"
                     step="any"
                     value={field.state.value}
@@ -560,6 +579,7 @@ export function HotelModal({ hotelId, onClose }: HotelModalProps) {
                     {t('admin.hotels.modal.longitude')}
                   </label>
                   <input
+                    aria-label={t('admin.hotels.modal.longitude')}
                     type="number"
                     step="any"
                     value={field.state.value}
@@ -589,6 +609,7 @@ export function HotelModal({ hotelId, onClose }: HotelModalProps) {
                   {t('admin.hotels.modal.description')}
                 </label>
                 <textarea
+                  aria-label={t('admin.hotels.modal.description')}
                   rows={4}
                   value={field.state.value}
                   onChange={(event) => field.handleChange(event.target.value)}
@@ -605,6 +626,7 @@ export function HotelModal({ hotelId, onClose }: HotelModalProps) {
               {t('admin.hotels.modal.hotelImageOptional')}
             </label>
             <input
+              aria-label={t('admin.hotels.modal.hotelImageOptional')}
               type="file"
               accept="image/*"
               onChange={handleImageSelection}
@@ -654,6 +676,7 @@ export function HotelModal({ hotelId, onClose }: HotelModalProps) {
                     {t('admin.hotels.modal.externalId')}
                   </label>
                   <input
+                    aria-label={t('admin.hotels.modal.externalId')}
                     type="text"
                     value={field.state.value}
                     onChange={(event) => field.handleChange(event.target.value)}
@@ -703,6 +726,7 @@ export function HotelModal({ hotelId, onClose }: HotelModalProps) {
                     {t('admin.hotels.modal.stateProvince')}
                   </label>
                   <input
+                    aria-label={t('admin.hotels.modal.stateProvince')}
                     type="text"
                     value={field.state.value}
                     onChange={(event) => field.handleChange(event.target.value)}
@@ -723,6 +747,7 @@ export function HotelModal({ hotelId, onClose }: HotelModalProps) {
                     {t('admin.hotels.modal.postalCode')}
                   </label>
                   <input
+                    aria-label={t('admin.hotels.modal.postalCode')}
                     type="text"
                     value={field.state.value}
                     onChange={(event) => field.handleChange(event.target.value)}
@@ -743,6 +768,7 @@ export function HotelModal({ hotelId, onClose }: HotelModalProps) {
                     {t('admin.hotels.modal.rating')}
                   </label>
                   <input
+                    aria-label={t('admin.hotels.modal.rating')}
                     type="number"
                     step="0.1"
                     min="0"
@@ -771,6 +797,7 @@ export function HotelModal({ hotelId, onClose }: HotelModalProps) {
                     {t('admin.hotels.modal.lastRenovationDate')}
                   </label>
                   <input
+                    aria-label={t('admin.hotels.modal.lastRenovationDate')}
                     type="date"
                     value={field.state.value}
                     onChange={(event) => field.handleChange(event.target.value)}
@@ -789,6 +816,7 @@ export function HotelModal({ hotelId, onClose }: HotelModalProps) {
                   {t('admin.hotels.modal.tags')}
                 </label>
                 <input
+                  aria-label={t('admin.hotels.modal.tags')}
                   type="text"
                   value={field.state.value}
                   onChange={(event) => field.handleChange(event.target.value)}
@@ -807,6 +835,7 @@ export function HotelModal({ hotelId, onClose }: HotelModalProps) {
                   {t('admin.hotels.modal.metadata')}
                 </label>
                 <textarea
+                  aria-label={t('admin.hotels.modal.metadata')}
                   rows={5}
                   value={field.state.value}
                   onChange={(event) => field.handleChange(event.target.value)}

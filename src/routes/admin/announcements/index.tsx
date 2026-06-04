@@ -16,7 +16,7 @@ import { useState } from 'react'
 import { toast } from 'sonner'
 
 import { api } from '../../../../convex/_generated/api'
-import { useI18n } from '../../../lib/i18n'
+import { useI18n } from '../../../lib/i18n/provider'
 import { useTheme } from '../../../lib/theme'
 import { AnnouncementForm } from './components/-AnnouncementForm'
 import type { Id } from '../../../../convex/_generated/dataModel'
@@ -112,7 +112,7 @@ function AdminAnnouncementsPage() {
   if (profile === undefined || hotelAssignment === undefined) {
     return (
       <div className="flex items-center justify-center py-20">
-        <div className="animate-spin rounded-full h-8 w-8 border-2 border-violet-500/20 border-t-violet-500" />
+        <div className="animate-spin rounded-full size-8 border-2 border-violet-500/20 border-t-violet-500" />
       </div>
     )
   }
@@ -128,11 +128,11 @@ function AdminAnnouncementsPage() {
           }`}
         >
           <div
-            className={`w-16 h-16 rounded-2xl bg-red-500/10 border border-red-500/20 flex items-center justify-center mx-auto mb-4 ${
+            className={`size-16 rounded-2xl bg-red-500/10 border border-red-500/20 flex items-center justify-center mx-auto mb-4 ${
               isDark ? '' : 'shadow-sm'
             }`}
           >
-            <AlertTriangle className="w-8 h-8 text-red-400" />
+            <AlertTriangle className="size-8 text-red-400" />
           </div>
           <h2 className="text-xl font-semibold text-red-400 mb-2">
             {t('admin.announcements.accessDeniedTitle')}
@@ -223,6 +223,7 @@ function AdminAnnouncementsPage() {
           )}
         </div>
         <button
+          type="button"
           onClick={openCreate}
           className={`flex items-center gap-2 px-4 py-2.5 text-sm font-semibold rounded-xl transition-all shrink-0 ${
             isDark
@@ -238,13 +239,13 @@ function AdminAnnouncementsPage() {
       {/* Content */}
       {announcements === undefined ? (
         <div className="flex items-center justify-center py-12">
-          <div className="animate-spin rounded-full h-8 w-8 border-2 border-violet-500/20 border-t-violet-500" />
+          <div className="animate-spin rounded-full size-8 border-2 border-violet-500/20 border-t-violet-500" />
         </div>
       ) : announcements.length === 0 ? (
         <div className="admin-empty-state p-14">
           <div className="admin-empty-icon">
             <Megaphone
-              className={`w-8 h-8 ${isDark ? 'text-slate-500' : 'text-slate-400'}`}
+              className={`size-8 ${isDark ? 'text-slate-500' : 'text-slate-400'}`}
             />
           </div>
           <h2
@@ -258,6 +259,7 @@ function AdminAnnouncementsPage() {
             {t('admin.announcements.noneYetHint')}
           </p>
           <button
+            type="button"
             onClick={openCreate}
             className="admin-button-soft inline-flex items-center gap-2 text-sm"
           >
@@ -301,7 +303,7 @@ function AdminAnnouncementsPage() {
                   <div className="flex items-start gap-3">
                     {/* Priority icon */}
                     <div
-                      className={`mt-0.5 w-8 h-8 rounded-lg flex items-center justify-center shrink-0 ${meta.bg} border ${meta.border}`}
+                      className={`mt-0.5 size-8 rounded-lg flex items-center justify-center shrink-0 ${meta.bg} border ${meta.border}`}
                     >
                       <Icon size={15} className={meta.text} />
                     </div>
@@ -389,6 +391,7 @@ function AdminAnnouncementsPage() {
                     <div className="flex items-center gap-1 shrink-0">
                       {/* Toggle active */}
                       <button
+                        type="button"
                         onClick={() => handleToggle(ann._id, ann.isActive)}
                         title={
                           ann.isActive
@@ -414,6 +417,7 @@ function AdminAnnouncementsPage() {
 
                       {/* Edit */}
                       <button
+                        type="button"
                         onClick={() =>
                           openEdit({
                             _id: ann._id,
@@ -430,6 +434,7 @@ function AdminAnnouncementsPage() {
 
                       {/* Delete */}
                       <button
+                        type="button"
                         onClick={() => handleDelete(ann._id)}
                         title="Delete"
                         className={`admin-icon-button ${
@@ -450,7 +455,13 @@ function AdminAnnouncementsPage() {
       )}
 
       {/* Create / Edit modal */}
-      {formOpen && <AnnouncementForm editing={editing} onClose={closeForm} />}
+      {formOpen && (
+        <AnnouncementForm
+          key={editing?._id ?? 'new-announcement'}
+          editing={editing}
+          onClose={closeForm}
+        />
+      )}
     </div>
   )
 }

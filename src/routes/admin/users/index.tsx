@@ -3,9 +3,9 @@ import { createFileRoute } from '@tanstack/react-router'
 import { useUser } from '@clerk/clerk-react'
 import { Building2, Search } from 'lucide-react'
 import { useMemo, useState } from 'react'
-import { motion } from 'motion/react'
+import { m } from 'motion/react'
 import { api } from '../../../../convex/_generated/api'
-import { useI18n } from '../../../lib/i18n'
+import { useI18n } from '../../../lib/i18n/provider'
 import { useTheme } from '../../../lib/theme'
 import { AssignModal } from './components/-AssignModal'
 import type { Id } from '../../../../convex/_generated/dataModel'
@@ -96,7 +96,7 @@ function AdminUsersPage() {
 
   return (
     <div className="max-w-7xl mx-auto">
-      <motion.div
+      <m.div
         className="mb-8"
         initial={{ opacity: 0, y: -12 }}
         animate={{ opacity: 1, y: 0 }}
@@ -111,7 +111,7 @@ function AdminUsersPage() {
         <p className={isDark ? 'text-slate-400' : 'text-slate-500'}>
           {t('admin.users.description')}
         </p>
-      </motion.div>
+      </m.div>
 
       {error && (
         <div className="bg-red-500/10 border border-red-500/20 text-red-300 rounded-xl p-3 mb-4">
@@ -120,7 +120,7 @@ function AdminUsersPage() {
       )}
 
       {/* Search input for filtering users by email. */}
-      <motion.div
+      <m.div
         className="relative mb-6 w-full min-w-0"
         initial={{ opacity: 0, y: 8 }}
         animate={{ opacity: 1, y: 0 }}
@@ -130,16 +130,17 @@ function AdminUsersPage() {
           className={`absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 ${isDark ? 'text-slate-500' : 'text-slate-400'}`}
         />
         <input
+          aria-label={t('admin.users.searchPlaceholder')}
           type="text"
           placeholder={t('admin.users.searchPlaceholder')}
           value={searchQuery}
           onChange={(e) => setSearchQuery(e.target.value)}
           className="admin-field w-full min-w-0 !pl-12"
         />
-      </motion.div>
+      </m.div>
 
       {/* User list table with assignment status and actions. */}
-      <motion.div
+      <m.div
         className="admin-table-shell overflow-hidden"
         initial={{ opacity: 0, y: 12 }}
         animate={{ opacity: 1, y: 0 }}
@@ -298,7 +299,7 @@ function AdminUsersPage() {
             </tbody>
           </table>
         </div>
-      </motion.div>
+      </m.div>
 
       {selectedUserId && (
         <AssignModal

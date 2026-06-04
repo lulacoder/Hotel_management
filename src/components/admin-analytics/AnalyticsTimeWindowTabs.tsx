@@ -1,4 +1,4 @@
-import { motion } from 'motion/react'
+import { m } from 'motion/react'
 
 import { Tabs, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import type { AnalyticsWindow } from '@/lib/adminAnalytics'
@@ -23,7 +23,7 @@ export function AnalyticsTimeWindowTabs({ value, onChange }: Props) {
   }
 
   return (
-    <motion.div
+    <m.div
       initial={{ opacity: 0, y: 6 }}
       animate={{ opacity: 1, y: 0 }}
       transition={{ duration: 0.4, ease: 'easeOut' }}
@@ -55,6 +55,6 @@ export function AnalyticsTimeWindowTabs({ value, onChange }: Props) {
           ))}
         </TabsList>
       </Tabs>
-    </motion.div>
+    </m.div>
   )
 }

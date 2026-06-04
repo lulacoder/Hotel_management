@@ -18,10 +18,10 @@ import {
   Wrench,
   XCircle,
 } from 'lucide-react'
-import { useEffect, useState } from 'react'
+import { useEffect, useRef, useState } from 'react'
 
 import { api } from '../../../../convex/_generated/api'
-import { useI18n } from '../../../lib/i18n'
+import { useI18n } from '../../../lib/i18n/provider'
 import { useTheme } from '../../../lib/theme'
 import {
   normalizeAnalyticsWindow,
@@ -34,6 +34,13 @@ import type { Id } from '../../../../convex/_generated/dataModel'
 import { useMutation, useQuery } from '@/integrations/convex/hooks'
 import { Button } from '@/components/ui/button'
 
+const OPERATIONAL_STATUS_OPTIONS = [
+  'available',
+  'maintenance',
+  'cleaning',
+  'out_of_order',
+] as const
+
 export const Route = createFileRoute('/admin/hotels/$hotelId')({
   validateSearch: (search: Record<string, unknown>) => ({
     operationalStatus: normalizeRoomOperationalStatusFilter(
@@ -45,7 +52,7 @@ export const Route = createFileRoute('/admin/hotels/$hotelId')({
   component: HotelDetailPage,
 })
 
-function HotelDetailPage() {
+export function HotelDetailPage() {
   const { hotelId } = Route.useParams()
   const search = Route.useSearch()
   const { user } = useUser()
@@ -55,14 +62,13 @@ function HotelDetailPage() {
   const [editingRoom, setEditingRoom] = useState<Id<'rooms'> | null>(null)
   const [activeMenu, setActiveMenu] = useState<Id<'rooms'> | null>(null)
   const [showEditHotel, setShowEditHotel] = useState(false)
-  const [isHydrated, setIsHydrated] = useState(false)
   const [showBankAccountModal, setShowBankAccountModal] = useState(false)
   const [editingBankAccount, setEditingBankAccount] = useState<{
     _id: Id<'hotelBankAccounts'>
     bankName: string
     accountNumber: string
   } | null>(null)
-  const [bankAccountsBackfilled, setBankAccountsBackfilled] = useState(false)
+  const bankAccountsBackfilledRef = useRef(false)
   const { t, locale } = useI18n()
   const dateLocale = locale === 'am' ? 'am-ET' : 'en-US'
 
@@ -102,22 +108,18 @@ function HotelDetailPage() {
   )
 
   useEffect(() => {
-    setIsHydrated(true)
-  }, [])
-
-  useEffect(() => {
-    if (!canManagePaymentSettings || bankAccountsBackfilled) {
+    if (!canManagePaymentSettings || bankAccountsBackfilledRef.current) {
       return
     }
 
+    bankAccountsBackfilledRef.current = true
     backfillBankAccounts({ hotelId: hotelId as Id<'hotels'> })
       .catch(() => {})
       .finally(() => {
-        setBankAccountsBackfilled(true)
+        bankAccountsBackfilledRef.current = true
       })
   }, [
     backfillBankAccounts,
-    bankAccountsBackfilled,
     canManagePaymentSettings,
     hotelId,
   ])
@@ -209,13 +211,6 @@ function HotelDetailPage() {
     },
   }
 
-  const operationalStatusOptions = [
-    'available',
-    'maintenance',
-    'cleaning',
-    'out_of_order',
-  ] as const
-
   const roomTypeLabels: Record<string, string> = {
     budget: t('hotel.budgetRoom'),
     standard: t('hotel.standardRoom'),
@@ -223,11 +218,11 @@ function HotelDetailPage() {
     deluxe: t('hotel.deluxeRoom'),
   }
 
-  if (!isHydrated || hotel === undefined) {
+  if (hotel === undefined) {
     return (
       <div className="flex items-center justify-center py-20">
         <div
-          className={`animate-spin rounded-full h-8 w-8 border-2 ${isDark ? 'border-violet-500/20 border-t-violet-500' : 'border-violet-500/20 border-t-violet-500'}`}
+          className={`animate-spin rounded-full size-8 border-2 ${isDark ? 'border-violet-500/20 border-t-violet-500' : 'border-violet-500/20 border-t-violet-500'}`}
         ></div>
       </div>
     )
@@ -249,7 +244,7 @@ function HotelDetailPage() {
             to="/admin/hotels"
             className="admin-button-secondary inline-flex items-center gap-2"
           >
-            <ArrowLeft className="w-5 h-5" />
+            <ArrowLeft className="size-5" />
             {t('admin.hotels.backToHotels')}
           </Link>
         </div>
@@ -267,7 +262,7 @@ function HotelDetailPage() {
         to="/admin/hotels"
         className={`inline-flex items-center gap-2 transition-colors mb-6 ${isDark ? 'text-slate-400 hover:text-slate-200' : 'text-slate-500 hover:text-slate-800'}`}
       >
-        <ArrowLeft className="w-4 h-4" />
+        <ArrowLeft className="size-4" />
         {t('admin.hotels.backToHotels')}
       </Link>
 
@@ -283,7 +278,7 @@ function HotelDetailPage() {
             <div
               className={`flex items-center gap-2 mb-2 ${isDark ? 'text-slate-400' : 'text-slate-500'}`}
             >
-              <MapPin className="w-4 h-4" />
+              <MapPin className="size-4" />
               <span>{hotel.address}</span>
             </div>
             <p className={isDark ? 'text-slate-500' : 'text-slate-400'}>
@@ -297,7 +292,7 @@ function HotelDetailPage() {
             onClick={() => setShowEditHotel(true)}
             className="gap-2 px-4"
           >
-            <Edit className="w-4 h-4" />
+            <Edit className="size-4" />
             {t('admin.hotels.editHotel')}
           </Button>
         </div>
@@ -335,7 +330,7 @@ function HotelDetailPage() {
           {bankAccounts === undefined ? (
             <div className="flex items-center justify-center py-6">
               <div
-                className={`animate-spin rounded-full h-6 w-6 border-2 ${isDark ? 'border-violet-500/20 border-t-violet-500' : 'border-violet-500/20 border-t-violet-500'}`}
+                className={`animate-spin rounded-full size-6 border-2 ${isDark ? 'border-violet-500/20 border-t-violet-500' : 'border-violet-500/20 border-t-violet-500'}`}
               ></div>
             </div>
           ) : bankAccounts.length === 0 ? (
@@ -421,7 +416,7 @@ function HotelDetailPage() {
           onClick={() => setShowCreateRoom(true)}
           className="gap-2 px-4"
         >
-          <Plus className="w-5 h-5" />
+          <Plus className="size-5" />
           {t('admin.hotels.addRoom')}
         </Button>
       </div>
@@ -430,14 +425,14 @@ function HotelDetailPage() {
       {rooms === undefined ? (
         <div className="flex items-center justify-center py-12">
           <div
-            className={`animate-spin rounded-full h-8 w-8 border-2 ${isDark ? 'border-violet-500/20 border-t-violet-500' : 'border-violet-500/20 border-t-violet-500'}`}
+            className={`animate-spin rounded-full size-8 border-2 ${isDark ? 'border-violet-500/20 border-t-violet-500' : 'border-violet-500/20 border-t-violet-500'}`}
           ></div>
         </div>
       ) : rooms.length === 0 ? (
         <div className={`${cardClass} p-12 text-center`}>
           <div className="admin-empty-icon">
             <Building2
-              className={`w-8 h-8 ${isDark ? 'text-slate-600' : 'text-slate-400'}`}
+              className={`size-8 ${isDark ? 'text-slate-600' : 'text-slate-400'}`}
             />
           </div>
           <h3
@@ -455,7 +450,7 @@ function HotelDetailPage() {
             onClick={() => setShowCreateRoom(true)}
             className="gap-2 px-5"
           >
-            <Plus className="w-5 h-5" />
+            <Plus className="size-5" />
             {t('admin.hotels.addFirstRoom')}
           </Button>
         </div>
@@ -469,7 +464,7 @@ function HotelDetailPage() {
         <div className={`${cardClass} p-12 text-center`}>
           <div className="admin-empty-icon">
             <Building2
-              className={`w-8 h-8 ${isDark ? 'text-slate-600' : 'text-slate-400'}`}
+              className={`size-8 ${isDark ? 'text-slate-600' : 'text-slate-400'}`}
             />
           </div>
           <h3
@@ -483,19 +478,18 @@ function HotelDetailPage() {
         </div>
       ) : (
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-          {rooms
-            .filter((room) => {
-              if (search.operationalStatus === 'all') {
-                return true
+          {rooms.flatMap((room) => {
+              if (
+                search.operationalStatus !== 'all' &&
+                room.operationalStatus !== search.operationalStatus
+              ) {
+                return []
               }
 
-              return room.operationalStatus === search.operationalStatus
-            })
-            .map((room) => {
               const status = statusConfig[room.liveState]
               const StatusIcon = status.icon
 
-              return (
+              return [
                 <div
                   key={room._id}
                   className={`${cardClass} p-5 transition-all relative overflow-visible ${
@@ -518,7 +512,7 @@ function HotelDetailPage() {
                       className={`p-1.5 rounded-lg transition-colors ${isDark ? 'hover:bg-slate-800' : 'hover:bg-slate-100'}`}
                     >
                       <MoreVertical
-                        className={`w-4 h-4 ${isDark ? 'text-slate-500' : 'text-slate-400'}`}
+                        className={`size-4 ${isDark ? 'text-slate-500' : 'text-slate-400'}`}
                       />
                     </button>
 
@@ -535,7 +529,7 @@ function HotelDetailPage() {
                           }}
                           className="admin-menu-item flex items-center gap-3 px-4 py-2.5 w-full text-sm"
                         >
-                          <Pencil className="w-4 h-4" />
+                          <Pencil className="size-4" />
                           {t('admin.hotels.editRoom')}
                         </button>
                         <div
@@ -546,7 +540,7 @@ function HotelDetailPage() {
                         >
                           {t('admin.hotels.setStatus')}
                         </p>
-                        {operationalStatusOptions.map((key) => {
+                        {OPERATIONAL_STATUS_OPTIONS.map((key) => {
                           const config = statusConfig[key]
 
                           return (
@@ -562,7 +556,7 @@ function HotelDetailPage() {
                                     : 'text-slate-500'
                               }`}
                             >
-                              <config.icon className="w-4 h-4" />
+                              <config.icon className="size-4" />
                               {config.label}
                             </button>
                           )
@@ -577,7 +571,7 @@ function HotelDetailPage() {
                             isDark ? 'hover:bg-slate-700' : 'hover:bg-red-50'
                           }`}
                         >
-                          <Trash2 className="w-4 h-4" />
+                          <Trash2 className="size-4" />
                           {t('admin.hotels.deleteRoom')}
                         </button>
                       </div>
@@ -587,10 +581,10 @@ function HotelDetailPage() {
                   {/* Room Info */}
                   <div className="flex items-center gap-3 mb-4">
                     <div
-                      className={`w-12 h-12 rounded-xl flex items-center justify-center ${isDark ? 'bg-slate-800' : 'bg-slate-100'}`}
+                      className={`size-12 rounded-xl flex items-center justify-center ${isDark ? 'bg-slate-800' : 'bg-slate-100'}`}
                     >
                       <Building2
-                        className={`w-6 h-6 ${isDark ? 'text-slate-400' : 'text-slate-500'}`}
+                        className={`size-6 ${isDark ? 'text-slate-400' : 'text-slate-500'}`}
                       />
                     </div>
                     <div>
@@ -611,7 +605,7 @@ function HotelDetailPage() {
                   <div
                     className={`inline-flex items-center gap-2 px-3 py-1.5 rounded-lg text-sm font-medium ${status.bg} ${status.color} ${status.border} border mb-4`}
                   >
-                    <StatusIcon className="w-3.5 h-3.5" />
+                    <StatusIcon className="size-3.5" />
                     {status.label}
                   </div>
 
@@ -620,7 +614,7 @@ function HotelDetailPage() {
                     <div
                       className={`flex items-center gap-2 ${isDark ? 'text-slate-400' : 'text-slate-500'}`}
                     >
-                      <DollarSign className="w-4 h-4" />
+                      <DollarSign className="size-4" />
                       <span>
                         ${(room.basePrice / 100).toFixed(2)}/{t('hotel.night')}
                       </span>
@@ -628,7 +622,7 @@ function HotelDetailPage() {
                     <div
                       className={`flex items-center gap-2 ${isDark ? 'text-slate-400' : 'text-slate-500'}`}
                     >
-                      <Users className="w-4 h-4" />
+                      <Users className="size-4" />
                       <span>
                         {t('admin.hotels.maxOccupancy', {
                           count: room.maxOccupancy,
@@ -662,8 +656,8 @@ function HotelDetailPage() {
                       </div>
                     </div>
                   )}
-                </div>
-              )
+                </div>,
+              ]
             })}
         </div>
       )}
@@ -686,7 +680,7 @@ function HotelDetailPage() {
         {ratings === undefined ? (
           <div className="flex items-center justify-center py-8">
             <div
-              className={`animate-spin rounded-full h-6 w-6 border-2 ${isDark ? 'border-violet-500/20 border-t-violet-500' : 'border-violet-500/20 border-t-violet-500'}`}
+              className={`animate-spin rounded-full size-6 border-2 ${isDark ? 'border-violet-500/20 border-t-violet-500' : 'border-violet-500/20 border-t-violet-500'}`}
             ></div>
           </div>
         ) : ratings.length === 0 ? (
@@ -706,7 +700,7 @@ function HotelDetailPage() {
                         {[1, 2, 3, 4, 5].map((value) => (
                           <Star
                             key={value}
-                            className={`w-4 h-4 ${
+                            className={`size-4 ${
                               value <= rating.rating
                                 ? 'text-amber-400 fill-amber-400'
                                 : isDark
@@ -748,7 +742,7 @@ function HotelDetailPage() {
                     className="admin-icon-button hover:bg-red-500/10 hover:text-red-400 text-red-400"
                     aria-label={t('admin.hotels.deleteRating')}
                   >
-                    <Trash2 className="w-4 h-4" />
+                    <Trash2 className="size-4" />
                   </button>
                 </div>
               </div>
@@ -779,6 +773,7 @@ function HotelDetailPage() {
 
       {showBankAccountModal && (
         <BankAccountModal
+          key={editingBankAccount?._id ?? 'new-bank-account'}
           hotelId={hotelId as Id<'hotels'>}
           account={editingBankAccount}
           onClose={() => {
@@ -790,7 +785,9 @@ function HotelDetailPage() {
 
       {/* Click outside to close menu */}
       {activeMenu && (
-        <div
+        <button
+          type="button"
+          aria-label={t('common.close')}
           className="fixed inset-0 z-30"
           onClick={() => setActiveMenu(null)}
         />

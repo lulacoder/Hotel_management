@@ -1,4 +1,4 @@
-import { motion } from 'motion/react'
+import { m } from 'motion/react'
 import {
   Bar,
   BarChart,
@@ -69,7 +69,7 @@ function OccupancyGauge({ point, isDark }: { point: Point; isDark: boolean }) {
 
   return (
     <div className="relative mx-auto w-full max-w-[220px]">
-      <motion.svg
+      <m.svg
         viewBox="0 0 200 115"
         className="w-full overflow-visible"
         initial={{ opacity: 0 }}
@@ -109,7 +109,7 @@ function OccupancyGauge({ point, isDark }: { point: Point; isDark: boolean }) {
         />
 
         {/* Filled arc */}
-        <motion.path
+        <m.path
           d={arcPath(GAUGE_CX, GAUGE_CY, GAUGE_R)}
           fill="none"
           stroke={`url(#${gradId})`}
@@ -146,11 +146,11 @@ function OccupancyGauge({ point, isDark }: { point: Point; isDark: boolean }) {
             />
           )
         })}
-      </motion.svg>
+      </m.svg>
 
       {/* Center text */}
       <div className="absolute inset-0 flex flex-col items-center justify-end pb-1">
-        <motion.p
+        <m.p
           className={`text-5xl font-semibold tracking-tight ${isDark ? 'text-slate-50' : 'text-slate-900'}`}
           style={{
             fontFamily: 'var(--font-heading)',
@@ -166,15 +166,15 @@ function OccupancyGauge({ point, isDark }: { point: Point; isDark: boolean }) {
           >
             %
           </span>
-        </motion.p>
-        <motion.p
+        </m.p>
+        <m.p
           className={`mt-0.5 text-xs tracking-wide ${isDark ? 'text-slate-500' : 'text-slate-400'}`}
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
           transition={{ duration: 0.4, delay: 0.7 }}
         >
           {point.occupiedRooms}/{point.totalRooms} rooms
-        </motion.p>
+        </m.p>
       </div>
     </div>
   )
@@ -259,7 +259,7 @@ export function AnalyticsOccupancyCard({
   }))
 
   return (
-    <motion.div
+    <m.div
       initial={{ opacity: 0, y: 12, scale: 0.97 }}
       animate={{ opacity: 1, y: 0, scale: 1 }}
       transition={{ duration: 0.5, ease: [0.23, 1, 0.32, 1] }}
@@ -307,14 +307,14 @@ export function AnalyticsOccupancyCard({
                 : 'border-emerald-400/30 bg-emerald-50'
             }`}
           >
-            <span className="relative flex h-1.5 w-1.5">
+            <span className="relative flex size-1.5">
               <span
-                className={`absolute inline-flex h-full w-full animate-ping rounded-full duration-[2000ms] ${
+                className={`absolute inline-flex size-full animate-ping rounded-full duration-[2000ms] ${
                   isDark ? 'bg-emerald-400/60' : 'bg-emerald-500/50'
                 }`}
               />
               <span
-                className={`relative inline-flex h-1.5 w-1.5 rounded-full ${isDark ? 'bg-emerald-400' : 'bg-emerald-500'}`}
+                className={`relative inline-flex size-1.5 rounded-full ${isDark ? 'bg-emerald-400' : 'bg-emerald-500'}`}
               />
             </span>
             <span
@@ -405,6 +405,6 @@ export function AnalyticsOccupancyCard({
           </>
         )}
       </div>
-    </motion.div>
+    </m.div>
   )
 }

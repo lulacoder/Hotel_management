@@ -1,11 +1,11 @@
-import { useEffect, useMemo, useState } from 'react'
+import { useMemo, useState } from 'react'
 import { useMutation } from 'convex/react'
 import { useForm, useStore } from '@tanstack/react-form'
 import { z } from 'zod'
 
 import { api } from '../../../../../../convex/_generated/api'
 import type { Id } from '../../../../../../convex/_generated/dataModel'
-import { useI18n } from '../../../../../lib/i18n'
+import { useI18n } from '../../../../../lib/i18n/provider'
 import { useTheme } from '../../../../../lib/theme'
 
 interface BankAccountModalProps {
@@ -108,14 +108,6 @@ export function BankAccountModal({
     },
   })
 
-  useEffect(() => {
-    form.reset({
-      bankName: account?.bankName ?? '',
-      accountNumber: account?.accountNumber ?? '',
-    })
-    setSubmitError('')
-  }, [account?._id, account?.accountNumber, account?.bankName, form])
-
   const isSubmitting = useStore(form.store, (state) => state.isSubmitting)
   const bankNameError = getFirstErrorMessage(
     form.getFieldMeta('bankName')?.errors,
@@ -162,6 +154,7 @@ export function BankAccountModal({
                   {t('admin.hotels.payment.bankName')}
                 </label>
                 <input
+                  aria-label={t('admin.hotels.payment.bankName')}
                   type="text"
                   value={field.state.value}
                   onChange={(event) => field.handleChange(event.target.value)}
@@ -191,6 +184,7 @@ export function BankAccountModal({
                   {t('admin.hotels.payment.accountNumber')}
                 </label>
                 <input
+                  aria-label={t('admin.hotels.payment.accountNumber')}
                   type="text"
                   value={field.state.value}
                   onChange={(event) => field.handleChange(event.target.value)}

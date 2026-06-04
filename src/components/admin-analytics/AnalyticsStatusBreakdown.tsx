@@ -1,5 +1,5 @@
 import { useCallback, useState } from 'react'
-import { motion } from 'motion/react'
+import { m } from 'motion/react'
 import { Cell, Pie, PieChart, ResponsiveContainer, Tooltip } from 'recharts'
 import { AnalyticsEmptyState } from './AnalyticsEmptyState'
 import { useTheme } from '@/lib/theme'
@@ -72,7 +72,7 @@ function DonutTooltip({
     >
       <div className="flex items-center gap-2">
         <span
-          className="inline-block h-2.5 w-2.5 rounded-full"
+          className="inline-block size-2.5 rounded-full"
           style={{ backgroundColor: item.fill }}
         />
         <span
@@ -147,7 +147,7 @@ export function AnalyticsStatusBreakdown({
   const palette = isDark ? PALETTE_DARK : PALETTE_LIGHT
 
   return (
-    <motion.div
+    <m.div
       initial={{ opacity: 0, y: 12, scale: 0.97 }}
       animate={{ opacity: 1, y: 0, scale: 1 }}
       transition={{ duration: 0.45, ease: [0.23, 1, 0.32, 1] }}
@@ -210,7 +210,7 @@ export function AnalyticsStatusBreakdown({
                       filter: isActive
                         ? `drop-shadow(0 0 8px ${palette[index % palette.length]})`
                         : 'none',
-                      transition: 'filter 0.2s ease, stroke-width 0.2s ease',
+                      transition: 'filter 0.2s ease, transform 0.2s ease',
                       transform: isActive ? 'scale(1.04)' : 'scale(1)',
                       transformOrigin: 'center',
                     }}
@@ -254,7 +254,7 @@ export function AnalyticsStatusBreakdown({
       />
 
       {/* Legend list */}
-      <motion.div
+      <m.div
         variants={containerVariants}
         initial="hidden"
         animate="visible"
@@ -266,7 +266,7 @@ export function AnalyticsStatusBreakdown({
           const isHovered = activeIndex === index
 
           const row = (
-            <motion.div
+            <m.div
               variants={itemVariants}
               className={`group/item flex items-center gap-3 rounded-lg px-3 py-2 transition-all duration-200 ${
                 isHovered
@@ -285,14 +285,16 @@ export function AnalyticsStatusBreakdown({
               onMouseLeave={() => setActiveIndex(null)}
             >
               {/* Color dot */}
-              <span
-                className="inline-block h-2.5 w-2.5 shrink-0 rounded-full transition-transform duration-200"
-                style={{
-                  backgroundColor: color,
-                  boxShadow: isHovered ? `0 0 8px ${color}` : 'none',
-                  transform: isHovered ? 'scale(1.3)' : 'scale(1)',
-                }}
-              />
+              <span className="inline-block size-2.5 shrink-0 rounded-full overflow-hidden">
+                <span
+                  className="block size-full rounded-full transition-transform duration-200"
+                  style={{
+                    backgroundColor: color,
+                    boxShadow: isHovered ? `0 0 8px ${color}` : 'none',
+                    transform: isHovered ? 'scale(1.3)' : 'scale(1)',
+                  }}
+                />
+              </span>
 
               {/* Label */}
               <span
@@ -315,7 +317,7 @@ export function AnalyticsStatusBreakdown({
               >
                 {item.count.toLocaleString()}
               </span>
-            </motion.div>
+            </m.div>
           )
 
           if (!onItemClick) {
@@ -333,7 +335,7 @@ export function AnalyticsStatusBreakdown({
             </button>
           )
         })}
-      </motion.div>
-    </motion.div>
+      </m.div>
+    </m.div>
   )
 }
