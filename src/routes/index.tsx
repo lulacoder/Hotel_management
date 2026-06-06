@@ -1,6 +1,6 @@
 // Public landing page route with entry actions for browsing or authentication.
 import { useAuth } from '@clerk/clerk-react'
-import { Link, createFileRoute } from '@tanstack/react-router'
+import { Link, Navigate, createFileRoute } from '@tanstack/react-router'
 import {
   ArrowRight,
   BedDouble,
@@ -43,26 +43,10 @@ function LandingPage() {
   const { isSignedIn, isLoaded } = useAuth()
   const { t } = useI18n()
 
-  // Signed-in users should continue to role-aware post-login routing.
+  // Signed-in users should continue through role-aware post-login routing
+  // instead of sitting on a passive loading screen.
   if (isLoaded && isSignedIn) {
-    return (
-      <div className="min-h-screen flex items-center justify-center bg-slate-950">
-        <div className="text-center">
-          <div className="relative mx-auto mb-6">
-            <div className="animate-spin rounded-full size-12 border-2 border-violet-500/20 border-t-violet-500"></div>
-            <div className="absolute inset-0 animate-ping rounded-full size-12 border border-violet-500/10"></div>
-          </div>
-          <p className="text-slate-400 mb-2">{t('landing.redirecting')}</p>
-          <Link
-            to="/post-login"
-            search={DEFAULT_AUTH_SEARCH}
-            className="text-violet-400 hover:text-violet-300 text-sm transition-colors"
-          >
-            {t('landing.clickIfNotRedirected')}
-          </Link>
-        </div>
-      </div>
-    )
+    return <Navigate to="/post-login" search={DEFAULT_AUTH_SEARCH} replace />
   }
 
   return (
