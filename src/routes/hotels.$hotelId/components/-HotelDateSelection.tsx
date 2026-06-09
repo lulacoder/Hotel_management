@@ -1,4 +1,5 @@
 import { useI18n } from '../../../lib/i18n/provider'
+import { DatePicker } from '@/components/ui/date-picker'
 
 interface HotelDateSelectionProps {
   checkIn: string
@@ -48,13 +49,11 @@ export function HotelDateSelection({
           <label className="mb-2 block text-sm text-slate-400">
             {t('booking.checkIn')}
           </label>
-          <input
-            aria-label={t('booking.checkIn')}
-            type="date"
+          <DatePicker
+            ariaLabel={t('booking.checkIn')}
             value={checkIn}
             min={today}
-            onChange={(event) => {
-              const nextCheckIn = event.target.value
+            onChange={(nextCheckIn) => {
               onCheckInChange(nextCheckIn)
 
               if (
@@ -64,27 +63,23 @@ export function HotelDateSelection({
                 onCheckOutChange(addDays(nextCheckIn, 1))
               }
             }}
-            className="hotel-date-input w-full rounded-xl border border-slate-700 bg-slate-800/50 px-4 py-3 text-slate-200 transition-all focus:border-violet-500/50 focus:outline-none"
           />
         </div>
         <div className="flex-1">
           <label className="mb-2 block text-sm text-slate-400">
             {t('booking.checkOut')}
           </label>
-          <input
-            aria-label={t('booking.checkOut')}
-            type="date"
+          <DatePicker
+            ariaLabel={t('booking.checkOut')}
             value={checkOut}
             min={minCheckOut}
-            onChange={(event) => {
-              const nextCheckOut = event.target.value
+            onChange={(nextCheckOut) => {
               onCheckOutChange(
                 nextCheckOut && nextCheckOut < minCheckOut
                   ? minCheckOut
                   : nextCheckOut,
               )
             }}
-            className="hotel-date-input w-full rounded-xl border border-slate-700 bg-slate-800/50 px-4 py-3 text-slate-200 transition-all focus:border-violet-500/50 focus:outline-none"
           />
         </div>
         {nights > 0 && (

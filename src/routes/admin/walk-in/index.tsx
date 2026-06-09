@@ -2,7 +2,6 @@
 import { createFileRoute, useNavigate } from '@tanstack/react-router'
 import { useUser } from '@clerk/clerk-react'
 import { useMemo, useState } from 'react'
-import { useMutation, useQuery } from '@/integrations/convex/hooks'
 import { Calendar, CheckCircle, Search, UserRound } from 'lucide-react'
 import { m } from 'motion/react'
 
@@ -12,10 +11,12 @@ import {
   getPackageByType,
   getPackageLabel,
 } from '../../../lib/packages'
-import type { Id } from '../../../../convex/_generated/dataModel'
-import type { PackageType } from '../../../lib/packages'
 import { useI18n } from '../../../lib/i18n/provider'
 import { useTheme } from '../../../lib/theme'
+import type { Id } from '../../../../convex/_generated/dataModel'
+import type { PackageType } from '../../../lib/packages'
+import { DatePicker } from '@/components/ui/date-picker'
+import { useMutation, useQuery } from '@/integrations/convex/hooks'
 
 export const Route = createFileRoute('/admin/walk-in/')({
   // Register walk-in booking route for hotel cashier/admin workflows.
@@ -411,19 +412,17 @@ function WalkInBookingPage() {
         </div>
 
         <div className="grid grid-cols-1 md:grid-cols-2 gap-3 mb-4">
-          <input
-            aria-label={t('admin.walkIn.step2')}
-            type="date"
+          <DatePicker
+            ariaLabel={t('admin.walkIn.step2')}
             value={checkIn}
-            onChange={(e) => setCheckIn(e.target.value)}
-            className={`hotel-date-input px-4 py-3 rounded-xl focus:outline-none transition-all ${inputClass}`}
+            min={today}
+            onChange={setCheckIn}
           />
-          <input
-            aria-label={t('admin.walkIn.step2')}
-            type="date"
+          <DatePicker
+            ariaLabel={t('admin.walkIn.step2')}
             value={checkOut}
-            onChange={(e) => setCheckOut(e.target.value)}
-            className={`hotel-date-input px-4 py-3 rounded-xl focus:outline-none transition-all ${inputClass}`}
+            min={checkIn || today}
+            onChange={setCheckOut}
           />
         </div>
 
