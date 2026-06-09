@@ -283,7 +283,8 @@ html[data-theme='light'] .bg-slate-900\/70 {
 }
 
 html[data-theme='light'] .bg-slate-900\/80,
-html[data-theme='light'] .bg-slate-900\/50 {
+html[data-theme='light'] .bg-slate-900\/50,
+html[data-theme='light'] .bg-slate-900\/40 {
   background-color: rgb(241 245 249 / 0.8);
 }
 

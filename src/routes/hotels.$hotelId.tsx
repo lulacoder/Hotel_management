@@ -256,7 +256,7 @@ export function HotelDetailPage() {
         {(hotel.description || (hotel.tags && hotel.tags.length > 0)) && (
           <div className="mt-8 rounded-2xl border border-slate-800/50 bg-slate-900/40 p-5">
             {hotel.description && (
-              <p className="text-sm leading-relaxed text-slate-400">
+              <p className="text-base leading-relaxed text-slate-300">
                 {hotel.description}
               </p>
             )}

@@ -147,7 +147,7 @@ export function HotelGrid({
                   <div className="absolute top-4 left-4 right-4 flex items-start justify-between">
                     {hotel.category && (
                       <span
-                        className={`px-2 py-1 rounded-lg text-xs font-medium border ${categoryColors[hotel.category] || 'bg-slate-500/20 text-slate-300 border-slate-500/30'}`}
+                        className={`px-2 py-1 rounded-lg text-xs font-medium border shadow-sm ${categoryColors[hotel.category] || 'bg-slate-700 text-slate-50 border-slate-500/40'}`}
                       >
                         {getHotelCategoryLabel(hotel.category, t)}
                       </span>
