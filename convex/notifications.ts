@@ -3,6 +3,7 @@ import {
   paginationResultValidator,
 } from 'convex/server'
 import { ConvexError, v } from 'convex/values'
+import { internal } from './_generated/api'
 import { internalMutation, mutation, query } from './_generated/server'
 import { requireUser } from './lib/auth'
 
@@ -30,6 +31,31 @@ const notificationValidator = v.object({
 })
 
 const MAX_UNREAD_BADGE_COUNT = 99
+
+// Maps a notification type + message to the push title/body shown on the
+// device's notification tray. Returns null when no push should be sent
+// (staff-only types; the customer-facing mobile app doesn't surface these).
+function mapNotificationToPush(
+  type:
+    | 'booking_payment_proof_submitted'
+    | 'booking_confirmed'
+    | 'booking_cancelled'
+    | 'booking_payment_rejected',
+  message: string,
+): { title: string; body: string } | null {
+  switch (type) {
+    case 'booking_confirmed':
+      return { title: 'Booking confirmed', body: message }
+    case 'booking_cancelled':
+      return { title: 'Booking cancelled', body: message }
+    case 'booking_payment_rejected':
+      return { title: 'Payment needs attention', body: message }
+    case 'booking_payment_proof_submitted':
+      return null
+    default:
+      return null
+  }
+}
 
 // ---------------------------------------------------------------------------
 // Queries
@@ -155,6 +181,7 @@ export const clearAll = mutation({
 // ---------------------------------------------------------------------------
 
 // Creates a single notification record. Called from booking mutations.
+// Also schedules an Expo push for notification types that have a push mapping.
 export const createNotification = internalMutation({
   args: {
     userId: v.id('users'),
@@ -165,7 +192,7 @@ export const createNotification = internalMutation({
   },
   returns: v.id('notifications'),
   handler: async (ctx, args) => {
-    return await ctx.db.insert('notifications', {
+    const notificationId = await ctx.db.insert('notifications', {
       userId: args.userId,
       type: args.type,
       bookingId: args.bookingId,
@@ -174,6 +201,18 @@ export const createNotification = internalMutation({
       isRead: false,
       createdAt: Date.now(),
     })
+
+    const push = mapNotificationToPush(args.type, args.message)
+    if (push) {
+      await ctx.scheduler.runAfter(0, internal.push.sendExpoPush, {
+        userId: args.userId,
+        title: push.title,
+        body: push.body,
+        data: { bookingId: args.bookingId, type: args.type },
+      })
+    }
+
+    return notificationId
   },
 })
 

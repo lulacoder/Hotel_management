@@ -39,6 +39,8 @@ import type * as lib_dates from "../lib/dates.js";
 import type * as notifications from "../notifications.js";
 import type * as notificationsInternal from "../notificationsInternal.js";
 import type * as paymentEmails from "../paymentEmails.js";
+import type * as push from "../push.js";
+import type * as pushTokens from "../pushTokens.js";
 import type * as ratings from "../ratings.js";
 import type * as rooms from "../rooms.js";
 import type * as seed from "../seed.js";
@@ -82,6 +84,8 @@ declare const fullApi: ApiFromModules<{
   notifications: typeof notifications;
   notificationsInternal: typeof notificationsInternal;
   paymentEmails: typeof paymentEmails;
+  push: typeof push;
+  pushTokens: typeof pushTokens;
   ratings: typeof ratings;
   rooms: typeof rooms;
   seed: typeof seed;

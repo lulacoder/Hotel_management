@@ -298,6 +298,18 @@ export default defineSchema({
     .index('by_user_and_is_read', ['userId', 'isRead'])
     .index('by_created_at', ['createdAt']),
 
+  // Expo push notification tokens — one row per (user, device).
+  // Multiple rows per user are allowed (multi-device).
+  pushTokens: defineTable({
+    userId: v.id('users'),
+    token: v.string(), // ExponentPushToken[...]
+    platform: v.union(v.literal('ios'), v.literal('android')),
+    createdAt: v.number(),
+    lastSeenAt: v.number(),
+  })
+    .index('by_user', ['userId'])
+    .index('by_token', ['token']),
+
   // Audit events table for tracking changes
   auditEvents: defineTable({
     actorId: v.id('users'),
