@@ -456,6 +456,11 @@ export const enMessages = {
   'admin.bookings.outsourceModal.success': 'Outsourced ✓',
   'admin.bookings.outsourceModal.submit': 'Outsource Booking →',
   'admin.hotels.confirmDelete': 'Are you sure you want to delete this hotel?',
+  'admin.hotels.confirmDeleteTitle': 'Delete Hotel?',
+  'admin.hotels.confirmDeleteWarning':
+    'This will remove the hotel and hide its rooms from guests. This action cannot be easily undone.',
+  'admin.hotels.deleting': 'Deleting...',
+  'common.delete': 'Delete',
   'admin.hotels.description': 'Manage your hotel properties and locations.',
   'admin.hotels.addHotel': 'Add Hotel',
   'admin.hotels.searchPlaceholder':

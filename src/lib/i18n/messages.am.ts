@@ -446,6 +446,11 @@ export const amMessages = {
   'admin.bookings.outsourceModal.success': 'Outsourced ✓',
   'admin.bookings.outsourceModal.submit': 'Outsource Booking →',
   'admin.hotels.confirmDelete': 'Are you sure you want to delete this hotel?',
+  'admin.hotels.confirmDeleteTitle': 'ሆቴል ይሰረዝ?',
+  'admin.hotels.confirmDeleteWarning':
+    'ይህ ሆቴሉን ያስወግዳል እና ክፍሎቹን ከእንግዶች ይደብቃል። ይህ እርምጃ በቀላሉ መመለስ አይቻልም።',
+  'admin.hotels.deleting': 'በመሰረዝ ላይ...',
+  'common.delete': 'ሰርዝ',
   'admin.hotels.description': 'Manage your hotel properties and locations.',
   'admin.hotels.addHotel': 'Add Hotel',
   'admin.hotels.searchPlaceholder':

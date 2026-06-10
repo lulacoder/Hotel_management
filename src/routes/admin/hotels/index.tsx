@@ -13,7 +13,7 @@ import {
   Trash2,
   Eye,
 } from 'lucide-react'
-import { useState } from 'react'
+import { useState, useEffect, useRef } from 'react'
 import { m } from 'motion/react'
 import { Id } from '../../../../convex/_generated/dataModel'
 import { HotelModal } from './index/components/-HotelModal'
@@ -45,6 +45,9 @@ function HotelsPage() {
   const [showCreateModal, setShowCreateModal] = useState(false)
   const [editingHotel, setEditingHotel] = useState<Id<'hotels'> | null>(null)
   const [activeMenu, setActiveMenu] = useState<Id<'hotels'> | null>(null)
+  const [hotelToDelete, setHotelToDelete] = useState<Id<'hotels'> | null>(null)
+  const [isDeleting, setIsDeleting] = useState(false)
+  const menuRef = useRef<HTMLDivElement | null>(null)
 
   const hotels = useQuery(api.hotels.list, {})
   const profile = useQuery(api.users.getMe, user?.id ? {} : 'skip')
@@ -70,14 +73,28 @@ function HotelsPage() {
       hotel.country.toLowerCase().includes(searchTerm.toLowerCase()),
   )
 
-  const handleDelete = async (hotelId: Id<'hotels'>) => {
-    // Soft delete after confirmation; restricted to top-level admins.
-    if (!user?.id) return
-    if (!canAddHotel) return
-    if (confirm(t('admin.hotels.confirmDelete'))) {
-      await deleteHotel({ hotelId })
+  // Close the open dropdown when clicking anywhere outside of it.
+  useEffect(() => {
+    if (!activeMenu) return
+    const handlePointerDown = (event: PointerEvent) => {
+      if (menuRef.current && !menuRef.current.contains(event.target as Node)) {
+        setActiveMenu(null)
+      }
     }
-    setActiveMenu(null)
+    document.addEventListener('pointerdown', handlePointerDown)
+    return () => document.removeEventListener('pointerdown', handlePointerDown)
+  }, [activeMenu])
+
+  const confirmDelete = async () => {
+    // Soft delete after confirmation; restricted to top-level admins.
+    if (!user?.id || !canAddHotel || !hotelToDelete) return
+    setIsDeleting(true)
+    try {
+      await deleteHotel({ hotelId: hotelToDelete })
+      setHotelToDelete(null)
+    } finally {
+      setIsDeleting(false)
+    }
   }
 
   return (
@@ -188,13 +205,18 @@ function HotelsPage() {
               key={hotel._id}
               variants={itemVariants}
               className={`admin-surface group rounded-2xl p-6 transition-all duration-200 relative ${
+                activeMenu === hotel._id ? 'z-20' : ''
+              } ${
                 isDark
                   ? 'hover:border-slate-700/50 hover:bg-slate-900/80'
                   : 'hover:shadow-md hover:border-slate-300'
               }`}
             >
               {/* Menu Button */}
-              <div className="absolute top-4 right-4">
+              <div
+                className="absolute top-4 right-4"
+                ref={activeMenu === hotel._id ? menuRef : undefined}
+              >
                 <button
                   type="button"
                   onClick={() =>
@@ -214,6 +236,7 @@ function HotelsPage() {
                       to="/admin/hotels/$hotelId"
                       params={{ hotelId: hotel._id }}
                       search={{ operationalStatus: 'all', window: '30d' }}
+                      onClick={() => setActiveMenu(null)}
                       className="admin-menu-item flex items-center gap-3 px-4 py-3"
                     >
                       <Eye className="size-4" />
@@ -235,7 +258,10 @@ function HotelsPage() {
                     {canAddHotel && (
                       <button
                         type="button"
-                        onClick={() => handleDelete(hotel._id)}
+                        onClick={() => {
+                          setHotelToDelete(hotel._id)
+                          setActiveMenu(null)
+                        }}
                         className={`admin-menu-item flex items-center gap-3 px-4 py-3 text-red-400 w-full ${
                           isDark ? 'hover:bg-slate-700' : 'hover:bg-red-50'
                         }`}
@@ -300,14 +326,42 @@ function HotelsPage() {
         />
       )}
 
-      {/* Click outside to close menu */}
-      {activeMenu && (
-        <button
-          type="button"
-          aria-label={t('common.close')}
-          className="fixed inset-0 z-0"
-          onClick={() => setActiveMenu(null)}
-        />
+      {/* Delete confirmation */}
+      {hotelToDelete !== null && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center overflow-y-auto bg-black/60 p-4 backdrop-blur-sm">
+          <div className="admin-modal-panel my-4 w-full max-w-md">
+            <div className="admin-modal-header">
+              <h2
+                className={`text-xl font-semibold ${
+                  isDark ? 'text-slate-100' : 'text-slate-900'
+                }`}
+              >
+                {t('admin.hotels.confirmDeleteTitle')}
+              </h2>
+              <p className="mt-1 text-sm text-slate-500">
+                {t('admin.hotels.confirmDeleteWarning')}
+              </p>
+            </div>
+            <div className="admin-modal-body flex justify-end gap-3">
+              <Button
+                type="button"
+                variant="outline"
+                onClick={() => setHotelToDelete(null)}
+                disabled={isDeleting}
+              >
+                {t('common.cancel')}
+              </Button>
+              <Button
+                type="button"
+                variant="destructive"
+                onClick={confirmDelete}
+                disabled={isDeleting}
+              >
+                {isDeleting ? t('admin.hotels.deleting') : t('common.delete')}
+              </Button>
+            </div>
+          </div>
+        </div>
       )}
     </div>
   )
