@@ -495,7 +495,18 @@ export const amMessages = {
     'Latitude and longitude must be valid numbers.',
   'admin.hotels.modal.error.metadataJson': 'Metadata must be valid JSON.',
   'admin.hotels.modal.error.ratingInvalid': 'Rating must be a valid number.',
+  'admin.hotels.modal.error.ratingRange': 'Rating must be between 0 and 5.',
+  'admin.hotels.modal.error.nameRequired': 'Hotel name is required.',
+  'admin.hotels.modal.error.addressRequired': 'Address is required.',
+  'admin.hotels.modal.error.cityRequired': 'City is required.',
+  'admin.hotels.modal.error.countryRequired': 'Country is required.',
+  'admin.hotels.modal.error.latRange': 'Latitude must be between -90 and 90.',
+  'admin.hotels.modal.error.lngRange':
+    'Longitude must be between -180 and 180.',
   'admin.hotels.modal.error.generic': 'Something went wrong',
+  'admin.hotels.modal.error.summaryTitle':
+    'Please fix the following before saving:',
+  'admin.hotels.modal.error.fieldLabel': '{field}: {message}',
   'admin.hotels.modal.editTitle': 'Edit Hotel',
   'admin.hotels.modal.addTitle': 'Add New Hotel',
   'admin.hotels.modal.editDescription': 'Update the hotel details below.',
@@ -527,9 +538,12 @@ export const amMessages = {
   'admin.hotels.modal.updateHotel': 'Update Hotel',
   'admin.hotels.modal.createHotel': 'Create Hotel',
   'admin.hotels.roomModal.error.basePriceInvalid':
-    'Please enter a valid base price.',
+    'Please enter a valid base price greater than 0.',
   'admin.hotels.roomModal.error.maxOccupancyInvalid':
-    'Please enter a valid max occupancy.',
+    'Please enter a whole number greater than 0.',
+  'admin.hotels.roomModal.error.roomNumberRequired': 'Room number is required.',
+  'admin.hotels.roomModal.error.summaryTitle':
+    'Please fix the following before saving:',
   'admin.hotels.roomModal.editTitle': 'Edit Room',
   'admin.hotels.roomModal.addTitle': 'Add New Room',
   'admin.hotels.roomModal.roomNumber': 'Room Number',

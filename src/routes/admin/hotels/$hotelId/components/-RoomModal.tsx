@@ -1,17 +1,17 @@
 import { useMemo, useState } from 'react'
-import { useMutation, useQuery } from '@/integrations/convex/hooks'
 import { useForm, useStore } from '@tanstack/react-form'
 import { z } from 'zod'
 import { useUser } from '@clerk/clerk-react'
 
 import { api } from '../../../../../../convex/_generated/api'
-import type { Id } from '../../../../../../convex/_generated/dataModel'
 import {
   uploadImageToConvex,
   validateImageFile,
 } from '../../../../../lib/imageUpload'
 import { useI18n } from '../../../../../lib/i18n/provider'
 import { useTheme } from '../../../../../lib/theme'
+import type { Id } from '../../../../../../convex/_generated/dataModel'
+import { useMutation, useQuery } from '@/integrations/convex/hooks'
 
 interface RoomModalProps {
   hotelId: Id<'hotels'>
@@ -39,12 +39,12 @@ function buildRoomDefaultValues(
         type: RoomType
         basePrice: number
         maxOccupancy: number
-        amenities?: string[]
+        amenities?: Array<string>
         description?: string
         bedOptions?: string
         smokingAllowed?: boolean
         imageUrl?: string
-        imageStorageId?: Id<'_storage'>
+        imageStorageId?: Id<'_storage'> | null
       }
     | null
     | undefined,
@@ -53,7 +53,7 @@ function buildRoomDefaultValues(
     roomNumber: room?.roomNumber ?? '',
     type: room?.type ?? 'budget',
     basePrice: room ? (room.basePrice / 100).toString() : '',
-    maxOccupancy: room?.maxOccupancy?.toString() ?? '',
+    maxOccupancy: room?.maxOccupancy.toString() ?? '',
     amenities: room?.amenities?.join(', ') ?? '',
     description: room?.description ?? '',
     bedOptions: room?.bedOptions ?? '',
@@ -61,7 +61,7 @@ function buildRoomDefaultValues(
   }
 }
 
-function getFirstErrorMessage(errors: unknown[] | undefined): string | null {
+function getFirstErrorMessage(errors: Array<unknown> | undefined): string | null {
   if (!errors) {
     return null
   }
@@ -134,7 +134,10 @@ function RoomModalContent({
   const schema = useMemo(
     () =>
       z.object({
-        roomNumber: z.string().trim().min(1, 'Room number is required.'),
+        roomNumber: z
+          .string()
+          .trim()
+          .min(1, t('admin.hotels.roomModal.error.roomNumberRequired')),
         type: z.enum(['budget', 'standard', 'suite', 'deluxe']),
         basePrice: z
           .string()
@@ -150,7 +153,11 @@ function RoomModalContent({
           .min(1, t('admin.hotels.roomModal.error.maxOccupancyInvalid'))
           .refine((value) => {
             const parsed = Number.parseInt(value, 10)
-            return Number.isFinite(parsed) && parsed > 0
+            return (
+              Number.isInteger(parsed) &&
+              parsed > 0 &&
+              String(parsed) === value.trim()
+            )
           }, t('admin.hotels.roomModal.error.maxOccupancyInvalid')),
         amenities: z.string(),
         description: z.string(),
@@ -163,6 +170,7 @@ function RoomModalContent({
   const form = useForm({
     defaultValues: buildRoomDefaultValues(room),
     validators: {
+      onChange: schema,
       onBlur: schema,
       onSubmit: schema,
     },
@@ -243,15 +251,11 @@ function RoomModalContent({
   })
 
   const isSubmitting = useStore(form.store, (state) => state.isSubmitting)
-  const roomNumberError = getFirstErrorMessage(
-    form.getFieldMeta('roomNumber')?.errors,
-  )
-  const basePriceError = getFirstErrorMessage(
-    form.getFieldMeta('basePrice')?.errors,
-  )
-  const maxOccupancyError = getFirstErrorMessage(
-    form.getFieldMeta('maxOccupancy')?.errors,
-  )
+  const fieldLabels: Partial<Record<keyof RoomFormValues, string>> = {
+    roomNumber: t('admin.hotels.roomModal.roomNumber'),
+    basePrice: t('admin.hotels.roomModal.pricePerNight'),
+    maxOccupancy: t('admin.hotels.roomModal.maxOccupancy'),
+  }
   const labelClass = `mb-2 block text-sm font-medium ${
     isDark ? 'text-slate-300' : 'text-slate-700'
   }`
@@ -305,35 +309,79 @@ function RoomModalContent({
             </div>
           ) : null}
 
+          <form.Subscribe
+            selector={(state) => ({
+              submissionAttempts: state.submissionAttempts,
+              fieldMeta: state.fieldMeta,
+            })}
+          >
+            {({ submissionAttempts, fieldMeta }) => {
+              if (submissionAttempts === 0) {
+                return null
+              }
+              const issues = (
+                Object.keys(fieldMeta) as Array<keyof RoomFormValues>
+              ).flatMap((fieldName) => {
+                const message = getFirstErrorMessage(
+                  fieldMeta[fieldName]?.errors,
+                )
+                if (!message) {
+                  return []
+                }
+                const label = fieldLabels[fieldName]
+                return [label ? `${label}: ${message}` : message]
+              })
+              if (issues.length === 0) {
+                return null
+              }
+              return (
+                <div
+                  role="alert"
+                  className="rounded-xl border border-red-500/20 bg-red-500/10 p-4 text-sm text-red-400"
+                >
+                  <p className="font-medium">
+                    {t('admin.hotels.roomModal.error.summaryTitle')}
+                  </p>
+                  <ul className="mt-2 list-disc space-y-1 pl-5">
+                    {issues.map((issue) => (
+                      <li key={issue}>{issue}</li>
+                    ))}
+                  </ul>
+                </div>
+              )
+            }}
+          </form.Subscribe>
+
           <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
             <form.Field name="roomNumber">
-              {(field) => (
-                <div>
-                  <label className={labelClass}>
-                    {t('admin.hotels.roomModal.roomNumber')}
-                  </label>
-                  <input
-                    aria-label={t('admin.hotels.roomModal.roomNumber')}
-                    type="text"
-                    value={field.state.value}
-                    onChange={(event) => field.handleChange(event.target.value)}
-                    onBlur={field.handleBlur}
-                    placeholder={t(
-                      'admin.hotels.roomModal.roomNumberPlaceholder',
-                    )}
-                    className={`admin-field ${
-                      roomNumberError
-                        ? 'border-red-500/60 focus:border-red-500/80'
-                        : ''
-                    }`}
-                  />
-                  {roomNumberError ? (
-                    <p className="mt-2 text-xs text-red-400">
-                      {roomNumberError}
-                    </p>
-                  ) : null}
-                </div>
-              )}
+              {(field) => {
+                const error = getFirstErrorMessage(field.state.meta.errors)
+                return (
+                  <div>
+                    <label className={labelClass}>
+                      {t('admin.hotels.roomModal.roomNumber')}
+                    </label>
+                    <input
+                      aria-label={t('admin.hotels.roomModal.roomNumber')}
+                      type="text"
+                      value={field.state.value}
+                      onChange={(event) =>
+                        field.handleChange(event.target.value)
+                      }
+                      onBlur={field.handleBlur}
+                      placeholder={t(
+                        'admin.hotels.roomModal.roomNumberPlaceholder',
+                      )}
+                      className={`admin-field ${
+                        error ? 'border-red-500/60 focus:border-red-500/80' : ''
+                      }`}
+                    />
+                    {error ? (
+                      <p className="mt-2 text-xs text-red-400">{error}</p>
+                    ) : null}
+                  </div>
+                )
+              }}
             </form.Field>
 
             <form.Field name="type">
@@ -362,64 +410,66 @@ function RoomModalContent({
 
           <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
             <form.Field name="basePrice">
-              {(field) => (
-                <div>
-                  <label className={labelClass}>
-                    {t('admin.hotels.roomModal.pricePerNight')}
-                  </label>
-                  <input
-                    aria-label={t('admin.hotels.roomModal.pricePerNight')}
-                    type="number"
-                    min="1"
-                    step="0.01"
-                    value={field.state.value}
-                    onChange={(event) => field.handleChange(event.target.value)}
-                    onBlur={field.handleBlur}
-                    placeholder={t('admin.hotels.roomModal.pricePlaceholder')}
-                    className={`admin-field ${
-                      basePriceError
-                        ? 'border-red-500/60 focus:border-red-500/80'
-                        : ''
-                    }`}
-                  />
-                  {basePriceError ? (
-                    <p className="mt-2 text-xs text-red-400">
-                      {basePriceError}
-                    </p>
-                  ) : null}
-                </div>
-              )}
+              {(field) => {
+                const error = getFirstErrorMessage(field.state.meta.errors)
+                return (
+                  <div>
+                    <label className={labelClass}>
+                      {t('admin.hotels.roomModal.pricePerNight')}
+                    </label>
+                    <input
+                      aria-label={t('admin.hotels.roomModal.pricePerNight')}
+                      type="number"
+                      min="1"
+                      step="0.01"
+                      value={field.state.value}
+                      onChange={(event) =>
+                        field.handleChange(event.target.value)
+                      }
+                      onBlur={field.handleBlur}
+                      placeholder={t('admin.hotels.roomModal.pricePlaceholder')}
+                      className={`admin-field ${
+                        error ? 'border-red-500/60 focus:border-red-500/80' : ''
+                      }`}
+                    />
+                    {error ? (
+                      <p className="mt-2 text-xs text-red-400">{error}</p>
+                    ) : null}
+                  </div>
+                )
+              }}
             </form.Field>
 
             <form.Field name="maxOccupancy">
-              {(field) => (
-                <div>
-                  <label className={labelClass}>
-                    {t('admin.hotels.roomModal.maxOccupancy')}
-                  </label>
-                  <input
-                    aria-label={t('admin.hotels.roomModal.maxOccupancy')}
-                    type="number"
-                    min="1"
-                    value={field.state.value}
-                    onChange={(event) => field.handleChange(event.target.value)}
-                    onBlur={field.handleBlur}
-                    placeholder={t(
-                      'admin.hotels.roomModal.maxOccupancyPlaceholder',
-                    )}
-                    className={`admin-field ${
-                      maxOccupancyError
-                        ? 'border-red-500/60 focus:border-red-500/80'
-                        : ''
-                    }`}
-                  />
-                  {maxOccupancyError ? (
-                    <p className="mt-2 text-xs text-red-400">
-                      {maxOccupancyError}
-                    </p>
-                  ) : null}
-                </div>
-              )}
+              {(field) => {
+                const error = getFirstErrorMessage(field.state.meta.errors)
+                return (
+                  <div>
+                    <label className={labelClass}>
+                      {t('admin.hotels.roomModal.maxOccupancy')}
+                    </label>
+                    <input
+                      aria-label={t('admin.hotels.roomModal.maxOccupancy')}
+                      type="number"
+                      min="1"
+                      value={field.state.value}
+                      onChange={(event) =>
+                        field.handleChange(event.target.value)
+                      }
+                      onBlur={field.handleBlur}
+                      placeholder={t(
+                        'admin.hotels.roomModal.maxOccupancyPlaceholder',
+                      )}
+                      className={`admin-field ${
+                        error ? 'border-red-500/60 focus:border-red-500/80' : ''
+                      }`}
+                    />
+                    {error ? (
+                      <p className="mt-2 text-xs text-red-400">{error}</p>
+                    ) : null}
+                  </div>
+                )
+              }}
             </form.Field>
           </div>
 
@@ -566,19 +616,31 @@ function RoomModalContent({
             >
               {t('common.cancel')}
             </button>
-            <button
-              type="submit"
-              disabled={isSubmitting || uploadingImage}
-              className="admin-button-primary flex-1 disabled:opacity-50"
+            <form.Subscribe
+              selector={(state) => ({
+                canSubmit: state.canSubmit,
+                submissionAttempts: state.submissionAttempts,
+              })}
             >
-              {isSubmitting || uploadingImage
-                ? uploadingImage
-                  ? t('common.uploadingImage')
-                  : t('common.saving')
-                : roomId
-                  ? t('admin.hotels.roomModal.updateRoom')
-                  : t('admin.hotels.roomModal.createRoom')}
-            </button>
+              {({ canSubmit, submissionAttempts }) => {
+                const blocked = submissionAttempts > 0 && !canSubmit
+                return (
+                  <button
+                    type="submit"
+                    disabled={isSubmitting || uploadingImage || blocked}
+                    className="admin-button-primary flex-1 disabled:cursor-not-allowed disabled:opacity-50"
+                  >
+                    {isSubmitting || uploadingImage
+                      ? uploadingImage
+                        ? t('common.uploadingImage')
+                        : t('common.saving')
+                      : roomId
+                        ? t('admin.hotels.roomModal.updateRoom')
+                        : t('admin.hotels.roomModal.createRoom')}
+                  </button>
+                )
+              }}
+            </form.Subscribe>
           </div>
         </form>
       </div>
