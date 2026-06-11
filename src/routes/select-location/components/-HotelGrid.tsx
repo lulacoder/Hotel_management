@@ -37,7 +37,9 @@ interface HotelGridProps {
   searchTerm: string
   selectedCity: string
   selectedCategory: string
-  ratingSummaryByHotelId: Record<string, { average: number; count: number }>
+  ratingSummaryByHotelId: Partial<
+    Record<string, { average: number; count: number }>
+  >
   onOpenRating: (hotelId: Id<'hotels'>) => void
   isLoading: boolean
 }

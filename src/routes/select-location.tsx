@@ -49,6 +49,7 @@ export function SelectLocationPage() {
   const { t } = useI18n()
   const navigate = useNavigate()
   const locationRequestedRef = useRef(false)
+  const autoSelectedDistanceRef = useRef(false)
   const [activeRatingHotelId, setActiveRatingHotelId] =
     useState<Id<'hotels'> | null>(null)
   const [ratingError, setRatingError] = useState('')
@@ -64,7 +65,6 @@ export function SelectLocationPage() {
 
   // Primary data sources for cards and aggregated rating metadata.
   const hotels = useQuery(api.hotels.list, {})
-  const cities = useQuery(api.hotels.getCities, {})
   const ratingSummaries = useQuery(
     api.ratings.getSummaries,
     hotels && hotels.length > 0
@@ -81,10 +81,9 @@ export function SelectLocationPage() {
 
   const myBookingsPage = usePaginatedQuery(
     api.bookings.getMyBookingsEnriched,
-    user?.id ? {} : 'skip',
+    user?.id && showComplaintModal ? {} : 'skip',
     { initialNumItems: 50 },
   )
-  const myBookings = myBookingsPage.results
 
   // Geolocation hook
   const {
@@ -133,7 +132,7 @@ export function SelectLocationPage() {
     return hotels.map((hotel) => {
       let distance: number | null = null
 
-      if (userLat && userLng && hotel.location) {
+      if (userLat !== null && userLng !== null && hotel.location) {
         distance = calculateDistance(
           userLat,
           userLng,
@@ -163,6 +162,12 @@ export function SelectLocationPage() {
     return map
   }, [ratingSummaries])
 
+  const cities = useMemo<Array<string>>(() => {
+    if (!hotels) return []
+    const values = hotels.flatMap((hotel) => (hotel.city ? [hotel.city] : []))
+    return [...new Set(values)].toSorted()
+  }, [hotels])
+
   // Get unique categories
   const categories = useMemo<Array<string>>(() => {
     if (!hotels) return []
@@ -175,15 +180,16 @@ export function SelectLocationPage() {
   // Filter and sort hotels
   const filteredHotels = useMemo(() => {
     // Apply search/filter criteria and then sort by selected option.
+    const needle = searchTerm.toLowerCase()
     const result = hotelsWithDistance.filter((hotel) => {
       const matchesSearch =
-        hotel.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-        hotel.city.toLowerCase().includes(searchTerm.toLowerCase()) ||
-        hotel.country.toLowerCase().includes(searchTerm.toLowerCase()) ||
-        (hotel.description?.toLowerCase().includes(searchTerm.toLowerCase()) ??
-          false) ||
+        needle.length === 0 ||
+        hotel.name.toLowerCase().includes(needle) ||
+        hotel.city.toLowerCase().includes(needle) ||
+        hotel.country.toLowerCase().includes(needle) ||
+        (hotel.description?.toLowerCase().includes(needle) ?? false) ||
         (hotel.tags?.some((tag) =>
-          tag.toLowerCase().includes(searchTerm.toLowerCase()),
+          tag.toLowerCase().includes(needle),
         ) ??
           false)
       const matchesCity = selectedCity === 'all' || hotel.city === selectedCity
@@ -225,19 +231,28 @@ export function SelectLocationPage() {
 
   const hasUserLocation = userLat !== null && userLng !== null
 
-  // Auto-switch to distance sort when location becomes available
+  // Auto-switch once when browser location first becomes available, while
+  // preserving later user-selected sort changes.
   useEffect(() => {
-    if (hasUserLocation && sortBy === 'name') {
-      navigate({
-        replace: true,
-        search: {
-          ...search,
-          sort: 'distance',
-        },
-        to: '/select-location',
-      })
+    if (!hasUserLocation || autoSelectedDistanceRef.current) {
+      return
     }
-  }, [hasUserLocation, navigate, search, sortBy])
+
+    autoSelectedDistanceRef.current = true
+
+    if (sortBy !== 'name') {
+      return
+    }
+
+    navigate({
+      replace: true,
+      search: (prev) => ({
+        ...prev,
+        sort: 'distance',
+      }),
+      to: '/select-location',
+    })
+  }, [hasUserLocation, navigate, sortBy])
 
   const activeHotel = useMemo(() => {
     if (!activeRatingHotelId || !hotels) {
@@ -253,18 +268,18 @@ export function SelectLocationPage() {
   const complaintRedirect = '/select-location'
 
   const complaintBookingOptions = useMemo(() => {
-    if (myBookingsPage.status === 'LoadingFirstPage') {
+    if (!showComplaintModal || myBookingsPage.status === 'LoadingFirstPage') {
       return []
     }
 
-    return myBookings.map(({ booking, hotel }) => ({
+    return myBookingsPage.results.map(({ booking, hotel }) => ({
       _id: booking._id,
       hotelId: hotel._id,
       checkIn: booking.checkIn,
       checkOut: booking.checkOut,
       status: booking.status,
     }))
-  }, [myBookings, myBookingsPage.status])
+  }, [myBookingsPage.results, myBookingsPage.status, showComplaintModal])
 
   const updateSearch = (
     nextSearch: Partial<{
@@ -276,11 +291,11 @@ export function SelectLocationPage() {
   ) => {
     navigate({
       replace: true,
-      search: {
+      search: (prev) => ({
         ...DEFAULT_SELECT_LOCATION_SEARCH,
-        ...search,
+        ...prev,
         ...nextSearch,
-      },
+      }),
       to: '/select-location',
     })
   }
@@ -379,7 +394,7 @@ export function SelectLocationPage() {
         <SearchFilters
           selectedCity={selectedCity}
           onCityChange={(value) => updateSearch({ city: value })}
-          cities={cities ?? []}
+          cities={cities}
           selectedCategory={selectedCategory}
           onCategoryChange={(value) => updateSearch({ category: value })}
           categories={categories}
