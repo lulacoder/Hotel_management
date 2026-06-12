@@ -1,7 +1,7 @@
 import { m } from 'motion/react'
 import { ArrowRight } from 'lucide-react'
-import { Card, CardContent } from '@/components/ui/card'
 import type { Locale } from '@/lib/i18n'
+import { Card, CardContent } from '@/components/ui/card'
 import { useTheme } from '@/lib/theme'
 import {
   formatAnalyticsCount,

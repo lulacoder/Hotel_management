@@ -19,13 +19,13 @@ import {
   Tag,
   Users,
 } from 'lucide-react'
-import { Button } from '@/components/ui/button'
 import { useI18n } from '../lib/i18n/provider'
 import { CURRENT_YEAR } from '../lib/currentYear'
 import {
   DEFAULT_AUTH_SEARCH,
   DEFAULT_SELECT_LOCATION_SEARCH,
 } from '../lib/navigationSearch'
+import { Button } from '@/components/ui/button'
 
 const RATING_SEARCH = {
   ...DEFAULT_SELECT_LOCATION_SEARCH,

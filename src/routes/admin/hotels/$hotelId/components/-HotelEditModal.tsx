@@ -1,5 +1,5 @@
-import type { Id } from '../../../../../../convex/_generated/dataModel'
 import { HotelModal } from '../../../hotels/index/components/-HotelModal'
+import type { Id } from '../../../../../../convex/_generated/dataModel'
 
 interface HotelEditModalProps {
   hotelId: Id<'hotels'>

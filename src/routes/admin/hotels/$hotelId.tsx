@@ -1,6 +1,5 @@
 // Hotel details management route inside admin, including room-level controls.
 import { Link, createFileRoute } from '@tanstack/react-router'
-import { useUser } from '@clerk/clerk-react'
 import {
   ArrowLeft,
   Building2,
@@ -18,7 +17,7 @@ import {
   Wrench,
   XCircle,
 } from 'lucide-react'
-import { useEffect, useRef, useState } from 'react'
+import { useEffect, useMemo, useRef, useState } from 'react'
 
 import { api } from '../../../../convex/_generated/api'
 import { useI18n } from '../../../lib/i18n/provider'
@@ -33,6 +32,7 @@ import { BankAccountModal } from './$hotelId/components/-BankAccountModal'
 import type { Id } from '../../../../convex/_generated/dataModel'
 import { useMutation, useQuery } from '@/integrations/convex/hooks'
 import { Button } from '@/components/ui/button'
+import { useAdminSession } from '@/lib/adminSession'
 
 const OPERATIONAL_STATUS_OPTIONS = [
   'available',
@@ -52,10 +52,9 @@ export const Route = createFileRoute('/admin/hotels/$hotelId')({
   component: HotelDetailPage,
 })
 
-export function HotelDetailPage() {
+function HotelDetailPage() {
   const { hotelId } = Route.useParams()
   const search = Route.useSearch()
-  const { user } = useUser()
   const { theme } = useTheme()
   const isDark = theme === 'dark'
   const [showCreateRoom, setShowCreateRoom] = useState(false)
@@ -72,11 +71,7 @@ export function HotelDetailPage() {
   const { t, locale } = useI18n()
   const dateLocale = locale === 'am' ? 'am-ET' : 'en-US'
 
-  const profile = useQuery(api.users.getMe, user?.id ? {} : 'skip')
-  const hotelAssignment = useQuery(
-    api.hotelStaff.getMyAssignment,
-    profile ? {} : 'skip',
-  )
+  const { hotelAssignment } = useAdminSession()
 
   const canManagePaymentSettings =
     hotelAssignment?.hotelId === (hotelId as Id<'hotels'>) &&
@@ -86,18 +81,12 @@ export function HotelDetailPage() {
   const bankAccounts = useQuery(api.hotelBankAccounts.listByHotel, {
     hotelId: hotelId as Id<'hotels'>,
   })
-  const rooms = useQuery(
-    api.rooms.getByHotelWithLiveState,
-    user?.id
-      ? {
-          hotelId: hotelId as Id<'hotels'>,
-        }
-      : 'skip',
-  )
-  const ratings = useQuery(
-    api.ratings.getHotelRatingsAdmin,
-    user?.id ? { hotelId: hotelId as Id<'hotels'> } : 'skip',
-  )
+  const rooms = useQuery(api.rooms.getByHotelWithLiveState, {
+    hotelId: hotelId as Id<'hotels'>,
+  })
+  const ratings = useQuery(api.ratings.getHotelRatingsAdmin, {
+    hotelId: hotelId as Id<'hotels'>,
+  })
 
   const deleteRoom = useMutation(api.rooms.softDelete)
   const updateRoomStatus = useMutation(api.rooms.updateStatus)
@@ -118,14 +107,9 @@ export function HotelDetailPage() {
       .finally(() => {
         bankAccountsBackfilledRef.current = true
       })
-  }, [
-    backfillBankAccounts,
-    canManagePaymentSettings,
-    hotelId,
-  ])
+  }, [backfillBankAccounts, canManagePaymentSettings, hotelId])
 
   const handleDeleteRoom = async (roomId: Id<'rooms'>) => {
-    if (!user?.id) return
     if (confirm(t('admin.hotels.confirmDeleteRoom'))) {
       await deleteRoom({ roomId })
     }
@@ -133,7 +117,6 @@ export function HotelDetailPage() {
   }
 
   const handleDeleteRating = async (ratingId: Id<'hotelRatings'>) => {
-    if (!user?.id) return
     if (confirm(t('admin.hotels.confirmDeleteRating'))) {
       await deleteRating({ ratingId })
     }
@@ -144,7 +127,6 @@ export function HotelDetailPage() {
     status: 'available' | 'maintenance' | 'cleaning' | 'out_of_order',
   ) => {
     // Update room operational status from contextual quick actions.
-    if (!user?.id) return
     await updateRoomStatus({
       roomId,
       operationalStatus: status,
@@ -155,7 +137,7 @@ export function HotelDetailPage() {
   const handleDeleteBankAccount = async (account: {
     _id: Id<'hotelBankAccounts'>
   }) => {
-    if (!user?.id || !canManagePaymentSettings) {
+    if (!canManagePaymentSettings) {
       return
     }
 
@@ -217,6 +199,14 @@ export function HotelDetailPage() {
     suite: t('hotel.suiteRoom'),
     deluxe: t('hotel.deluxeRoom'),
   }
+
+  const visibleRooms = useMemo(() => {
+    if (!rooms) return rooms
+    if (search.operationalStatus === 'all') return rooms
+    return rooms.filter(
+      (room) => room.operationalStatus === search.operationalStatus,
+    )
+  }, [rooms, search.operationalStatus])
 
   if (hotel === undefined) {
     return (
@@ -428,7 +418,7 @@ export function HotelDetailPage() {
             className={`animate-spin rounded-full size-8 border-2 ${isDark ? 'border-violet-500/20 border-t-violet-500' : 'border-violet-500/20 border-t-violet-500'}`}
           ></div>
         </div>
-      ) : rooms.length === 0 ? (
+      ) : visibleRooms?.length === 0 && rooms.length === 0 ? (
         <div className={`${cardClass} p-12 text-center`}>
           <div className="admin-empty-icon">
             <Building2
@@ -454,13 +444,7 @@ export function HotelDetailPage() {
             {t('admin.hotels.addFirstRoom')}
           </Button>
         </div>
-      ) : rooms.filter((room) => {
-          if (search.operationalStatus === 'all') {
-            return true
-          }
-
-          return room.operationalStatus === search.operationalStatus
-        }).length === 0 ? (
+      ) : visibleRooms?.length === 0 ? (
         <div className={`${cardClass} p-12 text-center`}>
           <div className="admin-empty-icon">
             <Building2
@@ -478,187 +462,180 @@ export function HotelDetailPage() {
         </div>
       ) : (
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-          {rooms.flatMap((room) => {
-              if (
-                search.operationalStatus !== 'all' &&
-                room.operationalStatus !== search.operationalStatus
-              ) {
-                return []
-              }
+          {visibleRooms?.map((room) => {
+            const status = statusConfig[room.liveState]
+            const StatusIcon = status.icon
 
-              const status = statusConfig[room.liveState]
-              const StatusIcon = status.icon
-
-              return [
-                <div
-                  key={room._id}
-                  className={`${cardClass} p-5 transition-all relative overflow-visible ${
-                    activeMenu === room._id ? 'z-40' : 'z-0'
-                  } ${
-                    isDark
-                      ? 'hover:border-slate-700/70 hover:bg-slate-900/80'
-                      : 'hover:border-slate-300/80 hover:shadow-md'
-                  }`}
-                >
-                  {/* Menu Button */}
-                  <div className="absolute top-4 right-4 z-50">
-                    <button
-                      type="button"
-                      onClick={() =>
-                        setActiveMenu(activeMenu === room._id ? null : room._id)
-                      }
-                      aria-haspopup="menu"
-                      aria-expanded={activeMenu === room._id}
-                      className={`p-1.5 rounded-lg transition-colors ${isDark ? 'hover:bg-slate-800' : 'hover:bg-slate-100'}`}
-                    >
-                      <MoreVertical
-                        className={`size-4 ${isDark ? 'text-slate-500' : 'text-slate-400'}`}
-                      />
-                    </button>
-
-                    {activeMenu === room._id && (
-                      <div
-                        className="admin-menu-panel absolute right-0 top-8 z-[60] w-52 overflow-hidden shadow-xl"
-                        onClick={(event) => event.stopPropagation()}
-                      >
-                        <button
-                          type="button"
-                          onClick={() => {
-                            setEditingRoom(room._id)
-                            setActiveMenu(null)
-                          }}
-                          className="admin-menu-item flex items-center gap-3 px-4 py-2.5 w-full text-sm"
-                        >
-                          <Pencil className="size-4" />
-                          {t('admin.hotels.editRoom')}
-                        </button>
-                        <div
-                          className={`border-t my-1 ${isDark ? 'border-slate-700' : 'border-slate-100'}`}
-                        ></div>
-                        <p
-                          className={`px-4 py-2 text-xs font-medium ${isDark ? 'text-slate-500' : 'text-slate-400'}`}
-                        >
-                          {t('admin.hotels.setStatus')}
-                        </p>
-                        {OPERATIONAL_STATUS_OPTIONS.map((key) => {
-                          const config = statusConfig[key]
-
-                          return (
-                            <button
-                              key={key}
-                              type="button"
-                              onClick={() => handleStatusChange(room._id, key)}
-                              className={`admin-menu-item flex items-center gap-3 px-4 py-2 w-full text-sm ${
-                                room.operationalStatus === key
-                                  ? config.color
-                                  : isDark
-                                    ? 'text-slate-400'
-                                    : 'text-slate-500'
-                              }`}
-                            >
-                              <config.icon className="size-4" />
-                              {config.label}
-                            </button>
-                          )
-                        })}
-                        <div
-                          className={`border-t my-1 ${isDark ? 'border-slate-700' : 'border-slate-100'}`}
-                        ></div>
-                        <button
-                          type="button"
-                          onClick={() => handleDeleteRoom(room._id)}
-                          className={`admin-menu-item flex items-center gap-3 px-4 py-2.5 text-red-400 w-full text-sm ${
-                            isDark ? 'hover:bg-slate-700' : 'hover:bg-red-50'
-                          }`}
-                        >
-                          <Trash2 className="size-4" />
-                          {t('admin.hotels.deleteRoom')}
-                        </button>
-                      </div>
-                    )}
-                  </div>
-
-                  {/* Room Info */}
-                  <div className="flex items-center gap-3 mb-4">
-                    <div
-                      className={`size-12 rounded-xl flex items-center justify-center ${isDark ? 'bg-slate-800' : 'bg-slate-100'}`}
-                    >
-                      <Building2
-                        className={`size-6 ${isDark ? 'text-slate-400' : 'text-slate-500'}`}
-                      />
-                    </div>
-                    <div>
-                      <h3
-                        className={`font-semibold ${isDark ? 'text-slate-200' : 'text-slate-800'}`}
-                      >
-                        {t('hotel.room')} {room.roomNumber}
-                      </h3>
-                      <p
-                        className={`text-sm ${isDark ? 'text-slate-500' : 'text-slate-500'}`}
-                      >
-                        {roomTypeLabels[room.type]}
-                      </p>
-                    </div>
-                  </div>
-
-                  {/* Status Badge */}
-                  <div
-                    className={`inline-flex items-center gap-2 px-3 py-1.5 rounded-lg text-sm font-medium ${status.bg} ${status.color} ${status.border} border mb-4`}
+            return (
+              <div
+                key={room._id}
+                className={`${cardClass} p-5 transition-all relative overflow-visible ${
+                  activeMenu === room._id ? 'z-40' : 'z-0'
+                } ${
+                  isDark
+                    ? 'hover:border-slate-700/70 hover:bg-slate-900/80'
+                    : 'hover:border-slate-300/80 hover:shadow-md'
+                }`}
+              >
+                {/* Menu Button */}
+                <div className="absolute top-4 right-4 z-50">
+                  <button
+                    type="button"
+                    onClick={() =>
+                      setActiveMenu(activeMenu === room._id ? null : room._id)
+                    }
+                    aria-haspopup="menu"
+                    aria-expanded={activeMenu === room._id}
+                    className={`p-1.5 rounded-lg transition-colors ${isDark ? 'hover:bg-slate-800' : 'hover:bg-slate-100'}`}
                   >
-                    <StatusIcon className="size-3.5" />
-                    {status.label}
-                  </div>
+                    <MoreVertical
+                      className={`size-4 ${isDark ? 'text-slate-500' : 'text-slate-400'}`}
+                    />
+                  </button>
 
-                  {/* Details */}
-                  <div className="grid grid-cols-2 gap-4 text-sm">
+                  {activeMenu === room._id && (
                     <div
-                      className={`flex items-center gap-2 ${isDark ? 'text-slate-400' : 'text-slate-500'}`}
+                      className="admin-menu-panel absolute right-0 top-8 z-[60] w-52 overflow-hidden shadow-xl"
+                      onClick={(event) => event.stopPropagation()}
                     >
-                      <DollarSign className="size-4" />
-                      <span>
-                        ${(room.basePrice / 100).toFixed(2)}/{t('hotel.night')}
-                      </span>
-                    </div>
-                    <div
-                      className={`flex items-center gap-2 ${isDark ? 'text-slate-400' : 'text-slate-500'}`}
-                    >
-                      <Users className="size-4" />
-                      <span>
-                        {t('admin.hotels.maxOccupancy', {
-                          count: room.maxOccupancy,
-                        })}
-                      </span>
-                    </div>
-                  </div>
+                      <button
+                        type="button"
+                        onClick={() => {
+                          setEditingRoom(room._id)
+                          setActiveMenu(null)
+                        }}
+                        className="admin-menu-item flex items-center gap-3 px-4 py-2.5 w-full text-sm"
+                      >
+                        <Pencil className="size-4" />
+                        {t('admin.hotels.editRoom')}
+                      </button>
+                      <div
+                        className={`border-t my-1 ${isDark ? 'border-slate-700' : 'border-slate-100'}`}
+                      ></div>
+                      <p
+                        className={`px-4 py-2 text-xs font-medium ${isDark ? 'text-slate-500' : 'text-slate-400'}`}
+                      >
+                        {t('admin.hotels.setStatus')}
+                      </p>
+                      {OPERATIONAL_STATUS_OPTIONS.map((key) => {
+                        const config = statusConfig[key]
 
-                  {room.amenities && room.amenities.length > 0 && (
-                    <div
-                      className={`mt-4 pt-4 border-t ${isDark ? 'border-slate-800' : 'border-slate-100'}`}
-                    >
-                      <div className="flex flex-wrap gap-2">
-                        {room.amenities.slice(0, 3).map((amenity, index) => (
-                          <span
-                            key={`${room._id}-${amenity}-${index}`}
-                            className={`px-2 py-1 rounded text-xs ${isDark ? 'bg-slate-800 text-slate-400' : 'bg-slate-100 text-slate-500'}`}
+                        return (
+                          <button
+                            key={key}
+                            type="button"
+                            onClick={() => handleStatusChange(room._id, key)}
+                            className={`admin-menu-item flex items-center gap-3 px-4 py-2 w-full text-sm ${
+                              room.operationalStatus === key
+                                ? config.color
+                                : isDark
+                                  ? 'text-slate-400'
+                                  : 'text-slate-500'
+                            }`}
                           >
-                            {amenity}
-                          </span>
-                        ))}
-                        {room.amenities.length > 3 && (
-                          <span
-                            className={`px-2 py-1 rounded text-xs ${isDark ? 'bg-slate-800 text-slate-500' : 'bg-slate-100 text-slate-400'}`}
-                          >
-                            {t('grid.more', {
-                              count: room.amenities.length - 3,
-                            })}
-                          </span>
-                        )}
-                      </div>
+                            <config.icon className="size-4" />
+                            {config.label}
+                          </button>
+                        )
+                      })}
+                      <div
+                        className={`border-t my-1 ${isDark ? 'border-slate-700' : 'border-slate-100'}`}
+                      ></div>
+                      <button
+                        type="button"
+                        onClick={() => handleDeleteRoom(room._id)}
+                        className={`admin-menu-item flex items-center gap-3 px-4 py-2.5 text-red-400 w-full text-sm ${
+                          isDark ? 'hover:bg-slate-700' : 'hover:bg-red-50'
+                        }`}
+                      >
+                        <Trash2 className="size-4" />
+                        {t('admin.hotels.deleteRoom')}
+                      </button>
                     </div>
                   )}
-                </div>,
-              ]
-            })}
+                </div>
+
+                {/* Room Info */}
+                <div className="flex items-center gap-3 mb-4">
+                  <div
+                    className={`size-12 rounded-xl flex items-center justify-center ${isDark ? 'bg-slate-800' : 'bg-slate-100'}`}
+                  >
+                    <Building2
+                      className={`size-6 ${isDark ? 'text-slate-400' : 'text-slate-500'}`}
+                    />
+                  </div>
+                  <div>
+                    <h3
+                      className={`font-semibold ${isDark ? 'text-slate-200' : 'text-slate-800'}`}
+                    >
+                      {t('hotel.room')} {room.roomNumber}
+                    </h3>
+                    <p
+                      className={`text-sm ${isDark ? 'text-slate-500' : 'text-slate-500'}`}
+                    >
+                      {roomTypeLabels[room.type]}
+                    </p>
+                  </div>
+                </div>
+
+                {/* Status Badge */}
+                <div
+                  className={`inline-flex items-center gap-2 px-3 py-1.5 rounded-lg text-sm font-medium ${status.bg} ${status.color} ${status.border} border mb-4`}
+                >
+                  <StatusIcon className="size-3.5" />
+                  {status.label}
+                </div>
+
+                {/* Details */}
+                <div className="grid grid-cols-2 gap-4 text-sm">
+                  <div
+                    className={`flex items-center gap-2 ${isDark ? 'text-slate-400' : 'text-slate-500'}`}
+                  >
+                    <DollarSign className="size-4" />
+                    <span>
+                      ${(room.basePrice / 100).toFixed(2)}/{t('hotel.night')}
+                    </span>
+                  </div>
+                  <div
+                    className={`flex items-center gap-2 ${isDark ? 'text-slate-400' : 'text-slate-500'}`}
+                  >
+                    <Users className="size-4" />
+                    <span>
+                      {t('admin.hotels.maxOccupancy', {
+                        count: room.maxOccupancy,
+                      })}
+                    </span>
+                  </div>
+                </div>
+
+                {room.amenities && room.amenities.length > 0 && (
+                  <div
+                    className={`mt-4 pt-4 border-t ${isDark ? 'border-slate-800' : 'border-slate-100'}`}
+                  >
+                    <div className="flex flex-wrap gap-2">
+                      {room.amenities.slice(0, 3).map((amenity, index) => (
+                        <span
+                          key={`${room._id}-${amenity}-${index}`}
+                          className={`px-2 py-1 rounded text-xs ${isDark ? 'bg-slate-800 text-slate-400' : 'bg-slate-100 text-slate-500'}`}
+                        >
+                          {amenity}
+                        </span>
+                      ))}
+                      {room.amenities.length > 3 && (
+                        <span
+                          className={`px-2 py-1 rounded text-xs ${isDark ? 'bg-slate-800 text-slate-500' : 'bg-slate-100 text-slate-400'}`}
+                        >
+                          {t('grid.more', {
+                            count: room.amenities.length - 3,
+                          })}
+                        </span>
+                      )}
+                    </div>
+                  </div>
+                )}
+              </div>
+            )
+          })}
         </div>
       )}
 

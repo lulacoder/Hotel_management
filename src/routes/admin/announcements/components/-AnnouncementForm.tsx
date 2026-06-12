@@ -46,7 +46,9 @@ const priorityConfig: Record<
   },
 }
 
-function getFirstErrorMessage(errors: unknown[] | undefined): string | null {
+function getFirstErrorMessage(
+  errors: Array<unknown> | undefined,
+): string | null {
   if (!errors) {
     return null
   }

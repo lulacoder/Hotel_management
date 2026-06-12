@@ -1,6 +1,5 @@
 // Admin dashboard landing page with role-aware analytics and quick actions.
 import { Link, createLazyFileRoute, useNavigate } from '@tanstack/react-router'
-import { useUser } from '@clerk/clerk-react'
 import { Suspense, lazy } from 'react'
 import {
   ArrowUpRight,
@@ -22,6 +21,7 @@ import type {
   PaymentStatusFilter,
   RoomOperationalStatusFilter,
 } from '@/lib/adminAnalytics'
+import { useAdminSession } from '@/lib/adminSession'
 import { useI18n } from '@/lib/i18n'
 import { useTheme } from '@/lib/theme'
 import { useQuery } from '@/integrations/convex/hooks'
@@ -30,13 +30,13 @@ import { AnalyticsTimeWindowTabs } from '@/components/admin-analytics/AnalyticsT
 import { AnalyticsTopHotelsTable } from '@/components/admin-analytics/AnalyticsTopHotelsTable'
 import { AnalyticsEmptyState } from '@/components/admin-analytics/AnalyticsEmptyState'
 
-export const LazyAnalyticsTrendChart = lazy(() =>
+const LazyAnalyticsTrendChart = lazy(() =>
   import('@/components/admin-analytics/AnalyticsTrendChart').then((module) => ({
     default: module.AnalyticsTrendChart,
   })),
 )
 
-export const LazyAnalyticsStatusBreakdown = lazy(() =>
+const LazyAnalyticsStatusBreakdown = lazy(() =>
   import('@/components/admin-analytics/AnalyticsStatusBreakdown').then(
     (module) => ({
       default: module.AnalyticsStatusBreakdown,
@@ -44,7 +44,7 @@ export const LazyAnalyticsStatusBreakdown = lazy(() =>
   ),
 )
 
-export const LazyAnalyticsOccupancyCard = lazy(() =>
+const LazyAnalyticsOccupancyCard = lazy(() =>
   import('@/components/admin-analytics/AnalyticsOccupancyCard').then(
     (module) => ({
       default: module.AnalyticsOccupancyCard,
@@ -52,7 +52,7 @@ export const LazyAnalyticsOccupancyCard = lazy(() =>
   ),
 )
 
-export const LazyCashierAnalyticsPanel = lazy(() =>
+const LazyCashierAnalyticsPanel = lazy(() =>
   import('@/components/admin-analytics/CashierAnalyticsPanel').then(
     (module) => ({
       default: module.CashierAnalyticsPanel,
@@ -84,7 +84,7 @@ const itemVariants = {
   },
 }
 
-export function AnalyticsLoadingCard({
+function AnalyticsLoadingCard({
   className,
   isDark,
 }: {
@@ -105,7 +105,7 @@ export function AnalyticsLoadingCard({
 /* ------------------------------------------------------------------ */
 /*  Section header component                                           */
 /* ------------------------------------------------------------------ */
-export function SectionHeader({
+function SectionHeader({
   icon: Icon,
   label,
   isDark,
@@ -147,47 +147,35 @@ function getGreeting(): string {
 /* ------------------------------------------------------------------ */
 /*  Main dashboard                                                     */
 /* ------------------------------------------------------------------ */
-export function AdminDashboard() {
-  const { user } = useUser()
+function AdminDashboard() {
   const { t, locale } = useI18n()
   const { theme } = useTheme()
   const isDark = theme === 'dark'
   const navigate = useNavigate()
   const search = Route.useSearch()
-  const profile = useQuery(api.users.getMe, user?.id ? {} : 'skip')
-  const hotelAssignment = useQuery(
-    api.hotelStaff.getMyAssignment,
-    profile ? {} : 'skip',
-  )
+  const { displayName, hotelAssignment, profile } = useAdminSession()
   const assignedHotel = useQuery(
     api.hotels.get,
     hotelAssignment?.hotelId ? { hotelId: hotelAssignment.hotelId } : 'skip',
   )
   const window: AnalyticsWindow = search.window
 
-  const summary = useQuery(
-    api.analytics.getDashboardSummary,
-    user?.id ? { window } : 'skip',
-  )
-  const bookingTrend = useQuery(
-    api.analytics.getBookingTrend,
-    user?.id ? { window } : 'skip',
-  )
-  const statusBreakdowns = useQuery(
-    api.analytics.getStatusBreakdowns,
-    user?.id ? { window } : 'skip',
-  )
+  const summary = useQuery(api.analytics.getDashboardSummary, { window })
+  const bookingTrend = useQuery(api.analytics.getBookingTrend, { window })
+  const statusBreakdowns = useQuery(api.analytics.getStatusBreakdowns, {
+    window,
+  })
   const revenueTrend = useQuery(
     api.analytics.getRevenueTrend,
-    user?.id && hotelAssignment?.role !== 'hotel_cashier' ? { window } : 'skip',
+    hotelAssignment?.role !== 'hotel_cashier' ? { window } : 'skip',
   )
   const occupancyTrend = useQuery(
     api.analytics.getOccupancyTrend,
-    user?.id && hotelAssignment?.role !== 'hotel_cashier' ? { window } : 'skip',
+    hotelAssignment?.role !== 'hotel_cashier' ? { window } : 'skip',
   )
   const topHotels = useQuery(
     api.analytics.getTopHotels,
-    user?.id && profile?.role === 'room_admin' ? { window } : 'skip',
+    profile.role === 'room_admin' ? { window } : 'skip',
   )
 
   const roleLabelByCode: Record<string, string> = {
@@ -217,7 +205,7 @@ export function AdminDashboard() {
       to: '/admin/bookings',
     },
   ].filter((action) => {
-    if (profile?.role === 'room_admin') {
+    if (profile.role === 'room_admin') {
       return true
     }
 
@@ -313,7 +301,7 @@ export function AdminDashboard() {
           style={{ fontFamily: 'var(--font-heading)' }}
         >
           {t('admin.welcomeBack', {
-            name: user?.firstName || t('admin.defaultUserName'),
+            name: displayName,
           })}
         </h1>
         <p
@@ -336,7 +324,7 @@ export function AdminDashboard() {
       {summaryHeader}
 
       {/* Hotel assignment banner */}
-      {hotelAssignment && assignedHotel && profile?.role !== 'room_admin' && (
+      {hotelAssignment && assignedHotel && profile.role !== 'room_admin' && (
         <m.div
           variants={itemVariants}
           className={`relative mb-10 overflow-hidden rounded-2xl border backdrop-blur-sm ${
@@ -643,7 +631,7 @@ export function AdminDashboard() {
               </Suspense>
             </m.div>
             <m.div variants={itemVariants}>
-              {profile?.role === 'room_admin' ? (
+              {profile.role === 'room_admin' ? (
                 <AnalyticsTopHotelsTable
                   rows={(topHotels?.hotels ?? []).map((hotel) => ({
                     ...hotel,
@@ -776,11 +764,8 @@ export function AdminDashboard() {
               className={`mt-0.5 text-sm leading-relaxed ${isDark ? 'text-slate-400' : 'text-slate-500'}`}
             >
               {t('admin.dashboard.roleAccessDescription', {
-                email: profile?.email || t('admin.bookings.na'),
-                role:
-                  roleLabelByCode[profile?.role || ''] ||
-                  profile?.role ||
-                  t('admin.role.user'),
+                email: profile.email || t('admin.bookings.na'),
+                role: roleLabelByCode[profile.role] || profile.role,
               })}
             </p>
           </div>

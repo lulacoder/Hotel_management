@@ -1,6 +1,5 @@
 // User administration route for assigning and managing staff access.
 import { createFileRoute } from '@tanstack/react-router'
-import { useUser } from '@clerk/clerk-react'
 import { Building2, Search } from 'lucide-react'
 import { useMemo, useState } from 'react'
 import { m } from 'motion/react'
@@ -11,6 +10,7 @@ import { AssignModal } from './components/-AssignModal'
 import type { Id } from '../../../../convex/_generated/dataModel'
 import { useMutation, useQuery } from '@/integrations/convex/hooks'
 import { Button } from '@/components/ui/button'
+import { useAdminSession } from '@/lib/adminSession'
 
 export const Route = createFileRoute('/admin/users/')({
   // Register staff/user assignment route (room_admin only).
@@ -19,7 +19,6 @@ export const Route = createFileRoute('/admin/users/')({
 
 function AdminUsersPage() {
   // Query users and assignment actions; keep search + modal state local.
-  const { user } = useUser()
   const { t } = useI18n()
   const { theme } = useTheme()
   const isDark = theme === 'dark'
@@ -27,13 +26,12 @@ function AdminUsersPage() {
   const [selectedUserId, setSelectedUserId] = useState<Id<'users'> | null>(null)
   const [error, setError] = useState<string | null>(null)
 
-  // Fetch user profile to determine role and permissions.
-  const profile = useQuery(api.users.getMe, user?.id ? {} : 'skip')
+  const { profile } = useAdminSession()
 
   // Get all users with their hotel assignments for display in the user management table.
   const users = useQuery(
     api.hotelStaff.listAllUsers,
-    user?.id ? {} : 'skip', // Only fetch if we have a logged-in user to determine permissions.
+    profile.role === 'room_admin' ? {} : 'skip',
   )
 
   const unassignUser = useMutation(api.hotelStaff.unassign)
@@ -53,7 +51,6 @@ function AdminUsersPage() {
 
   const handleUnassign = async (targetUserId: Id<'users'>) => {
     // Remove hotel assignment after user confirmation.
-    if (!user?.id) return
     if (!confirm(t('admin.users.confirmUnassign'))) return
 
     setError(null)
@@ -68,18 +65,8 @@ function AdminUsersPage() {
     }
   }
 
-  if (profile === undefined) {
-    return (
-      <div className="max-w-7xl mx-auto">
-        <div className="admin-empty-state p-8">
-          {t('admin.users.loadingProfile')}
-        </div>
-      </div>
-    )
-  }
-
   // Restrict access to this route to room_admin users only; show message if not authorized.
-  if (profile?.role !== 'room_admin') {
+  if (profile.role !== 'room_admin') {
     return (
       <div className="max-w-7xl mx-auto">
         <div className="admin-empty-state border-red-500/20 p-8">

@@ -1,12 +1,12 @@
 import { m } from 'motion/react'
-import { Building2, DollarSign, Calendar, BarChart3 } from 'lucide-react'
+import { BarChart3, Building2, Calendar, DollarSign } from 'lucide-react'
+import { AnalyticsEmptyState } from './AnalyticsEmptyState'
 import type { Locale } from '@/lib/i18n'
 import { useTheme } from '@/lib/theme'
 import {
   formatAnalyticsCurrency,
   formatAnalyticsPercent,
 } from '@/lib/adminAnalytics'
-import { AnalyticsEmptyState } from './AnalyticsEmptyState'
 
 interface Row {
   hotelId: string
@@ -17,7 +17,7 @@ interface Row {
 }
 
 interface Props {
-  rows: Row[] | undefined
+  rows: Array<Row> | undefined
   locale: Locale
   onHotelClick: (hotelId: string) => void
   title: string

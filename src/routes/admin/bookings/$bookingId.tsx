@@ -1,6 +1,5 @@
 // Booking details route for a specific booking record in the admin area.
 import { Link, createFileRoute } from '@tanstack/react-router'
-import { useUser } from '@clerk/clerk-react'
 import {
   ArrowLeft,
   CheckCircle,
@@ -18,6 +17,7 @@ import { m } from 'motion/react'
 
 import { api } from '../../../../convex/_generated/api'
 import { getAllowedBookingTransitions } from '../../../../convex/lib/bookingLifecycle'
+import { useAdminSession } from '../../../lib/adminSession'
 import { useI18n } from '../../../lib/i18n/provider'
 import {
   formatPackageAddOn,
@@ -57,31 +57,23 @@ function formatEtbAmount(amountMinor: number) {
   return etbCurrencyFormatter.format(amountMinor / 100)
 }
 
-export function BookingDetailPage() {
+function BookingDetailPage() {
   // Fetch booking graph + role context used for permissions and actions.
   const { bookingId } = Route.useParams()
   const typedBookingId = bookingId as Id<'bookings'>
-  const { user } = useUser()
   const { t } = useI18n()
   const { theme } = useTheme()
   const isDark = theme === 'dark'
   const [showOutsourceModal, setShowOutsourceModal] = useState(false)
 
-  const profile = useQuery(api.users.getMe, user?.id ? {} : 'skip')
+  const { hotelAssignment, profile } = useAdminSession()
 
-  const hotelAssignment = useQuery(
-    api.hotelStaff.getMyAssignment,
-    profile ? {} : 'skip',
-  )
-
-  const bookingDetail = useQuery(
-    api.bookings.getEnriched,
-    user?.id ? { bookingId: typedBookingId } : 'skip',
-  )
-  const chapaPayment = useQuery(
-    api.chapaQueries.getPaymentForBooking,
-    user?.id ? { bookingId: typedBookingId } : 'skip',
-  )
+  const bookingDetail = useQuery(api.bookings.getEnriched, {
+    bookingId: typedBookingId,
+  })
+  const chapaPayment = useQuery(api.chapaQueries.getPaymentForBooking, {
+    bookingId: typedBookingId,
+  })
   const outsourcedToHotel = useQuery(
     api.hotels.get,
     bookingDetail?.booking.outsourcedToHotelId
@@ -167,7 +159,7 @@ export function BookingDetailPage() {
   }
 
   const canManageBookings =
-    profile?.role === 'room_admin' ||
+    profile.role === 'room_admin' ||
     (hotelAssignment &&
       bookingDetail &&
       hotelAssignment.hotelId === bookingDetail.hotel._id &&
@@ -181,7 +173,6 @@ export function BookingDetailPage() {
   const handleStatusChange = async (
     nextStatus: ManualBookingTransitionStatus,
   ) => {
-    if (!user?.id) return
     await updateBookingStatus({
       bookingId: typedBookingId,
       nextStatus,
@@ -189,18 +180,15 @@ export function BookingDetailPage() {
   }
 
   const handleAcceptCashPayment = async () => {
-    if (!user?.id) return
     await acceptCashPayment({ bookingId: typedBookingId })
   }
 
   const handleVerifyPayment = async () => {
-    if (!user?.id) return
     if (!window.confirm(t('admin.bookings.confirmApprovePayment'))) return
     await verifyPayment({ bookingId: typedBookingId })
   }
 
   const handleRejectPayment = async () => {
-    if (!user?.id) return
     if (!window.confirm(t('admin.bookings.confirmRejectPayment'))) return
     await rejectPayment({ bookingId: typedBookingId })
   }
@@ -601,7 +589,7 @@ export function BookingDetailPage() {
                 </button>
               )}
 
-            {profile?.role !== 'room_admin' &&
+            {profile.role !== 'room_admin' &&
               ['confirmed', 'checked_in'].includes(
                 bookingDetail.booking.status,
               ) && (

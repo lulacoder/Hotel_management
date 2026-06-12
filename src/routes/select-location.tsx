@@ -42,7 +42,7 @@ export const Route = createFileRoute('/select-location')({
   component: SelectLocationPage,
 })
 
-export function SelectLocationPage() {
+function SelectLocationPage() {
   // Local UI state for filters, geolocation state, and rating modal flow.
   const { user, isSignedIn } = useUser()
   const search = Route.useSearch()
@@ -188,10 +188,7 @@ export function SelectLocationPage() {
         hotel.city.toLowerCase().includes(needle) ||
         hotel.country.toLowerCase().includes(needle) ||
         (hotel.description?.toLowerCase().includes(needle) ?? false) ||
-        (hotel.tags?.some((tag) =>
-          tag.toLowerCase().includes(needle),
-        ) ??
-          false)
+        (hotel.tags?.some((tag) => tag.toLowerCase().includes(needle)) ?? false)
       const matchesCity = selectedCity === 'all' || hotel.city === selectedCity
       const matchesCategory =
         selectedCategory === 'all' || hotel.category === selectedCategory

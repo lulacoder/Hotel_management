@@ -1,5 +1,4 @@
-import type { CSSProperties } from 'react'
-import { Toaster as Sonner, type ToasterProps } from 'sonner'
+import { Toaster as Sonner } from 'sonner'
 import {
   CircleCheckIcon,
   InfoIcon,
@@ -7,6 +6,8 @@ import {
   OctagonXIcon,
   TriangleAlertIcon,
 } from 'lucide-react'
+import type { ToasterProps } from 'sonner'
+import type { CSSProperties } from 'react'
 
 import { useTheme } from '@/lib/theme'
 

@@ -1,7 +1,7 @@
 import { m } from 'motion/react'
 
-import { Tabs, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import type { AnalyticsWindow } from '@/lib/adminAnalytics'
+import { Tabs, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import { analyticsWindowOptions } from '@/lib/adminAnalytics'
 import { useI18n } from '@/lib/i18n'
 import { useTheme } from '@/lib/theme'

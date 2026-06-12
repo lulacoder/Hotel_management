@@ -12,16 +12,15 @@ const THEMES = { light: '', dark: '.dark' } as const
 const INITIAL_DIMENSION = { width: 320, height: 200 } as const
 type TooltipNameType = number | string
 
-export type ChartConfig = Record<
-  string,
-  {
-    label?: React.ReactNode
-    icon?: React.ComponentType
-  } & (
-    | { color?: string; theme?: never }
-    | { color?: never; theme: Record<keyof typeof THEMES, string> }
-  )
->
+type ChartConfigItem = {
+  label?: React.ReactNode
+  icon?: React.ComponentType
+} & (
+  | { color?: string; theme?: never }
+  | { color?: never; theme: Record<keyof typeof THEMES, string> }
+)
+
+export type ChartConfig = Record<string, ChartConfigItem | undefined>
 
 type ChartContextProps = {
   config: ChartConfig
@@ -85,7 +84,9 @@ function ChartContainer({
 
 const ChartStyle = ({ id, config }: { id: string; config: ChartConfig }) => {
   const colorConfig = Object.entries(config).flatMap(([key, itemConfig]) =>
-    (itemConfig.theme ?? itemConfig.color) ? [[key, itemConfig] as const] : [],
+    itemConfig && (itemConfig.theme ?? itemConfig.color)
+      ? [[key, itemConfig] as const]
+      : [],
   )
 
   if (!colorConfig.length) {
@@ -152,7 +153,7 @@ function ChartTooltipContent({
     }
 
     const [item] = payload
-    const key = `${labelKey ?? item?.dataKey ?? item?.name ?? 'value'}`
+    const key = `${labelKey ?? item.dataKey ?? item.name ?? 'value'}`
     const itemConfig = getPayloadConfigFromPayload(config, item, key)
     const value =
       !labelKey && typeof label === 'string'
@@ -214,7 +215,7 @@ function ChartTooltipContent({
                 indicator === 'dot' && 'items-center',
               )}
             >
-              {formatter && item?.value !== undefined && item.name ? (
+              {formatter && item.value !== undefined && item.name ? (
                 formatter(item.value, item.name, item, index, item.payload)
               ) : (
                 <>

@@ -1,24 +1,24 @@
 // Admin hotels management route for creating, editing, and listing hotel properties.
-import { createFileRoute, Link } from '@tanstack/react-router'
-import { useUser } from '@clerk/clerk-react'
-import { useQuery, useMutation } from '@/integrations/convex/hooks'
-import { api } from '../../../../convex/_generated/api'
+import { Link, createFileRoute } from '@tanstack/react-router'
 import {
-  Plus,
-  Search,
-  MapPin,
   Building2,
+  Eye,
+  MapPin,
   MoreVertical,
   Pencil,
+  Plus,
+  Search,
   Trash2,
-  Eye,
 } from 'lucide-react'
-import { useState, useEffect, useRef } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import { m } from 'motion/react'
-import { Id } from '../../../../convex/_generated/dataModel'
-import { HotelModal } from './index/components/-HotelModal'
+import { api } from '../../../../convex/_generated/api'
+import { useAdminSession } from '../../../lib/adminSession'
 import { useI18n } from '../../../lib/i18n/provider'
 import { useTheme } from '../../../lib/theme'
+import { HotelModal } from './index/components/-HotelModal'
+import type { Id } from '../../../../convex/_generated/dataModel'
+import { useMutation, useQuery } from '@/integrations/convex/hooks'
 import { Button } from '@/components/ui/button'
 
 export const Route = createFileRoute('/admin/hotels/')({
@@ -37,7 +37,6 @@ const itemVariants = {
 
 function HotelsPage() {
   // Query hotels + role context, then derive visible/editable records.
-  const { user } = useUser()
   const { t } = useI18n()
   const { theme } = useTheme()
   const isDark = theme === 'dark'
@@ -49,20 +48,16 @@ function HotelsPage() {
   const [isDeleting, setIsDeleting] = useState(false)
   const menuRef = useRef<HTMLDivElement | null>(null)
 
+  const { hotelAssignment, profile } = useAdminSession()
   const hotels = useQuery(api.hotels.list, {})
-  const profile = useQuery(api.users.getMe, user?.id ? {} : 'skip')
-  const hotelAssignment = useQuery(
-    api.hotelStaff.getMyAssignment,
-    profile ? {} : 'skip',
-  )
   const deleteHotel = useMutation(api.hotels.softDelete)
 
-  const canAddHotel = profile?.role === 'room_admin'
+  const canAddHotel = profile.role === 'room_admin'
   const canEditHotel =
-    profile?.role === 'room_admin' || hotelAssignment?.role === 'hotel_admin'
+    profile.role === 'room_admin' || hotelAssignment?.role === 'hotel_admin'
 
   const visibleHotels =
-    profile?.role === 'room_admin'
+    profile.role === 'room_admin'
       ? hotels
       : hotels?.filter((hotel) => hotel._id === hotelAssignment?.hotelId)
 
@@ -87,7 +82,7 @@ function HotelsPage() {
 
   const confirmDelete = async () => {
     // Soft delete after confirmation; restricted to top-level admins.
-    if (!user?.id || !canAddHotel || !hotelToDelete) return
+    if (!canAddHotel || !hotelToDelete) return
     setIsDeleting(true)
     try {
       await deleteHotel({ hotelId: hotelToDelete })

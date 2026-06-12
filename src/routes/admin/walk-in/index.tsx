@@ -1,6 +1,5 @@
 // Walk-in booking management route for eligible hotel staff/admin users.
 import { createFileRoute, useNavigate } from '@tanstack/react-router'
-import { useUser } from '@clerk/clerk-react'
 import { useMemo, useState } from 'react'
 import { Calendar, CheckCircle, Search, UserRound } from 'lucide-react'
 import { m } from 'motion/react'
@@ -17,6 +16,7 @@ import type { Id } from '../../../../convex/_generated/dataModel'
 import type { PackageType } from '../../../lib/packages'
 import { DatePicker } from '@/components/ui/date-picker'
 import { useMutation, useQuery } from '@/integrations/convex/hooks'
+import { useAdminSession } from '@/lib/adminSession'
 
 export const Route = createFileRoute('/admin/walk-in/')({
   // Register walk-in booking route for hotel cashier/admin workflows.
@@ -44,18 +44,12 @@ function getNights(checkIn: string, checkOut: string): number {
 
 function WalkInBookingPage() {
   // Manage guest search/creation, room selection, and walk-in booking submission.
-  const { user } = useUser()
   const navigate = useNavigate()
   const { t } = useI18n()
   const { theme } = useTheme()
   const isDark = theme === 'dark'
 
-  const profile = useQuery(api.users.getMe, user?.id ? {} : 'skip')
-
-  const hotelAssignment = useQuery(
-    api.hotelStaff.getMyAssignment,
-    profile ? {} : 'skip',
-  )
+  const { hotelAssignment } = useAdminSession()
 
   const [searchTerm, setSearchTerm] = useState('')
   const [submittedTerm, setSubmittedTerm] = useState('')
@@ -89,9 +83,7 @@ function WalkInBookingPage() {
 
   const searchResults = useQuery(
     (api as any).guestProfiles.search,
-    user?.id && submittedTerm.trim().length >= 2
-      ? { searchTerm: submittedTerm }
-      : 'skip',
+    submittedTerm.trim().length >= 2 ? { searchTerm: submittedTerm } : 'skip',
   ) as
     | Array<{
         profile: GuestProfileLite
@@ -136,8 +128,6 @@ function WalkInBookingPage() {
   }
 
   const handleCreateOrUseGuest = async () => {
-    if (!user?.id) return
-
     const name = guestName.trim()
     const phone = normalizePhone(guestPhone)
     const email = guestEmail.trim().toLowerCase()
@@ -175,7 +165,7 @@ function WalkInBookingPage() {
   }
 
   const handleConfirmBooking = async () => {
-    if (!user?.id || !selectedGuest || !selectedRoom) return
+    if (!selectedGuest || !selectedRoom) return
 
     setSubmitting(true)
     setBookingError('')
@@ -217,16 +207,6 @@ function WalkInBookingPage() {
   const selectableCardIdle = isDark
     ? 'border-slate-700 bg-slate-800/30 hover:border-slate-600'
     : 'border-slate-200 bg-white hover:border-slate-300 hover:shadow-sm'
-
-  if (profile === undefined || hotelAssignment === undefined) {
-    return (
-      <div className="flex items-center justify-center py-20">
-        <div
-          className={`animate-spin rounded-full size-8 border-2 ${isDark ? 'border-violet-500/20 border-t-violet-500' : 'border-violet-500/20 border-t-violet-500'}`}
-        ></div>
-      </div>
-    )
-  }
 
   if (!canUseWalkIn) {
     return (

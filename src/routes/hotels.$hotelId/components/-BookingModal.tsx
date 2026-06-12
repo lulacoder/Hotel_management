@@ -1,6 +1,5 @@
 import { Link } from '@tanstack/react-router'
 import { useUser } from '@clerk/clerk-react'
-import { useAction, useMutation, useQuery } from '@/integrations/convex/hooks'
 import {
   Building2,
   Check,
@@ -29,6 +28,7 @@ import {
 import { useI18n } from '../../../lib/i18n/provider'
 import type { Id } from '../../../../convex/_generated/dataModel'
 import type { PackageType } from '../../../lib/packages'
+import { useAction, useMutation, useQuery } from '@/integrations/convex/hooks'
 
 interface BookingModalProps {
   roomId: Id<'rooms'>
@@ -63,7 +63,9 @@ interface BookingFormValues {
   transactionId: string
 }
 
-function getFirstErrorMessage(errors: unknown[] | undefined): string | null {
+function getFirstErrorMessage(
+  errors: Array<unknown> | undefined,
+): string | null {
   if (!errors) {
     return null
   }
@@ -211,18 +213,19 @@ export function BookingModal({
     [step, t],
   )
 
+  const bookingDefaultValues: BookingFormValues = {
+    packageType: existingBooking?.packageType ?? 'room_only',
+    guestName: user?.fullName || '',
+    guestEmail: user?.emailAddresses[0]?.emailAddress || '',
+    specialRequests: '',
+    paymentMethod: existingBooking?.status === 'pending_payment' ? 'bank' : '',
+    selectedBankAccountId: '',
+    nationalIdFile: null,
+    transactionId: '',
+  }
+
   const form = useForm({
-    defaultValues: {
-      packageType: existingBooking?.packageType ?? 'room_only',
-      guestName: user?.fullName || '',
-      guestEmail: user?.emailAddresses[0]?.emailAddress || '',
-      specialRequests: '',
-      paymentMethod:
-        existingBooking?.status === 'pending_payment' ? 'bank' : '',
-      selectedBankAccountId: '',
-      nationalIdFile: null,
-      transactionId: '',
-    } satisfies BookingFormValues,
+    defaultValues: bookingDefaultValues,
     validators: {
       onBlur: bookingSchema,
       onSubmit: bookingSchema,
@@ -974,27 +977,55 @@ export function BookingModal({
     </div>
   )
 
+  const stepCopy = (() => {
+    if (step === 'package') {
+      return {
+        title: t('bookingModal.step.packageTitle'),
+        description: t('bookingModal.step.packageDescription'),
+      }
+    }
+
+    if (step === 'details') {
+      return {
+        title: t('bookingModal.step.detailsTitle'),
+        description: t('bookingModal.step.detailsDescription'),
+      }
+    }
+
+    if (submitted) {
+      return {
+        title: t('bookingModal.step.submittedTitle'),
+        description: t('bookingModal.step.submittedDescription'),
+      }
+    }
+
+    return {
+      title: t('bookingModal.step.paymentTitle'),
+      description: t('bookingModal.step.paymentDescription'),
+    }
+  })()
+
+  const stepContent = (() => {
+    if (step === 'package') {
+      return packageStepContent
+    }
+
+    if (step === 'details') {
+      return detailsStepContent
+    }
+
+    return confirmationContent
+  })()
+
   return (
     <div className="booking-modal fixed inset-0 z-50 flex items-center justify-center bg-black/60 p-4 backdrop-blur-sm">
       <div className="booking-modal-panel flex max-h-[92vh] w-full max-w-lg flex-col overflow-hidden rounded-2xl border border-slate-800 bg-slate-900 shadow-2xl">
         <div className="booking-modal-header shrink-0 border-b border-slate-800 p-4 sm:p-5">
           <h2 className="booking-modal-title text-xl font-semibold text-slate-100">
-            {step === 'package'
-              ? t('bookingModal.step.packageTitle')
-              : step === 'details'
-                ? t('bookingModal.step.detailsTitle')
-                : submitted
-                  ? t('bookingModal.step.submittedTitle')
-                  : t('bookingModal.step.paymentTitle')}
+            {stepCopy.title}
           </h2>
           <p className="booking-modal-subtitle mt-1 text-sm text-slate-500">
-            {step === 'package'
-              ? t('bookingModal.step.packageDescription')
-              : step === 'details'
-                ? t('bookingModal.step.detailsDescription')
-                : submitted
-                  ? t('bookingModal.step.submittedDescription')
-                  : t('bookingModal.step.paymentDescription')}
+            {stepCopy.description}
           </p>
         </div>
 
@@ -1056,11 +1087,7 @@ export function BookingModal({
             </div>
           ) : null}
 
-          {step === 'package'
-            ? packageStepContent
-            : step === 'details'
-              ? detailsStepContent
-              : confirmationContent}
+          {stepContent}
         </div>
       </div>
     </div>

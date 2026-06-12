@@ -80,7 +80,7 @@ export function getPackageDescription(
 export function getPackageInclusions(
   type: PackageType,
   t: TranslateFn,
-): string[] {
+): Array<string> {
   return PACKAGE_BY_TYPE[type].inclusionKeys.map((key) => t(key))
 }
 

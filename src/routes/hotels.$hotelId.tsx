@@ -45,7 +45,7 @@ function getHotelCategoryBadgeClass(category: string): string {
   }
 }
 
-export function HotelDetailPage() {
+function HotelDetailPage() {
   const { hotelId } = Route.useParams()
   const search = Route.useSearch()
   const { user, isSignedIn } = useUser()

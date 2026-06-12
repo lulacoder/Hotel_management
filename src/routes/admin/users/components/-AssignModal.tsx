@@ -1,20 +1,22 @@
-import { useMutation, useQuery } from '@/integrations/convex/hooks'
 import { X } from 'lucide-react'
 import { useState } from 'react'
 import { useForm, useStore } from '@tanstack/react-form'
 import { z } from 'zod'
 
 import { api } from '../../../../../convex/_generated/api'
-import type { Id } from '../../../../../convex/_generated/dataModel'
 import { useI18n } from '../../../../lib/i18n/provider'
 import { useTheme } from '../../../../lib/theme'
+import type { Id } from '../../../../../convex/_generated/dataModel'
+import { useMutation, useQuery } from '@/integrations/convex/hooks'
 
 interface AssignModalProps {
   userId: Id<'users'>
   onClose: () => void
 }
 
-function getFirstErrorMessage(errors: unknown[] | undefined): string | null {
+function getFirstErrorMessage(
+  errors: Array<unknown> | undefined,
+): string | null {
   if (!errors) {
     return null
   }

@@ -1,28 +1,23 @@
 import { Link, createFileRoute } from '@tanstack/react-router'
-import { useUser } from '@clerk/clerk-react'
-import { useQuery } from '@/integrations/convex/hooks'
 import { AlertTriangle, MessageSquareText } from 'lucide-react'
 
 import { api } from '../../../../convex/_generated/api'
+import { useAdminSession } from '../../../lib/adminSession'
 import { useI18n } from '../../../lib/i18n/provider'
 import { useTheme } from '../../../lib/theme'
+import { useQuery } from '@/integrations/convex/hooks'
 
 export const Route = createFileRoute('/admin/complaints/')({
   component: AdminComplaintsPage,
 })
 
 function AdminComplaintsPage() {
-  const { user } = useUser()
   const { t, locale } = useI18n()
   const { theme } = useTheme()
   const isDark = theme === 'dark'
   const dateLocale = locale === 'am' ? 'am-ET' : 'en-US'
 
-  const profile = useQuery(api.users.getMe, user?.id ? {} : 'skip')
-  const hotelAssignment = useQuery(
-    api.hotelStaff.getMyAssignment,
-    profile ? {} : 'skip',
-  )
+  const { hotelAssignment } = useAdminSession()
 
   const canViewComplaints = Boolean(
     hotelAssignment &&
@@ -38,14 +33,6 @@ function AdminComplaintsPage() {
     api.complaints.listForAssignedHotel,
     canViewComplaints ? {} : 'skip',
   )
-
-  if (profile === undefined || hotelAssignment === undefined) {
-    return (
-      <div className="flex items-center justify-center py-20">
-        <div className="animate-spin rounded-full size-8 border-2 border-violet-500/20 border-t-violet-500"></div>
-      </div>
-    )
-  }
 
   if (!canViewComplaints) {
     return (

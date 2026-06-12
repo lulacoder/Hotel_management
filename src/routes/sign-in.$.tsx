@@ -1,8 +1,8 @@
-import { CURRENT_YEAR } from '../lib/currentYear'
 // Catch-all sign-in route variant to support Clerk callback/path patterns.
 import { Link, createFileRoute, redirect } from '@tanstack/react-router'
 import { SignIn } from '@clerk/clerk-react'
 import { ArrowLeft } from 'lucide-react'
+import { CURRENT_YEAR } from '../lib/currentYear'
 import { ThemeToggle } from '../components/ThemeToggle'
 import { buildRedirectSearch, sanitizeRedirect } from '../lib/authRouting'
 import { useI18n } from '../lib/i18n/provider'

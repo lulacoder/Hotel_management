@@ -105,7 +105,7 @@ const priorityConfig: Record<
 // Page component
 // ---------------------------------------------------------------------------
 
-export function CustomerAnnouncementsPage() {
+function CustomerAnnouncementsPage() {
   const { hotelId } = Route.useSearch()
   const { t } = useI18n()
   const { theme } = useTheme()

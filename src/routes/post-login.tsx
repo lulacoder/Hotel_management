@@ -1,12 +1,12 @@
 // Post-auth route that resolves user role and redirects to the correct destination.
 import { Navigate, createFileRoute } from '@tanstack/react-router'
 import { useUser } from '@clerk/clerk-react'
-import { useQuery } from '@/integrations/convex/hooks'
 import { api } from '../../convex/_generated/api'
 import { sanitizeRedirect } from '../lib/authRouting'
 import { Card, CardContent } from '../components/ui/card'
 import { useI18n } from '../lib/i18n/provider'
 import { DEFAULT_ADMIN_DASHBOARD_SEARCH } from '../lib/navigationSearch'
+import { useQuery } from '@/integrations/convex/hooks'
 
 export const Route = createFileRoute('/post-login')({
   validateSearch: (search: Record<string, unknown>) => ({
@@ -17,7 +17,7 @@ export const Route = createFileRoute('/post-login')({
   component: PostLoginPage,
 })
 
-export function PostLoginPage() {
+function PostLoginPage() {
   // Pull auth/profile + redirect query params used for role-based routing.
   const { user, isLoaded: isClerkLoaded } = useUser()
   const search = Route.useSearch()

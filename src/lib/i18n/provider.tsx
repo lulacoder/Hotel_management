@@ -15,12 +15,10 @@ import {
 import {
   LOCALE_STORAGE_KEY,
   enMessages,
-  locales,
   loadLocaleMessages,
-  type LocaleMessages,
-  type Locale,
-  type TranslationKey,
+  locales,
 } from './messages'
+import type { Locale, LocaleMessages, TranslationKey } from './messages'
 
 /**
  * The default language to use if no preference is found.
@@ -44,8 +42,7 @@ function interpolate(
 ): string {
   if (!params) return template
   return template.replace(/\{(\w+)\}/g, (_, key: string) => {
-    const value = params[key]
-    return value === undefined ? `{${key}}` : String(value)
+    return key in params ? String(params[key]) : `{${key}}`
   })
 }
 
@@ -134,7 +131,7 @@ export function I18nProvider({ children }: { children: React.ReactNode }) {
    */
   const t = useCallback(
     (key: TranslationKey, params?: Record<string, string | number>) => {
-      const localized = activeMessages[key] ?? enMessages[key] ?? key
+      const localized = activeMessages[key]
       return interpolate(localized, params)
     },
     [activeMessages],

@@ -1,4 +1,4 @@
-import { useMemo, useState } from 'react'
+import { useEffect, useMemo, useState } from 'react'
 import { useForm, useStore } from '@tanstack/react-form'
 import { z } from 'zod'
 import { useUser } from '@clerk/clerk-react'
@@ -95,7 +95,9 @@ function buildHotelDefaultValues(
   }
 }
 
-function getFirstErrorMessage(errors: Array<unknown> | undefined): string | null {
+function getFirstErrorMessage(
+  errors: Array<unknown> | undefined,
+): string | null {
   if (!errors) {
     return null
   }
@@ -162,6 +164,14 @@ function HotelModalContent({
   )
   const [imageChanged, setImageChanged] = useState(false)
   const [clearImage, setClearImage] = useState(false)
+
+  useEffect(() => {
+    if (!selectedImageFile || !imagePreviewUrl) {
+      return
+    }
+
+    return () => URL.revokeObjectURL(imagePreviewUrl)
+  }, [imagePreviewUrl, selectedImageFile])
 
   const schema = useMemo(
     () =>

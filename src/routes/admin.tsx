@@ -21,11 +21,11 @@ import {
   Users,
   X,
 } from 'lucide-react'
-import { useQuery } from '@/integrations/convex/hooks'
 import { api } from '../../convex/_generated/api'
 import { LanguageSwitcher } from '../components/LanguageSwitcher'
 import { ThemeToggle } from '../components/ThemeToggle'
 import { NotificationBell } from '../components/NotificationBell'
+import { AdminSessionProvider } from '../lib/adminSession'
 import { useI18n } from '../lib/i18n/provider'
 import { useTheme } from '../lib/theme'
 import { buildRedirectSearch } from '../lib/authRouting'
@@ -33,6 +33,7 @@ import {
   DEFAULT_ADMIN_DASHBOARD_SEARCH,
   DEFAULT_SELECT_LOCATION_SEARCH,
 } from '../lib/navigationSearch'
+import { useQuery } from '@/integrations/convex/hooks'
 
 export const Route = createFileRoute('/admin')({
   beforeLoad: ({ context, location }) => {
@@ -108,7 +109,7 @@ const ADMIN_NAV_ITEMS: Array<AdminNavItem> = [
   },
 ]
 
-export function AdminLayout() {
+function AdminLayout() {
   const { user, isLoaded, isSignedIn } = useUser()
   const location = useLocation()
   const { t } = useI18n()
@@ -503,7 +504,20 @@ export function AdminLayout() {
       <div className="flex-1 flex min-h-0 flex-col">
         {/* Page Content */}
         <main className="relative z-0 flex-1 min-h-0 p-4 md:p-8 overflow-y-auto overflow-x-hidden md:mt-0 mt-12">
-          <Outlet />
+          <AdminSessionProvider
+            value={{
+              displayName:
+                user.firstName ||
+                user.emailAddresses[0]?.emailAddress ||
+                t('admin.defaultUserName'),
+              hotelAssignment: hotelAssignment ?? null,
+              hotelAssignmentRole,
+              isRoomAdmin,
+              profile,
+            }}
+          >
+            <Outlet />
+          </AdminSessionProvider>
         </main>
       </div>
     </div>

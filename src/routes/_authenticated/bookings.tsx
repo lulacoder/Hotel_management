@@ -41,7 +41,7 @@ export const Route = createFileRoute('/_authenticated/bookings')({
   // Child route mounted under authenticated layout for customer booking history.
 })
 
-export function BookingsPage() {
+function BookingsPage() {
   const { user } = useUser()
   // Load current user profile/bookings and derive filter-ready display data.
   const { t } = useI18n()

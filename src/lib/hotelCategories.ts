@@ -1,6 +1,6 @@
 import type { TranslationKey } from './i18n'
 
-const HOTEL_CATEGORY_LABEL_KEYS: Record<string, TranslationKey> = {
+const HOTEL_CATEGORY_LABEL_KEYS: Partial<Record<string, TranslationKey>> = {
   Boutique: 'hotel.category.boutique',
   Budget: 'hotel.category.budget',
   Luxury: 'hotel.category.luxury',

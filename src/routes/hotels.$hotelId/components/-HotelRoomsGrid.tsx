@@ -37,7 +37,7 @@ interface HotelRoomsGridProps {
   }
 }
 
-const amenityIcons: Record<string, typeof Wifi> = {
+const amenityIcons: Partial<Record<string, typeof Wifi>> = {
   'Air Conditioning': Wind,
   'Mini Bar': Coffee,
   TV: Tv,

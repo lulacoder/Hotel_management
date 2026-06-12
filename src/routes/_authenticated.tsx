@@ -7,10 +7,10 @@ import {
   useLocation,
 } from '@tanstack/react-router'
 import { useUser } from '@clerk/clerk-react'
-import { useQuery } from '@/integrations/convex/hooks'
 import { api } from '../../convex/_generated/api'
 import { buildRedirectSearch } from '../lib/authRouting'
 import { DEFAULT_ADMIN_DASHBOARD_SEARCH } from '../lib/navigationSearch'
+import { useQuery } from '@/integrations/convex/hooks'
 
 export const Route = createFileRoute('/_authenticated')({
   beforeLoad: ({ context, location }) => {

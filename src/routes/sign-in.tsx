@@ -1,8 +1,8 @@
-import { CURRENT_YEAR } from '../lib/currentYear'
 // Canonical sign-in route with redirect handling for protected destinations.
 import { Link, createFileRoute, redirect } from '@tanstack/react-router'
 import { SignIn } from '@clerk/clerk-react'
 import { ArrowLeft } from 'lucide-react'
+import { CURRENT_YEAR } from '../lib/currentYear'
 import { Button } from '../components/ui/button'
 import { ThemeToggle } from '../components/ThemeToggle'
 import { buildRedirectSearch, sanitizeRedirect } from '../lib/authRouting'

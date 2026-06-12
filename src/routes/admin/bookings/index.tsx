@@ -1,6 +1,5 @@
 // Admin bookings list route with filtering and booking management actions.
 import { Link, createFileRoute, useNavigate } from '@tanstack/react-router'
-import { useUser } from '@clerk/clerk-react'
 import {
   Ban,
   Calendar,
@@ -19,6 +18,7 @@ import { m } from 'motion/react'
 import { api } from '../../../../convex/_generated/api'
 import { getAllowedBookingTransitions } from '../../../../convex/lib/bookingLifecycle'
 import { useI18n } from '../../../lib/i18n/provider'
+import { useAdminSession } from '../../../lib/adminSession'
 import {
   normalizeAnalyticsWindow,
   normalizeBookingStatusFilter,
@@ -88,7 +88,6 @@ type AdminBookingListItem = {
 }
 
 function BookingsPage() {
-  const { user } = useUser()
   const { t } = useI18n()
   const { theme } = useTheme()
   const isDark = theme === 'dark'
@@ -104,23 +103,19 @@ function BookingsPage() {
   const [outsourceBookingId, setOutsourceBookingId] =
     useState<Id<'bookings'> | null>(null)
 
-  const profile = useQuery(api.users.getMe, user?.id ? {} : 'skip')
-  const hotelAssignment = useQuery(
-    api.hotelStaff.getMyAssignment,
-    profile ? {} : 'skip',
-  )
+  const { hotelAssignment, profile } = useAdminSession()
 
   const hotels = useQuery(api.hotels.list, {})
   const visibleHotels =
-    profile?.role === 'room_admin'
+    profile.role === 'room_admin'
       ? hotels
       : hotels?.filter((hotel) => hotel._id === hotelAssignment?.hotelId)
 
   useEffect(() => {
-    if (profile?.role !== 'room_admin' && hotelAssignment?.hotelId) {
+    if (profile.role !== 'room_admin' && hotelAssignment?.hotelId) {
       setSelectedHotel(hotelAssignment.hotelId)
     }
-  }, [profile?.role, hotelAssignment?.hotelId])
+  }, [profile.role, hotelAssignment?.hotelId])
 
   useEffect(() => {
     setStatusFilter(search.status)
@@ -132,15 +127,11 @@ function BookingsPage() {
 
   const bookingsPage = usePaginatedQuery(
     (api as any).bookings.getByHotel,
-    user?.id
-      ? {
-          hotelId:
-            selectedHotel !== 'all'
-              ? (selectedHotel as Id<'hotels'>)
-              : undefined,
-          status: statusFilter !== 'all' ? statusFilter : undefined,
-        }
-      : 'skip',
+    {
+      hotelId:
+        selectedHotel !== 'all' ? (selectedHotel as Id<'hotels'>) : undefined,
+      status: statusFilter !== 'all' ? statusFilter : undefined,
+    },
     { initialNumItems: 20 },
   ) as {
     results: Array<AdminBookingListItem>
@@ -155,19 +146,18 @@ function BookingsPage() {
   const acceptCashPayment = useMutation(api.bookings.acceptCashPayment)
   const selectedBookingDetail = useQuery(
     api.bookings.getEnriched,
-    user?.id && selectedBookingId ? { bookingId: selectedBookingId } : 'skip',
+    selectedBookingId ? { bookingId: selectedBookingId } : 'skip',
   )
   const selectedChapaPayment = useQuery(
     api.chapaQueries.getPaymentForBooking,
-    user?.id && selectedBookingId ? { bookingId: selectedBookingId } : 'skip',
+    selectedBookingId ? { bookingId: selectedBookingId } : 'skip',
   )
   const outsourceBookingDetail = useQuery(
     api.bookings.getEnriched,
-    user?.id && outsourceBookingId ? { bookingId: outsourceBookingId } : 'skip',
+    outsourceBookingId ? { bookingId: outsourceBookingId } : 'skip',
   )
 
   const handleCancel = async (bookingId: Id<'bookings'>) => {
-    if (!user?.id) return
     if (confirm(t('bookings.confirmCancel'))) {
       await cancelBooking({ bookingId })
     }
@@ -177,12 +167,10 @@ function BookingsPage() {
     bookingId: Id<'bookings'>,
     nextStatus: ManualBookingTransitionStatus,
   ) => {
-    if (!user?.id) return
     await updateBookingStatus({ bookingId, nextStatus })
   }
 
   const handleAcceptCashPayment = async (bookingId: Id<'bookings'>) => {
-    if (!user?.id) return
     await acceptCashPayment({ bookingId })
   }
 
@@ -271,7 +259,7 @@ function BookingsPage() {
   }, [bookings, paymentStatusFilter, statusFilter])
 
   const canManageBooking = (hotelId: Id<'hotels'>) =>
-    profile?.role === 'room_admin' ||
+    profile.role === 'room_admin' ||
     (hotelAssignment?.hotelId === hotelId &&
       ['hotel_admin', 'hotel_cashier'].includes(hotelAssignment.role))
 
@@ -321,7 +309,7 @@ function BookingsPage() {
             onChange={(e) => setSelectedHotel(e.target.value)}
             className="admin-select"
           >
-            {profile?.role === 'room_admin' && (
+            {profile.role === 'room_admin' && (
               <option value="all">{t('admin.bookings.selectHotel')}</option>
             )}
             {visibleHotels?.map((hotel) => (
@@ -592,7 +580,7 @@ function BookingsPage() {
                         )}
 
                       {canManageBookings &&
-                        profile?.role !== 'room_admin' &&
+                        profile.role !== 'room_admin' &&
                         ['confirmed', 'checked_in'].includes(
                           booking.status,
                         ) && (
@@ -863,7 +851,7 @@ function BookingsPage() {
                   )}
 
                   <div className="admin-modal-footer">
-                    {profile?.role !== 'room_admin' &&
+                    {profile.role !== 'room_admin' &&
                       canManageBooking(selectedBookingDetail.booking.hotelId) &&
                       ['confirmed', 'checked_in'].includes(
                         selectedBookingDetail.booking.status,
@@ -898,7 +886,7 @@ function BookingsPage() {
         </div>
       )}
 
-      {outsourceBookingId && outsourceBookingDetail && user?.id && (
+      {outsourceBookingId && outsourceBookingDetail && (
         <OutsourceModal
           bookingDetail={outsourceBookingDetail}
           onClose={() => setOutsourceBookingId(null)}

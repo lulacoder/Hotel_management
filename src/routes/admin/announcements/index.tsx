@@ -1,5 +1,4 @@
 import { createFileRoute } from '@tanstack/react-router'
-import { useUser } from '@clerk/clerk-react'
 import {
   AlertCircle,
   AlertTriangle,
@@ -16,6 +15,7 @@ import { toast } from 'sonner'
 
 import { api } from '../../../../convex/_generated/api'
 import { LoadMoreButton } from '../../../components/LoadMoreButton'
+import { useAdminSession } from '../../../lib/adminSession'
 import { useI18n } from '../../../lib/i18n/provider'
 import { useTheme } from '../../../lib/theme'
 import { AnnouncementForm } from './components/-AnnouncementForm'
@@ -72,7 +72,6 @@ function timeAgo(timestamp: number): string {
 }
 
 function AdminAnnouncementsPage() {
-  const { user } = useUser()
   const { t, locale } = useI18n()
   const { theme } = useTheme()
   const isDark = theme === 'dark'
@@ -86,11 +85,7 @@ function AdminAnnouncementsPage() {
     priority: Priority
   } | null>(null)
 
-  const profile = useQuery(api.users.getMe, user?.id ? {} : 'skip')
-  const hotelAssignment = useQuery(
-    api.hotelStaff.getMyAssignment,
-    profile ? {} : 'skip',
-  )
+  const { hotelAssignment } = useAdminSession()
 
   const canManage = Boolean(
     hotelAssignment &&
@@ -111,18 +106,6 @@ function AdminAnnouncementsPage() {
 
   const toggleActive = useMutation(api.announcements.toggleActive)
   const remove = useMutation(api.announcements.remove)
-
-  // -------------------------------------------------------------------------
-  // Guards
-  // -------------------------------------------------------------------------
-
-  if (profile === undefined || hotelAssignment === undefined) {
-    return (
-      <div className="flex items-center justify-center py-20">
-        <div className="animate-spin rounded-full size-8 border-2 border-violet-500/20 border-t-violet-500" />
-      </div>
-    )
-  }
 
   if (!canManage) {
     return (

@@ -239,9 +239,7 @@ export function DatePicker({
             </button>
             <button
               type="button"
-              disabled={
-                (!!min && todayISO < min) || (!!max && todayISO > max)
-              }
+              disabled={(!!min && todayISO < min) || (!!max && todayISO > max)}
               onClick={() => select(todayISO)}
               className="text-sm font-medium text-violet-400 transition-colors hover:text-violet-300 disabled:cursor-not-allowed disabled:opacity-40"
             >

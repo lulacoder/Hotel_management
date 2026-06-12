@@ -4,9 +4,9 @@ import { useForm, useStore } from '@tanstack/react-form'
 import { z } from 'zod'
 
 import { api } from '../../../../../../convex/_generated/api'
-import type { Id } from '../../../../../../convex/_generated/dataModel'
 import { useI18n } from '../../../../../lib/i18n/provider'
 import { useTheme } from '../../../../../lib/theme'
+import type { Id } from '../../../../../../convex/_generated/dataModel'
 
 interface BankAccountModalProps {
   hotelId: Id<'hotels'>
@@ -18,7 +18,9 @@ interface BankAccountModalProps {
   onClose: () => void
 }
 
-function getFirstErrorMessage(errors: unknown[] | undefined): string | null {
+function getFirstErrorMessage(
+  errors: Array<unknown> | undefined,
+): string | null {
   if (!errors) {
     return null
   }

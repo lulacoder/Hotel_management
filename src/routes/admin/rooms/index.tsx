@@ -1,24 +1,24 @@
 // Room inventory management route scoped by hotel assignment/role.
-import { createFileRoute, Link } from '@tanstack/react-router'
-import { useUser } from '@clerk/clerk-react'
-import { useQuery } from '@/integrations/convex/hooks'
-import { api } from '../../../../convex/_generated/api'
+import { Link, createFileRoute } from '@tanstack/react-router'
 import {
   Building2,
+  ChevronRight,
   Hotel,
   MapPin,
   Search,
-  ChevronRight,
   SlidersHorizontal,
 } from 'lucide-react'
 import { useState } from 'react'
 import { m } from 'motion/react'
+import { api } from '../../../../convex/_generated/api'
+import { useQuery } from '@/integrations/convex/hooks'
 import { useI18n } from '@/lib/i18n'
 import { useTheme } from '@/lib/theme'
 import {
   normalizeAnalyticsWindow,
   normalizeRoomOperationalStatusFilter,
 } from '@/lib/adminAnalytics'
+import { useAdminSession } from '@/lib/adminSession'
 
 export const Route = createFileRoute('/admin/rooms/')({
   validateSearch: (search: Record<string, unknown>) => ({
@@ -32,7 +32,6 @@ export const Route = createFileRoute('/admin/rooms/')({
 })
 
 function RoomsPage() {
-  const { user } = useUser()
   const { t } = useI18n()
   const { theme } = useTheme()
   const isDark = theme === 'dark'
@@ -40,15 +39,11 @@ function RoomsPage() {
   const [searchTerm, setSearchTerm] = useState('')
   const [searchFocused, setSearchFocused] = useState(false)
 
+  const { hotelAssignment, profile } = useAdminSession()
   const hotels = useQuery(api.hotels.list, {})
-  const profile = useQuery(api.users.getMe, user?.id ? {} : 'skip')
-  const hotelAssignment = useQuery(
-    api.hotelStaff.getMyAssignment,
-    profile ? {} : 'skip',
-  )
 
   const visibleHotels =
-    profile?.role === 'room_admin'
+    profile.role === 'room_admin'
       ? hotels
       : hotels?.filter((hotel) => hotel._id === hotelAssignment?.hotelId)
 
