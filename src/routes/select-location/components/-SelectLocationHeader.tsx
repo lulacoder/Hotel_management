@@ -4,6 +4,7 @@ import { Home, MapPin, Menu } from 'lucide-react'
 import { useState } from 'react'
 
 import { LanguageSwitcher } from '../../../components/LanguageSwitcher'
+import { MobileAccountActions } from '../../../components/MobileAccountActions'
 import { NotificationBell } from '../../../components/NotificationBell'
 import { ThemeToggle } from '../../../components/ThemeToggle'
 import { Button } from '../../../components/ui/button'
@@ -187,11 +188,11 @@ export function SelectLocationHeader({
 
               {isSignedIn && (
                 <div className="mt-auto border-t border-slate-800/50 bg-slate-800/30 p-4">
-                  <div className="flex items-center gap-3">
-                    <UserButton afterSignOutUrl="/" />
-                    <NotificationBell dropDirection="up" />
-                    <span className="text-sm text-slate-400">{userName}</span>
-                  </div>
+                  <MobileAccountActions
+                    displayName={userName}
+                    onRequestClose={() => setIsOpen(false)}
+                    showNotifications
+                  />
                 </div>
               )}
             </SheetContent>

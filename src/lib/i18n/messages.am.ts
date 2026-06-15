@@ -23,6 +23,8 @@ export const amMessages = {
   'header.browseLocations': 'አካባቢዎችን ፈልግ',
   'header.account': 'መለያ',
   'header.createAccount': 'መለያ ፍጠር',
+  'header.manageAccount': 'መለያ አስተዳድር',
+  'header.signOut': 'ውጣ',
   'landing.redirecting': 'ወደ ዳሽቦርድ በመመራት ላይ...',
   'landing.clickIfNotRedirected': 'ካልተመራ እዚህ ጠቅ ያድርጉ',
   'landing.premiumBadge': 'ከፍተኛ የሆቴል ቦታ ማስያዣ መድረክ',

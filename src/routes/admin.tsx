@@ -23,6 +23,7 @@ import {
 } from 'lucide-react'
 import { api } from '../../convex/_generated/api'
 import { LanguageSwitcher } from '../components/LanguageSwitcher'
+import { MobileAccountActions } from '../components/MobileAccountActions'
 import { ThemeToggle } from '../components/ThemeToggle'
 import { NotificationBell } from '../components/NotificationBell'
 import { AdminSessionProvider } from '../lib/adminSession'
@@ -353,29 +354,13 @@ function AdminLayout() {
         <div
           className={`p-4 border-t ${isDark ? 'border-slate-800/50' : 'border-slate-200'}`}
         >
-          <div className="flex items-center gap-3 px-2">
-            <UserButton
-              afterSignOutUrl="/"
-              appearance={{
-                elements: {
-                  avatarBox: 'size-9',
-                },
-              }}
-            />
-            <div className="flex-1 min-w-0">
-              <p
-                className={`text-sm font-medium truncate ${isDark ? 'text-slate-200' : 'text-slate-800'}`}
-              >
-                {user.firstName || t('admin.defaultUserName')}
-              </p>
-              <p
-                className={`text-xs truncate ${isDark ? 'text-slate-500' : 'text-slate-500'}`}
-              >
-                {user.emailAddresses[0]?.emailAddress}
-              </p>
-            </div>
-            <NotificationBell dropDirection="up" />
-          </div>
+          <MobileAccountActions
+            displayName={user.firstName || t('admin.defaultUserName')}
+            email={user.emailAddresses[0]?.emailAddress}
+            isDark={isDark}
+            onRequestClose={() => setMobileMenuOpen(false)}
+            showNotifications
+          />
         </div>
       </aside>
 

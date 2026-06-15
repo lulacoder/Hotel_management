@@ -1,7 +1,14 @@
-import { Link, useLocation } from '@tanstack/react-router'
-import { useAuth } from '@clerk/clerk-react'
+import { Link, useLocation, useNavigate } from '@tanstack/react-router'
+import { useAuth, useClerk, useUser } from '@clerk/clerk-react'
 import { useEffect, useState } from 'react'
-import { CalendarCheck, Home, MapPin, Menu } from 'lucide-react'
+import {
+  CalendarCheck,
+  Home,
+  LogOut,
+  MapPin,
+  Menu,
+  Settings,
+} from 'lucide-react'
 
 import ClerkHeader from '../integrations/clerk/header-user'
 import { useI18n } from '../lib/i18n/provider'
@@ -27,6 +34,9 @@ export default function Header() {
   const [scrolled, setScrolled] = useState(false)
   const [menuOpen, setMenuOpen] = useState(false)
   const { isSignedIn } = useAuth()
+  const { user } = useUser()
+  const clerk = useClerk()
+  const navigate = useNavigate()
   const { t } = useI18n()
   const location = useLocation()
 
@@ -73,6 +83,20 @@ export default function Header() {
         ]
       : []),
   ]
+
+  // Keeps mobile account actions inside the sheet so Clerk's portalled menu cannot be dismissed as an outside tap.
+  const handleManageAccount = () => {
+    setMenuOpen(false)
+    window.setTimeout(() => {
+      clerk.openUserProfile()
+    }, 0)
+  }
+
+  const handleSignOut = async () => {
+    setMenuOpen(false)
+    await clerk.signOut({ redirectUrl: '/' })
+    navigate({ to: '/' })
+  }
 
   return (
     <>
@@ -129,12 +153,12 @@ export default function Header() {
                       search={item.search}
                       onClick={() => setMenuOpen(false)}
                       className={cn(
-                        'flex items-center gap-3 rounded-xl border border-transparent px-4 py-3 font-medium transition-all',
+                        'flex h-12 items-center gap-3 rounded-xl border border-transparent px-4 font-medium transition-all',
                         'text-slate-400 hover:border-slate-700/70 hover:bg-slate-800/60 hover:text-slate-100',
                       )}
                       activeProps={{
                         className:
-                          'flex items-center gap-3 rounded-xl border border-violet-500/20 bg-violet-500/10 px-4 py-3 font-medium text-violet-300',
+                          'flex h-12 items-center gap-3 rounded-xl border border-violet-500/20 bg-violet-500/10 px-4 font-medium text-violet-300',
                       }}
                     >
                       <item.icon className="size-5" />
@@ -143,7 +167,7 @@ export default function Header() {
                   ))}
 
                   <div className="mt-6 border-t border-slate-800/50 pt-6">
-                    <ThemeToggle className="w-full justify-center" />
+                    <ThemeToggle className="h-12 w-full justify-center rounded-xl px-4" />
                   </div>
 
                   {!isSignedIn && (
@@ -151,7 +175,7 @@ export default function Header() {
                       <Button
                         asChild
                         variant="outline"
-                        className="w-full justify-center border-slate-700 bg-slate-800/60 text-slate-200 hover:bg-slate-700"
+                        className="h-12 w-full justify-center rounded-xl border-slate-700 bg-slate-800/60 px-4 text-sm font-semibold text-slate-200 hover:bg-slate-700"
                       >
                         <Link
                           to="/sign-in"
@@ -163,7 +187,7 @@ export default function Header() {
                       </Button>
                       <Button
                         asChild
-                        className="header-primary-btn w-full justify-center rounded-xl"
+                        className="header-primary-btn h-12 w-full justify-center rounded-xl px-4 text-sm font-semibold"
                       >
                         <Link
                           to="/sign-up"
@@ -177,9 +201,57 @@ export default function Header() {
                   )}
                 </nav>
 
-                {isSignedIn && (
+                {isSignedIn && user && (
                   <div className="border-t border-slate-800/50 bg-slate-800/30 p-4">
-                    <ClerkHeader />
+                    <div className="flex items-center gap-3 px-1 pb-3">
+                      {user.imageUrl ? (
+                        <img
+                          src={user.imageUrl}
+                          alt={user.fullName ?? user.username ?? 'User avatar'}
+                          className="size-10 rounded-full object-cover"
+                        />
+                      ) : (
+                        <div className="flex size-10 items-center justify-center rounded-full bg-violet-500/20 text-sm font-semibold text-violet-200">
+                          {(
+                            user.firstName?.[0] ??
+                            user.username?.[0] ??
+                            user.primaryEmailAddress?.emailAddress[0] ??
+                            '?'
+                          ).toUpperCase()}
+                        </div>
+                      )}
+                      <div className="min-w-0 flex-1">
+                        <div className="truncate text-sm font-semibold text-slate-100">
+                          {user.fullName ??
+                            user.username ??
+                            user.primaryEmailAddress?.emailAddress ??
+                            ''}
+                        </div>
+                        {user.primaryEmailAddress?.emailAddress && (
+                          <div className="truncate text-xs text-slate-400">
+                            {user.primaryEmailAddress.emailAddress}
+                          </div>
+                        )}
+                      </div>
+                    </div>
+                    <div className="space-y-1">
+                      <button
+                        type="button"
+                        onClick={handleManageAccount}
+                        className="flex h-11 w-full cursor-pointer items-center gap-3 rounded-xl px-3 text-sm font-medium text-slate-300 transition-colors hover:bg-slate-700/60 hover:text-slate-100 focus-visible:bg-slate-700/60 focus-visible:text-slate-100"
+                      >
+                        <Settings className="size-4" />
+                        <span>{t('header.manageAccount')}</span>
+                      </button>
+                      <button
+                        type="button"
+                        onClick={handleSignOut}
+                        className="flex h-11 w-full cursor-pointer items-center gap-3 rounded-xl px-3 text-sm font-medium text-slate-300 transition-colors hover:bg-rose-500/10 hover:text-rose-300 focus-visible:bg-rose-500/10 focus-visible:text-rose-300"
+                      >
+                        <LogOut className="size-4" />
+                        <span>{t('header.signOut')}</span>
+                      </button>
+                    </div>
                   </div>
                 )}
               </SheetContent>

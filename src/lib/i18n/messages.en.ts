@@ -22,6 +22,8 @@ export const enMessages = {
   'header.browseLocations': 'Browse Locations',
   'header.account': 'Account',
   'header.createAccount': 'Create Account',
+  'header.manageAccount': 'Manage account',
+  'header.signOut': 'Sign out',
   'landing.redirecting': 'Redirecting to dashboard...',
   'landing.clickIfNotRedirected': 'Click here if not redirected',
   'landing.premiumBadge': 'Premium Hotel Booking Platform',

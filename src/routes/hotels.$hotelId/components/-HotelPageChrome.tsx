@@ -4,6 +4,7 @@ import { Home, MapPin, Menu, X } from 'lucide-react'
 import { useState } from 'react'
 
 import { LanguageSwitcher } from '../../../components/LanguageSwitcher'
+import { MobileAccountActions } from '../../../components/MobileAccountActions'
 import { ThemeToggle } from '../../../components/ThemeToggle'
 import { useI18n } from '../../../lib/i18n/provider'
 import {
@@ -202,12 +203,10 @@ export function HotelPageChrome({
 
         {isSignedIn && (
           <div className="border-t border-slate-800/50 bg-slate-800/30 p-4">
-            <div className="flex items-center gap-3">
-              <UserButton afterSignOutUrl="/" />
-              <span className="text-sm text-slate-400">
-                {userFirstName ?? ''}
-              </span>
-            </div>
+            <MobileAccountActions
+              displayName={userFirstName}
+              onRequestClose={() => setIsMobileMenuOpen(false)}
+            />
           </div>
         )}
       </aside>

@@ -17,6 +17,7 @@ import { useState } from 'react'
 import { api } from '../../../convex/_generated/api'
 import { LoadMoreButton } from '../../components/LoadMoreButton'
 import { LanguageSwitcher } from '../../components/LanguageSwitcher'
+import { MobileAccountActions } from '../../components/MobileAccountActions'
 import { ThemeToggle } from '../../components/ThemeToggle'
 import { useI18n } from '../../lib/i18n/provider'
 import {
@@ -366,16 +367,11 @@ function CustomerAnnouncementsPage() {
                 : 'border-slate-200 bg-slate-50/70'
             }`}
           >
-            <div className="flex items-center gap-3">
-              <UserButton afterSignOutUrl="/" />
-              <span
-                className={`text-sm ${
-                  isDark ? 'text-slate-400' : 'text-slate-700'
-                }`}
-              >
-                {user.firstName}
-              </span>
-            </div>
+            <MobileAccountActions
+              displayName={user.firstName ?? undefined}
+              isDark={isDark}
+              onRequestClose={() => setIsMobileMenuOpen(false)}
+            />
           </div>
         )}
       </aside>
