@@ -2,8 +2,27 @@ import { httpRouter } from 'convex/server'
 import { httpAction } from './_generated/server'
 import { internal } from './_generated/api'
 import { resend } from './paymentEmails'
+import type {
+  ArgsAndOptions,
+  FunctionArgs,
+  FunctionReference,
+  FunctionReturnType,
+  TransactionLimits,
+} from 'convex/server'
 
 const http = httpRouter()
+
+type ResendWebhookMutationCtx = {
+  runMutation: <
+    TMutation extends FunctionReference<'mutation', 'public' | 'internal'>,
+  >(
+    mutation: TMutation,
+    ...args: ArgsAndOptions<
+      TMutation,
+      { transactionLimits?: TransactionLimits }
+    >
+  ) => Promise<FunctionReturnType<TMutation>>
+}
 
 // Endpoint handling the Clerk webhook callbacks (e.g. for user creation).
 // Validates Svix signatures and delegates processing to `clerk.verifyAndProcessWebhook`.
@@ -77,6 +96,7 @@ http.route({
 http.route({
   path: '/chapa/mobile-return',
   method: 'GET',
+  // eslint-disable-next-line @typescript-eslint/require-await -- httpAction requires a Promise<Response> handler.
   handler: httpAction(async (_ctx, request) => {
     const url = new URL(request.url)
     const txRef =
@@ -115,7 +135,13 @@ http.route({
   path: '/resend-webhook',
   method: 'POST',
   handler: httpAction(async (ctx, request) => {
-    return await resend.handleResendEventWebhook(ctx, request)
+    // Resend's webhook helper only needs the mutation args, not transaction options.
+    const resendCtx: ResendWebhookMutationCtx = {
+      runMutation: (mutation, ...args) =>
+        ctx.runMutation(mutation, args[0] as FunctionArgs<typeof mutation>),
+    }
+
+    return await resend.handleResendEventWebhook(resendCtx, request)
   }),
 })
 

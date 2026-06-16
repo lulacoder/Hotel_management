@@ -14,7 +14,7 @@
   "dependencies": {
     "@clerk/clerk-react": "^5.49.0",
     "@convex-dev/react-query": "0.1.0",
-    "@convex-dev/resend": "^0.2.2",
+    "@convex-dev/resend": "^0.2.4",
     "@tailwindcss/vite": "^4.2.2",
     "@tanstack/react-form": "^1.29.0",
     "@tanstack/react-router": "^1.168.10",
@@ -22,7 +22,7 @@
     "class-variance-authority": "^0.7.1",
     "clsx": "^2.1.1",
     "convex": "^1.27.3",
-    "convex-helpers": "^0.1.114",
+    "convex-helpers": "^0.1.119",
     "dotenv": "^17.2.3",
     "lucide-react": "^0.561.0",
     "motion": "^12.36.0",
@@ -54,5 +54,9 @@
     "typescript": "^5.7.2",
     "vite": "^8.0.8",
     "vitest": "^4.1.4"
+  },
+  "overrides": {
+    "esbuild": "0.28.1",
+    "ws": "8.21.0"
   }
 }
