@@ -8,7 +8,7 @@ import {
   CreditCard,
   Landmark,
 } from 'lucide-react'
-import { useEffect, useMemo, useState } from 'react'
+import { useMemo, useState } from 'react'
 import { useForm, useStore } from '@tanstack/react-form'
 import { z } from 'zod'
 
@@ -51,6 +51,12 @@ interface BookingModalProps {
 }
 
 type PaymentMethod = '' | 'chapa' | 'bank'
+type BookingStep = 'package' | 'details' | 'confirm'
+
+interface BookingFlowState {
+  bookingId: Id<'bookings'> | null
+  step: BookingStep
+}
 
 interface BookingFormValues {
   packageType: PackageType
@@ -115,17 +121,17 @@ export function BookingModal({
   const generateUploadUrl = useMutation(api.files.generateUploadUrl)
   const trackUpload = useMutation(api.files.trackUpload)
 
-  const [step, setStep] = useState<'package' | 'details' | 'confirm'>(
-    existingBooking ? 'confirm' : 'package',
-  )
-  const [bookingId, setBookingId] = useState<Id<'bookings'> | null>(
-    existingBooking?._id ?? null,
-  )
+  const [bookingFlow, setBookingFlow] = useState<BookingFlowState>({
+    bookingId: existingBooking?._id ?? null,
+    step: existingBooking ? 'confirm' : 'package',
+  })
   const [copied, setCopied] = useState(false)
   const [submitted, setSubmitted] = useState(false)
   const [loadingPhase, setLoadingPhase] = useState<'hold' | 'bank' | null>(null)
   const [chapaLoading, setChapaLoading] = useState(false)
   const [error, setError] = useState('')
+
+  const { bookingId, step } = bookingFlow
 
   const bookingSchema = useMemo(
     () =>
@@ -176,7 +182,10 @@ export function BookingModal({
           }
 
           if (step === 'confirm' && value.paymentMethod === 'bank') {
-            if (!value.selectedBankAccountId) {
+            const selectedBankAccountId =
+              value.selectedBankAccountId || bankAccounts?.[0]?._id || ''
+
+            if (!selectedBankAccountId) {
               ctx.addIssue({
                 code: 'custom',
                 path: ['selectedBankAccountId'],
@@ -210,19 +219,30 @@ export function BookingModal({
             }
           }
         }),
-    [step, t],
+    [bankAccounts, step, t],
   )
 
-  const bookingDefaultValues: BookingFormValues = {
-    packageType: existingBooking?.packageType ?? 'room_only',
-    guestName: user?.fullName || '',
-    guestEmail: user?.emailAddresses[0]?.emailAddress || '',
-    specialRequests: '',
-    paymentMethod: existingBooking?.status === 'pending_payment' ? 'bank' : '',
-    selectedBankAccountId: '',
-    nationalIdFile: null,
-    transactionId: '',
-  }
+  const userEmail = user?.emailAddresses[0]?.emailAddress ?? ''
+
+  const bookingDefaultValues = useMemo<BookingFormValues>(
+    () => ({
+      packageType: existingBooking?.packageType ?? 'room_only',
+      guestName: user?.fullName || '',
+      guestEmail: userEmail,
+      specialRequests: '',
+      paymentMethod:
+        existingBooking?.status === 'pending_payment' ? 'bank' : '',
+      selectedBankAccountId: '',
+      nationalIdFile: null,
+      transactionId: '',
+    }),
+    [
+      existingBooking?.packageType,
+      existingBooking?.status,
+      user?.fullName,
+      userEmail,
+    ],
+  )
 
   const form = useForm({
     defaultValues: bookingDefaultValues,
@@ -252,9 +272,7 @@ export function BookingModal({
             specialRequests: value.specialRequests.trim() || undefined,
           })
 
-          setBookingId(id)
-          form.setFieldValue('paymentMethod', '')
-          setStep('confirm')
+          setBookingFlow({ bookingId: id, step: 'confirm' })
         } catch (submissionError) {
           setError(
             submissionError instanceof Error
@@ -323,58 +341,6 @@ export function BookingModal({
     (state) => state.values.nationalIdFile,
   )
 
-  useEffect(() => {
-    if (!user) {
-      return
-    }
-
-    if (!form.getFieldValue('guestName')) {
-      form.setFieldValue('guestName', user.fullName || '')
-    }
-
-    if (!form.getFieldValue('guestEmail')) {
-      form.setFieldValue(
-        'guestEmail',
-        user.emailAddresses[0]?.emailAddress || '',
-      )
-    }
-  }, [form, user])
-
-  useEffect(() => {
-    if (!existingBooking) {
-      return
-    }
-
-    form.setFieldValue(
-      'packageType',
-      existingBooking.packageType ?? 'room_only',
-    )
-    form.setFieldValue(
-      'paymentMethod',
-      existingBooking.status === 'pending_payment' ? 'bank' : '',
-    )
-    setBookingId(existingBooking._id)
-    setStep('confirm')
-  }, [existingBooking, form])
-
-  useEffect(() => {
-    if (!bankAccounts || bankAccounts.length === 0) {
-      form.setFieldValue('selectedBankAccountId', '')
-      return
-    }
-
-    if (selectedBankAccountId) {
-      const stillExists = bankAccounts.some(
-        (account) => account._id === selectedBankAccountId,
-      )
-      if (stillExists) {
-        return
-      }
-    }
-
-    form.setFieldValue('selectedBankAccountId', bankAccounts[0]._id)
-  }, [bankAccounts, form, selectedBankAccountId])
-
   const handleChapaCheckout = async () => {
     if (!bookingId) {
       return
@@ -403,9 +369,17 @@ export function BookingModal({
     }
   }
 
-  const selectedBankAccount = bankAccounts?.find(
-    (account) => account._id === selectedBankAccountId,
-  )
+  const selectedBankAccount = useMemo(() => {
+    if (!bankAccounts || bankAccounts.length === 0) {
+      return undefined
+    }
+
+    return (
+      bankAccounts.find((account) => account._id === selectedBankAccountId) ??
+      bankAccounts[0]
+    )
+  }, [bankAccounts, selectedBankAccountId])
+  const effectiveSelectedBankAccountId = selectedBankAccount?._id ?? ''
 
   const handleCopyBankAccount = async () => {
     if (!selectedBankAccount) {
@@ -489,7 +463,9 @@ export function BookingModal({
         </button>
         <button
           type="button"
-          onClick={() => setStep('details')}
+          onClick={() =>
+            setBookingFlow((flow) => ({ ...flow, step: 'details' }))
+          }
           className="booking-action-primary flex-1 cursor-pointer rounded-xl bg-white px-4 py-3 font-medium text-slate-900 transition-all hover:bg-slate-100"
         >
           {t('bookingModal.continue')}
@@ -617,7 +593,9 @@ export function BookingModal({
       <div className="flex gap-3 pt-2">
         <button
           type="button"
-          onClick={() => setStep('package')}
+          onClick={() =>
+            setBookingFlow((flow) => ({ ...flow, step: 'package' }))
+          }
           className="booking-action-secondary flex-1 cursor-pointer rounded-xl border border-slate-700 bg-slate-800 px-4 py-3 font-medium text-slate-300 transition-colors hover:bg-slate-700"
         >
           {t('signIn.back')}
@@ -820,7 +798,7 @@ export function BookingModal({
                         {t('bookingModal.selectBank')}
                       </label>
                       <select
-                        value={field.state.value}
+                        value={effectiveSelectedBankAccountId}
                         onChange={(event) =>
                           field.handleChange(event.target.value)
                         }
