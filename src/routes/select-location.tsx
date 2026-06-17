@@ -50,7 +50,7 @@ function SelectLocationPage() {
   const navigate = useNavigate()
   const locationRequestedRef = useRef(false)
   const autoSelectedDistanceRef = useRef(false)
-  const [activeRatingHotelId, setActiveRatingHotelId] =
+  const [selectedRatingHotelId, setSelectedRatingHotelId] =
     useState<Id<'hotels'> | null>(null)
   const [ratingError, setRatingError] = useState('')
   const [ratingSaving, setRatingSaving] = useState(false)
@@ -65,6 +65,16 @@ function SelectLocationPage() {
 
   // Primary data sources for cards and aggregated rating metadata.
   const hotels = useQuery(api.hotels.list, {})
+  const ratingHotelIdFromSearch = useMemo<Id<'hotels'> | null>(() => {
+    if (!hotels || !search.rate) {
+      return null
+    }
+
+    const matchedHotel = hotels.find((hotel) => hotel._id === search.rate)
+    return matchedHotel?._id ?? null
+  }, [hotels, search.rate])
+  const activeRatingHotelId = selectedRatingHotelId ?? ratingHotelIdFromSearch
+
   const ratingSummaries = useQuery(
     api.ratings.getSummaries,
     hotels && hotels.length > 0
@@ -102,27 +112,6 @@ function SelectLocationPage() {
       requestLocation()
     }
   }, [locationSupported, requestLocation])
-
-  useEffect(() => {
-    if (!hotels || !search.rate) {
-      return
-    }
-
-    const matchedHotel = hotels.find((hotel) => hotel._id === search.rate)
-    if (!matchedHotel) {
-      return
-    }
-
-    setActiveRatingHotelId(matchedHotel._id)
-    navigate({
-      replace: true,
-      search: (prev) => ({
-        ...prev,
-        rate: undefined,
-      }),
-      to: '/select-location',
-    })
-  }, [hotels, navigate, search.rate])
 
   // Compute hotels with distance
   const hotelsWithDistance = useMemo(() => {
@@ -165,7 +154,7 @@ function SelectLocationPage() {
   const cities = useMemo<Array<string>>(() => {
     if (!hotels) return []
     const values = hotels.flatMap((hotel) => (hotel.city ? [hotel.city] : []))
-    return [...new Set(values)].toSorted()
+    return Array.from(new Set(values)).sort()
   }, [hotels])
 
   // Get unique categories
@@ -174,7 +163,7 @@ function SelectLocationPage() {
     const values = hotels.flatMap((hotel) =>
       hotel.category ? [hotel.category] : [],
     )
-    return [...new Set(values)].toSorted()
+    return Array.from(new Set(values)).sort()
   }, [hotels])
 
   // Filter and sort hotels
@@ -195,7 +184,7 @@ function SelectLocationPage() {
       return matchesSearch && matchesCity && matchesCategory
     })
 
-    return result.toSorted((a, b) => {
+    return result.sort((a, b) => {
       switch (sortBy) {
         case 'distance':
           // Hotels without location go to the end
@@ -244,6 +233,7 @@ function SelectLocationPage() {
     navigate({
       replace: true,
       search: (prev) => ({
+        ...DEFAULT_SELECT_LOCATION_SEARCH,
         ...prev,
         sort: 'distance',
       }),
@@ -299,13 +289,25 @@ function SelectLocationPage() {
 
   const openRatingModal = (hotelId: Id<'hotels'>) => {
     // Seed modal state for selected hotel and reset prior errors.
-    setActiveRatingHotelId(hotelId)
+    setSelectedRatingHotelId(hotelId)
     setRatingError('')
   }
 
   const closeRatingModal = () => {
-    setActiveRatingHotelId(null)
+    setSelectedRatingHotelId(null)
     setRatingError('')
+
+    if (search.rate) {
+      navigate({
+        replace: true,
+        search: (prev) => ({
+          ...DEFAULT_SELECT_LOCATION_SEARCH,
+          ...prev,
+          rate: undefined,
+        }),
+        to: '/select-location',
+      })
+    }
   }
 
   const openComplaintModal = () => {
