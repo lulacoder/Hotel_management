@@ -10,6 +10,17 @@ const config = defineConfig({
     tsconfigPaths: true,
   },
   build: {
+    modulePreload: {
+      resolveDependencies: (_filename, deps, context) => {
+        if (context.hostType !== 'html') {
+          return deps
+        }
+
+        // Analytics charts are loaded by lazy dashboard components, so keep the
+        // heavy Recharts vendor chunk out of the first document preload list.
+        return deps.filter((dep) => !dep.includes('vendor-charts'))
+      },
+    },
     rolldownOptions: {
       output: {
         // Prefer Rolldown code-splitting groups over deprecated manualChunks.
