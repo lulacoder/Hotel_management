@@ -96,24 +96,18 @@ export function I18nProvider({ children }: { children: React.ReactNode }) {
   useEffect(() => {
     let isActive = true
 
-    if (locale === 'en') {
-      setActiveMessages(enMessages)
-      return () => {
-        isActive = false
+    async function syncActiveMessages() {
+      const messagesForLocale =
+        locale === 'en'
+          ? enMessages
+          : await loadLocaleMessages(locale).catch(() => enMessages)
+
+      if (isActive) {
+        setActiveMessages(messagesForLocale)
       }
     }
 
-    void loadLocaleMessages(locale)
-      .then((messagesForLocale) => {
-        if (isActive) {
-          setActiveMessages(messagesForLocale)
-        }
-      })
-      .catch(() => {
-        if (isActive) {
-          setActiveMessages(enMessages)
-        }
-      })
+    void syncActiveMessages()
 
     return () => {
       isActive = false
