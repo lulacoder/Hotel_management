@@ -1,6 +1,6 @@
 // Admin dashboard landing page with role-aware analytics and quick actions.
 import { Link, createLazyFileRoute, useNavigate } from '@tanstack/react-router'
-import { Suspense, lazy } from 'react'
+import { Suspense, lazy, useCallback, useMemo } from 'react'
 import {
   ArrowUpRight,
   BarChart3,
@@ -178,101 +178,117 @@ function AdminDashboard() {
     profile.role === 'room_admin' ? { window } : 'skip',
   )
 
-  const roleLabelByCode: Record<string, string> = {
-    room_admin: t('admin.role.roomAdmin'),
-    hotel_admin: t('admin.role.hotelAdmin'),
-    hotel_cashier: t('admin.role.hotelCashier'),
-  }
+  const roleLabelByCode = useMemo<Record<string, string>>(
+    () => ({
+      room_admin: t('admin.role.roomAdmin'),
+      hotel_admin: t('admin.role.hotelAdmin'),
+      hotel_cashier: t('admin.role.hotelCashier'),
+    }),
+    [t],
+  )
 
-  const quickActions = [
-    // Navigation shortcuts shown based on user permissions.
-    {
-      label: t('admin.nav.hotels'),
-      description: t('admin.hotels.description'),
-      icon: Hotel,
-      to: '/admin/hotels',
+  const quickActions = useMemo(
+    () =>
+      [
+        // Navigation shortcuts shown based on user permissions.
+        {
+          label: t('admin.nav.hotels'),
+          description: t('admin.hotels.description'),
+          icon: Hotel,
+          to: '/admin/hotels',
+        },
+        {
+          label: t('admin.nav.rooms'),
+          description: t('admin.rooms.description'),
+          icon: Building2,
+          to: '/admin/rooms',
+        },
+        {
+          label: t('admin.nav.bookings'),
+          description: t('admin.bookings.description'),
+          icon: Calendar,
+          to: '/admin/bookings',
+        },
+      ].filter((action) => {
+        if (profile.role === 'room_admin') {
+          return true
+        }
+
+        if (hotelAssignment?.role === 'hotel_cashier') {
+          return action.to === '/admin/bookings'
+        }
+
+        return true
+      }),
+    [hotelAssignment?.role, profile.role, t],
+  )
+
+  const metricLabels = useMemo<Record<string, string>>(
+    () => ({
+      collectedRevenue: t('admin.analytics.collectedRevenue' as never),
+      confirmedRevenuePipeline: t('admin.analytics.confirmedPipeline' as never),
+      totalBookings: t('admin.analytics.totalBookings' as never),
+      activeStays: t('admin.analytics.activeStays' as never),
+      occupancyRate: t('admin.analytics.occupancy' as never),
+      pendingPaymentBookings: t(
+        'admin.analytics.pendingPaymentBookings' as never,
+      ),
+      arrivalsToday: t('admin.analytics.arrivalsToday' as never),
+      held: t('booking.status.held'),
+      pending_payment: t('booking.status.pendingPayment'),
+      confirmed: t('booking.status.confirmed'),
+      checked_in: t('booking.status.checkedIn'),
+      checked_out: t('booking.status.checkedOut'),
+      cancelled: t('booking.status.cancelled'),
+      expired: t('booking.status.expired'),
+      outsourced: t('booking.status.outsourced'),
+      pending: t('admin.bookings.pending'),
+      paid: t('admin.analytics.payment.paid' as never),
+      failed: t('admin.analytics.payment.failed' as never),
+      refunded: t('admin.analytics.payment.refunded' as never),
+      unpaid_unknown: t('admin.analytics.payment.unknown' as never),
+      available: t('admin.hotels.status.available'),
+      maintenance: t('admin.hotels.status.maintenance'),
+      cleaning: t('admin.hotels.status.cleaning'),
+      out_of_order: t('admin.hotels.status.outOfOrder'),
+    }),
+    [t],
+  )
+
+  const handleWindowChange = useCallback(
+    (nextWindow: AnalyticsWindow) => {
+      navigate({ to: '/admin', search: { window: nextWindow } })
     },
-    {
-      label: t('admin.nav.rooms'),
-      description: t('admin.rooms.description'),
-      icon: Building2,
-      to: '/admin/rooms',
+    [navigate],
+  )
+
+  const navigateToBookings = useCallback(
+    (nextSearch: { status?: string; paymentStatus?: string }) => {
+      navigate({
+        to: '/admin/bookings',
+        search: {
+          status: (nextSearch.status ?? 'all') as BookingStatusFilter,
+          paymentStatus: (nextSearch.paymentStatus ??
+            'all') as PaymentStatusFilter,
+          window,
+        },
+      })
     },
-    {
-      label: t('admin.nav.bookings'),
-      description: t('admin.bookings.description'),
-      icon: Calendar,
-      to: '/admin/bookings',
+    [navigate, window],
+  )
+
+  const navigateToRooms = useCallback(
+    (operationalStatus: string) => {
+      navigate({
+        to: '/admin/rooms',
+        search: {
+          operationalStatus: operationalStatus as RoomOperationalStatusFilter,
+          window,
+        },
+      })
     },
-  ].filter((action) => {
-    if (profile.role === 'room_admin') {
-      return true
-    }
-
-    if (hotelAssignment?.role === 'hotel_cashier') {
-      return action.to === '/admin/bookings'
-    }
-
-    return true
-  })
-
-  const metricLabels: Record<string, string> = {
-    collectedRevenue: t('admin.analytics.collectedRevenue' as never),
-    confirmedRevenuePipeline: t('admin.analytics.confirmedPipeline' as never),
-    totalBookings: t('admin.analytics.totalBookings' as never),
-    activeStays: t('admin.analytics.activeStays' as never),
-    occupancyRate: t('admin.analytics.occupancy' as never),
-    pendingPaymentBookings: t(
-      'admin.analytics.pendingPaymentBookings' as never,
-    ),
-    arrivalsToday: t('admin.analytics.arrivalsToday' as never),
-    held: t('booking.status.held'),
-    pending_payment: t('booking.status.pendingPayment'),
-    confirmed: t('booking.status.confirmed'),
-    checked_in: t('booking.status.checkedIn'),
-    checked_out: t('booking.status.checkedOut'),
-    cancelled: t('booking.status.cancelled'),
-    expired: t('booking.status.expired'),
-    outsourced: t('booking.status.outsourced'),
-    pending: t('admin.bookings.pending'),
-    paid: t('admin.analytics.payment.paid' as never),
-    failed: t('admin.analytics.payment.failed' as never),
-    refunded: t('admin.analytics.payment.refunded' as never),
-    unpaid_unknown: t('admin.analytics.payment.unknown' as never),
-    available: t('admin.hotels.status.available'),
-    maintenance: t('admin.hotels.status.maintenance'),
-    cleaning: t('admin.hotels.status.cleaning'),
-    out_of_order: t('admin.hotels.status.outOfOrder'),
-  }
-
-  const handleWindowChange = (nextWindow: AnalyticsWindow) => {
-    navigate({ to: '/admin', search: { window: nextWindow } })
-  }
-
-  const navigateToBookings = (nextSearch: {
-    status?: string
-    paymentStatus?: string
-  }) => {
-    navigate({
-      to: '/admin/bookings',
-      search: {
-        status: (nextSearch.status ?? 'all') as BookingStatusFilter,
-        paymentStatus: (nextSearch.paymentStatus ??
-          'all') as PaymentStatusFilter,
-        window,
-      },
-    })
-  }
-
-  const navigateToRooms = (operationalStatus: string) => {
-    navigate({
-      to: '/admin/rooms',
-      search: {
-        operationalStatus: operationalStatus as RoomOperationalStatusFilter,
-        window,
-      },
-    })
-  }
+    [navigate, window],
+  )
 
   const isCashier = hotelAssignment?.role === 'hotel_cashier'
   const revenueMetric = summary?.primaryKpis.find(
