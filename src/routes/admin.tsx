@@ -212,7 +212,6 @@ function AdminLayout() {
         )
       case '/admin/complaints':
         return (
-          isRoomAdmin ||
           hotelAssignmentRole === 'hotel_cashier' ||
           hotelAssignmentRole === 'hotel_admin'
         )
