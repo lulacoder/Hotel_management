@@ -27,7 +27,9 @@ import {
 } from '@/integrations/convex/hooks'
 
 export const Route = createFileRoute('/_authenticated/bookings')({
-  validateSearch: (search: Record<string, unknown>) => ({
+  validateSearch: (
+    search: Record<string, unknown>,
+  ): { payment?: string; tx_ref?: string } => ({
     payment:
       typeof search.payment === 'string' && search.payment
         ? search.payment

@@ -110,7 +110,6 @@ export function RatingModal({
     })
   }, [form, initialRatingText, initialRatingValue])
 
-  const ratingValue = useStore(form.store, (state) => state.values.rating)
   const reviewValue = useStore(form.store, (state) => state.values.review)
   const ratingFieldError = getFirstErrorMessage(
     form.getFieldMeta('rating')?.errors,
