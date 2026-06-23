@@ -1,4 +1,5 @@
 // Grid renderer for filtered hotels with cards, metadata, and actions.
+import { useCallback } from 'react'
 import { Link } from '@tanstack/react-router'
 import {
   ArrowUpDown,
@@ -10,11 +11,17 @@ import {
   Tag,
 } from 'lucide-react'
 
+import { api } from '../../../../convex/_generated/api'
 import { formatDistance } from '../../../lib/distance'
 import { getHotelCategoryLabel } from '../../../lib/hotelCategories'
 import { useI18n } from '../../../lib/i18n/provider'
 import { DEFAULT_HOTEL_DETAIL_SEARCH } from '../../../lib/navigationSearch'
+import {
+  ConvexPreloader,
+  useIntentPreloadTarget,
+} from '../../../integrations/convex/preload'
 import { categoryColors } from './-helpers'
+import type { RequestForQueries } from 'convex/react'
 import type { SortOption } from './-helpers'
 import type { Id } from '../../../../convex/_generated/dataModel'
 
@@ -56,6 +63,24 @@ export function HotelGrid({
 }: HotelGridProps) {
   // Render filtered hotels with summary metrics and quick actions.
   const { t } = useI18n()
+  const {
+    store: preloadStore,
+    getIntentProps: getPreloadIntentProps,
+  } = useIntentPreloadTarget<Id<'hotels'>>()
+
+  const buildPreloadQueries = useCallback(
+    (hotelId: Id<'hotels'>): RequestForQueries => ({
+      hotel: {
+        query: api.hotels.get,
+        args: { hotelId },
+      },
+      rooms: {
+        query: api.rooms.getByHotel,
+        args: { hotelId, status: 'available' },
+      },
+    }),
+    [],
+  )
 
   if (isLoading) {
     return (
@@ -86,6 +111,8 @@ export function HotelGrid({
 
   return (
     <>
+      <ConvexPreloader store={preloadStore} buildQueries={buildPreloadQueries} />
+
       <div className="flex items-center justify-between mb-6">
         <h3 className="text-xl font-semibold text-slate-200">
           {t('grid.hotelsAvailable', {
@@ -121,6 +148,7 @@ export function HotelGrid({
               className="group light-hover-surface bg-slate-900/50 border border-slate-800/50 rounded-2xl overflow-hidden hover:border-violet-500/30 hover:shadow-xl hover:shadow-violet-500/5 transition-all duration-300"
             >
               <Link
+                {...getPreloadIntentProps(hotel._id)}
                 to="/hotels/$hotelId"
                 params={{ hotelId: hotel._id }}
                 search={DEFAULT_HOTEL_DETAIL_SEARCH}
@@ -231,6 +259,7 @@ export function HotelGrid({
 
               <div className="flex items-center justify-between px-5 pb-5">
                 <Link
+                  {...getPreloadIntentProps(hotel._id)}
                   to="/hotels/$hotelId"
                   params={{ hotelId: hotel._id }}
                   search={DEFAULT_HOTEL_DETAIL_SEARCH}

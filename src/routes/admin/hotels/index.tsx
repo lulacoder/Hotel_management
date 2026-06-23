@@ -10,15 +10,20 @@ import {
   Search,
   Trash2,
 } from 'lucide-react'
-import { useEffect, useRef, useState } from 'react'
+import { useCallback, useEffect, useRef, useState } from 'react'
 import { m } from 'motion/react'
 import { api } from '../../../../convex/_generated/api'
 import { useAdminSession } from '../../../lib/adminSession'
 import { useI18n } from '../../../lib/i18n/provider'
 import { useTheme } from '../../../lib/theme'
 import { HotelModal } from './index/components/-HotelModal'
+import type { RequestForQueries } from 'convex/react'
 import type { Id } from '../../../../convex/_generated/dataModel'
 import { useMutation, useQuery } from '@/integrations/convex/hooks'
+import {
+  ConvexPreloader,
+  useIntentPreloadTarget,
+} from '@/integrations/convex/preload'
 import { Button } from '@/components/ui/button'
 
 export const Route = createFileRoute('/admin/hotels/')({
@@ -51,10 +56,43 @@ function HotelsPage() {
   const { hotelAssignment, profile } = useAdminSession()
   const hotels = useQuery(api.hotels.list, {})
   const deleteHotel = useMutation(api.hotels.softDelete)
+  const {
+    store: preloadStore,
+    getIntentProps: getPreloadIntentProps,
+  } = useIntentPreloadTarget<Id<'hotels'>>()
 
   const canAddHotel = profile.role === 'room_admin'
   const canEditHotel =
     profile.role === 'room_admin' || hotelAssignment?.role === 'hotel_admin'
+
+  const buildPreloadQueries = useCallback(
+    (hotelId: Id<'hotels'>): RequestForQueries => {
+      const canPreloadPaymentSettings = Boolean(
+        hotelAssignment?.hotelId === hotelId &&
+          ['hotel_admin', 'hotel_cashier'].includes(hotelAssignment.role),
+      )
+
+      return {
+        hotel: {
+          query: api.hotels.get,
+          args: { hotelId },
+        },
+        rooms: {
+          query: api.rooms.getByHotelWithLiveState,
+          args: { hotelId },
+        },
+        ...(canPreloadPaymentSettings
+          ? {
+              bankAccounts: {
+                query: api.hotelBankAccounts.listByHotel,
+                args: { hotelId },
+              },
+            }
+          : {}),
+      }
+    },
+    [hotelAssignment],
+  )
 
   const visibleHotels =
     profile.role === 'room_admin'
@@ -94,6 +132,8 @@ function HotelsPage() {
 
   return (
     <div className="max-w-7xl mx-auto">
+      <ConvexPreloader store={preloadStore} buildQueries={buildPreloadQueries} />
+
       {/* Header */}
       <m.div
         className="flex items-center justify-between mb-8"
@@ -228,6 +268,7 @@ function HotelsPage() {
                 {activeMenu === hotel._id && (
                   <div className="admin-menu-panel absolute right-0 top-10 w-48 z-10 overflow-hidden">
                     <Link
+                      {...getPreloadIntentProps(hotel._id)}
                       to="/admin/hotels/$hotelId"
                       params={{ hotelId: hotel._id }}
                       search={{ operationalStatus: 'all', window: '30d' }}
@@ -293,6 +334,7 @@ function HotelsPage() {
               </p>
 
               <Link
+                {...getPreloadIntentProps(hotel._id)}
                 to="/admin/hotels/$hotelId"
                 params={{ hotelId: hotel._id }}
                 search={{ operationalStatus: 'all', window: '30d' }}
