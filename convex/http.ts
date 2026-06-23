@@ -4,7 +4,6 @@ import { internal } from './_generated/api'
 import { resend } from './paymentEmails'
 import type {
   ArgsAndOptions,
-  FunctionArgs,
   FunctionReference,
   FunctionReturnType,
   TransactionLimits,
@@ -138,7 +137,7 @@ http.route({
     // Resend's webhook helper only needs the mutation args, not transaction options.
     const resendCtx: ResendWebhookMutationCtx = {
       runMutation: (mutation, ...args) =>
-        ctx.runMutation(mutation, args[0] as FunctionArgs<typeof mutation>),
+        ctx.runMutation(mutation, args[0]),
     }
 
     return await resend.handleResendEventWebhook(resendCtx, request)

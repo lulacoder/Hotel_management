@@ -260,7 +260,7 @@ function AdminAnnouncementsPage() {
       ) : (
         <div className="space-y-3">
           {announcements.map((ann) => {
-            const priority = ann.priority as Priority
+            const priority = ann.priority
             const meta = priorityMeta[priority]
             const Icon = meta.icon
 
@@ -413,7 +413,7 @@ function AdminAnnouncementsPage() {
                             _id: ann._id,
                             title: ann.title,
                             body: ann.body,
-                            priority: ann.priority as Priority,
+                            priority: ann.priority,
                           })
                         }
                         title="Edit"

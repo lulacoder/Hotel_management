@@ -17,9 +17,9 @@ export function AnalyticsTimeWindowTabs({ value, onChange }: Props) {
   const isDark = theme === 'dark'
 
   const labels: Record<AnalyticsWindow, string> = {
-    today: t('admin.analytics.window.today' as never),
-    '7d': t('admin.analytics.window.7d' as never),
-    '30d': t('admin.analytics.window.30d' as never),
+    today: t('admin.analytics.window.today'),
+    '7d': t('admin.analytics.window.7d'),
+    '30d': t('admin.analytics.window.30d'),
   }
 
   return (

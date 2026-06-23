@@ -1,6 +1,6 @@
+import { doesStayOverlapDate } from './adminAnalyticsWindow'
 import type { Id } from '../_generated/dataModel'
 import type { AnalyticsBucket } from './adminAnalyticsWindow'
-import { doesStayOverlapDate } from './adminAnalyticsWindow'
 
 export interface AnalyticsBookingRecord {
   _id?: Id<'bookings'>
@@ -50,7 +50,7 @@ export interface TopHotelRanking {
 }
 
 export function calculateCollectedRevenue(
-  bookings: AnalyticsBookingRecord[],
+  bookings: Array<AnalyticsBookingRecord>,
 ): number {
   return bookings.reduce((sum, booking) => {
     return booking.paymentStatus === 'paid' ? sum + booking.totalPrice : sum
@@ -58,7 +58,7 @@ export function calculateCollectedRevenue(
 }
 
 export function calculateConfirmedRevenuePipeline(
-  bookings: AnalyticsBookingRecord[],
+  bookings: Array<AnalyticsBookingRecord>,
 ): number {
   return bookings.reduce((sum, booking) => {
     if (
@@ -72,12 +72,12 @@ export function calculateConfirmedRevenuePipeline(
   }, 0)
 }
 
-export function countActiveStays(bookings: AnalyticsBookingRecord[]): number {
+export function countActiveStays(bookings: Array<AnalyticsBookingRecord>): number {
   return bookings.filter((booking) => booking.status === 'checked_in').length
 }
 
 export function countArrivalsForDate(
-  bookings: AnalyticsBookingRecord[],
+  bookings: Array<AnalyticsBookingRecord>,
   dateKey: string,
 ): number {
   return bookings.filter(
@@ -88,7 +88,7 @@ export function countArrivalsForDate(
 }
 
 export function countDeparturesForDate(
-  bookings: AnalyticsBookingRecord[],
+  bookings: Array<AnalyticsBookingRecord>,
   dateKey: string,
 ): number {
   return bookings.filter(
@@ -99,7 +99,7 @@ export function countDeparturesForDate(
 }
 
 export function countPendingPaymentBookings(
-  bookings: AnalyticsBookingRecord[],
+  bookings: Array<AnalyticsBookingRecord>,
 ): number {
   return bookings.filter(
     (booking) =>
@@ -109,7 +109,7 @@ export function countPendingPaymentBookings(
 }
 
 export function buildBookingStatusCounts(
-  bookings: AnalyticsBookingRecord[],
+  bookings: Array<AnalyticsBookingRecord>,
 ): Array<{ key: string; count: number }> {
   const counts = new Map<string, number>()
 
@@ -123,7 +123,7 @@ export function buildBookingStatusCounts(
 }
 
 export function buildPaymentStatusCounts(
-  bookings: AnalyticsBookingRecord[],
+  bookings: Array<AnalyticsBookingRecord>,
 ): Array<{ key: string; count: number }> {
   const counts = new Map<string, number>()
 
@@ -138,7 +138,7 @@ export function buildPaymentStatusCounts(
 }
 
 export function buildRoomStatusCounts(
-  rooms: AnalyticsRoomRecord[],
+  rooms: Array<AnalyticsRoomRecord>,
 ): Array<{ key: string; count: number }> {
   const counts = new Map<string, number>()
 
@@ -159,9 +159,9 @@ export function buildRoomStatusCounts(
 }
 
 export function buildRevenueTrendSeries(
-  bookings: AnalyticsBookingRecord[],
-  buckets: AnalyticsBucket[],
-): TrendPoint[] {
+  bookings: Array<AnalyticsBookingRecord>,
+  buckets: Array<AnalyticsBucket>,
+): Array<TrendPoint> {
   return buckets.map((bucket) => ({
     key: bucket.key,
     label: bucket.label,
@@ -180,9 +180,9 @@ export function buildRevenueTrendSeries(
 }
 
 export function buildBookingTrendSeries(
-  bookings: AnalyticsBookingRecord[],
-  buckets: AnalyticsBucket[],
-): TrendPoint[] {
+  bookings: Array<AnalyticsBookingRecord>,
+  buckets: Array<AnalyticsBucket>,
+): Array<TrendPoint> {
   return buckets.map((bucket) => ({
     key: bucket.key,
     label: bucket.label,
@@ -195,10 +195,10 @@ export function buildBookingTrendSeries(
 }
 
 export function buildOccupancyTrendSeries(
-  rooms: AnalyticsRoomRecord[],
-  bookings: AnalyticsBookingRecord[],
-  buckets: AnalyticsBucket[],
-): OccupancyPoint[] {
+  rooms: Array<AnalyticsRoomRecord>,
+  bookings: Array<AnalyticsBookingRecord>,
+  buckets: Array<AnalyticsBucket>,
+): Array<OccupancyPoint> {
   const activeRooms = rooms.filter((room) => !room.isDeleted)
 
   return buckets.map((bucket) => {
@@ -235,15 +235,14 @@ export function buildOccupancyTrendSeries(
 }
 
 export function buildTopHotelRankings(
-  hotels: AnalyticsHotelRecord[],
-  rooms: AnalyticsRoomRecord[],
-  bookings: AnalyticsBookingRecord[],
-  currentOccupancyPoints: OccupancyPoint[],
-): TopHotelRanking[] {
+  hotels: Array<AnalyticsHotelRecord>,
+  rooms: Array<AnalyticsRoomRecord>,
+  bookings: Array<AnalyticsBookingRecord>,
+  currentOccupancyPoints: Array<OccupancyPoint>,
+): Array<TopHotelRanking> {
   const activeHotels = hotels.filter((hotel) => !hotel.isDeleted)
-  const latestOccupancy =
-    currentOccupancyPoints[currentOccupancyPoints.length - 1]
-  const hotelIdsWithRooms = new Map<Id<'hotels'>, AnalyticsRoomRecord[]>()
+  const latestOccupancy = currentOccupancyPoints.at(-1)
+  const hotelIdsWithRooms = new Map<Id<'hotels'>, Array<AnalyticsRoomRecord>>()
 
   for (const room of rooms) {
     if (room.isDeleted) {
@@ -272,7 +271,7 @@ export function buildTopHotelRankings(
             endMs: 0,
           },
         ],
-      )[0]
+      ).at(0)
 
       return {
         hotelId: hotel._id,

@@ -50,7 +50,7 @@ function normalizeEmail(email: string | null | undefined) {
 
 function uniqueEmails(emails: Array<string | null | undefined>) {
   const seen = new Set<string>()
-  const result: string[] = []
+  const result: Array<string> = []
 
   for (const email of emails) {
     const normalized = normalizeEmail(email)

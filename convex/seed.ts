@@ -1,5 +1,5 @@
-import { mutation } from './_generated/server'
 import { v } from 'convex/values'
+import { mutation } from './_generated/server'
 
 // Category type for validation
 type HotelCategory =
@@ -37,7 +37,7 @@ interface JsonRoom {
   BedOptions: string
   SleepsCount: number
   SmokingAllowed: boolean
-  Tags: string[]
+  Tags: Array<string>
 }
 
 interface JsonHotel {
@@ -45,7 +45,7 @@ interface JsonHotel {
   HotelName: string
   Description: string
   Category: string
-  Tags: string[]
+  Tags: Array<string>
   ParkingIncluded: boolean
   LastRenovationDate: string
   Rating: number
@@ -56,11 +56,11 @@ interface JsonHotel {
     PostalCode: string
     Country: string
   }
-  Location: {
+  Location?: {
     type: string
-    coordinates: [number, number] // [longitude, latitude]
+    coordinates?: [number, number] // [longitude, latitude]
   }
-  Rooms: JsonRoom[]
+  Rooms: Array<JsonRoom>
 }
 
 // Accepts a JSON object representing a hotel and its rooms, parses it, and
@@ -85,15 +85,16 @@ export const seedHotel = mutation({
       : undefined
 
     // Convert GeoJSON [lng, lat] to our {lat, lng}
-    const location = h.Location?.coordinates
+    const coordinates = h.Location?.coordinates
+    const location = coordinates
       ? {
-          lat: h.Location.coordinates[1],
-          lng: h.Location.coordinates[0],
+          lat: coordinates[1],
+          lng: coordinates[0],
         }
       : undefined
 
     // Validate and cast category
-    const validCategories: HotelCategory[] = [
+    const validCategories: Array<HotelCategory> = [
       'Boutique',
       'Budget',
       'Luxury',

@@ -1,6 +1,4 @@
 import { ConvexError, v } from 'convex/values'
-import type { Doc, Id } from './_generated/dataModel'
-import type { QueryCtx } from './_generated/server'
 import { query } from './_generated/server'
 import {
   buildDashboardSummaryResponse,
@@ -23,11 +21,6 @@ import {
   countArrivalsForDate,
   countPendingPaymentBookings,
 } from './lib/adminAnalyticsMetrics'
-import type {
-  AnalyticsBookingRecord,
-  AnalyticsHotelRecord,
-  AnalyticsRoomRecord,
-} from './lib/adminAnalyticsMetrics'
 import { resolveAnalyticsScope } from './lib/adminAnalyticsScope'
 import {
   buildDailyWindowBuckets,
@@ -36,6 +29,13 @@ import {
   getUtcDateKey,
 } from './lib/adminAnalyticsWindow'
 import { getHotelAssignment, requireUser } from './lib/auth'
+import type {
+  AnalyticsBookingRecord,
+  AnalyticsHotelRecord,
+  AnalyticsRoomRecord,
+} from './lib/adminAnalyticsMetrics'
+import type { QueryCtx } from './_generated/server'
+import type { Doc, Id } from './_generated/dataModel'
 
 const analyticsWindowValidator = v.union(
   v.literal('today'),
@@ -121,7 +121,7 @@ const topHotelsValidator = v.object({
 type ActiveHotelDoc = Doc<'hotels'>
 type ActiveRoomDoc = Doc<'rooms'>
 
-function mapBookings(bookings: Doc<'bookings'>[]): AnalyticsBookingRecord[] {
+function mapBookings(bookings: Array<Doc<'bookings'>>): Array<AnalyticsBookingRecord> {
   return bookings.map((booking) => ({
     _id: booking._id,
     hotelId: booking.hotelId,
@@ -135,7 +135,7 @@ function mapBookings(bookings: Doc<'bookings'>[]): AnalyticsBookingRecord[] {
   }))
 }
 
-function mapRooms(rooms: ActiveRoomDoc[]): AnalyticsRoomRecord[] {
+function mapRooms(rooms: Array<ActiveRoomDoc>): Array<AnalyticsRoomRecord> {
   return rooms.map((room) => ({
     _id: room._id,
     hotelId: room.hotelId,
@@ -144,7 +144,7 @@ function mapRooms(rooms: ActiveRoomDoc[]): AnalyticsRoomRecord[] {
   }))
 }
 
-function mapHotels(hotels: ActiveHotelDoc[]): AnalyticsHotelRecord[] {
+function mapHotels(hotels: Array<ActiveHotelDoc>): Array<AnalyticsHotelRecord> {
   return hotels.map((hotel) => ({
     _id: hotel._id,
     name: hotel.name,
@@ -163,7 +163,7 @@ async function getScopeContext(ctx: QueryCtx) {
 async function listScopedHotels(
   ctx: QueryCtx,
   hotelId?: Id<'hotels'>,
-): Promise<ActiveHotelDoc[]> {
+): Promise<Array<ActiveHotelDoc>> {
   if (hotelId) {
     const hotel = await ctx.db.get(hotelId)
     return hotel && !hotel.isDeleted ? [hotel] : []
@@ -178,7 +178,7 @@ async function listScopedHotels(
 async function listScopedRooms(
   ctx: QueryCtx,
   hotelIds: Set<Id<'hotels'>>,
-): Promise<ActiveRoomDoc[]> {
+): Promise<Array<ActiveRoomDoc>> {
   if (hotelIds.size === 0) {
     return []
   }
@@ -199,7 +199,7 @@ async function listWindowedBookings(
   ctx: QueryCtx,
   hotelIds: Set<Id<'hotels'>>,
   window: 'today' | '7d' | '30d',
-): Promise<Doc<'bookings'>[]> {
+): Promise<Array<Doc<'bookings'>>> {
   const range = getAnalyticsWindowRange(window)
 
   if (hotelIds.size === 0) {
@@ -241,7 +241,7 @@ async function listWindowedBookings(
 async function listOccupancyBookings(
   ctx: QueryCtx,
   hotelIds: Set<Id<'hotels'>>,
-): Promise<Doc<'bookings'>[]> {
+): Promise<Array<Doc<'bookings'>>> {
   if (hotelIds.size === 0) {
     return []
   }
@@ -259,9 +259,9 @@ async function listOccupancyBookings(
 }
 
 function filterOccupancyBookingsByActiveRooms(
-  bookings: AnalyticsBookingRecord[],
+  bookings: Array<AnalyticsBookingRecord>,
   activeRoomIds: Set<Id<'rooms'>>,
-): AnalyticsBookingRecord[] {
+): Array<AnalyticsBookingRecord> {
   return bookings.filter((booking) => activeRoomIds.has(booking.roomId))
 }
 
@@ -274,7 +274,7 @@ export const getDashboardSummary = query({
     const { scope } = await getScopeContext(ctx)
     const hotels = await listScopedHotels(
       ctx,
-      scope.kind === 'hotel' ? (scope.hotelId as Id<'hotels'>) : undefined,
+      scope.kind === 'hotel' ? (scope.hotelId) : undefined,
     )
     const hotelIds = new Set(hotels.map((hotel) => hotel._id))
     const rooms = await listScopedRooms(ctx, hotelIds)
@@ -338,7 +338,7 @@ export const getRevenueTrend = query({
 
     const hotels = await listScopedHotels(
       ctx,
-      scope.kind === 'hotel' ? (scope.hotelId as Id<'hotels'>) : undefined,
+      scope.kind === 'hotel' ? (scope.hotelId) : undefined,
     )
     const hotelIds = new Set(hotels.map((hotel) => hotel._id))
     const bookings = mapBookings(
@@ -361,7 +361,7 @@ export const getBookingTrend = query({
     const { scope } = await getScopeContext(ctx)
     const hotels = await listScopedHotels(
       ctx,
-      scope.kind === 'hotel' ? (scope.hotelId as Id<'hotels'>) : undefined,
+      scope.kind === 'hotel' ? (scope.hotelId) : undefined,
     )
     const hotelIds = new Set(hotels.map((hotel) => hotel._id))
     const bookings = mapBookings(
@@ -384,7 +384,7 @@ export const getStatusBreakdowns = query({
     const { scope } = await getScopeContext(ctx)
     const hotels = await listScopedHotels(
       ctx,
-      scope.kind === 'hotel' ? (scope.hotelId as Id<'hotels'>) : undefined,
+      scope.kind === 'hotel' ? (scope.hotelId) : undefined,
     )
     const hotelIds = new Set(hotels.map((hotel) => hotel._id))
     const rooms = mapRooms(await listScopedRooms(ctx, hotelIds))
@@ -419,7 +419,7 @@ export const getOccupancyTrend = query({
 
     const hotels = await listScopedHotels(
       ctx,
-      scope.kind === 'hotel' ? (scope.hotelId as Id<'hotels'>) : undefined,
+      scope.kind === 'hotel' ? (scope.hotelId) : undefined,
     )
     const hotelIds = new Set(hotels.map((hotel) => hotel._id))
     const rooms = await listScopedRooms(ctx, hotelIds)
@@ -485,7 +485,7 @@ export const getTopHotels = query({
         occupancyPoints,
       ).map((hotel) => ({
         ...hotel,
-        hotelId: hotel.hotelId as Id<'hotels'>,
+        hotelId: hotel.hotelId,
       })),
     )
   },

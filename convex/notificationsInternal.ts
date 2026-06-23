@@ -1,5 +1,5 @@
-import { internalMutation } from './_generated/server'
 import { v } from 'convex/values'
+import { internalMutation } from './_generated/server'
 
 // Deletes all notifications older than 10 days.
 // Called daily by the cron job in crons.ts.

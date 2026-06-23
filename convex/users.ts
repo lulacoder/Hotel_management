@@ -1,5 +1,5 @@
-import { internalMutation, internalQuery, query } from './_generated/server'
 import { v } from 'convex/values'
+import { internalMutation, internalQuery, query } from './_generated/server'
 
 const userValidator = v.object({
   _id: v.id('users'),

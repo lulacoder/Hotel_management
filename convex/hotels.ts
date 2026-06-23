@@ -1,9 +1,10 @@
 import { ConvexError, v } from 'convex/values'
-import { QueryCtx, mutation, query } from './_generated/server'
-import { Doc } from './_generated/dataModel'
+import { mutation, query } from './_generated/server'
 import { requireAdmin, requireHotelManagement, requireUser } from './lib/auth'
 import { createAuditLog } from './audit'
 import * as fileTracking from './fileTracking'
+import type { Doc } from './_generated/dataModel'
+import type { QueryCtx} from './_generated/server';
 
 // Validator for hotel document (used in return types)
 const hotelValidator = v.object({

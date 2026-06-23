@@ -150,7 +150,7 @@ function RoomsPage() {
             className={`size-4 flex-shrink-0 ml-1 ${isDark ? 'text-violet-300' : 'text-violet-600'}`}
           />
           <span className={isDark ? 'text-violet-100/90' : 'text-violet-700'}>
-            {t('admin.rooms.analyticsFilterNotice' as never, {
+            {t('admin.rooms.analyticsFilterNotice', {
               status: t(
                 `admin.hotels.status.${
                   search.operationalStatus === 'out_of_order'

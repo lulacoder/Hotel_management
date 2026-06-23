@@ -480,7 +480,7 @@ function CustomerAnnouncementsPage() {
           <>
             <div className="space-y-4">
               {announcements.map((ann) => {
-                const cfg = priorityConfig[ann.priority as Priority]
+                const cfg = priorityConfig[ann.priority]
                 const Icon = cfg.icon
 
                 return (

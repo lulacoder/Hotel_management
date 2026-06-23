@@ -19,7 +19,7 @@ export function ThemeToggle({
   const isDark = theme === 'dark'
   const showControlLabel = !compact && labelMode === 'control'
   const label = showControlLabel
-    ? t('theme.label' as never)
+    ? t('theme.label')
     : isDark
       ? t('theme.lightMode')
       : t('theme.darkMode')

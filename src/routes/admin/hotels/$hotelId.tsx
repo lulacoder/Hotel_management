@@ -380,7 +380,7 @@ function HotelDetailPage() {
         <div
           className={`mb-6 rounded-2xl border px-4 py-3 text-sm ${isDark ? 'border-blue-500/20 bg-blue-500/10 text-blue-100' : 'border-amber-500/30 bg-amber-50 text-amber-700'}`}
         >
-          {t('admin.rooms.analyticsFilterNotice' as never, {
+          {t('admin.rooms.analyticsFilterNotice', {
             status: t(
               `admin.hotels.status.${
                 search.operationalStatus === 'out_of_order'
@@ -454,10 +454,10 @@ function HotelDetailPage() {
           <h3
             className={`text-lg font-semibold mb-2 ${isDark ? 'text-slate-300' : 'text-slate-700'}`}
           >
-            {t('admin.analytics.noData' as never)}
+            {t('admin.analytics.noData')}
           </h3>
           <p className={isDark ? 'text-slate-500' : 'text-slate-500'}>
-            {t('admin.rooms.filteredNoRooms' as never)}
+            {t('admin.rooms.filteredNoRooms')}
           </p>
         </div>
       ) : (

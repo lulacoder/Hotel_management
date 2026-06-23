@@ -106,7 +106,7 @@ export function AnnouncementForm({ editing, onClose }: AnnouncementFormProps) {
     defaultValues: {
       title: editing?.title ?? '',
       body: editing?.body ?? '',
-      priority: editing?.priority ?? ('normal' as Priority),
+      priority: editing?.priority ?? ('normal'),
     },
     validators: {
       onBlur: schema,

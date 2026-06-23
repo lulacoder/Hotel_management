@@ -65,11 +65,11 @@ export function getAnalyticsWindowRange(
 export function buildWindowBuckets(
   window: AnalyticsWindow,
   nowMs = Date.now(),
-): AnalyticsBucket[] {
+): Array<AnalyticsBucket> {
   const range = getAnalyticsWindowRange(window, nowMs)
 
   if (window === 'today') {
-    const buckets: AnalyticsBucket[] = []
+    const buckets: Array<AnalyticsBucket> = []
     const currentHourStart = Math.floor(nowMs / HOUR_MS) * HOUR_MS
 
     for (
@@ -88,7 +88,7 @@ export function buildWindowBuckets(
     return buckets
   }
 
-  const buckets: AnalyticsBucket[] = []
+  const buckets: Array<AnalyticsBucket> = []
   for (
     let bucketStart = range.startMs;
     bucketStart <= range.endMs;
@@ -109,11 +109,11 @@ export function buildWindowBuckets(
 export function buildDailyWindowBuckets(
   window: AnalyticsWindow,
   nowMs = Date.now(),
-): AnalyticsBucket[] {
+): Array<AnalyticsBucket> {
   const range = getAnalyticsWindowRange(window, nowMs)
   const startMs = window === 'today' ? getUtcDayStart(nowMs) : range.startMs
   const endMs = range.endMs
-  const buckets: AnalyticsBucket[] = []
+  const buckets: Array<AnalyticsBucket> = []
 
   for (let bucketStart = startMs; bucketStart <= endMs; bucketStart += DAY_MS) {
     const dateKey = getUtcDateKey(bucketStart)
@@ -144,8 +144,8 @@ export function getUtcDateKey(value: Date | number): string {
 export function enumerateStayDates(
   checkIn: string,
   checkOut: string,
-): string[] {
-  const dates: string[] = []
+): Array<string> {
+  const dates: Array<string> = []
   const cursor = parseDate(checkIn)
   const end = parseDate(checkOut)
 

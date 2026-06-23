@@ -225,15 +225,15 @@ function AdminDashboard() {
 
   const metricLabels = useMemo<Record<string, string>>(
     () => ({
-      collectedRevenue: t('admin.analytics.collectedRevenue' as never),
-      confirmedRevenuePipeline: t('admin.analytics.confirmedPipeline' as never),
-      totalBookings: t('admin.analytics.totalBookings' as never),
-      activeStays: t('admin.analytics.activeStays' as never),
-      occupancyRate: t('admin.analytics.occupancy' as never),
+      collectedRevenue: t('admin.analytics.collectedRevenue'),
+      confirmedRevenuePipeline: t('admin.analytics.confirmedPipeline'),
+      totalBookings: t('admin.analytics.totalBookings'),
+      activeStays: t('admin.analytics.activeStays'),
+      occupancyRate: t('admin.analytics.occupancy'),
       pendingPaymentBookings: t(
-        'admin.analytics.pendingPaymentBookings' as never,
+        'admin.analytics.pendingPaymentBookings',
       ),
-      arrivalsToday: t('admin.analytics.arrivalsToday' as never),
+      arrivalsToday: t('admin.analytics.arrivalsToday'),
       held: t('booking.status.held'),
       pending_payment: t('booking.status.pendingPayment'),
       confirmed: t('booking.status.confirmed'),
@@ -243,10 +243,10 @@ function AdminDashboard() {
       expired: t('booking.status.expired'),
       outsourced: t('booking.status.outsourced'),
       pending: t('admin.bookings.pending'),
-      paid: t('admin.analytics.payment.paid' as never),
-      failed: t('admin.analytics.payment.failed' as never),
-      refunded: t('admin.analytics.payment.refunded' as never),
-      unpaid_unknown: t('admin.analytics.payment.unknown' as never),
+      paid: t('admin.analytics.payment.paid'),
+      failed: t('admin.analytics.payment.failed'),
+      refunded: t('admin.analytics.payment.refunded'),
+      unpaid_unknown: t('admin.analytics.payment.unknown'),
       available: t('admin.hotels.status.available'),
       maintenance: t('admin.hotels.status.maintenance'),
       cleaning: t('admin.hotels.status.cleaning'),
@@ -385,8 +385,8 @@ function AdminDashboard() {
 
       {summary === undefined ? (
         <AnalyticsEmptyState
-          title={t('admin.analytics.loading' as never)}
-          description={t('admin.analytics.loadingDescription' as never)}
+          title={t('admin.analytics.loading')}
+          description={t('admin.analytics.loadingDescription')}
         />
       ) : isCashier ? (
         <m.div variants={itemVariants} className="mb-8">
@@ -435,14 +435,14 @@ function AdminDashboard() {
 
                 navigateToBookings({ status: statusKey })
               }}
-              emptyTitle={t('admin.analytics.noData' as never)}
-              emptyDescription={t('admin.analytics.noDataDescription' as never)}
-              bookingTrendTitle={t('admin.analytics.bookingTrend' as never)}
+              emptyTitle={t('admin.analytics.noData')}
+              emptyDescription={t('admin.analytics.noDataDescription')}
+              bookingTrendTitle={t('admin.analytics.bookingTrend')}
               paymentBreakdownTitle={t(
-                'admin.analytics.paymentBreakdown' as never,
+                'admin.analytics.paymentBreakdown',
               )}
               bookingBreakdownTitle={t(
-                'admin.analytics.bookingBreakdown' as never,
+                'admin.analytics.bookingBreakdown',
               )}
             />
           </Suspense>
@@ -518,14 +518,14 @@ function AdminDashboard() {
                 }
               >
                 <LazyAnalyticsTrendChart
-                  title={t('admin.analytics.bookingTrend' as never)}
+                  title={t('admin.analytics.bookingTrend')}
                   points={bookingTrend?.points}
                   locale={locale}
                   format="count"
                   onPointClick={() => navigateToBookings({})}
-                  emptyTitle={t('admin.analytics.noData' as never)}
+                  emptyTitle={t('admin.analytics.noData')}
                   emptyDescription={t(
-                    'admin.analytics.noDataDescription' as never,
+                    'admin.analytics.noDataDescription',
                   )}
                 />
               </Suspense>
@@ -537,13 +537,13 @@ function AdminDashboard() {
                 }
               >
                 <LazyAnalyticsTrendChart
-                  title={t('admin.analytics.revenueTrend' as never)}
+                  title={t('admin.analytics.revenueTrend')}
                   points={revenueTrend?.points}
                   locale={locale}
                   format="currency"
-                  emptyTitle={t('admin.analytics.noData' as never)}
+                  emptyTitle={t('admin.analytics.noData')}
                   emptyDescription={t(
-                    'admin.analytics.noDataDescription' as never,
+                    'admin.analytics.noDataDescription',
                   )}
                 />
               </Suspense>
@@ -567,15 +567,15 @@ function AdminDashboard() {
                 }
               >
                 <LazyAnalyticsStatusBreakdown
-                  title={t('admin.analytics.bookingBreakdown' as never)}
+                  title={t('admin.analytics.bookingBreakdown')}
                   items={statusBreakdowns?.bookingStatuses}
                   labels={metricLabels}
                   onItemClick={(item) =>
                     navigateToBookings({ status: item.key })
                   }
-                  emptyTitle={t('admin.analytics.noData' as never)}
+                  emptyTitle={t('admin.analytics.noData')}
                   emptyDescription={t(
-                    'admin.analytics.noDataDescription' as never,
+                    'admin.analytics.noDataDescription',
                   )}
                 />
               </Suspense>
@@ -587,15 +587,15 @@ function AdminDashboard() {
                 }
               >
                 <LazyAnalyticsStatusBreakdown
-                  title={t('admin.analytics.paymentBreakdown' as never)}
+                  title={t('admin.analytics.paymentBreakdown')}
                   items={statusBreakdowns?.paymentStatuses}
                   labels={metricLabels}
                   onItemClick={(item) =>
                     navigateToBookings({ paymentStatus: item.key })
                   }
-                  emptyTitle={t('admin.analytics.noData' as never)}
+                  emptyTitle={t('admin.analytics.noData')}
                   emptyDescription={t(
-                    'admin.analytics.noDataDescription' as never,
+                    'admin.analytics.noDataDescription',
                   )}
                 />
               </Suspense>
@@ -607,13 +607,13 @@ function AdminDashboard() {
                 }
               >
                 <LazyAnalyticsStatusBreakdown
-                  title={t('admin.analytics.roomBreakdown' as never)}
+                  title={t('admin.analytics.roomBreakdown')}
                   items={statusBreakdowns?.roomStatuses}
                   labels={metricLabels}
                   onItemClick={(item) => navigateToRooms(item.key)}
-                  emptyTitle={t('admin.analytics.noData' as never)}
+                  emptyTitle={t('admin.analytics.noData')}
                   emptyDescription={t(
-                    'admin.analytics.noDataDescription' as never,
+                    'admin.analytics.noDataDescription',
                   )}
                 />
               </Suspense>
@@ -637,11 +637,11 @@ function AdminDashboard() {
                 }
               >
                 <LazyAnalyticsOccupancyCard
-                  title={t('admin.analytics.occupancyTrend' as never)}
+                  title={t('admin.analytics.occupancyTrend')}
                   points={occupancyTrend?.points}
-                  emptyTitle={t('admin.analytics.noData' as never)}
+                  emptyTitle={t('admin.analytics.noData')}
                   emptyDescription={t(
-                    'admin.analytics.noDataDescription' as never,
+                    'admin.analytics.noDataDescription',
                   )}
                 />
               </Suspense>
@@ -661,23 +661,23 @@ function AdminDashboard() {
                       search: { operationalStatus: 'all', window: '30d' },
                     })
                   }}
-                  title={t('admin.analytics.topHotels' as never)}
-                  emptyTitle={t('admin.analytics.noData' as never)}
+                  title={t('admin.analytics.topHotels')}
+                  emptyTitle={t('admin.analytics.noData')}
                   emptyDescription={t(
-                    'admin.analytics.noDataDescription' as never,
+                    'admin.analytics.noDataDescription',
                   )}
-                  hotelLabel={t('admin.analytics.columns.hotel' as never)}
-                  revenueLabel={t('admin.analytics.columns.revenue' as never)}
-                  bookingsLabel={t('admin.analytics.columns.bookings' as never)}
+                  hotelLabel={t('admin.analytics.columns.hotel')}
+                  revenueLabel={t('admin.analytics.columns.revenue')}
+                  bookingsLabel={t('admin.analytics.columns.bookings')}
                   occupancyLabel={t(
-                    'admin.analytics.columns.occupancy' as never,
+                    'admin.analytics.columns.occupancy',
                   )}
                 />
               ) : (
                 <AnalyticsEmptyState
-                  title={t('admin.analytics.hotelScopeOnly' as never)}
+                  title={t('admin.analytics.hotelScopeOnly')}
                   description={t(
-                    'admin.analytics.hotelScopeOnlyDescription' as never,
+                    'admin.analytics.hotelScopeOnlyDescription',
                   )}
                 />
               )}

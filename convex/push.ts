@@ -28,12 +28,12 @@ type ExpoPushTicket =
     }
 
 type ExpoPushResponse = {
-  data?: ExpoPushTicket[]
+  data?: Array<ExpoPushTicket>
   errors?: Array<{ code: string; message: string }>
 }
 
-function chunk<T>(items: T[], size: number): T[][] {
-  const out: T[][] = []
+function chunk<T>(items: Array<T>, size: number): Array<Array<T>> {
+  const out: Array<Array<T>> = []
   for (let i = 0; i < items.length; i += size) {
     out.push(items.slice(i, i + size))
   }
@@ -64,7 +64,7 @@ export const sendExpoPush = internalAction({
       return null
     }
 
-    const messages: ExpoPushMessage[] = valid.map((t) => ({
+    const messages: Array<ExpoPushMessage> = valid.map((t) => ({
       to: t.token,
       sound: 'default',
       title: args.title,

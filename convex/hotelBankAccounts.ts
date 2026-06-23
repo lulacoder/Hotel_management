@@ -51,7 +51,7 @@ export const listByHotel = query({
       updatedAt: v.number(),
     }),
   ),
-  handler: async (ctx, args): Promise<BankAccountSummary[]> => {
+  handler: async (ctx, args): Promise<Array<BankAccountSummary>> => {
     // Use compound index to fetch only non-deleted accounts, avoiding in-memory filtering
     const accounts = await ctx.db
       .query('hotelBankAccounts')

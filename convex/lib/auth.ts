@@ -1,6 +1,6 @@
-import { QueryCtx, MutationCtx } from '../_generated/server'
 import { ConvexError } from 'convex/values'
-import { Doc, Id } from '../_generated/dataModel'
+import type { MutationCtx, QueryCtx } from '../_generated/server'
+import type { Doc, Id } from '../_generated/dataModel'
 
 export type UserRole = 'customer' | 'room_admin'
 export type HotelStaffRole = 'hotel_admin' | 'hotel_cashier'

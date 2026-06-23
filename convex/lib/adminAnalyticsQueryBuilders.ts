@@ -25,12 +25,12 @@ export interface DashboardMetric {
 export interface DashboardSummaryResponse {
   scope: 'global' | 'hotel'
   assignmentRole?: 'hotel_admin' | 'hotel_cashier'
-  primaryKpis: DashboardMetric[]
+  primaryKpis: Array<DashboardMetric>
 }
 
 export interface TrendResponse {
   window: AnalyticsWindow
-  points: TrendPoint[]
+  points: Array<TrendPoint>
 }
 
 export interface StatusBreakdownsResponse {
@@ -41,12 +41,12 @@ export interface StatusBreakdownsResponse {
 
 export interface OccupancyTrendResponse {
   window: AnalyticsWindow
-  points: OccupancyPoint[]
+  points: Array<OccupancyPoint>
 }
 
 export interface TopHotelsResponse {
   window: AnalyticsWindow
-  hotels: TopHotelRanking[]
+  hotels: Array<TopHotelRanking>
 }
 
 interface DashboardSummaryInput {
@@ -128,7 +128,7 @@ export function buildDashboardSummaryResponse(
 
 export function buildTrendResponse(
   window: AnalyticsWindow,
-  points: TrendPoint[],
+  points: Array<TrendPoint>,
 ): TrendResponse {
   return { window, points }
 }
@@ -147,14 +147,14 @@ export function buildStatusBreakdownsResponse(
 
 export function buildOccupancyTrendResponse(
   window: AnalyticsWindow,
-  points: OccupancyPoint[],
+  points: Array<OccupancyPoint>,
 ): OccupancyTrendResponse {
   return { window, points }
 }
 
 export function buildTopHotelsResponse(
   window: AnalyticsWindow,
-  hotels: TopHotelRanking[],
+  hotels: Array<TopHotelRanking>,
 ): TopHotelsResponse {
   return { window, hotels }
 }

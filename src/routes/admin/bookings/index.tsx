@@ -358,20 +358,20 @@ function BookingsPage() {
             className="admin-select md:w-48"
           >
             <option value="all">
-              {t('admin.analytics.payment.all' as never)}
+              {t('admin.analytics.payment.all')}
             </option>
             <option value="pending">{t('admin.bookings.pending')}</option>
             <option value="paid">
-              {t('admin.analytics.payment.paid' as never)}
+              {t('admin.analytics.payment.paid')}
             </option>
             <option value="failed">
-              {t('admin.analytics.payment.failed' as never)}
+              {t('admin.analytics.payment.failed')}
             </option>
             <option value="refunded">
-              {t('admin.analytics.payment.refunded' as never)}
+              {t('admin.analytics.payment.refunded')}
             </option>
             <option value="unpaid_unknown">
-              {t('admin.analytics.payment.unknown' as never)}
+              {t('admin.analytics.payment.unknown')}
             </option>
           </select>
         </div>

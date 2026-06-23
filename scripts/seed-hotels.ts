@@ -6,14 +6,15 @@
  * Make sure `npx convex dev` is running in another terminal first!
  */
 
+import * as fs from 'node:fs'
+import * as path from 'node:path'
+import { fileURLToPath } from 'node:url'
 import { ConvexHttpClient } from 'convex/browser'
-import { api } from '../convex/_generated/api'
-import * as fs from 'fs'
-import * as path from 'path'
-import { fileURLToPath } from 'url'
 
 // Load environment variables from .env.local
 import * as dotenv from 'dotenv'
+import { api } from '../convex/_generated/api'
+
 dotenv.config({ path: '.env.local' })
 
 // ESM equivalent of __dirname
@@ -42,7 +43,7 @@ interface JsonRoom {
   BedOptions: string
   SleepsCount: number
   SmokingAllowed: boolean
-  Tags: string[]
+  Tags: Array<string>
 }
 
 interface JsonHotel {
@@ -50,7 +51,7 @@ interface JsonHotel {
   HotelName: string
   Description: string
   Category: string
-  Tags: string[]
+  Tags: Array<string>
   ParkingIncluded: boolean
   LastRenovationDate: string
   Rating: number
@@ -65,11 +66,11 @@ interface JsonHotel {
     type: string
     coordinates: [number, number]
   }
-  Rooms: JsonRoom[]
+  Rooms: Array<JsonRoom>
 }
 
 interface HotelJson {
-  value: JsonHotel[]
+  value: Array<JsonHotel>
 }
 
 async function seedHotels() {
