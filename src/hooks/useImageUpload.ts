@@ -74,6 +74,7 @@ export function useImageUpload({
           trackUpload: params.trackUpload,
         })
 
+        setSelectedFile(null)
         setStorageId(nextStorageId)
         setShouldClear(false)
         return nextStorageId

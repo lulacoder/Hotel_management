@@ -85,7 +85,7 @@ function BookingDetailPage() {
       : 'skip',
   )
 
-  const { transitionLabel } = useBookingStatusConfig()
+  const { statusConfig, transitionLabel } = useBookingStatusConfig()
 
   const canManageBookings =
     profile.role === 'room_admin' ||
@@ -179,7 +179,10 @@ function BookingDetailPage() {
           >
             {t('admin.bookings.detailPageTitle')}
           </h1>
-          <BookingStatusBadge status={bookingDetail.booking.status} />
+          <BookingStatusBadge
+            status={bookingDetail.booking.status}
+            statusConfig={statusConfig}
+          />
         </div>
 
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4 text-sm">

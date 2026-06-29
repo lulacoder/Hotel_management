@@ -153,7 +153,7 @@ function BookingsPage() {
     await acceptCashPayment({ bookingId })
   }
 
-  const { transitionLabel } = useBookingStatusConfig()
+  const { statusConfig, transitionLabel } = useBookingStatusConfig()
 
   const filteredBookings = useMemo(() => {
     return bookings.filter((item) => {
@@ -325,6 +325,7 @@ function BookingsPage() {
                       <div className="flex items-center gap-3 mb-2">
                         <BookingStatusBadge
                           status={booking.status as BookingStatus}
+                          statusConfig={statusConfig}
                         />
                         {booking.status === 'held' && booking.holdExpiresAt && (
                           <span

@@ -1,12 +1,15 @@
 import type { BookingStatus } from '../../../../../convex/lib/bookingLifecycle'
-import { useBookingStatusConfig } from '@/lib/bookingStatus'
+import type { BookingStatusDisplay } from '@/lib/bookingStatus'
 
 interface BookingStatusBadgeProps {
   status: BookingStatus
+  statusConfig: Record<BookingStatus, BookingStatusDisplay>
 }
 
-export function BookingStatusBadge({ status }: BookingStatusBadgeProps) {
-  const { statusConfig } = useBookingStatusConfig()
+export function BookingStatusBadge({
+  status,
+  statusConfig,
+}: BookingStatusBadgeProps) {
   const config = statusConfig[status]
   const StatusIcon = config.icon
 
