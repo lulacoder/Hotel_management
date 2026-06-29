@@ -7,6 +7,8 @@ import { useI18n } from '../../../../lib/i18n/provider'
 import { useTheme } from '../../../../lib/theme'
 import type { Id } from '../../../../../convex/_generated/dataModel'
 import { useMutation, useQuery } from '@/integrations/convex/hooks'
+import { formatUsdAmount } from '@/lib/currency'
+import { getErrorMessage } from '@/lib/errors'
 
 interface EnrichedBooking {
   booking: {
@@ -37,17 +39,6 @@ interface OutsourceModalProps {
   onSuccess: () => void
 }
 
-function getErrorMessage(error: unknown, fallbackMessage: string) {
-  // Normalize unknown error shapes into user-friendly text.
-  if (error && typeof error === 'object') {
-    const candidate = error as { data?: { message?: string }; message?: string }
-    if (candidate.data?.message) return candidate.data.message
-    if (candidate.message) return candidate.message
-  }
-
-  return fallbackMessage
-}
-
 export function OutsourceModal({
   bookingDetail,
   onClose,
@@ -62,23 +53,16 @@ export function OutsourceModal({
   const [isSuccess, setIsSuccess] = useState(false)
   const [errorMessage, setErrorMessage] = useState<string | null>(null)
 
-  const destinationHotels = useQuery((api as any).hotels.listForOutsource, {
+  const destinationHotels = useQuery(api.hotels.listForOutsource, {
     excludeHotelId: bookingDetail.hotel._id,
-  }) as
-    | Array<{
-        _id: Id<'hotels'>
-        name: string
-        city: string
-        country: string
-      }>
-    | undefined
+  })
 
-  const outsourceBooking = useMutation((api as any).bookings.outsourceBooking)
+  const outsourceBooking = useMutation(api.bookings.outsourceBooking)
 
   const amountPaid = useMemo(
     () =>
       bookingDetail.booking.paymentStatus === 'paid'
-        ? `$${(bookingDetail.booking.totalPrice / 100).toFixed(2)}`
+        ? formatUsdAmount(bookingDetail.booking.totalPrice)
         : t('admin.bookings.pending'),
     [bookingDetail.booking.paymentStatus, bookingDetail.booking.totalPrice, t],
   )

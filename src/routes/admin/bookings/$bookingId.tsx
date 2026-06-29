@@ -4,12 +4,9 @@ import {
   ArrowLeft,
   CheckCircle,
   CircleDollarSign,
-  Clock,
   Copy,
   Hotel,
   Image,
-  LogIn,
-  LogOut,
   XCircle,
 } from 'lucide-react'
 import { useState } from 'react'
@@ -24,10 +21,14 @@ import {
   getPackageLabelOrDefault,
 } from '../../../lib/packages'
 import { OutsourceModal } from './components/-OutsourceModal'
+import { BookingStatusBadge } from './components/-BookingStatusBadge'
 import type { ManualBookingTransitionStatus } from '../../../../convex/lib/bookingLifecycle'
 import type { Id } from '../../../../convex/_generated/dataModel'
 import { useTheme } from '@/lib/theme'
 import { useMutation, useQuery } from '@/integrations/convex/hooks'
+import { AdminSpinner } from '@/components/AdminSpinner'
+import { formatEtbAmount, formatUsdAmount } from '@/lib/currency'
+import { useBookingStatusConfig } from '@/lib/bookingStatus'
 
 export const Route = createFileRoute('/admin/bookings/$bookingId')({
   // Register admin booking detail route for status/payment operations.
@@ -46,15 +47,6 @@ const itemVariants = {
     y: 0,
     transition: { duration: 0.45, ease: 'easeOut' as const },
   },
-}
-
-const etbCurrencyFormatter = new Intl.NumberFormat('en-ET', {
-  currency: 'ETB',
-  style: 'currency',
-})
-
-function formatEtbAmount(amountMinor: number) {
-  return etbCurrencyFormatter.format(amountMinor / 100)
 }
 
 function BookingDetailPage() {
@@ -87,76 +79,13 @@ function BookingDetailPage() {
   const rejectPayment = useMutation(api.bookings.rejectPayment)
 
   const nationalIdImageUrl = useQuery(
-    (api as any).files.getFileUrl,
+    api.files.getFileUrl,
     bookingDetail?.booking.nationalIdStorageId
       ? { storageId: bookingDetail.booking.nationalIdStorageId }
       : 'skip',
   )
 
-  const transitionLabel: Record<ManualBookingTransitionStatus, string> = {
-    checked_in: t('booking.transition.checkIn'),
-    checked_out: t('booking.transition.checkOut'),
-    cancelled: t('booking.transition.cancel'),
-  }
-
-  const statusConfig = {
-    held: {
-      label: t('booking.status.held'),
-      icon: Clock,
-      color: 'text-blue-400',
-      bg: 'bg-blue-500/10',
-      border: 'border-blue-500/20',
-    },
-    pending_payment: {
-      label: t('booking.status.pendingPayment'),
-      icon: Clock,
-      color: 'text-blue-400',
-      bg: 'bg-blue-500/10',
-      border: 'border-blue-500/20',
-    },
-    confirmed: {
-      label: t('booking.status.confirmed'),
-      icon: CheckCircle,
-      color: 'text-emerald-400',
-      bg: 'bg-emerald-500/10',
-      border: 'border-emerald-500/20',
-    },
-    checked_in: {
-      label: t('booking.status.checkedIn'),
-      icon: LogIn,
-      color: 'text-blue-400',
-      bg: 'bg-blue-500/10',
-      border: 'border-blue-500/20',
-    },
-    checked_out: {
-      label: t('booking.status.checkedOut'),
-      icon: LogOut,
-      color: 'text-slate-400',
-      bg: 'bg-slate-500/10',
-      border: 'border-slate-500/20',
-    },
-    cancelled: {
-      label: t('booking.status.cancelled'),
-      icon: XCircle,
-      color: 'text-red-400',
-      bg: 'bg-red-500/10',
-      border: 'border-red-500/20',
-    },
-    expired: {
-      label: t('booking.status.expired'),
-      icon: XCircle,
-      color: 'text-slate-500',
-      bg: 'bg-slate-600/10',
-      border: 'border-slate-600/20',
-    },
-    outsourced: {
-      label: t('booking.status.outsourced'),
-      icon: Hotel,
-      color: 'text-purple-400',
-      bg: 'bg-purple-500/10',
-      border: 'border-purple-500/20',
-    },
-  }
+  const { transitionLabel } = useBookingStatusConfig()
 
   const canManageBookings =
     profile.role === 'room_admin' ||
@@ -199,13 +128,7 @@ function BookingDetailPage() {
   }
 
   if (bookingDetail === undefined) {
-    return (
-      <div className="flex items-center justify-center py-20">
-        <div
-          className={`animate-spin rounded-full size-8 border-2 ${isDark ? 'border-violet-500/20 border-t-violet-500' : 'border-violet-500/20 border-t-violet-500'}`}
-        ></div>
-      </div>
-    )
+    return <AdminSpinner />
   }
 
   if (bookingDetail === null) {
@@ -229,9 +152,6 @@ function BookingDetailPage() {
       </div>
     )
   }
-
-  const status = statusConfig[bookingDetail.booking.status]
-  const StatusIcon = status.icon
 
   return (
     <m.div
@@ -259,12 +179,7 @@ function BookingDetailPage() {
           >
             {t('admin.bookings.detailPageTitle')}
           </h1>
-          <div
-            className={`inline-flex items-center gap-2 px-3 py-1 rounded-lg text-sm font-medium ${status.bg} ${status.color} ${status.border} border`}
-          >
-            <StatusIcon className="size-3.5" />
-            {status.label}
-          </div>
+          <BookingStatusBadge status={bookingDetail.booking.status} />
         </div>
 
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4 text-sm">
@@ -362,7 +277,7 @@ function BookingDetailPage() {
               {bookingDetail.booking.checkIn} → {bookingDetail.booking.checkOut}
             </p>
             <p className={isDark ? 'text-slate-400' : 'text-slate-500'}>
-              ${(bookingDetail.booking.totalPrice / 100).toFixed(2)}
+              {formatUsdAmount(bookingDetail.booking.totalPrice)}
             </p>
           </div>
           <div className="admin-surface-muted p-4">

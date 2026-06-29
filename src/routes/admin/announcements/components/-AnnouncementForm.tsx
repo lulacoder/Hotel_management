@@ -9,6 +9,7 @@ import { api } from '../../../../../convex/_generated/api'
 import { useI18n } from '../../../../lib/i18n/provider'
 import { useTheme } from '../../../../lib/theme'
 import type { Id } from '../../../../../convex/_generated/dataModel'
+import { getFirstErrorMessage } from '@/lib/forms'
 
 type Priority = 'normal' | 'important' | 'urgent'
 
@@ -46,33 +47,6 @@ const priorityConfig: Record<
   },
 }
 
-function getFirstErrorMessage(
-  errors: Array<unknown> | undefined,
-): string | null {
-  if (!errors) {
-    return null
-  }
-
-  for (const error of errors) {
-    if (!error) {
-      continue
-    }
-
-    if (typeof error === 'string') {
-      return error
-    }
-
-    if (typeof error === 'object' && 'message' in error) {
-      const message = error.message
-      if (typeof message === 'string') {
-        return message
-      }
-    }
-  }
-
-  return null
-}
-
 export function AnnouncementForm({ editing, onClose }: AnnouncementFormProps) {
   const { t } = useI18n()
   const { theme } = useTheme()
@@ -106,7 +80,7 @@ export function AnnouncementForm({ editing, onClose }: AnnouncementFormProps) {
     defaultValues: {
       title: editing?.title ?? '',
       body: editing?.body ?? '',
-      priority: editing?.priority ?? ('normal'),
+      priority: editing?.priority ?? 'normal',
     },
     validators: {
       onBlur: schema,
@@ -151,6 +125,20 @@ export function AnnouncementForm({ editing, onClose }: AnnouncementFormProps) {
   const titleError = getFirstErrorMessage(form.getFieldMeta('title')?.errors)
   const bodyError = getFirstErrorMessage(form.getFieldMeta('body')?.errors)
   const PriorityIcon = priorityConfig[priorityValue].icon
+
+  function submitLabel(): string {
+    if (isSubmitting && isEditing) {
+      return t('admin.announcements.form.updating')
+    }
+
+    if (isSubmitting) {
+      return t('admin.announcements.form.publishing')
+    }
+
+    return isEditing
+      ? t('admin.announcements.form.update')
+      : t('admin.announcements.form.publish')
+  }
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 p-3 backdrop-blur-sm sm:p-4">
@@ -388,13 +376,7 @@ export function AnnouncementForm({ editing, onClose }: AnnouncementFormProps) {
               {isSubmitting ? (
                 <span className="size-3.5 animate-spin rounded-full border-2 border-white/30 border-t-white" />
               ) : null}
-              {isSubmitting
-                ? isEditing
-                  ? t('admin.announcements.form.updating')
-                  : t('admin.announcements.form.publishing')
-                : isEditing
-                  ? t('admin.announcements.form.update')
-                  : t('admin.announcements.form.publish')}
+              {submitLabel()}
             </button>
           </div>
         </form>

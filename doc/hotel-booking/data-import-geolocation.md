@@ -259,12 +259,10 @@ formatDistance(0.5) // "500 m"
 
 **Available functions:**
 
-| Function                                    | Description                 |
-| ------------------------------------------- | --------------------------- |
-| `calculateDistance(lat1, lng1, lat2, lng2)` | Returns distance in km      |
-| `formatDistance(km)`                        | Formats as "X km" or "X m"  |
-| `calculateDistanceMiles(...)`               | Returns distance in miles   |
-| `formatDistanceMiles(miles)`                | Formats as "X mi" or "X ft" |
+| Function                                    | Description                |
+| ------------------------------------------- | -------------------------- |
+| `calculateDistance(lat1, lng1, lat2, lng2)` | Returns distance in km     |
+| `formatDistance(km)`                        | Formats as "X km" or "X m" |
 
 ### Geolocation Hook
 

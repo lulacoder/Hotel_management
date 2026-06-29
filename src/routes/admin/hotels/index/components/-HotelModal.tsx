@@ -1,18 +1,18 @@
-import { useEffect, useMemo, useState } from 'react'
+import { useMemo, useState } from 'react'
 import { useForm, useStore } from '@tanstack/react-form'
 import { z } from 'zod'
 import { useUser } from '@clerk/clerk-react'
 
 import { api } from '../../../../../../convex/_generated/api'
-import {
-  uploadImageToConvex,
-  validateImageFile,
-} from '../../../../../lib/imageUpload'
 import { useI18n } from '../../../../../lib/i18n/provider'
 import { getHotelCategoryLabel } from '../../../../../lib/hotelCategories'
 import { useTheme } from '../../../../../lib/theme'
 import type { Id } from '../../../../../../convex/_generated/dataModel'
 import { useMutation, useQuery } from '@/integrations/convex/hooks'
+import { ImageField } from '@/components/form/ImageField'
+import { TextAreaField, TextField } from '@/components/form/TextField'
+import { getFirstErrorMessage } from '@/lib/forms'
+import { useImageUpload } from '@/hooks/useImageUpload'
 
 interface HotelModalProps {
   hotelId: Id<'hotels'> | null
@@ -95,33 +95,6 @@ function buildHotelDefaultValues(
   }
 }
 
-function getFirstErrorMessage(
-  errors: Array<unknown> | undefined,
-): string | null {
-  if (!errors) {
-    return null
-  }
-
-  for (const error of errors) {
-    if (!error) {
-      continue
-    }
-
-    if (typeof error === 'string') {
-      return error
-    }
-
-    if (typeof error === 'object' && 'message' in error) {
-      const message = error.message
-      if (typeof message === 'string') {
-        return message
-      }
-    }
-  }
-
-  return null
-}
-
 type HotelModalHotel = Parameters<typeof buildHotelDefaultValues>[0]
 
 export function HotelModal({ hotelId, onClose }: HotelModalProps) {
@@ -156,22 +129,10 @@ function HotelModalContent({
   const trackUpload = useMutation(api.files.trackUpload)
 
   const [submitError, setSubmitError] = useState('')
-  const [uploadingImage, setUploadingImage] = useState(false)
-  const [selectedImageFile, setSelectedImageFile] = useState<File | null>(null)
-  const [imagePreviewUrl, setImagePreviewUrl] = useState(hotel?.imageUrl ?? '')
-  const [imageStorageId, setImageStorageId] = useState<Id<'_storage'> | null>(
-    hotel?.imageStorageId ?? null,
-  )
-  const [imageChanged, setImageChanged] = useState(false)
-  const [clearImage, setClearImage] = useState(false)
-
-  useEffect(() => {
-    if (!selectedImageFile || !imagePreviewUrl) {
-      return
-    }
-
-    return () => URL.revokeObjectURL(imagePreviewUrl)
-  }, [imagePreviewUrl, selectedImageFile])
+  const imageUpload = useImageUpload({
+    initialStorageId: hotel?.imageStorageId ?? null,
+    initialUrl: hotel?.imageUrl ?? '',
+  })
 
   const schema = useMemo(
     () =>
@@ -315,19 +276,12 @@ function HotelModalContent({
       }
 
       setSubmitError('')
-      setUploadingImage(false)
 
       try {
-        let nextImageStorageId = imageStorageId
-
-        if (selectedImageFile) {
-          setUploadingImage(true)
-          nextImageStorageId = await uploadImageToConvex({
-            file: selectedImageFile,
-            generateUploadUrl,
-            trackUpload,
-          })
-        }
+        const nextImageStorageId = await imageUpload.commit({
+          generateUploadUrl,
+          trackUpload,
+        })
 
         const latitude = value.latitude.trim()
         const longitude = value.longitude.trim()
@@ -369,18 +323,8 @@ function HotelModalContent({
         }
 
         if (hotelId) {
-          const imagePayload: {
-            imageStorageId?: Id<'_storage'>
-            clearImage?: boolean
-          } = {}
-
-          if (imageChanged) {
-            if (clearImage) {
-              imagePayload.clearImage = true
-            } else if (nextImageStorageId) {
-              imagePayload.imageStorageId = nextImageStorageId
-            }
-          }
+          const imagePayload =
+            imageUpload.buildUpdatePayload(nextImageStorageId)
 
           await updateHotel({
             hotelId,
@@ -401,8 +345,6 @@ function HotelModalContent({
             ? error.message
             : t('admin.hotels.modal.error.generic'),
         )
-      } finally {
-        setUploadingImage(false)
       }
     },
   })
@@ -411,26 +353,6 @@ function HotelModalContent({
   const labelClass = `mb-2 block text-sm font-medium ${
     isDark ? 'text-slate-300' : 'text-slate-700'
   }`
-
-  const handleImageSelection = (event: React.ChangeEvent<HTMLInputElement>) => {
-    const file = event.target.files?.[0]
-
-    if (!file) {
-      return
-    }
-
-    const validationError = validateImageFile(file)
-    if (validationError) {
-      setSubmitError(validationError)
-      return
-    }
-
-    setSubmitError('')
-    setSelectedImageFile(file)
-    setImagePreviewUrl(URL.createObjectURL(file))
-    setImageChanged(true)
-    setClearImage(false)
-  }
 
   const fieldLabels: Partial<Record<keyof HotelFormValues, string>> = {
     name: t('admin.hotels.modal.hotelName'),
@@ -441,6 +363,20 @@ function HotelModalContent({
     longitude: t('admin.hotels.modal.longitude'),
     rating: t('admin.hotels.modal.rating'),
     metadata: t('admin.hotels.modal.metadata'),
+  }
+
+  function submitLabel(): string {
+    if (imageUpload.uploading) {
+      return t('common.uploadingImage')
+    }
+
+    if (isSubmitting) {
+      return t('common.saving')
+    }
+
+    return hotelId
+      ? t('admin.hotels.modal.updateHotel')
+      : t('admin.hotels.modal.createHotel')
   }
 
   return (
@@ -530,264 +466,130 @@ function HotelModalContent({
           </form.Subscribe>
 
           <form.Field name="name">
-            {(field) => {
-              const error = getFirstErrorMessage(field.state.meta.errors)
-              return (
-                <div>
-                  <label className={labelClass}>
-                    {t('admin.hotels.modal.hotelName')}
-                  </label>
-                  <input
-                    aria-label={t('admin.hotels.modal.hotelName')}
-                    type="text"
-                    value={field.state.value}
-                    onChange={(event) => field.handleChange(event.target.value)}
-                    onBlur={field.handleBlur}
-                    placeholder={t('admin.hotels.modal.hotelNamePlaceholder')}
-                    className={`admin-field ${
-                      error ? 'border-red-500/60 focus:border-red-500/80' : ''
-                    }`}
-                  />
-                  {error ? (
-                    <p className="mt-2 text-xs text-red-400">{error}</p>
-                  ) : null}
-                </div>
-              )
-            }}
+            {(field) => (
+              <TextField
+                field={field}
+                label={t('admin.hotels.modal.hotelName')}
+                labelClassName={labelClass}
+                aria-label={t('admin.hotels.modal.hotelName')}
+                placeholder={t('admin.hotels.modal.hotelNamePlaceholder')}
+              />
+            )}
           </form.Field>
 
           <form.Field name="address">
-            {(field) => {
-              const error = getFirstErrorMessage(field.state.meta.errors)
-              return (
-                <div>
-                  <label className={labelClass}>
-                    {t('admin.hotels.modal.address')}
-                  </label>
-                  <input
-                    aria-label={t('admin.hotels.modal.address')}
-                    type="text"
-                    value={field.state.value}
-                    onChange={(event) => field.handleChange(event.target.value)}
-                    onBlur={field.handleBlur}
-                    placeholder={t('admin.hotels.modal.addressPlaceholder')}
-                    className={`admin-field ${
-                      error ? 'border-red-500/60 focus:border-red-500/80' : ''
-                    }`}
-                  />
-                  {error ? (
-                    <p className="mt-2 text-xs text-red-400">{error}</p>
-                  ) : null}
-                </div>
-              )
-            }}
+            {(field) => (
+              <TextField
+                field={field}
+                label={t('admin.hotels.modal.address')}
+                labelClassName={labelClass}
+                aria-label={t('admin.hotels.modal.address')}
+                placeholder={t('admin.hotels.modal.addressPlaceholder')}
+              />
+            )}
           </form.Field>
 
           <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
             <form.Field name="city">
-              {(field) => {
-                const error = getFirstErrorMessage(field.state.meta.errors)
-                return (
-                  <div>
-                    <label className={labelClass}>
-                      {t('admin.hotels.modal.city')}
-                    </label>
-                    <input
-                      aria-label={t('admin.hotels.modal.city')}
-                      type="text"
-                      value={field.state.value}
-                      onChange={(event) =>
-                        field.handleChange(event.target.value)
-                      }
-                      onBlur={field.handleBlur}
-                      placeholder={t('admin.hotels.modal.cityPlaceholder')}
-                      className={`admin-field ${
-                        error ? 'border-red-500/60 focus:border-red-500/80' : ''
-                      }`}
-                    />
-                    {error ? (
-                      <p className="mt-2 text-xs text-red-400">{error}</p>
-                    ) : null}
-                  </div>
-                )
-              }}
+              {(field) => (
+                <TextField
+                  field={field}
+                  label={t('admin.hotels.modal.city')}
+                  labelClassName={labelClass}
+                  aria-label={t('admin.hotels.modal.city')}
+                  placeholder={t('admin.hotels.modal.cityPlaceholder')}
+                />
+              )}
             </form.Field>
 
             <form.Field name="country">
-              {(field) => {
-                const error = getFirstErrorMessage(field.state.meta.errors)
-                return (
-                  <div>
-                    <label className={labelClass}>
-                      {t('admin.hotels.modal.country')}
-                    </label>
-                    <input
-                      aria-label={t('admin.hotels.modal.country')}
-                      type="text"
-                      value={field.state.value}
-                      onChange={(event) =>
-                        field.handleChange(event.target.value)
-                      }
-                      onBlur={field.handleBlur}
-                      placeholder={t('admin.hotels.modal.countryPlaceholder')}
-                      className={`admin-field ${
-                        error ? 'border-red-500/60 focus:border-red-500/80' : ''
-                      }`}
-                    />
-                    {error ? (
-                      <p className="mt-2 text-xs text-red-400">{error}</p>
-                    ) : null}
-                  </div>
-                )
-              }}
+              {(field) => (
+                <TextField
+                  field={field}
+                  label={t('admin.hotels.modal.country')}
+                  labelClassName={labelClass}
+                  aria-label={t('admin.hotels.modal.country')}
+                  placeholder={t('admin.hotels.modal.countryPlaceholder')}
+                />
+              )}
             </form.Field>
           </div>
 
           <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
             <form.Field name="latitude">
-              {(field) => {
-                const error = getFirstErrorMessage(field.state.meta.errors)
-                return (
-                  <div>
-                    <label className={labelClass}>
-                      {t('admin.hotels.modal.latitude')}
-                    </label>
-                    <input
-                      aria-label={t('admin.hotels.modal.latitude')}
-                      type="number"
-                      step="any"
-                      value={field.state.value}
-                      onChange={(event) =>
-                        field.handleChange(event.target.value)
-                      }
-                      onBlur={field.handleBlur}
-                      placeholder={t('admin.hotels.modal.latitudePlaceholder')}
-                      className={`admin-field ${
-                        error ? 'border-red-500/60 focus:border-red-500/80' : ''
-                      }`}
-                    />
-                    {error ? (
-                      <p className="mt-2 text-xs text-red-400">{error}</p>
-                    ) : null}
-                  </div>
-                )
-              }}
+              {(field) => (
+                <TextField
+                  field={field}
+                  label={t('admin.hotels.modal.latitude')}
+                  labelClassName={labelClass}
+                  aria-label={t('admin.hotels.modal.latitude')}
+                  type="number"
+                  step="any"
+                  placeholder={t('admin.hotels.modal.latitudePlaceholder')}
+                />
+              )}
             </form.Field>
 
             <form.Field name="longitude">
-              {(field) => {
-                const error = getFirstErrorMessage(field.state.meta.errors)
-                return (
-                  <div>
-                    <label className={labelClass}>
-                      {t('admin.hotels.modal.longitude')}
-                    </label>
-                    <input
-                      aria-label={t('admin.hotels.modal.longitude')}
-                      type="number"
-                      step="any"
-                      value={field.state.value}
-                      onChange={(event) =>
-                        field.handleChange(event.target.value)
-                      }
-                      onBlur={field.handleBlur}
-                      placeholder={t('admin.hotels.modal.longitudePlaceholder')}
-                      className={`admin-field ${
-                        error ? 'border-red-500/60 focus:border-red-500/80' : ''
-                      }`}
-                    />
-                    {error ? (
-                      <p className="mt-2 text-xs text-red-400">{error}</p>
-                    ) : null}
-                  </div>
-                )
-              }}
+              {(field) => (
+                <TextField
+                  field={field}
+                  label={t('admin.hotels.modal.longitude')}
+                  labelClassName={labelClass}
+                  aria-label={t('admin.hotels.modal.longitude')}
+                  type="number"
+                  step="any"
+                  placeholder={t('admin.hotels.modal.longitudePlaceholder')}
+                />
+              )}
             </form.Field>
           </div>
 
           <form.Field name="description">
             {(field) => (
-              <div>
-                <label className={labelClass}>
-                  {t('admin.hotels.modal.description')}
-                </label>
-                <textarea
-                  aria-label={t('admin.hotels.modal.description')}
-                  rows={4}
-                  value={field.state.value}
-                  onChange={(event) => field.handleChange(event.target.value)}
-                  onBlur={field.handleBlur}
-                  placeholder={t('admin.hotels.modal.descriptionPlaceholder')}
-                  className="admin-textarea"
-                />
-              </div>
+              <TextAreaField
+                field={field}
+                label={t('admin.hotels.modal.description')}
+                labelClassName={labelClass}
+                aria-label={t('admin.hotels.modal.description')}
+                rows={4}
+                placeholder={t('admin.hotels.modal.descriptionPlaceholder')}
+              />
             )}
           </form.Field>
 
-          <div>
-            <label className={labelClass}>
-              {t('admin.hotels.modal.hotelImageOptional')}
-            </label>
-            <input
-              aria-label={t('admin.hotels.modal.hotelImageOptional')}
-              type="file"
-              accept="image/*"
-              onChange={handleImageSelection}
-              className={`admin-field py-2.5 file:mr-3 file:cursor-pointer file:rounded-lg file:border-0 file:bg-violet-500/20 file:px-3 file:py-1.5 file:text-violet-300 ${
-                isDark ? 'text-slate-300' : 'text-slate-600'
-              }`}
-            />
-            <p
-              className={`mt-2 text-xs ${
-                isDark ? 'text-slate-500' : 'text-slate-400'
-              }`}
-            >
-              {t('common.maxSize10mb')}
-            </p>
-            {imagePreviewUrl ? (
-              <div className="mt-3">
-                <img
-                  src={imagePreviewUrl}
-                  alt={t('admin.hotels.modal.imagePreviewAlt')}
-                  className={`h-44 w-full rounded-xl border object-cover ${
-                    isDark ? 'border-slate-700' : 'border-slate-200'
-                  }`}
-                />
-                <button
-                  type="button"
-                  onClick={() => {
-                    setSelectedImageFile(null)
-                    setImagePreviewUrl('')
-                    setImageStorageId(null)
-                    setImageChanged(true)
-                    setClearImage(true)
-                    setSubmitError('')
-                  }}
-                  className="mt-3 cursor-pointer text-sm font-medium text-red-400 transition-colors hover:text-red-300"
-                >
-                  {t('common.removeImage')}
-                </button>
-              </div>
-            ) : null}
-          </div>
+          <ImageField
+            inputAriaLabel={t('admin.hotels.modal.hotelImageOptional')}
+            isDark={isDark}
+            label={t('admin.hotels.modal.hotelImageOptional')}
+            maxSizeLabel={t('common.maxSize10mb')}
+            onRemove={() => {
+              imageUpload.remove()
+              setSubmitError('')
+            }}
+            onSelect={(file) => {
+              setSubmitError('')
+              return imageUpload.selectFile(file)
+            }}
+            onValidationError={setSubmitError}
+            previewAlt={t('admin.hotels.modal.imagePreviewAlt')}
+            previewClassName={`h-44 w-full rounded-xl border object-cover ${
+              isDark ? 'border-slate-700' : 'border-slate-200'
+            }`}
+            previewUrl={imageUpload.previewUrl}
+            removeLabel={t('common.removeImage')}
+          />
 
           <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
             <form.Field name="externalId">
               {(field) => (
-                <div>
-                  <label className={labelClass}>
-                    {t('admin.hotels.modal.externalId')}
-                  </label>
-                  <input
-                    aria-label={t('admin.hotels.modal.externalId')}
-                    type="text"
-                    value={field.state.value}
-                    onChange={(event) => field.handleChange(event.target.value)}
-                    onBlur={field.handleBlur}
-                    placeholder={t('admin.hotels.modal.externalIdPlaceholder')}
-                    className="admin-field"
-                  />
-                </div>
+                <TextField
+                  field={field}
+                  label={t('admin.hotels.modal.externalId')}
+                  labelClassName={labelClass}
+                  aria-label={t('admin.hotels.modal.externalId')}
+                  placeholder={t('admin.hotels.modal.externalIdPlaceholder')}
+                />
               )}
             </form.Field>
 
@@ -824,141 +626,82 @@ function HotelModalContent({
           <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
             <form.Field name="stateProvince">
               {(field) => (
-                <div>
-                  <label className={labelClass}>
-                    {t('admin.hotels.modal.stateProvince')}
-                  </label>
-                  <input
-                    aria-label={t('admin.hotels.modal.stateProvince')}
-                    type="text"
-                    value={field.state.value}
-                    onChange={(event) => field.handleChange(event.target.value)}
-                    onBlur={field.handleBlur}
-                    placeholder={t(
-                      'admin.hotels.modal.stateProvincePlaceholder',
-                    )}
-                    className="admin-field"
-                  />
-                </div>
+                <TextField
+                  field={field}
+                  label={t('admin.hotels.modal.stateProvince')}
+                  labelClassName={labelClass}
+                  aria-label={t('admin.hotels.modal.stateProvince')}
+                  placeholder={t('admin.hotels.modal.stateProvincePlaceholder')}
+                />
               )}
             </form.Field>
 
             <form.Field name="postalCode">
               {(field) => (
-                <div>
-                  <label className={labelClass}>
-                    {t('admin.hotels.modal.postalCode')}
-                  </label>
-                  <input
-                    aria-label={t('admin.hotels.modal.postalCode')}
-                    type="text"
-                    value={field.state.value}
-                    onChange={(event) => field.handleChange(event.target.value)}
-                    onBlur={field.handleBlur}
-                    placeholder={t('admin.hotels.modal.postalCodePlaceholder')}
-                    className="admin-field"
-                  />
-                </div>
+                <TextField
+                  field={field}
+                  label={t('admin.hotels.modal.postalCode')}
+                  labelClassName={labelClass}
+                  aria-label={t('admin.hotels.modal.postalCode')}
+                  placeholder={t('admin.hotels.modal.postalCodePlaceholder')}
+                />
               )}
             </form.Field>
           </div>
 
           <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
             <form.Field name="rating">
-              {(field) => {
-                const error = getFirstErrorMessage(field.state.meta.errors)
-                return (
-                  <div>
-                    <label className={labelClass}>
-                      {t('admin.hotels.modal.rating')}
-                    </label>
-                    <input
-                      aria-label={t('admin.hotels.modal.rating')}
-                      type="number"
-                      step="0.1"
-                      min="0"
-                      max="5"
-                      value={field.state.value}
-                      onChange={(event) =>
-                        field.handleChange(event.target.value)
-                      }
-                      onBlur={field.handleBlur}
-                      placeholder={t('admin.hotels.modal.ratingPlaceholder')}
-                      className={`admin-field ${
-                        error ? 'border-red-500/60 focus:border-red-500/80' : ''
-                      }`}
-                    />
-                    {error ? (
-                      <p className="mt-2 text-xs text-red-400">{error}</p>
-                    ) : null}
-                  </div>
-                )
-              }}
+              {(field) => (
+                <TextField
+                  field={field}
+                  label={t('admin.hotels.modal.rating')}
+                  labelClassName={labelClass}
+                  aria-label={t('admin.hotels.modal.rating')}
+                  type="number"
+                  step="0.1"
+                  min="0"
+                  max="5"
+                  placeholder={t('admin.hotels.modal.ratingPlaceholder')}
+                />
+              )}
             </form.Field>
 
             <form.Field name="lastRenovationDate">
               {(field) => (
-                <div>
-                  <label className={labelClass}>
-                    {t('admin.hotels.modal.lastRenovationDate')}
-                  </label>
-                  <input
-                    aria-label={t('admin.hotels.modal.lastRenovationDate')}
-                    type="date"
-                    value={field.state.value}
-                    onChange={(event) => field.handleChange(event.target.value)}
-                    onBlur={field.handleBlur}
-                    className="admin-field"
-                  />
-                </div>
+                <TextField
+                  field={field}
+                  label={t('admin.hotels.modal.lastRenovationDate')}
+                  labelClassName={labelClass}
+                  aria-label={t('admin.hotels.modal.lastRenovationDate')}
+                  type="date"
+                />
               )}
             </form.Field>
           </div>
 
           <form.Field name="tags">
             {(field) => (
-              <div>
-                <label className={labelClass}>
-                  {t('admin.hotels.modal.tags')}
-                </label>
-                <input
-                  aria-label={t('admin.hotels.modal.tags')}
-                  type="text"
-                  value={field.state.value}
-                  onChange={(event) => field.handleChange(event.target.value)}
-                  onBlur={field.handleBlur}
-                  placeholder={t('admin.hotels.modal.tagsPlaceholder')}
-                  className="admin-field"
-                />
-              </div>
+              <TextField
+                field={field}
+                label={t('admin.hotels.modal.tags')}
+                labelClassName={labelClass}
+                aria-label={t('admin.hotels.modal.tags')}
+                placeholder={t('admin.hotels.modal.tagsPlaceholder')}
+              />
             )}
           </form.Field>
 
           <form.Field name="metadata">
-            {(field) => {
-              const error = getFirstErrorMessage(field.state.meta.errors)
-              return (
-                <div>
-                  <label className={labelClass}>
-                    {t('admin.hotels.modal.metadata')}
-                  </label>
-                  <textarea
-                    aria-label={t('admin.hotels.modal.metadata')}
-                    rows={5}
-                    value={field.state.value}
-                    onChange={(event) => field.handleChange(event.target.value)}
-                    onBlur={field.handleBlur}
-                    placeholder={t('admin.hotels.modal.metadataPlaceholder')}
-                    className={`admin-textarea ${
-                      error ? 'border-red-500/60 focus:border-red-500/80' : ''
-                    }`}
-                  />
-                  {error ? (
-                    <p className="mt-2 text-xs text-red-400">{error}</p>
-                  ) : null}
-                </div>
-              )
-            }}
+            {(field) => (
+              <TextAreaField
+                field={field}
+                label={t('admin.hotels.modal.metadata')}
+                labelClassName={labelClass}
+                aria-label={t('admin.hotels.modal.metadata')}
+                rows={5}
+                placeholder={t('admin.hotels.modal.metadataPlaceholder')}
+              />
+            )}
           </form.Field>
 
           <form.Field name="parkingIncluded">
@@ -1006,16 +749,10 @@ function HotelModalContent({
                 return (
                   <button
                     type="submit"
-                    disabled={isSubmitting || uploadingImage || blocked}
+                    disabled={isSubmitting || imageUpload.uploading || blocked}
                     className="admin-button-primary flex-1 disabled:cursor-not-allowed disabled:opacity-50"
                   >
-                    {isSubmitting || uploadingImage
-                      ? uploadingImage
-                        ? t('common.uploadingImage')
-                        : t('common.saving')
-                      : hotelId
-                        ? t('admin.hotels.modal.updateHotel')
-                        : t('admin.hotels.modal.createHotel')}
+                    {submitLabel()}
                   </button>
                 )
               }}

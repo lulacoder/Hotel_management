@@ -9,9 +9,10 @@ import {
   X,
   XCircle,
 } from 'lucide-react'
-import { useEffect, useState } from 'react'
+import { useEffect, useMemo, useState } from 'react'
 
 import { api } from '../../../convex/_generated/api'
+import { isBookingStatus } from '../../../convex/lib/bookingLifecycle'
 import { LoadMoreButton } from '../../components/LoadMoreButton'
 import { useI18n } from '../../lib/i18n/provider'
 import { DEFAULT_SELECT_LOCATION_SEARCH } from '../../lib/navigationSearch'
@@ -59,7 +60,7 @@ function BookingsPage() {
     api.bookings.getMyBookingsEnriched,
     user?.id
       ? {
-          status: statusFilter !== 'all' ? (statusFilter as any) : undefined,
+          status: isBookingStatus(statusFilter) ? statusFilter : undefined,
         }
       : 'skip',
     { initialNumItems: 20 },
@@ -121,57 +122,77 @@ function BookingsPage() {
     })
   }
 
-  const paymentBanner =
+  const paymentBanners = useMemo(
+    () => ({
+      processing: {
+        Icon: Loader2,
+        body: t('bookingModal.paymentProcessingMessage'),
+        className: 'bg-violet-500/10 border-violet-500/20 text-violet-300',
+        iconClassName: 'text-violet-400 animate-spin',
+        title: t('bookingModal.paymentProcessingTitle'),
+      },
+      paid: {
+        Icon: CheckCircle,
+        body: t('bookingModal.paymentSuccessMessage'),
+        className: 'bg-emerald-500/10 border-emerald-500/20 text-emerald-200',
+        iconClassName: 'text-emerald-400',
+        title: t('bookingModal.paymentSuccessTitle'),
+      },
+      refund_required: {
+        Icon: AlertTriangle,
+        body: t('bookingModal.paymentRefundRequiredMessage'),
+        className: 'bg-amber-500/10 border-amber-500/20 text-amber-100',
+        iconClassName: 'text-amber-400',
+        title: t('bookingModal.paymentRefundRequiredTitle'),
+      },
+      refund_initiated: {
+        Icon: AlertTriangle,
+        body: t('bookingModal.paymentRefundRequiredMessage'),
+        className: 'bg-amber-500/10 border-amber-500/20 text-amber-100',
+        iconClassName: 'text-amber-400',
+        title: t('bookingModal.paymentRefundRequiredTitle'),
+      },
+      refunded: {
+        Icon: AlertTriangle,
+        body: t('bookingModal.paymentRefundedMessage'),
+        className: 'bg-slate-800 border-slate-700 text-slate-200',
+        iconClassName: 'text-slate-300',
+        title: t('bookingModal.paymentRefundedTitle'),
+      },
+      reversed: {
+        Icon: AlertTriangle,
+        body: t('bookingModal.paymentReversedMessage'),
+        className: 'bg-amber-500/10 border-amber-500/20 text-amber-100',
+        iconClassName: 'text-amber-400',
+        title: t('bookingModal.paymentReversedTitle'),
+      },
+      failed: {
+        Icon: XCircle,
+        body: t('bookingModal.paymentFailedMessage'),
+        className: 'bg-red-500/10 border-red-500/20 text-red-200',
+        iconClassName: 'text-red-400',
+        title: t('bookingModal.paymentFailedTitle'),
+      },
+      cancelled: {
+        Icon: XCircle,
+        body: t('bookingModal.paymentFailedMessage'),
+        className: 'bg-red-500/10 border-red-500/20 text-red-200',
+        iconClassName: 'text-red-400',
+        title: t('bookingModal.paymentFailedTitle'),
+      },
+    }),
+    [t],
+  )
+  const paymentBannerStatus: string =
     !trackedPayment || trackedPayment.status === 'initialized'
-      ? {
-          Icon: Loader2,
-          body: t('bookingModal.paymentProcessingMessage'),
-          className: 'bg-violet-500/10 border-violet-500/20 text-violet-300',
-          iconClassName: 'text-violet-400 animate-spin',
-          title: t('bookingModal.paymentProcessingTitle'),
-        }
-      : trackedPayment.status === 'paid'
-        ? {
-            Icon: CheckCircle,
-            body: t('bookingModal.paymentSuccessMessage'),
-            className:
-              'bg-emerald-500/10 border-emerald-500/20 text-emerald-200',
-            iconClassName: 'text-emerald-400',
-            title: t('bookingModal.paymentSuccessTitle'),
-          }
-        : trackedPayment.status === 'refund_required' ||
-            trackedPayment.status === 'refund_initiated'
-          ? {
-              Icon: AlertTriangle,
-              body: t('bookingModal.paymentRefundRequiredMessage'),
-              className: 'bg-amber-500/10 border-amber-500/20 text-amber-100',
-              iconClassName: 'text-amber-400',
-              title: t('bookingModal.paymentRefundRequiredTitle'),
-            }
-          : trackedPayment.status === 'refunded'
-            ? {
-                Icon: AlertTriangle,
-                body: t('bookingModal.paymentRefundedMessage'),
-                className: 'bg-slate-800 border-slate-700 text-slate-200',
-                iconClassName: 'text-slate-300',
-                title: t('bookingModal.paymentRefundedTitle'),
-              }
-            : trackedPayment.status === 'reversed'
-              ? {
-                  Icon: AlertTriangle,
-                  body: t('bookingModal.paymentReversedMessage'),
-                  className:
-                    'bg-amber-500/10 border-amber-500/20 text-amber-100',
-                  iconClassName: 'text-amber-400',
-                  title: t('bookingModal.paymentReversedTitle'),
-                }
-              : {
-                  Icon: XCircle,
-                  body: t('bookingModal.paymentFailedMessage'),
-                  className: 'bg-red-500/10 border-red-500/20 text-red-200',
-                  iconClassName: 'text-red-400',
-                  title: t('bookingModal.paymentFailedTitle'),
-                }
+      ? 'processing'
+      : trackedPayment.status
+  const paymentBanner = Object.prototype.hasOwnProperty.call(
+    paymentBanners,
+    paymentBannerStatus,
+  )
+    ? paymentBanners[paymentBannerStatus as keyof typeof paymentBanners]
+    : paymentBanners.failed
   const PaymentBannerIcon = paymentBanner.Icon
 
   return (

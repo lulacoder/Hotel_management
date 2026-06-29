@@ -12,6 +12,7 @@ import {
 
 import { useI18n } from '../../../lib/i18n/provider'
 import type { Id } from '../../../../convex/_generated/dataModel'
+import { formatUsdAmount, formatUsdWholeAmount } from '@/lib/currency'
 
 interface RoomSummary {
   _id: Id<'rooms'>
@@ -130,7 +131,7 @@ export function HotelRoomsGrid({
                     </div>
                     <div className="text-right">
                       <p className="text-xl font-bold text-violet-400">
-                        ${(room.basePrice / 100).toFixed(0)}
+                        {formatUsdWholeAmount(room.basePrice)}
                       </p>
                       <p className="text-xs text-slate-500">
                         {t('hotel.perNight')}
@@ -194,11 +195,11 @@ export function HotelRoomsGrid({
                     <div className="mb-3 rounded-xl bg-slate-800/50 p-3">
                       <div className="flex justify-between text-sm">
                         <span className="text-slate-400">
-                          ${(room.basePrice / 100).toFixed(0)} x {nights}{' '}
+                          {formatUsdWholeAmount(room.basePrice)} x {nights}{' '}
                           {nights !== 1 ? t('hotel.nights') : t('hotel.night')}
                         </span>
                         <span className="font-semibold text-slate-200">
-                          ${((room.basePrice * nights) / 100).toFixed(2)}
+                          {formatUsdAmount(room.basePrice * nights)}
                         </span>
                       </div>
                     </div>

@@ -27,6 +27,7 @@ import {
 import { useTheme } from '../../lib/theme'
 import type { Id } from '../../../convex/_generated/dataModel'
 import { usePaginatedQuery, useQuery } from '@/integrations/convex/hooks'
+import { AdminSpinner } from '@/components/AdminSpinner'
 
 // ---------------------------------------------------------------------------
 // Route
@@ -435,9 +436,7 @@ function CustomerAnnouncementsPage() {
 
         {/* Loading skeleton */}
         {isLoading && (
-          <div className="flex items-center justify-center py-24">
-            <div className="animate-spin rounded-full size-8 border-2 border-violet-500/20 border-t-violet-500" />
-          </div>
+          <AdminSpinner className="flex items-center justify-center py-24" />
         )}
 
         {/* Empty state */}

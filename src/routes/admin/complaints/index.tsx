@@ -6,6 +6,7 @@ import { useAdminSession } from '../../../lib/adminSession'
 import { useI18n } from '../../../lib/i18n/provider'
 import { useTheme } from '../../../lib/theme'
 import { useQuery } from '@/integrations/convex/hooks'
+import { AdminSpinner } from '@/components/AdminSpinner'
 
 export const Route = createFileRoute('/admin/complaints/')({
   component: AdminComplaintsPage,
@@ -73,9 +74,7 @@ function AdminComplaintsPage() {
       </div>
 
       {complaints === undefined ? (
-        <div className="flex items-center justify-center py-12">
-          <div className="animate-spin rounded-full size-8 border-2 border-violet-500/20 border-t-violet-500"></div>
-        </div>
+        <AdminSpinner className="flex items-center justify-center py-12" />
       ) : complaints.length === 0 ? (
         <div className="admin-empty-state p-12">
           <div className="admin-empty-icon">

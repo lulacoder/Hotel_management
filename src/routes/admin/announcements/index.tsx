@@ -25,6 +25,7 @@ import {
   usePaginatedQuery,
   useQuery,
 } from '@/integrations/convex/hooks'
+import { AdminSpinner } from '@/components/AdminSpinner'
 
 export const Route = createFileRoute('/admin/announcements/')({
   component: AdminAnnouncementsPage,
@@ -228,9 +229,7 @@ function AdminAnnouncementsPage() {
 
       {/* Content */}
       {announcementsPage.status === 'LoadingFirstPage' ? (
-        <div className="flex items-center justify-center py-12">
-          <div className="animate-spin rounded-full size-8 border-2 border-violet-500/20 border-t-violet-500" />
-        </div>
+        <AdminSpinner className="flex items-center justify-center py-12" />
       ) : announcements.length === 0 ? (
         <div className="admin-empty-state p-14">
           <div className="admin-empty-icon">

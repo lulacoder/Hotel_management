@@ -25,6 +25,7 @@ import {
   useIntentPreloadTarget,
 } from '@/integrations/convex/preload'
 import { Button } from '@/components/ui/button'
+import { AdminSpinner } from '@/components/AdminSpinner'
 
 export const Route = createFileRoute('/admin/hotels/')({
   // Register hotels management route in admin section.
@@ -56,10 +57,8 @@ function HotelsPage() {
   const { hotelAssignment, profile } = useAdminSession()
   const hotels = useQuery(api.hotels.list, {})
   const deleteHotel = useMutation(api.hotels.softDelete)
-  const {
-    store: preloadStore,
-    getIntentProps: getPreloadIntentProps,
-  } = useIntentPreloadTarget<Id<'hotels'>>()
+  const { store: preloadStore, getIntentProps: getPreloadIntentProps } =
+    useIntentPreloadTarget<Id<'hotels'>>()
 
   const canAddHotel = profile.role === 'room_admin'
   const canEditHotel =
@@ -69,7 +68,7 @@ function HotelsPage() {
     (hotelId: Id<'hotels'>): RequestForQueries => {
       const canPreloadPaymentSettings = Boolean(
         hotelAssignment?.hotelId === hotelId &&
-          ['hotel_admin', 'hotel_cashier'].includes(hotelAssignment.role),
+        ['hotel_admin', 'hotel_cashier'].includes(hotelAssignment.role),
       )
 
       return {
@@ -132,7 +131,10 @@ function HotelsPage() {
 
   return (
     <div className="max-w-7xl mx-auto">
-      <ConvexPreloader store={preloadStore} buildQueries={buildPreloadQueries} />
+      <ConvexPreloader
+        store={preloadStore}
+        buildQueries={buildPreloadQueries}
+      />
 
       {/* Header */}
       <m.div
@@ -188,11 +190,7 @@ function HotelsPage() {
 
       {/* Hotels Grid */}
       {visibleHotels === undefined ? (
-        <div className="flex items-center justify-center py-20">
-          <div
-            className={`animate-spin rounded-full size-8 border-2 ${isDark ? 'border-violet-500/20 border-t-violet-500' : 'border-violet-500/20 border-t-violet-500'}`}
-          ></div>
-        </div>
+        <AdminSpinner />
       ) : filteredHotels?.length === 0 ? (
         <m.div
           className="admin-empty-state p-12"

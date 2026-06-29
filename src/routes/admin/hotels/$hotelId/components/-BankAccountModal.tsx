@@ -7,6 +7,7 @@ import { api } from '../../../../../../convex/_generated/api'
 import { useI18n } from '../../../../../lib/i18n/provider'
 import { useTheme } from '../../../../../lib/theme'
 import type { Id } from '../../../../../../convex/_generated/dataModel'
+import { getFirstErrorMessage } from '@/lib/forms'
 
 interface BankAccountModalProps {
   hotelId: Id<'hotels'>
@@ -16,33 +17,6 @@ interface BankAccountModalProps {
     accountNumber: string
   } | null
   onClose: () => void
-}
-
-function getFirstErrorMessage(
-  errors: Array<unknown> | undefined,
-): string | null {
-  if (!errors) {
-    return null
-  }
-
-  for (const error of errors) {
-    if (!error) {
-      continue
-    }
-
-    if (typeof error === 'string') {
-      return error
-    }
-
-    if (typeof error === 'object' && 'message' in error) {
-      const message = error.message
-      if (typeof message === 'string') {
-        return message
-      }
-    }
-  }
-
-  return null
 }
 
 export function BankAccountModal({

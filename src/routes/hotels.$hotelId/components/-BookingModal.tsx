@@ -29,6 +29,10 @@ import { useI18n } from '../../../lib/i18n/provider'
 import type { Id } from '../../../../convex/_generated/dataModel'
 import type { PackageType } from '../../../lib/packages'
 import { useAction, useMutation, useQuery } from '@/integrations/convex/hooks'
+import { getErrorMessage, hasErrorCode } from '@/lib/errors'
+import { getFirstErrorMessage } from '@/lib/forms'
+import { formatUsdAmount } from '@/lib/currency'
+import { TextAreaField, TextField } from '@/components/form/TextField'
 
 interface BookingModalProps {
   roomId: Id<'rooms'>
@@ -67,33 +71,6 @@ interface BookingFormValues {
   selectedBankAccountId: string
   nationalIdFile: File | null
   transactionId: string
-}
-
-function getFirstErrorMessage(
-  errors: Array<unknown> | undefined,
-): string | null {
-  if (!errors) {
-    return null
-  }
-
-  for (const error of errors) {
-    if (!error) {
-      continue
-    }
-
-    if (typeof error === 'string') {
-      return error
-    }
-
-    if (typeof error === 'object' && 'message' in error) {
-      const message = error.message
-      if (typeof message === 'string') {
-        return message
-      }
-    }
-  }
-
-  return null
 }
 
 export function BookingModal({
@@ -303,14 +280,15 @@ export function BookingModal({
           })
 
           setSubmitted(true)
-        } catch (submissionError: any) {
-          if (submissionError?.data?.code === 'EXPIRED') {
+        } catch (submissionError) {
+          if (hasErrorCode(submissionError, 'EXPIRED')) {
             setError(t('bookingModal.holdExpired'))
           } else {
             setError(
-              submissionError instanceof Error
-                ? submissionError.message
-                : t('bookingModal.failedSubmitPaymentProof'),
+              getErrorMessage(
+                submissionError,
+                t('bookingModal.failedSubmitPaymentProof'),
+              ),
             )
           }
         } finally {
@@ -484,79 +462,41 @@ export function BookingModal({
       className="space-y-4"
     >
       <form.Field name="guestName">
-        {(field) => {
-          const fieldError = getFirstErrorMessage(field.state.meta.errors)
-
-          return (
-            <div>
-              <label className="booking-field-label mb-2 block text-sm font-medium text-slate-300">
-                {t('bookingModal.guestName')}
-              </label>
-              <input
-                aria-label={t('bookingModal.guestName')}
-                type="text"
-                value={field.state.value}
-                onChange={(event) => field.handleChange(event.target.value)}
-                onBlur={field.handleBlur}
-                className={`booking-input w-full rounded-xl border bg-slate-800/50 px-4 py-3 text-slate-200 transition-all focus:border-violet-500/50 focus:outline-none ${
-                  fieldError
-                    ? 'border-red-500/60 focus:border-red-500/80'
-                    : 'border-slate-700'
-                }`}
-              />
-              {fieldError ? (
-                <p className="mt-2 text-xs text-red-400">{fieldError}</p>
-              ) : null}
-            </div>
-          )
-        }}
+        {(field) => (
+          <TextField
+            field={field}
+            label={t('bookingModal.guestName')}
+            labelClassName="booking-field-label mb-2 block text-sm font-medium text-slate-300"
+            aria-label={t('bookingModal.guestName')}
+            inputClassName="booking-input w-full rounded-xl border border-slate-700 bg-slate-800/50 px-4 py-3 text-slate-200 transition-all focus:border-violet-500/50 focus:outline-none"
+          />
+        )}
       </form.Field>
 
       <form.Field name="guestEmail">
-        {(field) => {
-          const fieldError = getFirstErrorMessage(field.state.meta.errors)
-
-          return (
-            <div>
-              <label className="booking-field-label mb-2 block text-sm font-medium text-slate-300">
-                {t('bookingModal.email')}
-              </label>
-              <input
-                aria-label={t('bookingModal.email')}
-                type="email"
-                value={field.state.value}
-                onChange={(event) => field.handleChange(event.target.value)}
-                onBlur={field.handleBlur}
-                className={`booking-input w-full rounded-xl border bg-slate-800/50 px-4 py-3 text-slate-200 transition-all focus:border-violet-500/50 focus:outline-none ${
-                  fieldError
-                    ? 'border-red-500/60 focus:border-red-500/80'
-                    : 'border-slate-700'
-                }`}
-              />
-              {fieldError ? (
-                <p className="mt-2 text-xs text-red-400">{fieldError}</p>
-              ) : null}
-            </div>
-          )
-        }}
+        {(field) => (
+          <TextField
+            field={field}
+            label={t('bookingModal.email')}
+            labelClassName="booking-field-label mb-2 block text-sm font-medium text-slate-300"
+            aria-label={t('bookingModal.email')}
+            type="email"
+            inputClassName="booking-input w-full rounded-xl border border-slate-700 bg-slate-800/50 px-4 py-3 text-slate-200 transition-all focus:border-violet-500/50 focus:outline-none"
+          />
+        )}
       </form.Field>
 
       <form.Field name="specialRequests">
         {(field) => (
-          <div>
-            <label className="booking-field-label mb-2 block text-sm font-medium text-slate-300">
-              {t('bookingModal.specialRequests')}
-            </label>
-            <textarea
-              aria-label={t('bookingModal.specialRequests')}
-              rows={3}
-              value={field.state.value}
-              onChange={(event) => field.handleChange(event.target.value)}
-              onBlur={field.handleBlur}
-              placeholder={t('bookingModal.specialRequestsPlaceholder')}
-              className="booking-input booking-textarea w-full resize-none rounded-xl border border-slate-700 bg-slate-800/50 px-4 py-3 text-slate-200 placeholder-slate-500 transition-all focus:border-violet-500/50 focus:outline-none"
-            />
-          </div>
+          <TextAreaField
+            field={field}
+            label={t('bookingModal.specialRequests')}
+            labelClassName="booking-field-label mb-2 block text-sm font-medium text-slate-300"
+            aria-label={t('bookingModal.specialRequests')}
+            rows={3}
+            placeholder={t('bookingModal.specialRequestsPlaceholder')}
+            textareaClassName="booking-input booking-textarea w-full resize-none rounded-xl border border-slate-700 bg-slate-800/50 px-4 py-3 text-slate-200 placeholder-slate-500 transition-all focus:border-violet-500/50 focus:outline-none"
+          />
         )}
       </form.Field>
 
@@ -572,7 +512,7 @@ export function BookingModal({
             {t('bookingModal.roomRate')} ({nights}{' '}
             {nights !== 1 ? t('hotel.nights') : t('hotel.night')})
           </span>
-          <span>${(roomSubtotalCents / 100).toFixed(2)}</span>
+          <span>{formatUsdAmount(roomSubtotalCents)}</span>
         </div>
         {selectedPackage.addOnPerNight > 0 ? (
           <div className="mt-2 flex items-center justify-between text-slate-300">
@@ -581,12 +521,12 @@ export function BookingModal({
               {t('bookingModal.addOn')} ({nights}{' '}
               {nights !== 1 ? t('hotel.nights') : t('hotel.night')})
             </span>
-            <span>${(packageSubtotalCents / 100).toFixed(2)}</span>
+            <span>{formatUsdAmount(packageSubtotalCents)}</span>
           </div>
         ) : null}
         <div className="booking-details-total mt-3 flex items-center justify-between border-t border-slate-700 pt-3 font-semibold text-violet-400">
           <span>{t('booking.total')}</span>
-          <span>${(totalPriceCents / 100).toFixed(2)}</span>
+          <span>{formatUsdAmount(totalPriceCents)}</span>
         </div>
       </div>
 
@@ -673,7 +613,7 @@ export function BookingModal({
             {t('bookingModal.roomRate')} ({nights}{' '}
             {nights !== 1 ? t('hotel.nights') : t('hotel.night')})
           </span>
-          <span>${(roomSubtotalCents / 100).toFixed(2)}</span>
+          <span>{formatUsdAmount(roomSubtotalCents)}</span>
         </div>
         {packageRateCents > 0 ? (
           <div className="mt-2 flex items-center justify-between text-slate-300">
@@ -682,12 +622,12 @@ export function BookingModal({
               {t('bookingModal.addOn')} ({nights}{' '}
               {nights !== 1 ? t('hotel.nights') : t('hotel.night')})
             </span>
-            <span>${(packageSubtotalCents / 100).toFixed(2)}</span>
+            <span>{formatUsdAmount(packageSubtotalCents)}</span>
           </div>
         ) : null}
         <div className="mt-3 flex items-center justify-between border-t border-slate-700 pt-3 font-semibold text-emerald-400">
           <span>{t('booking.total')}</span>
-          <span>${(totalPriceCents / 100).toFixed(2)}</span>
+          <span>{formatUsdAmount(totalPriceCents)}</span>
         </div>
       </div>
 
@@ -898,33 +838,16 @@ export function BookingModal({
           </form.Field>
 
           <form.Field name="transactionId">
-            {(field) => {
-              const fieldError = getFirstErrorMessage(field.state.meta.errors)
-
-              return (
-                <div>
-                  <label className="booking-field-label mb-2 block text-sm font-medium text-slate-300">
-                    {t('bookingModal.transactionId')}
-                  </label>
-                  <input
-                    aria-label={t('bookingModal.transactionId')}
-                    type="text"
-                    value={field.state.value}
-                    onChange={(event) => field.handleChange(event.target.value)}
-                    onBlur={field.handleBlur}
-                    placeholder={t('bookingModal.transactionIdPlaceholder')}
-                    className={`booking-input w-full rounded-xl border bg-slate-800/50 px-4 py-3 text-slate-200 placeholder-slate-500 transition-all focus:border-violet-500/50 focus:outline-none ${
-                      fieldError
-                        ? 'border-red-500/60 focus:border-red-500/80'
-                        : 'border-slate-700'
-                    }`}
-                  />
-                  {fieldError ? (
-                    <p className="mt-2 text-xs text-red-400">{fieldError}</p>
-                  ) : null}
-                </div>
-              )
-            }}
+            {(field) => (
+              <TextField
+                field={field}
+                label={t('bookingModal.transactionId')}
+                labelClassName="booking-field-label mb-2 block text-sm font-medium text-slate-300"
+                aria-label={t('bookingModal.transactionId')}
+                placeholder={t('bookingModal.transactionIdPlaceholder')}
+                inputClassName="booking-input w-full rounded-xl border border-slate-700 bg-slate-800/50 px-4 py-3 text-slate-200 placeholder-slate-500 transition-all focus:border-violet-500/50 focus:outline-none"
+              />
+            )}
           </form.Field>
 
           <div className="flex gap-3">
@@ -1054,7 +977,7 @@ export function BookingModal({
                 ) : null}
               </div>
               <span className="booking-summary-total-amount text-xl font-bold text-violet-400">
-                ${(totalPriceCents / 100).toFixed(2)}
+                {formatUsdAmount(totalPriceCents)}
               </span>
             </div>
           </div>
