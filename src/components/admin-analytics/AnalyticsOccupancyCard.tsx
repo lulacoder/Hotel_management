@@ -10,6 +10,7 @@ import {
   YAxis,
 } from 'recharts'
 import { AnalyticsEmptyState } from './AnalyticsEmptyState'
+import { AnalyticsTooltip } from './AnalyticsTooltip'
 import { useTheme } from '@/lib/theme'
 import { formatAnalyticsPercent } from '@/lib/adminAnalytics'
 
@@ -196,30 +197,12 @@ function OccupancyTooltip({
   const point = payload[0].payload
 
   return (
-    <div
-      className={`rounded-xl border px-3.5 py-2.5 shadow-xl backdrop-blur-md ${
-        isDark
-          ? 'border-slate-700/60 bg-slate-900/95 shadow-black/40'
-          : 'border-slate-200 bg-white/95 shadow-slate-200/40'
-      }`}
-    >
-      <p
-        className={`text-[11px] font-medium ${isDark ? 'text-slate-400' : 'text-slate-500'}`}
-      >
-        {point.label}
-      </p>
-      <p
-        className={`mt-1 text-sm font-bold tabular-nums ${isDark ? 'text-slate-50' : 'text-slate-900'}`}
-        style={{ fontFamily: 'var(--font-heading)' }}
-      >
-        {formatAnalyticsPercent(point.occupancyRate)}
-      </p>
-      <p
-        className={`text-[11px] ${isDark ? 'text-slate-500' : 'text-slate-400'}`}
-      >
-        {point.occupiedRooms}/{point.totalRooms} rooms
-      </p>
-    </div>
+    <AnalyticsTooltip
+      isDark={isDark}
+      label={point.label}
+      value={formatAnalyticsPercent(point.occupancyRate)}
+      detail={`${point.occupiedRooms}/${point.totalRooms} rooms`}
+    />
   )
 }
 

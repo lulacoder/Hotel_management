@@ -15,6 +15,7 @@ import {
 import { Label } from '../../../components/ui/label'
 import { Textarea } from '../../../components/ui/textarea'
 import { useI18n } from '../../../lib/i18n/provider'
+import { getFirstErrorMessage } from '@/lib/forms'
 
 export interface RatingFormValues {
   rating: number
@@ -32,33 +33,6 @@ interface RatingModalProps {
   ratingRedirect: string
   onClose: () => void
   onSubmit: (values: RatingFormValues) => Promise<void>
-}
-
-function getFirstErrorMessage(
-  errors: Array<unknown> | undefined,
-): string | null {
-  if (!errors) {
-    return null
-  }
-
-  for (const error of errors) {
-    if (!error) {
-      continue
-    }
-
-    if (typeof error === 'string') {
-      return error
-    }
-
-    if (typeof error === 'object' && 'message' in error) {
-      const message = error.message
-      if (typeof message === 'string') {
-        return message
-      }
-    }
-  }
-
-  return null
 }
 
 export function RatingModal({

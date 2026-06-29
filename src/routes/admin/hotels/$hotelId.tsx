@@ -33,6 +33,8 @@ import type { Id } from '../../../../convex/_generated/dataModel'
 import { useMutation, useQuery } from '@/integrations/convex/hooks'
 import { Button } from '@/components/ui/button'
 import { useAdminSession } from '@/lib/adminSession'
+import { AdminSpinner } from '@/components/AdminSpinner'
+import { formatUsdAmount } from '@/lib/currency'
 
 const OPERATIONAL_STATUS_OPTIONS = [
   'available',
@@ -209,13 +211,7 @@ function HotelDetailPage() {
   }, [rooms, search.operationalStatus])
 
   if (hotel === undefined) {
-    return (
-      <div className="flex items-center justify-center py-20">
-        <div
-          className={`animate-spin rounded-full size-8 border-2 ${isDark ? 'border-violet-500/20 border-t-violet-500' : 'border-violet-500/20 border-t-violet-500'}`}
-        ></div>
-      </div>
-    )
+    return <AdminSpinner />
   }
 
   if (hotel === null) {
@@ -318,11 +314,10 @@ function HotelDetailPage() {
           </div>
 
           {bankAccounts === undefined ? (
-            <div className="flex items-center justify-center py-6">
-              <div
-                className={`animate-spin rounded-full size-6 border-2 ${isDark ? 'border-violet-500/20 border-t-violet-500' : 'border-violet-500/20 border-t-violet-500'}`}
-              ></div>
-            </div>
+            <AdminSpinner
+              className="flex items-center justify-center py-6"
+              sizeClassName="size-6"
+            />
           ) : bankAccounts.length === 0 ? (
             <div
               className={`${innerCellClass} p-4 text-sm ${isDark ? 'text-slate-400' : 'text-slate-500'}`}
@@ -413,11 +408,7 @@ function HotelDetailPage() {
 
       {/* Rooms Grid */}
       {rooms === undefined ? (
-        <div className="flex items-center justify-center py-12">
-          <div
-            className={`animate-spin rounded-full size-8 border-2 ${isDark ? 'border-violet-500/20 border-t-violet-500' : 'border-violet-500/20 border-t-violet-500'}`}
-          ></div>
-        </div>
+        <AdminSpinner className="flex items-center justify-center py-12" />
       ) : visibleRooms?.length === 0 && rooms.length === 0 ? (
         <div className={`${cardClass} p-12 text-center`}>
           <div className="admin-empty-icon">
@@ -593,7 +584,7 @@ function HotelDetailPage() {
                   >
                     <DollarSign className="size-4" />
                     <span>
-                      ${(room.basePrice / 100).toFixed(2)}/{t('hotel.night')}
+                      {formatUsdAmount(room.basePrice)}/{t('hotel.night')}
                     </span>
                   </div>
                   <div
@@ -655,11 +646,10 @@ function HotelDetailPage() {
         </div>
 
         {ratings === undefined ? (
-          <div className="flex items-center justify-center py-8">
-            <div
-              className={`animate-spin rounded-full size-6 border-2 ${isDark ? 'border-violet-500/20 border-t-violet-500' : 'border-violet-500/20 border-t-violet-500'}`}
-            ></div>
-          </div>
+          <AdminSpinner
+            className="flex items-center justify-center py-8"
+            sizeClassName="size-6"
+          />
         ) : ratings.length === 0 ? (
           <div
             className={`${cardClass} p-8 text-center ${isDark ? 'text-slate-500' : 'text-slate-400'}`}

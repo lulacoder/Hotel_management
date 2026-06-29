@@ -10,6 +10,7 @@ import {
   YAxis,
 } from 'recharts'
 import { AnalyticsEmptyState } from './AnalyticsEmptyState'
+import { AnalyticsTooltip } from './AnalyticsTooltip'
 import type { Locale } from '@/lib/i18n'
 import { useTheme } from '@/lib/theme'
 import {
@@ -32,6 +33,33 @@ interface Props {
   emptyTitle: string
   emptyDescription: string
 }
+
+const TREND_THEME = {
+  currency: {
+    dark: {
+      strokeColor: '#38bdf8',
+      gradientFrom: 'rgba(56,189,248,0.35)',
+      badgeClasses: 'border-sky-400/30 bg-sky-500/15 text-sky-300',
+    },
+    light: {
+      strokeColor: '#0284c7',
+      gradientFrom: 'rgba(2,132,199,0.18)',
+      badgeClasses: 'border-sky-500/30 bg-sky-50 text-sky-700',
+    },
+  },
+  count: {
+    dark: {
+      strokeColor: '#818cf8',
+      gradientFrom: 'rgba(129,140,248,0.35)',
+      badgeClasses: 'border-indigo-400/30 bg-indigo-500/15 text-indigo-300',
+    },
+    light: {
+      strokeColor: '#4f46e5',
+      gradientFrom: 'rgba(79,70,229,0.18)',
+      badgeClasses: 'border-indigo-500/30 bg-indigo-50 text-indigo-700',
+    },
+  },
+} as const
 
 function formatPointValue(
   value: number,
@@ -63,25 +91,11 @@ function ChartTooltip({
   const point = payload[0].payload
 
   return (
-    <div
-      className={`rounded-xl border px-3.5 py-2.5 shadow-xl backdrop-blur-md ${
-        isDark
-          ? 'border-slate-700/60 bg-slate-900/95 shadow-black/40'
-          : 'border-slate-200 bg-white/95 shadow-slate-300/30'
-      }`}
-    >
-      <p
-        className={`text-[11px] font-medium tracking-wide ${isDark ? 'text-slate-400' : 'text-slate-500'}`}
-      >
-        {point.label}
-      </p>
-      <p
-        className={`mt-1 text-sm font-bold tabular-nums ${isDark ? 'text-slate-50' : 'text-slate-900'}`}
-        style={{ fontFamily: 'var(--font-heading)' }}
-      >
-        {formatPointValue(point.value, format, locale)}
-      </p>
-    </div>
+    <AnalyticsTooltip
+      isDark={isDark}
+      label={point.label}
+      value={formatPointValue(point.value, format, locale)}
+    />
   )
 }
 
@@ -115,31 +129,13 @@ export function AnalyticsTrendChart({
 
   const latestValue = points[points.length - 1]?.value ?? 0
 
-  // Color scheme per format
+  const themeKey = isDark ? 'dark' : 'light'
+  const trendTheme = TREND_THEME[format][themeKey]
   const isCurrency = format === 'currency'
-  const strokeColor = isCurrency
-    ? isDark
-      ? '#38bdf8'
-      : '#0284c7'
-    : isDark
-      ? '#818cf8'
-      : '#4f46e5'
-  const gradientFrom = isCurrency
-    ? isDark
-      ? 'rgba(56,189,248,0.35)'
-      : 'rgba(2,132,199,0.18)'
-    : isDark
-      ? 'rgba(129,140,248,0.35)'
-      : 'rgba(79,70,229,0.18)'
+  const strokeColor = trendTheme.strokeColor
+  const gradientFrom = trendTheme.gradientFrom
   const gradientTo = 'rgba(0,0,0,0)'
-
-  const badgeClasses = isCurrency
-    ? isDark
-      ? 'border-sky-400/30 bg-sky-500/15 text-sky-300'
-      : 'border-sky-500/30 bg-sky-50 text-sky-700'
-    : isDark
-      ? 'border-indigo-400/30 bg-indigo-500/15 text-indigo-300'
-      : 'border-indigo-500/30 bg-indigo-50 text-indigo-700'
+  const badgeClasses = trendTheme.badgeClasses
 
   const gridColor = isDark ? 'rgba(148,163,184,0.08)' : 'rgba(148,163,184,0.2)'
   const axisTickColor = isDark ? '#64748b' : '#94a3b8'

@@ -59,30 +59,3 @@ export function formatDistance(distanceKm: number): string {
     return `${Math.round(distanceKm)} km`
   }
 }
-
-/**
- * Calculate distance in miles
- */
-export function calculateDistanceMiles(
-  lat1: number,
-  lng1: number,
-  lat2: number,
-  lng2: number,
-): number {
-  const km = calculateDistance(lat1, lng1, lat2, lng2)
-  return km * 0.621371 // Convert km to miles
-}
-
-/**
- * Format distance in miles for display
- */
-export function formatDistanceMiles(distanceMiles: number): string {
-  if (distanceMiles < 0.1) {
-    // Show in feet for very short distances
-    return `${Math.round(distanceMiles * 5280)} ft`
-  } else if (distanceMiles < 10) {
-    return `${distanceMiles.toFixed(1)} mi`
-  } else {
-    return `${Math.round(distanceMiles)} mi`
-  }
-}

@@ -8,6 +8,7 @@ import { useI18n } from '../../../lib/i18n/provider'
 import type { Id } from '../../../../convex/_generated/dataModel'
 import { useTheme } from '@/lib/theme'
 import { useQuery } from '@/integrations/convex/hooks'
+import { AdminSpinner } from '@/components/AdminSpinner'
 
 export const Route = createFileRoute('/admin/complaints/$complaintId')({
   component: ComplaintDetailPage,
@@ -73,13 +74,7 @@ function ComplaintDetailPage() {
   }
 
   if (complaintDetail === undefined) {
-    return (
-      <div className="flex items-center justify-center py-20">
-        <div
-          className={`animate-spin rounded-full size-8 border-2 ${isDark ? 'border-violet-500/20 border-t-violet-500' : 'border-violet-500/20 border-t-violet-500'}`}
-        ></div>
-      </div>
-    )
+    return <AdminSpinner />
   }
 
   if (complaintDetail === null) {

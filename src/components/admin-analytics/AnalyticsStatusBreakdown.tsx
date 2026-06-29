@@ -2,6 +2,7 @@ import { useCallback, useState } from 'react'
 import { m } from 'motion/react'
 import { Cell, Pie, PieChart, ResponsiveContainer, Tooltip } from 'recharts'
 import { AnalyticsEmptyState } from './AnalyticsEmptyState'
+import { AnalyticsTooltip } from './AnalyticsTooltip'
 import { useTheme } from '@/lib/theme'
 
 interface Item {
@@ -63,36 +64,23 @@ function DonutTooltip({
   const pct = total > 0 ? Math.round((item.count / total) * 100) : 0
 
   return (
-    <div
-      className={`rounded-xl border px-3.5 py-2.5 shadow-xl backdrop-blur-md ${
-        isDark
-          ? 'border-slate-700/60 bg-slate-900/95 shadow-black/40'
-          : 'border-slate-200 bg-white/95 shadow-slate-200/40'
-      }`}
-    >
-      <div className="flex items-center gap-2">
-        <span
-          className="inline-block size-2.5 rounded-full"
-          style={{ backgroundColor: item.fill }}
-        />
-        <span
-          className={`text-[11px] font-medium ${isDark ? 'text-slate-300' : 'text-slate-600'}`}
-        >
-          {labels[item.key] ?? item.key}
-        </span>
-      </div>
-      <p
-        className={`mt-1 text-sm font-bold tabular-nums ${isDark ? 'text-slate-50' : 'text-slate-900'}`}
-        style={{ fontFamily: 'var(--font-heading)' }}
-      >
-        {item.count.toLocaleString()}{' '}
-        <span
-          className={`text-xs font-medium ${isDark ? 'text-slate-400' : 'text-slate-500'}`}
-        >
-          ({pct}%)
-        </span>
-      </p>
-    </div>
+    <AnalyticsTooltip
+      isDark={isDark}
+      label={labels[item.key] ?? item.key}
+      markerColor={item.fill}
+      value={
+        <>
+          {item.count.toLocaleString()}{' '}
+          <span
+            className={`text-xs font-medium ${
+              isDark ? 'text-slate-400' : 'text-slate-500'
+            }`}
+          >
+            ({pct}%)
+          </span>
+        </>
+      }
+    />
   )
 }
 

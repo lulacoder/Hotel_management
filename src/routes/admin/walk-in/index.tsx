@@ -17,6 +17,9 @@ import type { PackageType } from '../../../lib/packages'
 import { DatePicker } from '@/components/ui/date-picker'
 import { useMutation, useQuery } from '@/integrations/convex/hooks'
 import { useAdminSession } from '@/lib/adminSession'
+import { AdminSpinner } from '@/components/AdminSpinner'
+import { formatUsdAmount } from '@/lib/currency'
+import { getErrorMessage } from '@/lib/errors'
 
 export const Route = createFileRoute('/admin/walk-in/')({
   // Register walk-in booking route for hotel cashier/admin workflows.
@@ -82,14 +85,9 @@ function WalkInBookingPage() {
     hotelAssignment?.role === 'hotel_admin'
 
   const searchResults = useQuery(
-    (api as any).guestProfiles.search,
+    api.guestProfiles.search,
     submittedTerm.trim().length >= 2 ? { searchTerm: submittedTerm } : 'skip',
-  ) as
-    | Array<{
-        profile: GuestProfileLite
-        bookingCount: number
-      }>
-    | undefined
+  )
 
   const availableRooms = useQuery(
     api.rooms.getAvailableRooms,
@@ -109,8 +107,8 @@ function WalkInBookingPage() {
       }>
     | undefined
 
-  const createGuest = useMutation((api as any).guestProfiles.findOrCreate)
-  const createWalkInBooking = useMutation((api as any).bookings.walkInBooking)
+  const createGuest = useMutation(api.guestProfiles.findOrCreate)
+  const createWalkInBooking = useMutation(api.bookings.walkInBooking)
 
   const selectedRoom = availableRooms?.find(
     (room) => room._id === selectedRoomId,
@@ -157,9 +155,9 @@ function WalkInBookingPage() {
         phone: phone || undefined,
         email: email || undefined,
       })
-    } catch (error: any) {
+    } catch (error) {
       setBookingError(
-        error?.message || t('admin.walkIn.error.createGuestFailed'),
+        getErrorMessage(error, t('admin.walkIn.error.createGuestFailed')),
       )
     }
   }
@@ -185,9 +183,9 @@ function WalkInBookingPage() {
         to: '/admin/bookings',
         search: { status: 'all', paymentStatus: 'all', window: '30d' },
       })
-    } catch (error: any) {
+    } catch (error) {
       setBookingError(
-        error?.message || t('admin.walkIn.error.createBookingFailed'),
+        getErrorMessage(error, t('admin.walkIn.error.createBookingFailed')),
       )
     } finally {
       setSubmitting(false)
@@ -411,11 +409,10 @@ function WalkInBookingPage() {
             {t('admin.walkIn.selectGuestFirst')}
           </p>
         ) : availableRooms === undefined ? (
-          <div className="flex items-center justify-center py-8">
-            <div
-              className={`animate-spin rounded-full size-7 border-2 ${isDark ? 'border-violet-500/20 border-t-violet-500' : 'border-violet-500/20 border-t-violet-500'}`}
-            ></div>
-          </div>
+          <AdminSpinner
+            className="flex items-center justify-center py-8"
+            sizeClassName="size-7"
+          />
         ) : availableRooms.length === 0 ? (
           <p className={isDark ? 'text-slate-500' : 'text-slate-400'}>
             {t('admin.walkIn.noRooms')}
@@ -446,7 +443,7 @@ function WalkInBookingPage() {
                 <p
                   className={`text-sm mt-2 ${isDark ? 'text-violet-300' : 'text-violet-600'}`}
                 >
-                  ${(room.basePrice / 100).toFixed(2)} / {t('hotel.night')}
+                  {formatUsdAmount(room.basePrice)} / {t('hotel.night')}
                 </p>
               </button>
             ))}
@@ -492,7 +489,7 @@ function WalkInBookingPage() {
               <p
                 className={`text-sm ${isDark ? 'text-slate-400' : 'text-slate-500'}`}
               >
-                +${(pkg.addOnPerNight / 100).toFixed(2)} / {t('hotel.night')}
+                +{formatUsdAmount(pkg.addOnPerNight)} / {t('hotel.night')}
               </p>
             </button>
           ))}
@@ -526,7 +523,7 @@ function WalkInBookingPage() {
           <p
             className={`font-semibold mt-2 ${isDark ? 'text-violet-300' : 'text-violet-600'}`}
           >
-            {t('booking.total')}: ${(totalPrice / 100).toFixed(2)}
+            {t('booking.total')}: {formatUsdAmount(totalPrice)}
           </p>
         </div>
 

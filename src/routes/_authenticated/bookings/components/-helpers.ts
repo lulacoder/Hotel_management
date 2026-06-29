@@ -1,4 +1,5 @@
 import type { Locale } from '../../../../lib/i18n'
+import { formatUsdAmount } from '@/lib/currency'
 
 const localeMap: Record<Locale, string> = {
   en: 'en-US',
@@ -25,7 +26,7 @@ export const formatTime = (timestamp: number, locale: Locale) => {
 
 export const formatPrice = (cents: number) => {
   // Price storage is cents; convert to display currency.
-  return `$${(cents / 100).toFixed(2)}`
+  return formatUsdAmount(cents)
 }
 
 export const canCancel = (status: string) => {
