@@ -44,6 +44,9 @@ export default function Header() {
     location.pathname.startsWith('/sign-in') ||
     location.pathname.startsWith('/sign-up')
   const isPostLoginPage = location.pathname.startsWith('/post-login')
+  const isStaffInvitationPage = location.pathname.startsWith(
+    '/staff-invitations/',
+  )
   const isAdminRoute = location.pathname.startsWith('/admin')
   const isCustomerAppRoute =
     location.pathname.startsWith('/select-location') ||
@@ -57,7 +60,13 @@ export default function Header() {
     return () => window.removeEventListener('scroll', handleScroll)
   }, [])
 
-  if (isAuthPage || isPostLoginPage || isAdminRoute || isCustomerAppRoute) {
+  if (
+    isAuthPage ||
+    isPostLoginPage ||
+    isStaffInvitationPage ||
+    isAdminRoute ||
+    isCustomerAppRoute
+  ) {
     return null
   }
 

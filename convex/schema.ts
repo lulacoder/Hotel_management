@@ -24,6 +24,38 @@ export default defineSchema({
     .index('by_user', ['userId'])
     .index('by_hotel', ['hotelId']),
 
+  // Email invitations for granting hotel-scoped staff access.
+  hotelStaffInvitations: defineTable({
+    email: v.string(),
+    hotelId: v.id('hotels'),
+    role: v.union(v.literal('hotel_admin'), v.literal('hotel_cashier')),
+    status: v.union(
+      v.literal('pending'),
+      v.literal('accepted'),
+      v.literal('revoked'),
+    ),
+    tokenHash: v.string(),
+    invitedBy: v.id('users'),
+    createdAt: v.number(),
+    updatedAt: v.number(),
+    expiresAt: v.number(),
+    lastSentAt: v.optional(v.number()),
+    latestEmailId: v.optional(v.string()),
+    deliveryStatus: v.union(
+      v.literal('pending'),
+      v.literal('queued'),
+      v.literal('failed'),
+    ),
+    resendCount: v.number(),
+    acceptedAt: v.optional(v.number()),
+    acceptedBy: v.optional(v.id('users')),
+    revokedAt: v.optional(v.number()),
+    revokedBy: v.optional(v.id('users')),
+  })
+    .index('by_email', ['email'])
+    .index('by_hotel_and_created_at', ['hotelId', 'createdAt'])
+    .index('by_status', ['status']),
+
   // Hotels table
   hotels: defineTable({
     name: v.string(),
@@ -320,6 +352,7 @@ export default defineSchema({
       v.literal('booking'),
       v.literal('rating'),
       v.literal('user'),
+      v.literal('staff_invitation'),
     ),
     targetId: v.string(), // Generic ID stored as string
     previousValue: v.optional(v.string()), // JSON stringified

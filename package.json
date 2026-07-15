@@ -41,6 +41,7 @@
     "zod": "^4.3.6"
   },
   "devDependencies": {
+    "@edge-runtime/vm": "^5.0.0",
     "@tanstack/devtools-vite": "^0.6.0",
     "@tanstack/eslint-config": "^0.3.0",
     "@tanstack/react-devtools": "^0.7.0",
@@ -52,6 +53,7 @@
     "@types/react-dom": "^19.2.0",
     "@typescript/native-preview": "^7.0.0-dev.20260623.1",
     "@vitejs/plugin-react": "^6.0.1",
+    "convex-test": "^0.0.54",
     "jsdom": "^27.0.0",
     "prettier": "^3.5.3",
     "typescript": "~6.0.3",

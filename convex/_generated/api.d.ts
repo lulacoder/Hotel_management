@@ -44,6 +44,9 @@ import type * as pushTokens from "../pushTokens.js";
 import type * as ratings from "../ratings.js";
 import type * as rooms from "../rooms.js";
 import type * as seed from "../seed.js";
+import type * as staffInvitationActions from "../staffInvitationActions.js";
+import type * as staffInvitationEmails from "../staffInvitationEmails.js";
+import type * as staffInvitations from "../staffInvitations.js";
 import type * as users from "../users.js";
 
 import type {
@@ -89,6 +92,9 @@ declare const fullApi: ApiFromModules<{
   ratings: typeof ratings;
   rooms: typeof rooms;
   seed: typeof seed;
+  staffInvitationActions: typeof staffInvitationActions;
+  staffInvitationEmails: typeof staffInvitationEmails;
+  staffInvitations: typeof staffInvitations;
   users: typeof users;
 }>;
 

@@ -5,7 +5,13 @@ import type { Id } from './_generated/dataModel'
 import type { MutationCtx } from './_generated/server'
 
 // Type for target types
-export type AuditTargetType = 'hotel' | 'room' | 'booking' | 'rating' | 'user'
+export type AuditTargetType =
+  | 'hotel'
+  | 'room'
+  | 'booking'
+  | 'rating'
+  | 'user'
+  | 'staff_invitation'
 
 // Internal mutation for logging audit events (called from other mutations)
 export const logEvent = internalMutation({
@@ -18,6 +24,7 @@ export const logEvent = internalMutation({
       v.literal('booking'),
       v.literal('rating'),
       v.literal('user'),
+      v.literal('staff_invitation'),
     ),
     targetId: v.string(),
     previousValue: v.optional(v.string()),
@@ -76,6 +83,7 @@ export const getByTarget = query({
       v.literal('booking'),
       v.literal('rating'),
       v.literal('user'),
+      v.literal('staff_invitation'),
     ),
     targetId: v.string(),
     limit: v.optional(v.number()),
@@ -92,6 +100,7 @@ export const getByTarget = query({
         v.literal('booking'),
         v.literal('rating'),
         v.literal('user'),
+        v.literal('staff_invitation'),
       ),
       targetId: v.string(),
       previousValue: v.optional(v.string()),
@@ -133,6 +142,7 @@ export const getRecent = query({
         v.literal('booking'),
         v.literal('rating'),
         v.literal('user'),
+        v.literal('staff_invitation'),
       ),
       targetId: v.string(),
       previousValue: v.optional(v.string()),

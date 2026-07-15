@@ -14,6 +14,7 @@ import {
   Hotel,
   LayoutDashboard,
   LogOut,
+  MailPlus,
   Megaphone,
   Menu,
   MessageSquareText,
@@ -61,6 +62,7 @@ interface AdminNavItem {
     | '/admin/bookings'
     | '/admin/complaints'
     | '/admin/hotels'
+    | '/admin/invitations'
     | '/admin/rooms'
     | '/admin/users'
     | '/admin/walk-in'
@@ -102,6 +104,11 @@ const ADMIN_NAV_ITEMS: Array<AdminNavItem> = [
     icon: Users,
     key: 'users',
     to: '/admin/users',
+  },
+  {
+    icon: MailPlus,
+    key: 'invitations',
+    to: '/admin/invitations',
   },
   {
     icon: Megaphone,
@@ -219,6 +226,8 @@ function AdminLayout() {
         return isRoomAdmin || hotelAssignmentRole === 'hotel_admin'
       case '/admin/users':
         return isRoomAdmin
+      case '/admin/invitations':
+        return isRoomAdmin || hotelAssignmentRole === 'hotel_admin'
       case '/admin':
       case '/admin/bookings':
       case '/admin/rooms':
