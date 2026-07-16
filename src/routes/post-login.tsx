@@ -1,11 +1,16 @@
 // Post-auth route that resolves user role and redirects to the correct destination.
 import { Navigate, createFileRoute } from '@tanstack/react-router'
 import { useUser } from '@clerk/clerk-react'
+import { useState } from 'react'
 import { api } from '../../convex/_generated/api'
 import { sanitizeRedirect } from '../lib/authRouting'
 import { Card, CardContent } from '../components/ui/card'
 import { useI18n } from '../lib/i18n/provider'
 import { DEFAULT_ADMIN_DASHBOARD_SEARCH } from '../lib/navigationSearch'
+import {
+  getStaffInvitationContinuation,
+  isStaffInvitationRedirect,
+} from '../lib/staffInvitationContinuation'
 import { useQuery } from '@/integrations/convex/hooks'
 
 export const Route = createFileRoute('/post-login')({
@@ -22,6 +27,10 @@ function PostLoginPage() {
   const { user, isLoaded: isClerkLoaded } = useUser()
   const search = Route.useSearch()
   const { t } = useI18n()
+  const [storedInvitationRedirect] = useState(() =>
+    getStaffInvitationContinuation(),
+  )
+  const resolvedRedirect = search.redirect ?? storedInvitationRedirect
 
   const profile = useQuery(api.users.getMe, user?.id ? {} : 'skip')
 
@@ -32,6 +41,12 @@ function PostLoginPage() {
 
   if (isClerkLoaded && !user) {
     return <Navigate to="/sign-in" search={search} />
+  }
+
+  // Invitation intent is the only flow allowed to override the existing
+  // role-based post-login destination.
+  if (isClerkLoaded && profile && isStaffInvitationRedirect(resolvedRedirect)) {
+    return <Navigate to={resolvedRedirect} />
   }
 
   if (
@@ -48,7 +63,7 @@ function PostLoginPage() {
     hotelAssignment === null &&
     profile.role !== 'room_admin'
   ) {
-    return <Navigate to={search.redirect ?? '/select-location'} />
+    return <Navigate to={resolvedRedirect ?? '/select-location'} />
   }
 
   return (

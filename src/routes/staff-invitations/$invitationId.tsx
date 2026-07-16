@@ -16,13 +16,17 @@ import {
   ShieldAlert,
   ShieldCheck,
 } from 'lucide-react'
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
 
 import { api } from '../../../convex/_generated/api'
 import { Button } from '../../components/ui/button'
 import { ThemeToggle } from '../../components/ThemeToggle'
 import { useI18n } from '../../lib/i18n/provider'
 import { DEFAULT_ADMIN_DASHBOARD_SEARCH } from '../../lib/navigationSearch'
+import {
+  clearStaffInvitationContinuation,
+  rememberStaffInvitationContinuation,
+} from '../../lib/staffInvitationContinuation'
 import { useTheme } from '../../lib/theme'
 import type { Id } from '../../../convex/_generated/dataModel'
 import { useAction, useQuery } from '@/integrations/convex/hooks'
@@ -57,6 +61,16 @@ function StaffInvitationPage() {
 
   const redirectTarget = location.href
   const dateLocale = locale === 'am' ? 'am-ET' : 'en-US'
+
+  useEffect(() => {
+    if (isSignedIn) {
+      clearStaffInvitationContinuation()
+    }
+  }, [isSignedIn])
+
+  const preserveInvitationContinuation = () => {
+    rememberStaffInvitationContinuation(redirectTarget)
+  }
 
   const handleAccept = async () => {
     if (!search.token) return
@@ -95,13 +109,21 @@ function StaffInvitationPage() {
       >
         <div className="grid gap-3 sm:grid-cols-2">
           <Button asChild size="lg">
-            <Link to="/sign-in" search={{ redirect: redirectTarget }}>
+            <Link
+              to="/sign-in"
+              search={{ redirect: redirectTarget }}
+              onClick={preserveInvitationContinuation}
+            >
               {t('staffInvite.signIn')}
               <ArrowRight className="size-4" />
             </Link>
           </Button>
           <Button asChild size="lg" variant="secondary">
-            <Link to="/sign-up" search={{ redirect: redirectTarget }}>
+            <Link
+              to="/sign-up"
+              search={{ redirect: redirectTarget }}
+              onClick={preserveInvitationContinuation}
+            >
               {t('staffInvite.createAccount')}
             </Link>
           </Button>
