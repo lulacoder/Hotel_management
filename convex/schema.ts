@@ -89,6 +89,12 @@ export default defineSchema({
     lastRenovationDate: v.optional(v.string()), // "YYYY-MM-DD" format
     metadata: v.optional(v.record(v.string(), v.any())),
     imageStorageId: v.optional(v.union(v.id('_storage'), v.null())),
+    // Denormalized review tally, maintained by ratings.upsertRating /
+    // ratings.softDeleteRating so rating summaries don't need to read every
+    // review. Distinct from the legacy imported `rating` field above.
+    // Absent until ratingsInternal.backfillRatingTallies has run.
+    ratingSum: v.optional(v.number()),
+    ratingCount: v.optional(v.number()),
     isDeleted: v.boolean(),
     createdAt: v.number(),
     updatedAt: v.number(),

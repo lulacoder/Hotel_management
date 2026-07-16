@@ -238,19 +238,29 @@ async function listWindowedBookings(
   )
 }
 
+// Occupancy only cares about stays that overlap the window
+// (doesStayOverlapDate: checkIn <= date < checkOut), so any booking whose
+// checkOut predates the window start can never contribute. Bounding on the
+// by_hotel_and_check_out index keeps this read proportional to current and
+// future stays instead of the hotel's entire booking history.
 async function listOccupancyBookings(
   ctx: QueryCtx,
   hotelIds: Set<Id<'hotels'>>,
+  window: 'today' | '7d' | '30d',
 ): Promise<Array<Doc<'bookings'>>> {
   if (hotelIds.size === 0) {
     return []
   }
 
+  const windowStartDate = getUtcDateKey(getAnalyticsWindowRange(window).startMs)
+
   const bookingBatches = await Promise.all(
     Array.from(hotelIds).map((hotelId) =>
       ctx.db
         .query('bookings')
-        .withIndex('by_hotel', (q) => q.eq('hotelId', hotelId))
+        .withIndex('by_hotel_and_check_out', (q) =>
+          q.eq('hotelId', hotelId).gte('checkOut', windowStartDate),
+        )
         .collect(),
     ),
   )
@@ -283,7 +293,9 @@ export const getDashboardSummary = query({
       hotelIds,
       args.window,
     )
-    const occupancyBookings = await listOccupancyBookings(ctx, hotelIds)
+    // Occupancy and arrivals on the summary only look at today's bucket,
+    // so 'today' is the tightest correct bound regardless of args.window.
+    const occupancyBookings = await listOccupancyBookings(ctx, hotelIds, 'today')
     const mappedRooms = mapRooms(rooms)
     const activeRoomIds = new Set(
       rooms.filter((room) => !room.isDeleted).map((room) => room._id),
@@ -427,7 +439,7 @@ export const getOccupancyTrend = query({
       rooms.filter((room) => !room.isDeleted).map((room) => room._id),
     )
     const bookings = filterOccupancyBookingsByActiveRooms(
-      mapBookings(await listOccupancyBookings(ctx, hotelIds)),
+      mapBookings(await listOccupancyBookings(ctx, hotelIds, args.window)),
       activeRoomIds,
     )
 
@@ -466,8 +478,9 @@ export const getTopHotels = query({
     const bookings = mapBookings(
       await listWindowedBookings(ctx, hotelIds, args.window),
     )
+    // Rankings only use today's occupancy bucket, so bound to 'today'.
     const occupancyBookings = filterOccupancyBookingsByActiveRooms(
-      mapBookings(await listOccupancyBookings(ctx, hotelIds)),
+      mapBookings(await listOccupancyBookings(ctx, hotelIds, 'today')),
       activeRoomIds,
     )
     const occupancyPoints = buildOccupancyTrendSeries(

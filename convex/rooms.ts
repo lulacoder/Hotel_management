@@ -185,10 +185,26 @@ export const getByHotelWithLiveState = query({
           )
           .take(500)
 
-    const hotelBookings = await ctx.db
-      .query('bookings')
-      .withIndex('by_hotel', (q) => q.eq('hotelId', args.hotelId))
-      .collect()
+    // Live state only depends on these four statuses (getDerivedLiveState),
+    // so fetch just those instead of the hotel's entire booking history.
+    const liveStatuses = [
+      'held',
+      'pending_payment',
+      'confirmed',
+      'checked_in',
+    ] as const
+    const hotelBookings = (
+      await Promise.all(
+        liveStatuses.map((status) =>
+          ctx.db
+            .query('bookings')
+            .withIndex('by_hotel_and_status', (q) =>
+              q.eq('hotelId', args.hotelId).eq('status', status),
+            )
+            .collect(),
+        ),
+      )
+    ).flat()
 
     const bookingsByRoomId = new Map<
       Id<'rooms'>,
@@ -196,10 +212,6 @@ export const getByHotelWithLiveState = query({
     >()
 
     for (const booking of hotelBookings) {
-      if (['cancelled', 'expired', 'checked_out'].includes(booking.status)) {
-        continue
-      }
-
       const roomBookings = bookingsByRoomId.get(booking.roomId)
       const liveBooking = {
         status: booking.status,
@@ -680,17 +692,24 @@ export const softDelete = mutation({
       return null
     }
 
-    // Check for active bookings
-    const activeBookings = await ctx.db
-      .query('bookings')
-      .withIndex('by_room', (q) => q.eq('roomId', args.roomId))
-      .collect()
+    // Check for active bookings using the status index so the read stays
+    // proportional to live bookings, not the room's full history
+    const activeBookings = (
+      await Promise.all(
+        (['held', 'pending_payment', 'confirmed', 'checked_in'] as const).map(
+          (status) =>
+            ctx.db
+              .query('bookings')
+              .withIndex('by_room_and_status', (q) =>
+                q.eq('roomId', args.roomId).eq('status', status),
+              )
+              .collect(),
+        ),
+      )
+    ).flat()
 
     const hasActiveBookings = activeBookings.some(
-      (b) =>
-        ['held', 'pending_payment', 'confirmed', 'checked_in'].includes(
-          b.status,
-        ) && !(b.status === 'held' && isHoldExpired(b.holdExpiresAt)),
+      (b) => !(b.status === 'held' && isHoldExpired(b.holdExpiresAt)),
     )
 
     if (hasActiveBookings) {

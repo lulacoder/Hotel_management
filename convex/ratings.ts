@@ -7,6 +7,29 @@ import {
   requireUser,
 } from './lib/auth'
 import { createAuditLog } from './audit'
+import type { MutationCtx } from './_generated/server'
+import type { Id } from './_generated/dataModel'
+
+// Applies a delta to the hotel's denormalized rating tally. Hotels that have
+// not been backfilled yet (ratingCount undefined) are left untouched so the
+// tally is never partial — getSummaries falls back to a full scan for them
+// until ratingsInternal.backfillRatingTallies initializes the counters.
+async function applyRatingTallyDelta(
+  ctx: MutationCtx,
+  hotelId: Id<'hotels'>,
+  sumDelta: number,
+  countDelta: number,
+) {
+  const hotel = await ctx.db.get(hotelId)
+  if (!hotel || hotel.ratingCount === undefined) {
+    return
+  }
+
+  await ctx.db.patch(hotelId, {
+    ratingSum: (hotel.ratingSum ?? 0) + sumDelta,
+    ratingCount: Math.max(0, hotel.ratingCount + countDelta),
+  })
+}
 
 const ratingValidator = v.object({
   _id: v.id('hotelRatings'),
@@ -21,7 +44,10 @@ const ratingValidator = v.object({
 })
 
 // Computes the average rating and total review count for an array of hotel IDs.
-// Iterates through the provided hotel IDs, querying active (not soft-deleted) ratings.
+// Reads the denormalized ratingSum/ratingCount tally on each hotel, so the cost
+// is one document read per hotel regardless of how many reviews it has.
+// Hotels not yet backfilled (ratingCount undefined) fall back to scanning
+// their active ratings; ratingsInternal.backfillRatingTallies removes that path.
 // If a hotel has no ratings, its average is 0.
 export const getSummaries = query({
   args: {
@@ -37,6 +63,14 @@ export const getSummaries = query({
   handler: async (ctx, args) => {
     return await Promise.all(
       args.hotelIds.map(async (hotelId) => {
+        const hotel = await ctx.db.get(hotelId)
+
+        if (hotel && hotel.ratingCount !== undefined) {
+          const count = hotel.ratingCount
+          const average = count === 0 ? 0 : (hotel.ratingSum ?? 0) / count
+          return { hotelId, average, count }
+        }
+
         const ratings = await ctx.db
           .query('hotelRatings')
           .withIndex('by_hotel_and_is_deleted', (q) =>
@@ -154,10 +188,24 @@ export const upsertRating = mutation({
         isDeleted: false,
         updatedAt: now,
       })
+
+      // A soft-deleted rating re-enters the tally; an active one only shifts
+      // the sum by the score change.
+      if (existing.isDeleted) {
+        await applyRatingTallyDelta(ctx, args.hotelId, args.rating, 1)
+      } else {
+        await applyRatingTallyDelta(
+          ctx,
+          args.hotelId,
+          args.rating - existing.rating,
+          0,
+        )
+      }
+
       return existing._id
     }
 
-    return await ctx.db.insert('hotelRatings', {
+    const ratingId = await ctx.db.insert('hotelRatings', {
       hotelId: args.hotelId,
       userId: customer._id,
       rating: args.rating,
@@ -166,6 +214,10 @@ export const upsertRating = mutation({
       createdAt: now,
       updatedAt: now,
     })
+
+    await applyRatingTallyDelta(ctx, args.hotelId, args.rating, 1)
+
+    return ratingId
   },
 })
 
@@ -197,6 +249,8 @@ export const softDeleteRating = mutation({
       isDeleted: true,
       updatedAt: Date.now(),
     })
+
+    await applyRatingTallyDelta(ctx, rating.hotelId, -rating.rating, -1)
 
     await createAuditLog(ctx, {
       actorId: user._id,

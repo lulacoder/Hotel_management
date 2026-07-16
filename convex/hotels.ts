@@ -41,6 +41,8 @@ const hotelValidator = v.object({
   lastRenovationDate: v.optional(v.string()),
   metadata: v.optional(v.record(v.string(), v.any())),
   imageStorageId: v.optional(v.union(v.id('_storage'), v.null())),
+  ratingSum: v.optional(v.number()),
+  ratingCount: v.optional(v.number()),
   isDeleted: v.boolean(),
   createdAt: v.number(),
   updatedAt: v.number(),

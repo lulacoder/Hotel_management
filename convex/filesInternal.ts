@@ -25,6 +25,12 @@ export const cleanupOrphanUploads = internalMutation({
       )
       .collect()
 
+    // The reference scan below reads the whole hotels/rooms/bookings tables,
+    // so skip it entirely on the (common) runs with nothing to clean up.
+    if (candidates.length === 0) {
+      return 0
+    }
+
     const activeHotels = await ctx.db
       .query('hotels')
       .withIndex('by_is_deleted', (q) => q.eq('isDeleted', false))
