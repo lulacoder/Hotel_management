@@ -1,0 +1,725 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Performance Improvements — Before &amp; After</title>
+<style>
+  :root {
+    --bg: #0b1120;
+    --bg2: #0f172a;
+    --panel: #111c34;
+    --panel2: #16223d;
+    --border: #1e2d4a;
+    --text: #e2e8f0;
+    --muted: #94a3b8;
+    --faint: #64748b;
+    --violet: #8b5cf6;
+    --amber: #f59e0b;
+    --red: #ef4444;
+    --green: #22c55e;
+    --redbg: rgba(239, 68, 68, 0.10);
+    --greenbg: rgba(34, 197, 94, 0.10);
+    --redborder: rgba(239, 68, 68, 0.35);
+    --greenborder: rgba(34, 197, 94, 0.35);
+  }
+  * { box-sizing: border-box; }
+  html { scroll-behavior: smooth; }
+  body {
+    margin: 0;
+    background: radial-gradient(1200px 600px at 50% -10%, #15233f 0%, var(--bg) 60%);
+    color: var(--text);
+    font-family: ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+    line-height: 1.6;
+    -webkit-font-smoothing: antialiased;
+  }
+  .wrap { max-width: 1080px; margin: 0 auto; padding: 0 20px 100px; }
+
+  /* Header */
+  header.hero {
+    text-align: center;
+    padding: 64px 20px 40px;
+    border-bottom: 1px solid var(--border);
+    margin-bottom: 8px;
+  }
+  .hero .eyebrow {
+    text-transform: uppercase;
+    letter-spacing: 0.18em;
+    font-size: 12px;
+    color: var(--amber);
+    font-weight: 700;
+  }
+  .hero h1 {
+    font-size: clamp(28px, 5vw, 44px);
+    margin: 12px 0 10px;
+    font-weight: 800;
+    letter-spacing: -0.02em;
+    background: linear-gradient(90deg, #fff, #c4b5fd);
+    -webkit-background-clip: text;
+    background-clip: text;
+    color: transparent;
+  }
+  .hero p { color: var(--muted); max-width: 680px; margin: 0 auto; font-size: 17px; }
+  .hero .meta { margin-top: 18px; color: var(--faint); font-size: 13px; }
+
+  h2.section {
+    font-size: 13px;
+    text-transform: uppercase;
+    letter-spacing: 0.16em;
+    color: var(--faint);
+    margin: 56px 0 18px;
+    display: flex; align-items: center; gap: 10px;
+  }
+  h2.section::before {
+    content: ""; width: 4px; height: 18px; border-radius: 4px;
+    background: linear-gradient(var(--amber), #b45309);
+  }
+
+  /* Legend */
+  .legend {
+    display: flex; flex-wrap: wrap; gap: 18px;
+    background: var(--panel); border: 1px solid var(--border);
+    border-radius: 14px; padding: 16px 20px; margin: 24px 0 8px;
+    font-size: 14px; color: var(--muted);
+  }
+  .legend b { color: var(--text); }
+  .pill {
+    display: inline-flex; align-items: center; gap: 7px;
+    padding: 3px 10px; border-radius: 999px; font-size: 12px; font-weight: 600;
+  }
+  .pill.now { background: var(--redbg); color: #fca5a5; border: 1px solid var(--redborder); }
+  .pill.after { background: var(--greenbg); color: #86efac; border: 1px solid var(--greenborder); }
+  .dot { width: 9px; height: 9px; border-radius: 50%; }
+  .dot.red { background: var(--red); }
+  .dot.green { background: var(--green); }
+
+  /* Scorecard table */
+  .score {
+    width: 100%; border-collapse: collapse;
+    background: var(--panel); border: 1px solid var(--border);
+    border-radius: 14px; overflow: hidden; font-size: 14.5px;
+  }
+  .score th, .score td { text-align: left; padding: 13px 16px; border-bottom: 1px solid var(--border); }
+  .score th { background: var(--panel2); color: var(--muted); font-weight: 600; font-size: 12.5px; text-transform: uppercase; letter-spacing: 0.05em; }
+  .score tr:last-child td { border-bottom: none; }
+  .score td a { color: #c4b5fd; text-decoration: none; }
+  .score td a:hover { text-decoration: underline; }
+  .tag {
+    display: inline-block; padding: 2px 9px; border-radius: 6px;
+    font-size: 11.5px; font-weight: 700; letter-spacing: 0.02em;
+  }
+  .tag.high { background: rgba(239,68,68,0.15); color: #fca5a5; }
+  .tag.med { background: rgba(245,158,11,0.15); color: #fcd34d; }
+  .tag.low { background: rgba(148,163,184,0.15); color: #cbd5e1; }
+  .tag.easy { background: rgba(34,197,94,0.15); color: #86efac; }
+  .tag.mod { background: rgba(139,92,246,0.15); color: #c4b5fd; }
+
+  /* Finding card */
+  .card {
+    background: var(--panel); border: 1px solid var(--border);
+    border-radius: 18px; padding: 26px; margin: 22px 0;
+    scroll-margin-top: 20px;
+  }
+  .card-head { display: flex; align-items: flex-start; gap: 16px; margin-bottom: 4px; }
+  .num {
+    flex: 0 0 auto; width: 38px; height: 38px; border-radius: 10px;
+    display: grid; place-items: center; font-weight: 800; font-size: 17px;
+    background: linear-gradient(135deg, #312e81, #1e1b4b); color: #c4b5fd;
+    border: 1px solid #3730a3;
+  }
+  .card-head h3 { margin: 4px 0 2px; font-size: 21px; font-weight: 700; letter-spacing: -0.01em; }
+  .where { color: var(--faint); font-size: 13.5px; }
+  .where b { color: var(--muted); font-weight: 600; }
+  .chips { margin-left: auto; display: flex; gap: 6px; flex-wrap: wrap; justify-content: flex-end; }
+
+  .compare { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; margin: 20px 0 6px; }
+  @media (max-width: 720px) { .compare { grid-template-columns: 1fr; } }
+  .side { border-radius: 14px; padding: 16px 18px; border: 1px solid; }
+  .side.now { background: var(--redbg); border-color: var(--redborder); }
+  .side.after { background: var(--greenbg); border-color: var(--greenborder); }
+  .side .label {
+    font-size: 12px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.1em;
+    display: flex; align-items: center; gap: 8px; margin-bottom: 10px;
+  }
+  .side.now .label { color: #f87171; }
+  .side.after .label { color: #4ade80; }
+  .side p { margin: 0 0 12px; font-size: 14.5px; color: var(--text); }
+  .side p:last-child { margin-bottom: 0; }
+
+  /* Speed bar visual */
+  .bar-cap { font-size: 12.5px; color: var(--muted); margin-bottom: 5px; display: flex; justify-content: space-between; }
+  .bar-cap .val { font-variant-numeric: tabular-nums; font-weight: 700; }
+  .track { height: 14px; background: #0b1426; border-radius: 8px; overflow: hidden; border: 1px solid var(--border); }
+  .fill { height: 100%; border-radius: 8px 0 0 8px; }
+  .fill.red { background: linear-gradient(90deg, #ef4444, #b91c1c); }
+  .fill.green { background: linear-gradient(90deg, #22c55e, #15803d); }
+
+  /* Code */
+  .code-toggle {
+    margin-top: 14px; border-top: 1px dashed var(--border); padding-top: 12px;
+  }
+  details summary {
+    cursor: pointer; font-size: 13px; color: var(--muted); font-weight: 600;
+    list-style: none; display: inline-flex; align-items: center; gap: 7px; user-select: none;
+  }
+  details summary::-webkit-details-marker { display: none; }
+  details summary::before { content: "▸"; color: var(--violet); transition: transform .15s; }
+  details[open] summary::before { transform: rotate(90deg); }
+  pre {
+    margin: 12px 0 0; background: #070d1a; border: 1px solid var(--border);
+    border-radius: 10px; padding: 14px 16px; overflow-x: auto;
+    font-family: ui-monospace, "SF Mono", "Cascadia Code", Consolas, monospace;
+    font-size: 12.5px; line-height: 1.7; color: #cbd5e1;
+  }
+  pre .c { color: #5b7089; font-style: italic; }      /* comment */
+  pre .k { color: #c792ea; }                            /* keyword */
+  pre .s { color: #c3e88d; }                            /* string */
+  pre .f { color: #82aaff; }                            /* function/method */
+  pre .bad { color: #ff8a8a; }                          /* highlight bad */
+  pre .good { color: #9be59b; }                         /* highlight good */
+  .filemark { font-size: 12px; color: var(--faint); margin: 14px 0 0; font-family: ui-monospace, monospace; }
+
+  .impact-line {
+    margin-top: 16px; padding: 12px 16px; border-radius: 10px;
+    background: var(--panel2); border: 1px solid var(--border);
+    font-size: 14px; color: var(--muted);
+  }
+  .impact-line b { color: #fcd34d; }
+
+  /* Good list */
+  .good-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+  @media (max-width: 720px) { .good-grid { grid-template-columns: 1fr; } }
+  .good-item {
+    background: var(--greenbg); border: 1px solid var(--greenborder);
+    border-radius: 12px; padding: 14px 16px; font-size: 14px;
+  }
+  .good-item b { color: #86efac; display: block; margin-bottom: 2px; }
+  .good-item span { color: var(--muted); }
+
+  /* Order steps */
+  ol.plan { counter-reset: step; list-style: none; padding: 0; }
+  ol.plan li {
+    background: var(--panel); border: 1px solid var(--border); border-radius: 12px;
+    padding: 14px 18px 14px 56px; position: relative; margin-bottom: 10px; font-size: 15px;
+  }
+  ol.plan li::before {
+    counter-increment: step; content: counter(step);
+    position: absolute; left: 14px; top: 50%; transform: translateY(-50%);
+    width: 28px; height: 28px; border-radius: 8px; display: grid; place-items: center;
+    background: linear-gradient(135deg, var(--amber), #b45309); color: #1a1206; font-weight: 800; font-size: 14px;
+  }
+  ol.plan li b { color: var(--text); }
+  ol.plan li span { color: var(--faint); }
+
+  footer { text-align: center; color: var(--faint); font-size: 13px; margin-top: 60px; }
+  .disclaimer {
+    font-size: 12.5px; color: var(--faint); background: var(--panel);
+    border: 1px dashed var(--border); border-radius: 10px; padding: 12px 16px; margin-top: 18px;
+  }
+</style>
+</head>
+<body>
+
+<header class="hero">
+  <div class="eyebrow">Hotel Management · Speed Review</div>
+  <h1>Performance Improvements</h1>
+  <p>A plain-language look at the changes that would make the app feel faster — what happens <b>now</b>, side by side with the <b>proposed</b> fix.</p>
+  <div class="meta">Generated 2026-06-29 · Based on a read-through of the <code>convex/</code> backend and <code>src/</code> frontend · No code was changed</div>
+</header>
+
+<div class="wrap">
+
+  <div class="legend">
+    <span><span class="dot red"></span> <b>NOW</b> = how it works today</span>
+    <span><span class="dot green"></span> <b>AFTER</b> = the proposed change</span>
+    <span>The colored bars show <b>how much work the server does</b> — shorter is faster. Bars use example numbers (see note below).</span>
+  </div>
+
+  <p class="disclaimer">
+    <b>About the example numbers:</b> the app currently holds little data, so everything feels fast today. The numbers in the bars
+    imagine a <b>busy, mature system</b> — say ~50 hotels, ~30 rooms each, one hotel with ~5,000 bookings over its lifetime but only
+    ~40 active right now, and a popular hotel with ~3,000 reviews. They're illustrations of how each screen <i>scales as data grows</i>,
+    not measured benchmarks. The point of every fix below is the same: <b>do work that grows with “what's active now” instead of “everything ever recorded.”</b>
+  </p>
+
+  <!-- SCORECARD -->
+  <h2 class="section">At a glance</h2>
+  <table class="score">
+    <thead>
+      <tr><th>#</th><th>Improvement</th><th>Where you feel it</th><th>Impact</th><th>Effort</th></tr>
+    </thead>
+    <tbody>
+      <tr><td>1</td><td><a href="#f1">Stop reading every booking ever made on the dashboard</a></td><td>Admin dashboard</td><td><span class="tag high">High</span></td><td><span class="tag mod">Moderate</span></td></tr>
+      <tr><td>2</td><td><a href="#f2">Stop re-loading the same data 6 times per dashboard</a></td><td>Admin dashboard</td><td><span class="tag high">High</span></td><td><span class="tag mod">Moderate</span></td></tr>
+      <tr><td>3</td><td><a href="#f3">Only read the reviews you need for star ratings</a></td><td>Customer home page</td><td><span class="tag high">High</span></td><td><span class="tag mod">Moderate</span></td></tr>
+      <tr><td>4</td><td><a href="#f4">Load hotels a page at a time, not all at once</a></td><td>Customer home page</td><td><span class="tag med">Medium</span></td><td><span class="tag mod">Moderate</span></td></tr>
+      <tr><td>5</td><td><a href="#f5">Color room cards from active bookings only</a></td><td>Admin → Rooms</td><td><span class="tag med">Medium</span></td><td><span class="tag easy">Easy</span></td></tr>
+      <tr><td>6</td><td><a href="#f6">Fix the “one query per user” on the Users page</a></td><td>Admin → Users</td><td><span class="tag med">Medium</span></td><td><span class="tag easy">Easy</span></td></tr>
+      <tr><td>7</td><td><a href="#f7">Let the cleanup job jump straight to expired holds</a></td><td>Behind the scenes</td><td><span class="tag low">Low</span></td><td><span class="tag easy">Easy</span></td></tr>
+      <tr><td>8</td><td><a href="#f8">Drop the duplicate filter on the bookings list</a></td><td>My Bookings</td><td><span class="tag low">Low</span></td><td><span class="tag easy">Easy</span></td></tr>
+      <tr><td>9</td><td><a href="#f9">Don't keep the notification list live while it's closed</a></td><td>Notification bell</td><td><span class="tag low">Low</span></td><td><span class="tag easy">Easy</span></td></tr>
+    </tbody>
+  </table>
+
+  <!-- ===================== CUSTOMER ===================== -->
+  <h2 class="section">Customer screens — felt by everyone</h2>
+
+  <!-- F3 (ratings) -->
+  <div class="card" id="f3">
+    <div class="card-head">
+      <div class="num">3</div>
+      <div>
+        <h3>Only read the reviews you need for star ratings</h3>
+        <div class="where"><b>Where:</b> the hotel home / discovery page, every time it loads</div>
+      </div>
+      <div class="chips"><span class="tag high">High impact</span><span class="tag mod">Moderate effort</span></div>
+    </div>
+
+    <div class="compare">
+      <div class="side now">
+        <div class="label"><span class="dot red"></span> Now</div>
+        <p>To show “★ 4.6 (3,000)” on each hotel card, the server <b>loads every single review</b> for every hotel on the page, then counts them and averages the scores. It throws almost all of that data away — it only needed the count and the average.</p>
+        <div class="bar-cap"><span>Reviews read just to show one rating</span><span class="val">3,000</span></div>
+        <div class="track"><div class="fill red" style="width:100%"></div></div>
+      </div>
+      <div class="side after">
+        <div class="label"><span class="dot green"></span> After</div>
+        <p>Keep a small running tally on each hotel — a “sum of scores” and a “number of reviews.” When someone adds or removes a review, nudge those two numbers. The card then reads <b>just two values</b>, no matter how popular the hotel is.</p>
+        <div class="bar-cap"><span>Values read to show the same rating</span><span class="val">2</span></div>
+        <div class="track"><div class="fill green" style="width:2%"></div></div>
+      </div>
+    </div>
+
+    <div class="code-toggle">
+      <details>
+        <summary>See the code</summary>
+        <p class="filemark">convex/ratings.ts · getSummaries (lines 37–56)</p>
+<pre><span class="c">// NOW — runs once per hotel on the page, reads all reviews each time</span>
+<span class="k">return await</span> Promise.<span class="f">all</span>(args.hotelIds.<span class="f">map</span>(<span class="k">async</span> (hotelId) => {
+  <span class="k">const</span> ratings = <span class="k">await</span> ctx.db
+    .<span class="f">query</span>(<span class="s">'hotelRatings'</span>)
+    .<span class="f">withIndex</span>(<span class="s">'by_hotel_and_is_deleted'</span>, (q) =>
+      q.<span class="f">eq</span>(<span class="s">'hotelId'</span>, hotelId).<span class="f">eq</span>(<span class="s">'isDeleted'</span>, <span class="k">false</span>))
+    .<span class="bad">collect()</span>            <span class="c">// &lt;-- pulls in EVERY review</span>
+  <span class="k">const</span> count = ratings.length
+  <span class="k">const</span> average = count === <span class="s">0</span> ? <span class="s">0</span>
+    : ratings.<span class="f">reduce</span>((s, r) => s + r.rating, <span class="s">0</span>) / count
+  <span class="k">return</span> { hotelId, average, count }
+}))
+
+<span class="c">// AFTER — read a number kept up to date on the hotel itself</span>
+<span class="c">// (update hotel.ratingSum / hotel.ratingCount inside upsertRating &amp; softDeleteRating)</span>
+<span class="k">return</span> args.hotelIds.<span class="f">map</span>((hotelId) => {
+  <span class="k">const</span> h = hotelsById.<span class="f">get</span>(hotelId)
+  <span class="k">return</span> { hotelId, count: h.ratingCount, <span class="good">average: h.ratingSum / h.ratingCount</span> }
+})</pre>
+      </details>
+    </div>
+    <div class="impact-line"><b>Why it matters:</b> this is the busiest screen in the app. Today it gets slower for <i>everyone</i> the more reviews a popular hotel collects. After the change, the home page loads at the same speed whether a hotel has 3 reviews or 30,000.</div>
+  </div>
+
+  <!-- F4 (hotels list pagination) -->
+  <div class="card" id="f4">
+    <div class="card-head">
+      <div class="num">4</div>
+      <div>
+        <h3>Load hotels a page at a time, not all at once</h3>
+        <div class="where"><b>Where:</b> the hotel home / discovery page</div>
+      </div>
+      <div class="chips"><span class="tag med">Medium impact</span><span class="tag mod">Moderate effort</span></div>
+    </div>
+
+    <div class="compare">
+      <div class="side now">
+        <div class="label"><span class="dot red"></span> Now</div>
+        <p>The page asks for <b>every active hotel in one go</b>, and for each one it makes a <b>separate trip to storage</b> to fetch its photo link. With 50 hotels that's 50 extra storage look-ups before anything shows.</p>
+        <div class="bar-cap"><span>Hotels + photo look-ups up front</span><span class="val">50 + 50</span></div>
+        <div class="track"><div class="fill red" style="width:100%"></div></div>
+      </div>
+      <div class="side after">
+        <div class="label"><span class="dot green"></span> After</div>
+        <p>Load the first page (say 12 hotels), fetch <b>only those 12 photo links</b>, and load more as the visitor scrolls. The “Load more” pattern already used for bookings and notifications fits here perfectly.</p>
+        <div class="bar-cap"><span>Hotels + photo look-ups up front</span><span class="val">12 + 12</span></div>
+        <div class="track"><div class="fill green" style="width:24%"></div></div>
+      </div>
+    </div>
+
+    <div class="code-toggle">
+      <details>
+        <summary>See the code</summary>
+        <p class="filemark">convex/hotels.ts · list (lines 110–130)</p>
+<pre><span class="c">// NOW — grabs all hotels, then one storage lookup per hotel</span>
+hotels = <span class="k">await</span> ctx.db.<span class="f">query</span>(<span class="s">'hotels'</span>)
+  .<span class="f">withIndex</span>(<span class="s">'by_is_deleted'</span>, (q) => q.<span class="f">eq</span>(<span class="s">'isDeleted'</span>, <span class="k">false</span>))
+  .<span class="bad">collect()</span>
+<span class="k">return await</span> Promise.<span class="f">all</span>(
+  hotels.<span class="f">map</span>((h) => <span class="bad">attachHotelImageUrl</span>(ctx, h)))  <span class="c">// storage.getUrl x N</span>
+
+<span class="c">// AFTER — return one page; resolve photos only for that page</span>
+<span class="k">const</span> page = <span class="k">await</span> ctx.db.<span class="f">query</span>(<span class="s">'hotels'</span>)
+  .<span class="f">withIndex</span>(<span class="s">'by_is_deleted'</span>, (q) => q.<span class="f">eq</span>(<span class="s">'isDeleted'</span>, <span class="k">false</span>))
+  .<span class="good">paginate(args.paginationOpts)</span>
+page.page = <span class="k">await</span> Promise.<span class="f">all</span>(page.page.<span class="f">map</span>((h) => <span class="f">attachHotelImageUrl</span>(ctx, h)))
+<span class="k">return</span> page</pre>
+      </details>
+    </div>
+    <div class="impact-line"><b>Note:</b> the photos themselves are already loaded lazily in the grid (good!). This fix is about the <i>list request</i> that happens before the grid even appears. <span style="color:var(--faint)">It pairs naturally with #3 — if star ratings come back inside this same list, the separate ratings request disappears entirely.</span></div>
+  </div>
+
+  <!-- ===================== ADMIN DASHBOARD ===================== -->
+  <h2 class="section">Admin dashboard — felt by staff every day</h2>
+
+  <!-- F1 occupancy -->
+  <div class="card" id="f1">
+    <div class="card-head">
+      <div class="num">1</div>
+      <div>
+        <h3>Stop reading every booking ever made on the dashboard</h3>
+        <div class="where"><b>Where:</b> the admin dashboard, the “occupancy” and “top hotels” numbers</div>
+      </div>
+      <div class="chips"><span class="tag high">High impact</span><span class="tag mod">Moderate effort</span></div>
+    </div>
+
+    <div class="compare">
+      <div class="side now">
+        <div class="label"><span class="dot red"></span> Now</div>
+        <p>To work out “how full are we <b>today</b>,” the dashboard loads <b>the entire booking history</b> of every hotel — including stays from years ago that are long checked out — and then filters down to today in memory.</p>
+        <div class="bar-cap"><span>Bookings loaded to measure today</span><span class="val">5,000</span></div>
+        <div class="track"><div class="fill red" style="width:100%"></div></div>
+      </div>
+      <div class="side after">
+        <div class="label"><span class="dot green"></span> After</div>
+        <p>A stay can only matter today if it <b>hasn't checked out yet</b>. There's already an index for “bookings by check-out date,” so ask only for stays ending today or later. That's a tiny, roughly fixed-size list.</p>
+        <div class="bar-cap"><span>Bookings loaded to measure today</span><span class="val">~40</span></div>
+        <div class="track"><div class="fill green" style="width:3%"></div></div>
+      </div>
+    </div>
+
+    <div class="code-toggle">
+      <details>
+        <summary>See the code</summary>
+        <p class="filemark">convex/analytics.ts · listOccupancyBookings (lines 241–259)</p>
+<pre><span class="c">// NOW — no date limit: every booking for every hotel, all time</span>
+ctx.db.<span class="f">query</span>(<span class="s">'bookings'</span>)
+  .<span class="f">withIndex</span>(<span class="s">'by_hotel'</span>, (q) => q.<span class="f">eq</span>(<span class="s">'hotelId'</span>, hotelId))
+  .<span class="bad">collect()</span>
+
+<span class="c">// AFTER — only stays that haven't ended before the window starts</span>
+ctx.db.<span class="f">query</span>(<span class="s">'bookings'</span>)
+  .<span class="f">withIndex</span>(<span class="s">'by_hotel_and_check_out'</span>, (q) =>
+    q.<span class="f">eq</span>(<span class="s">'hotelId'</span>, hotelId).<span class="good">gte('checkOut', windowStartDate)</span>)
+  .<span class="f">collect</span>()</pre>
+      </details>
+    </div>
+    <div class="impact-line"><b>Why it matters:</b> today this work grows <b>forever</b> — every booking a hotel ever takes makes the dashboard a little slower to open. After the change it stays roughly flat, because “active stays” doesn't keep growing the way “all history” does.</div>
+  </div>
+
+  <!-- F2 six queries -->
+  <div class="card" id="f2">
+    <div class="card-head">
+      <div class="num">2</div>
+      <div>
+        <h3>Stop re-loading the same data 6 times per dashboard</h3>
+        <div class="where"><b>Where:</b> the admin dashboard, on every open and every time a booking changes</div>
+      </div>
+      <div class="chips"><span class="tag high">High impact</span><span class="tag mod">Moderate effort</span></div>
+    </div>
+
+    <div class="compare">
+      <div class="side now">
+        <div class="label"><span class="dot red"></span> Now</div>
+        <p>The dashboard fires <b>6 separate requests</b> (summary, booking trend, status breakdown, revenue trend, occupancy trend, top hotels). Each one <b>re-reads the bookings and rooms</b> on its own. Because the data is live, any new booking makes all 6 re-run at once.</p>
+        <div class="bar-cap"><span>Full passes over bookings per load</span><span class="val">6×</span></div>
+        <div class="track"><div class="fill red" style="width:100%"></div></div>
+      </div>
+      <div class="side after">
+        <div class="label"><span class="dot green"></span> After</div>
+        <p>Read the bookings and rooms <b>once</b>, then calculate all six sets of numbers from that single load. One request, one pass, one live subscription that updates smoothly.</p>
+        <div class="bar-cap"><span>Full passes over bookings per load</span><span class="val">1×</span></div>
+        <div class="track"><div class="fill green" style="width:17%"></div></div>
+      </div>
+    </div>
+
+    <div class="code-toggle">
+      <details>
+        <summary>See the code</summary>
+        <p class="filemark">src/routes/admin/index.lazy.tsx · (lines 163–179)</p>
+<pre><span class="c">// NOW — six independent live queries, each re-scans on the server</span>
+<span class="k">const</span> summary = <span class="f">useQuery</span>(api.analytics.getDashboardSummary, { window })
+<span class="k">const</span> bookingTrend = <span class="f">useQuery</span>(api.analytics.getBookingTrend, { window })
+<span class="k">const</span> statusBreakdowns = <span class="f">useQuery</span>(api.analytics.getStatusBreakdowns, { window })
+<span class="k">const</span> revenueTrend = <span class="f">useQuery</span>(api.analytics.getRevenueTrend, ...)
+<span class="k">const</span> occupancyTrend = <span class="f">useQuery</span>(api.analytics.getOccupancyTrend, ...)
+<span class="k">const</span> topHotels = <span class="f">useQuery</span>(api.analytics.getTopHotels, ...)
+
+<span class="c">// AFTER — one query returns everything the dashboard needs</span>
+<span class="k">const</span> dashboard = <span class="f">useQuery</span>(api.analytics.<span class="good">getDashboard</span>, { window })
+<span class="c">// dashboard.summary, dashboard.bookingTrend, dashboard.statusBreakdowns, ...</span></pre>
+      </details>
+    </div>
+    <div class="impact-line"><b>Best done together with #1.</b> Fixing the occupancy scan first means the single combined query is already cheap. <span style="color:var(--faint)">A query cache is in place (<code>convex-helpers/react/cache</code>), so identical repeat requests are reused — but six <i>different</i> queries each still do their own database work.</span></div>
+  </div>
+
+  <!-- ===================== ADMIN MANAGEMENT ===================== -->
+  <h2 class="section">Admin management screens</h2>
+
+  <!-- F5 rooms -->
+  <div class="card" id="f5">
+    <div class="card-head">
+      <div class="num">5</div>
+      <div>
+        <h3>Color room cards from active bookings only</h3>
+        <div class="where"><b>Where:</b> Admin → Rooms, the live status of each room</div>
+      </div>
+      <div class="chips"><span class="tag med">Medium impact</span><span class="tag easy">Easy</span></div>
+    </div>
+
+    <div class="compare">
+      <div class="side now">
+        <div class="label"><span class="dot red"></span> Now</div>
+        <p>To decide if a room shows as “held / booked / free,” the page loads <b>the hotel's whole booking history</b>, then ignores everything that's cancelled, expired, or checked out. Most of what it loads is exactly that — old, finished bookings.</p>
+        <div class="bar-cap"><span>Bookings loaded to color the grid</span><span class="val">5,000</span></div>
+        <div class="track"><div class="fill red" style="width:100%"></div></div>
+      </div>
+      <div class="side after">
+        <div class="label"><span class="dot green"></span> After</div>
+        <p>Only four statuses affect a room's live state (held, pending, confirmed, checked-in). Ask for just those — there's already a “by hotel + status” index — and skip the dead weight.</p>
+        <div class="bar-cap"><span>Bookings loaded to color the grid</span><span class="val">~60</span></div>
+        <div class="track"><div class="fill green" style="width:4%"></div></div>
+      </div>
+    </div>
+
+    <div class="code-toggle">
+      <details>
+        <summary>See the code</summary>
+        <p class="filemark">convex/rooms.ts · getByHotelWithLiveState (lines 188–214)</p>
+<pre><span class="c">// NOW — load everything, then skip terminal statuses in code</span>
+<span class="k">const</span> hotelBookings = <span class="k">await</span> ctx.db.<span class="f">query</span>(<span class="s">'bookings'</span>)
+  .<span class="f">withIndex</span>(<span class="s">'by_hotel'</span>, (q) => q.<span class="f">eq</span>(<span class="s">'hotelId'</span>, args.hotelId))
+  .<span class="bad">collect()</span>
+<span class="k">for</span> (<span class="k">const</span> b <span class="k">of</span> hotelBookings) {
+  <span class="k">if</span> ([<span class="s">'cancelled'</span>,<span class="s">'expired'</span>,<span class="s">'checked_out'</span>].<span class="f">includes</span>(b.status)) <span class="k">continue</span>
+  ...
+}
+
+<span class="c">// AFTER — ask only for the 4 statuses that matter</span>
+<span class="k">const</span> active = (<span class="k">await</span> Promise.<span class="f">all</span>(
+  [<span class="s">'held'</span>,<span class="s">'pending_payment'</span>,<span class="s">'confirmed'</span>,<span class="s">'checked_in'</span>].<span class="f">map</span>((s) =>
+    ctx.db.<span class="f">query</span>(<span class="s">'bookings'</span>)
+      .<span class="f">withIndex</span>(<span class="s">'by_hotel_and_status'</span>, (q) =>
+        q.<span class="f">eq</span>(<span class="s">'hotelId'</span>, args.hotelId).<span class="good">eq('status', s)</span>)
+      .<span class="f">collect</span>()))).<span class="f">flat</span>()</pre>
+      </details>
+    </div>
+    <div class="impact-line"><b>Why it matters:</b> staff open the Rooms grid constantly. The number of <i>active</i> bookings for a hotel stays small; the number of <i>past</i> ones never stops growing — so this keeps a daily-use screen snappy for years.</div>
+  </div>
+
+  <!-- F6 users -->
+  <div class="card" id="f6">
+    <div class="card-head">
+      <div class="num">6</div>
+      <div>
+        <h3>Fix the “one query per user” on the Users page</h3>
+        <div class="where"><b>Where:</b> Admin → Users</div>
+      </div>
+      <div class="chips"><span class="tag med">Medium impact</span><span class="tag easy">Easy</span></div>
+    </div>
+
+    <div class="compare">
+      <div class="side now">
+        <div class="label"><span class="dot red"></span> Now</div>
+        <p>The page loads <b>every user</b>, then for each one runs a <b>separate query</b> to find their staff assignment. With 2,000 users that's 2,000 little look-ups — even though almost all of them are regular customers with no assignment at all.</p>
+        <div class="bar-cap"><span>Database trips to build the list</span><span class="val">2,001</span></div>
+        <div class="track"><div class="fill red" style="width:100%"></div></div>
+      </div>
+      <div class="side after">
+        <div class="label"><span class="dot green"></span> After</div>
+        <p>The staff table is small. Load it <b>once</b> into a quick look-up by user, then read users a page at a time. No more per-user trips.</p>
+        <div class="bar-cap"><span>Database trips to build a page</span><span class="val">~2</span></div>
+        <div class="track"><div class="fill green" style="width:3%"></div></div>
+      </div>
+    </div>
+
+    <div class="code-toggle">
+      <details>
+        <summary>See the code</summary>
+        <p class="filemark">convex/hotelStaff.ts · listAllUsers (lines 81–95)</p>
+<pre><span class="c">// NOW — one assignment query per user (the classic N+1)</span>
+<span class="k">const</span> users = <span class="k">await</span> ctx.db.<span class="f">query</span>(<span class="s">'users'</span>).<span class="bad">collect()</span>
+<span class="k">const</span> assignments = <span class="k">await</span> Promise.<span class="f">all</span>(
+  users.<span class="f">map</span>((u) => ctx.db.<span class="f">query</span>(<span class="s">'hotelStaff'</span>)
+    .<span class="f">withIndex</span>(<span class="s">'by_user'</span>, (q) => q.<span class="f">eq</span>(<span class="s">'userId'</span>, u._id)).<span class="bad">unique()</span>))
+
+<span class="c">// AFTER — load the small staff table once, build a map</span>
+<span class="k">const</span> staff = <span class="k">await</span> ctx.db.<span class="f">query</span>(<span class="s">'hotelStaff'</span>).<span class="f">collect</span>()
+<span class="k">const</span> <span class="good">byUser</span> = <span class="k">new</span> <span class="f">Map</span>(staff.<span class="f">map</span>((s) => [s.userId, s]))
+<span class="k">const</span> usersPage = <span class="k">await</span> ctx.db.<span class="f">query</span>(<span class="s">'users'</span>).<span class="good">paginate(opts)</span>
+<span class="c">// look up byUser.get(user._id) — no extra query</span></pre>
+      </details>
+    </div>
+    <div class="impact-line"><b>Why it matters:</b> the users table is the fastest-growing one in the app (a new row per signup). Without this, the Users page slowly degrades as the customer base grows.</div>
+  </div>
+
+  <!-- ===================== BACKGROUND + SMALL ===================== -->
+  <h2 class="section">Behind the scenes &amp; small cleanups</h2>
+
+  <!-- F7 cron -->
+  <div class="card" id="f7">
+    <div class="card-head">
+      <div class="num">7</div>
+      <div>
+        <h3>Let the cleanup job jump straight to expired holds</h3>
+        <div class="where"><b>Where:</b> a background job that runs every 15 minutes to release expired holds</div>
+      </div>
+      <div class="chips"><span class="tag low">Low impact</span><span class="tag easy">Easy</span></div>
+    </div>
+
+    <div class="compare">
+      <div class="side now">
+        <div class="label"><span class="dot red"></span> Now</div>
+        <p>Four times an hour it loads <b>all held and all pending-payment bookings</b>, then checks each one's expiry time in code — even when nothing has actually expired.</p>
+        <div class="bar-cap"><span>Rows scanned each run</span><span class="val">all active holds</span></div>
+        <div class="track"><div class="fill red" style="width:100%"></div></div>
+      </div>
+      <div class="side after">
+        <div class="label"><span class="dot green"></span> After</div>
+        <p>There's an index on the hold-expiry time. Ask directly for “holds whose expiry is in the past” and act only on those.</p>
+        <div class="bar-cap"><span>Rows scanned each run</span><span class="val">only expired</span></div>
+        <div class="track"><div class="fill green" style="width:10%"></div></div>
+      </div>
+    </div>
+
+    <div class="code-toggle">
+      <details>
+        <summary>See the code</summary>
+        <p class="filemark">convex/bookingsInternal.ts · cleanupExpiredHolds (lines 16–31)</p>
+<pre><span class="c">// NOW — load all holds + pending, filter by time in JS</span>
+<span class="k">const</span> held = <span class="k">await</span> ctx.db.<span class="f">query</span>(<span class="s">'bookings'</span>)
+  .<span class="f">withIndex</span>(<span class="s">'by_status'</span>, (q) => q.<span class="f">eq</span>(<span class="s">'status'</span>, <span class="s">'held'</span>)).<span class="bad">collect()</span>
+<span class="k">const</span> pending = <span class="k">await</span> ctx.db.<span class="f">query</span>(<span class="s">'bookings'</span>)
+  .<span class="f">withIndex</span>(<span class="s">'by_status'</span>, (q) => q.<span class="f">eq</span>(<span class="s">'status'</span>, <span class="s">'pending_payment'</span>)).<span class="bad">collect()</span>
+<span class="k">const</span> expired = [...held, ...pending].<span class="f">filter</span>((b) => b.holdExpiresAt &lt; now)
+
+<span class="c">// AFTER — use the by_hold_expires index to fetch only what's expired</span>
+<span class="k">const</span> expired = <span class="k">await</span> ctx.db.<span class="f">query</span>(<span class="s">'bookings'</span>)
+  .<span class="f">withIndex</span>(<span class="s">'by_hold_expires'</span>, (q) => <span class="good">q.lt('holdExpiresAt', now)</span>)
+  .<span class="f">collect</span>()</pre>
+      </details>
+    </div>
+    <div class="impact-line"><b>Why it matters:</b> users never see this job directly, but it competes with real booking writes every 15 minutes. Trimming it reduces the chance of it slowing down a checkout happening at the same moment.</div>
+  </div>
+
+  <!-- F8 double filter -->
+  <div class="card" id="f8">
+    <div class="card-head">
+      <div class="num">8</div>
+      <div>
+        <h3>Drop the duplicate filter on the bookings list</h3>
+        <div class="where"><b>Where:</b> the customer “My Bookings” page</div>
+      </div>
+      <div class="chips"><span class="tag low">Low impact</span><span class="tag easy">Easy</span></div>
+    </div>
+
+    <div class="compare">
+      <div class="side now">
+        <div class="label"><span class="dot red"></span> Now</div>
+        <p>The server already returns only the chosen status, but the page <b>filters by that same status again</b> in the browser. It's harmless, but it's confusing and can hide bookings if the two ever disagree.</p>
+      </div>
+      <div class="side after">
+        <div class="label"><span class="dot green"></span> After</div>
+        <p>Trust the server's result and render it directly. Less code, no chance of the two filters drifting apart.</p>
+      </div>
+    </div>
+
+    <div class="code-toggle">
+      <details>
+        <summary>See the code</summary>
+        <p class="filemark">src/routes/_authenticated/bookings.tsx · (lines 59–104)</p>
+<pre><span class="c">// NOW — server filters by status, then the client filters again</span>
+<span class="k">const</span> bookingsPage = <span class="f">usePaginatedQuery</span>(api.bookings.getMyBookingsEnriched,
+  { status: <span class="f">isBookingStatus</span>(statusFilter) ? statusFilter : <span class="k">undefined</span> }, ...)
+<span class="k">const</span> filteredBookings = bookings.<span class="bad">filter</span>((b) =>
+  statusFilter === <span class="s">'all'</span> ? <span class="k">true</span> : b.booking.status === statusFilter)
+
+<span class="c">// AFTER — the server result is already filtered; just use it</span>
+<span class="k">const</span> bookings = bookingsPage.results
+<span class="c">// render `bookings` directly</span></pre>
+      </details>
+    </div>
+    <div class="impact-line"><b>Why it matters:</b> tiny speed gain, but a real <b>correctness</b> win — one source of truth for what's shown.</div>
+  </div>
+
+  <!-- F9 bell -->
+  <div class="card" id="f9">
+    <div class="card-head">
+      <div class="num">9</div>
+      <div>
+        <h3>Don't keep the notification list live while it's closed</h3>
+        <div class="where"><b>Where:</b> the notification bell in the header (on every page)</div>
+      </div>
+      <div class="chips"><span class="tag low">Low impact</span><span class="tag easy">Easy</span></div>
+    </div>
+
+    <div class="compare">
+      <div class="side now">
+        <div class="label"><span class="dot red"></span> Now</div>
+        <p>The full list of recent notifications stays <b>subscribed and live the whole time</b> you're signed in, even though the panel is usually closed. Only the little unread <b>number</b> on the bell actually needs to be live.</p>
+      </div>
+      <div class="side after">
+        <div class="label"><span class="dot green"></span> After</div>
+        <p>Keep the unread <b>count</b> live for the badge, but only load the <b>list</b> when the bell is actually opened. One small condition does it.</p>
+      </div>
+    </div>
+
+    <div class="code-toggle">
+      <details>
+        <summary>See the code</summary>
+        <p class="filemark">src/components/NotificationBell.tsx · (lines 77–89)</p>
+<pre><span class="c">// NOW — list is subscribed whenever signed in</span>
+<span class="k">const</span> notificationsPage = <span class="f">usePaginatedQuery</span>(
+  api.notifications.getMyNotifications,
+  <span class="bad">isSignedIn ? {} : 'skip'</span>, { initialNumItems: <span class="s">20</span> })
+
+<span class="c">// AFTER — only load the list once the panel is open</span>
+<span class="k">const</span> [open, setOpen] = <span class="f">useState</span>(<span class="k">false</span>)
+<span class="k">const</span> notificationsPage = <span class="f">usePaginatedQuery</span>(
+  api.notifications.getMyNotifications,
+  <span class="good">isSignedIn &amp;&amp; open ? {} : 'skip'</span>, { initialNumItems: <span class="s">20</span> })
+<span class="c">// keep getUnreadCount live for the badge — it's already cheap</span></pre>
+      </details>
+    </div>
+    <div class="impact-line"><b>Why it matters:</b> fewer always-on live subscriptions across every signed-in page means a little less background work and network chatter for every user, all the time.</div>
+  </div>
+
+  <!-- ALREADY FAST -->
+  <h2 class="section">Already fast — please leave these alone</h2>
+  <p style="color:var(--muted); margin-top:0;">A lot here is already done well. Worth knowing so these don't get “fixed” by accident:</p>
+  <div class="good-grid">
+    <div class="good-item"><b>Charts load only when needed</b><span>Recharts is split into its own bundle, loaded lazily, and kept out of the first page download.</span></div>
+    <div class="good-item"><b>Routes are code-split</b><span>Each page ships as its own chunk (<code>autoCodeSplitting</code>), so you only download the screen you're on.</span></div>
+    <div class="good-item"><b>Animations are lightweight</b><span>Motion uses the trimmed <code>LazyMotion</code> + <code>m</code> setup instead of the full library.</span></div>
+    <div class="good-item"><b>Hotel photos load lazily</b><span>Cards use <code>loading="lazy"</code> with fixed width/height, so images don't block or shift the layout.</span></div>
+    <div class="good-item"><b>Hover pre-loading</b><span>Hovering a hotel card quietly pre-fetches its detail page, so the click feels instant.</span></div>
+    <div class="good-item"><b>Long lists already paginate</b><span>Bookings and notifications use “load more,” and results are cached between components.</span></div>
+    <div class="good-item"><b>Availability is indexed</b><span>The room-availability check uses a single indexed lookup instead of one-per-room.</span></div>
+    <div class="good-item"><b>Unread count is capped</b><span>The bell counts up to a limit instead of loading every notification to count them.</span></div>
+  </div>
+
+  <!-- ORDER -->
+  <h2 class="section">A sensible order to do them in</h2>
+  <ol class="plan">
+    <li><b>#1 — Date-bound the dashboard occupancy scan.</b> <span>Biggest win, and it makes #2 easy. Pure backend change using an index that already exists.</span></li>
+    <li><b>#2 — Combine the 6 dashboard queries into one.</b> <span>Smoother live updates and one database pass instead of six.</span></li>
+    <li><b>#3 — Keep a running rating tally per hotel.</b> <span>Speeds up the busiest customer screen for good.</span></li>
+    <li><b>#5 &amp; #6 — Active-only rooms, map-based users.</b> <span>Quick backend wins on the two heaviest admin lists.</span></li>
+    <li><b>#4 — Paginate the hotel list (fold ratings in).</b> <span>Do after #3 so the home page request returns everything in one shot.</span></li>
+    <li><b>#7, #8, #9 — The easy cleanups.</b> <span>Small, safe, low-risk; good warm-up or fill-in tasks.</span></li>
+  </ol>
+
+  <footer>
+    Read-only review · every line number was checked against the current code on 2026-06-29 · nothing in the app was modified.
+  </footer>
+
+</div>
+</body>
+</html>

@@ -1,0 +1,470 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Frontend Simplification Report</title>
+<style>
+  :root {
+    --bg: #fbfbfd;
+    --ink: #1f2330;
+    --muted: #6b7280;
+    --line: #e5e7eb;
+    --card: #ffffff;
+    --before-bg: #fff5f5;
+    --before-line: #e5484d;
+    --after-bg: #f3fbf5;
+    --after-line: #2f9e44;
+    --code-bg: #0f1320;
+    --code-ink: #e6e9f2;
+    --accent: #6d4dff;
+  }
+  * { box-sizing: border-box; }
+  body {
+    margin: 0;
+    background: var(--bg);
+    color: var(--ink);
+    font: 16px/1.65 -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+  }
+  .wrap { max-width: 920px; margin: 0 auto; padding: 48px 24px 96px; }
+  header.page { border-bottom: 1px solid var(--line); padding-bottom: 24px; margin-bottom: 32px; }
+  h1 { font-size: 30px; margin: 0 0 6px; letter-spacing: -0.02em; }
+  .sub { color: var(--muted); font-size: 15px; margin: 0; }
+  .meta { margin-top: 16px; font-size: 13px; color: var(--muted); }
+  .meta code { background: #eef0f4; padding: 1px 6px; border-radius: 5px; }
+  h2 { font-size: 13px; text-transform: uppercase; letter-spacing: 0.08em; color: var(--accent); margin: 48px 0 8px; }
+  h3 { font-size: 19px; margin: 28px 0 4px; letter-spacing: -0.01em; }
+  p { margin: 8px 0; }
+  .where { font-size: 13px; color: var(--muted); margin: 2px 0 14px; }
+  .where code { background: #eef0f4; padding: 1px 6px; border-radius: 5px; font-size: 12px; }
+  .note { background: #f4f1ff; border: 1px solid #e3dcff; border-radius: 10px; padding: 14px 16px; font-size: 14px; color: #3c3470; }
+
+  table.summary { width: 100%; border-collapse: collapse; margin: 16px 0 8px; font-size: 14px; }
+  table.summary th, table.summary td { text-align: left; padding: 9px 10px; border-bottom: 1px solid var(--line); vertical-align: top; }
+  table.summary th { font-size: 12px; text-transform: uppercase; letter-spacing: 0.05em; color: var(--muted); }
+  table.summary tr:hover td { background: #f7f7fb; }
+  .badge { display: inline-block; font-size: 11px; font-weight: 600; padding: 2px 8px; border-radius: 999px; white-space: nowrap; }
+  .b-high { background: #ffe3e3; color: #c92a2a; }
+  .b-med  { background: #fff3bf; color: #9c6a00; }
+  .b-low  { background: #e7f5ff; color: #1971c2; }
+
+  figure { margin: 14px 0; }
+  .pair { display: grid; grid-template-columns: 1fr; gap: 12px; }
+  .block { border-radius: 10px; overflow: hidden; border: 1px solid var(--line); }
+  .block .tag { font-size: 11px; font-weight: 700; letter-spacing: 0.06em; text-transform: uppercase; padding: 6px 12px; }
+  .before .tag { background: var(--before-bg); color: var(--before-line); border-bottom: 1px solid #ffd3d3; }
+  .after  .tag { background: var(--after-bg);  color: var(--after-line);  border-bottom: 1px solid #cdebd3; }
+  pre { margin: 0; background: var(--code-bg); color: var(--code-ink); padding: 14px 16px; overflow-x: auto; font: 13px/1.55 "SF Mono", "JetBrains Mono", Menlo, Consolas, monospace; }
+  pre .c { color: #7e8aa5; } /* comment */
+  .why { font-size: 14px; }
+  footer { margin-top: 64px; padding-top: 20px; border-top: 1px solid var(--line); font-size: 13px; color: var(--muted); }
+  ul.tight { margin: 8px 0; padding-left: 20px; }
+  ul.tight li { margin: 4px 0; }
+</style>
+</head>
+<body>
+<div class="wrap">
+
+<header class="page">
+  <h1>Frontend Simplification Report</h1>
+  <p class="sub">Functionality-preserving cleanup opportunities across the React frontend.</p>
+  <div class="meta">
+    Scope: <code>src/</code> &nbsp;·&nbsp; 113 TS/TSX files (~24,900 LOC) &nbsp;·&nbsp;
+    Excluded: <code>convex/</code>, <code>*.gen.ts</code>, i18n message data &nbsp;·&nbsp;
+    Date: 2026-06-29 &nbsp;·&nbsp; <strong>No files were modified</strong> — this is analysis only.
+  </div>
+</header>
+
+<p>Every item below preserves behaviour exactly. They are ranked roughly by value (impact ÷ effort).
+The biggest wins are <strong>duplication that has been copy-pasted across files</strong> and a handful of
+<strong>nested ternaries</strong> that the project's own lint rules discourage.</p>
+
+<div class="note">
+  <strong>How to read this:</strong> each finding shows the real code today (<span style="color:var(--before-line)">Before</span>)
+  and a concrete fix (<span style="color:var(--after-line)">After</span>). Line numbers point at one representative
+  occurrence; the "Where" line lists the other copies.
+</div>
+
+<h2>Summary</h2>
+<table class="summary">
+  <thead>
+    <tr><th>#</th><th>Pattern</th><th>Impact</th><th>Effort</th><th>Occurrences</th></tr>
+  </thead>
+  <tbody>
+    <tr><td>1</td><td><a href="#f1">getFirstErrorMessage copy-pasted</a></td><td><span class="badge b-high">High</span></td><td>S</td><td>8 files, ~210 LOC</td></tr>
+    <tr><td>2</td><td><a href="#f2">Tautological spinner ternary</a></td><td><span class="badge b-high">High</span></td><td>S</td><td>~12 sites</td></tr>
+    <tr><td>3</td><td><a href="#f3">Currency formatters duplicated</a></td><td><span class="badge b-high">High</span></td><td>S</td><td>2 identical + ~6 inline</td></tr>
+    <tr><td>4</td><td><a href="#f4">Booking status config duplicated</a></td><td><span class="badge b-high">High</span></td><td>M</td><td>2 files, ~130 LOC</td></tr>
+    <tr><td>5</td><td><a href="#f5">Repeated form-field boilerplate</a></td><td><span class="badge b-high">High</span></td><td>M</td><td>~25 blocks</td></tr>
+    <tr><td>6</td><td><a href="#f6">Image-upload logic duplicated</a></td><td><span class="badge b-high">High</span></td><td>M</td><td>2 modals, ~250 LOC</td></tr>
+    <tr><td>7</td><td><a href="#f7">Nested ternary: submit labels</a></td><td><span class="badge b-med">Med</span></td><td>S</td><td>3 modals</td></tr>
+    <tr><td>8</td><td><a href="#f8">Nested ternary: payment banner</a></td><td><span class="badge b-med">Med</span></td><td>S</td><td>1 (7 levels deep)</td></tr>
+    <tr><td>9</td><td><a href="#f9">Analytics theme/tooltip duplication</a></td><td><span class="badge b-med">Med</span></td><td>M</td><td>6 cards</td></tr>
+    <tr><td>10</td><td><a href="#f10">Redundant sync effects + filter</a></td><td><span class="badge b-med">Med</span></td><td>S</td><td>bookings list</td></tr>
+    <tr><td>11</td><td><a href="#f11">Dead code: ui/chart.tsx</a></td><td><span class="badge b-med">Med</span></td><td>S</td><td>~378 LOC unused</td></tr>
+    <tr><td>12</td><td><a href="#f12">Type-safety nits (api as any)</a></td><td><span class="badge b-low">Low</span></td><td>S</td><td>~10 sites</td></tr>
+  </tbody>
+</table>
+
+<!-- ============================================ -->
+<h2>Cross-cutting duplication</h2>
+
+<h3 id="f1">1. <code>getFirstErrorMessage</code> is copy-pasted into 8 files</h3>
+<p class="why">The exact same 26-line form-error helper is redefined (non-exported) in every modal — both admin and public.
+There is no shared form-helpers module yet, so it just keeps getting pasted.</p>
+<p class="where">Where: <code>-HotelModal.tsx:98</code>, <code>-RoomModal.tsx:64</code>, <code>-AnnouncementForm.tsx:49</code>,
+<code>-AssignModal.tsx:17</code>, <code>-BookingModal.tsx:72</code>, <code>-ComplaintModal.tsx:57</code>, <code>-RatingModal.tsx:37</code> (+1).</p>
+<figure class="pair">
+  <div class="block before"><div class="tag">Before — repeated verbatim in 8 files</div>
+<pre>function getFirstErrorMessage(
+  errors: Array&lt;unknown&gt; | undefined,
+): string | null {
+  if (!errors) return null
+  for (const error of errors) {
+    if (!error) continue
+    if (typeof error === 'string') return error
+    if (typeof error === 'object' &amp;&amp; 'message' in error) {
+      const message = error.message
+      if (typeof message === 'string') return message
+    }
+  }
+  return null
+}</pre>
+  </div>
+  <div class="block after"><div class="tag">After — define once, import everywhere</div>
+<pre><span class="c">// src/lib/forms.ts  (new)</span>
+export function getFirstErrorMessage(
+  errors: Array&lt;unknown&gt; | undefined,
+): string | null { <span class="c">/* …same body, once… */</span> }
+
+<span class="c">// every modal:</span>
+import { getFirstErrorMessage } from '@/lib/forms'</pre>
+  </div>
+</figure>
+
+<h3 id="f3">3. Currency formatting is duplicated and inconsistent</h3>
+<p class="why">The ETB formatter is byte-identical in two files, and USD amounts are formatted ad-hoc with
+<code>$(x / 100).toFixed(2)</code> in ~6 more places. One helper module removes the drift.</p>
+<p class="where">Where: identical at <code>bookings/index.tsx:67</code> and <code>bookings/$bookingId.tsx:51</code>;
+inline USD at <code>walk-in/index.tsx:449,495,529</code>, <code>$bookingId.tsx:365</code>, <code>-OutsourceModal.tsx:81</code>.</p>
+<figure class="pair">
+  <div class="block before"><div class="tag">Before — same code in two files</div>
+<pre>const etbCurrencyFormatter = new Intl.NumberFormat('en-ET', {
+  currency: 'ETB',
+  style: 'currency',
+})
+
+function formatEtbAmount(amountMinor: number) {
+  return etbCurrencyFormatter.format(amountMinor / 100)
+}</pre>
+  </div>
+  <div class="block after"><div class="tag">After — one module, two helpers</div>
+<pre><span class="c">// src/lib/currency.ts  (new)</span>
+const etb = new Intl.NumberFormat('en-ET', { style: 'currency', currency: 'ETB' })
+const usd = new Intl.NumberFormat('en-US', { style: 'currency', currency: 'USD' })
+
+export const formatEtb = (minor: number) =&gt; etb.format(minor / 100)
+export const formatUsd = (minor: number) =&gt; usd.format(minor / 100)</pre>
+  </div>
+</figure>
+
+<h3 id="f4">4. Booking status config + transition labels duplicated</h3>
+<p class="why">A ~60-line <code>statusConfig</code> map and a <code>transitionLabel</code> map are defined in both the bookings
+list and the booking-detail page. They are identical except <code>expired.icon</code> (<code>Ban</code> vs <code>XCircle</code>) —
+a difference that looks accidental. The status-pill JSX is repeated too.</p>
+<p class="where">Where: <code>bookings/index.tsx:177–240</code> and <code>bookings/$bookingId.tsx:96–159</code>; pill JSX at <code>index.tsx:426</code>, <code>$bookingId.tsx:262</code>.</p>
+<figure class="pair">
+  <div class="block before"><div class="tag">Before — duplicated map (excerpt)</div>
+<pre>const statusConfig = {
+  held:      { label: t('booking.status.held'),     icon: Clock,       color: 'text-blue-400',  bg: 'bg-blue-500/10',  border: 'border-blue-500/20' },
+  confirmed: { label: t('booking.status.confirmed'),icon: CheckCircle, color: 'text-emerald-400',bg: 'bg-emerald-500/10',border: 'border-emerald-500/20' },
+  <span class="c">// …7 more statuses, repeated in both files…</span>
+  expired:   { label: t('booking.status.expired'),  icon: Ban, <span class="c">/* XCircle in the other file */</span> ... },
+}</pre>
+  </div>
+  <div class="block after"><div class="tag">After — one factory + one badge component</div>
+<pre><span class="c">// src/lib/bookingStatus.ts</span>
+export function useBookingStatusConfig() {
+  const { t } = useI18n()
+  return { statusConfig: { /* one source of truth */ }, transitionLabel: { /* … */ } }
+}
+
+<span class="c">// src/routes/admin/bookings/components/BookingStatusBadge.tsx</span>
+export function BookingStatusBadge({ status }: { status: BookingStatus }) { /* pill JSX once */ }</pre>
+  </div>
+</figure>
+
+<h3 id="f5">5. Form text-field markup is pasted ~25 times</h3>
+<p class="why">Inside <code>-HotelModal</code> alone the same label + input + error block is copy-pasted about 12 times
+(name, address, city, country, lat, lng, …), and <code>-RoomModal</code> / <code>-BookingModal</code> repeat the same shape.
+Each differs only by <code>name</code>, <code>label</code>, <code>placeholder</code>, <code>type</code>.</p>
+<p class="where">Where: <code>-HotelModal.tsx:532–935</code>, <code>-RoomModal.tsx:366–483</code>, <code>-BookingModal.tsx:486–542</code>.</p>
+<figure class="pair">
+  <div class="block before"><div class="tag">Before — ~25 lines per field, ×12</div>
+<pre>&lt;form.Field name="name"&gt;
+  {(field) =&gt; {
+    const error = getFirstErrorMessage(field.state.meta.errors)
+    return (
+      &lt;div&gt;
+        &lt;label className={labelClass}&gt;{t('admin.hotels.modal.hotelName')}&lt;/label&gt;
+        &lt;input
+          type="text"
+          value={field.state.value}
+          onChange={(e) =&gt; field.handleChange(e.target.value)}
+          onBlur={field.handleBlur}
+          placeholder={t('admin.hotels.modal.hotelNamePlaceholder')}
+          className={`admin-field ${error ? 'border-red-500/60 focus:border-red-500/80' : ''}`}
+        /&gt;
+        {error ? &lt;p className="mt-2 text-xs text-red-400"&gt;{error}&lt;/p&gt; : null}
+      &lt;/div&gt;
+    )
+  }}
+&lt;/form.Field&gt;</pre>
+  </div>
+  <div class="block after"><div class="tag">After — one reusable field</div>
+<pre><span class="c">// src/components/form/TextField.tsx</span>
+&lt;TextField form={form} name="name"
+  label={t('admin.hotels.modal.hotelName')}
+  placeholder={t('admin.hotels.modal.hotelNamePlaceholder')} /&gt;
+
+&lt;TextField form={form} name="address" label={...} placeholder={...} /&gt;
+<span class="c">// …each field becomes one line; -HotelModal drops from 1028 → ~500 LOC</span></pre>
+  </div>
+</figure>
+
+<h3 id="f6">6. Image-upload state/handlers duplicated between two modals</h3>
+<p class="why"><code>-HotelModal</code> and <code>-RoomModal</code> share ~90% of their image plumbing: preview state, an object-URL
+revoke effect, a <code>handleImageSelection</code> handler, and the upload-or-clear branch in submit. About 250 LOC of near-identical code.</p>
+<p class="where">Where: <code>-HotelModal.tsx:158–174, 371–433</code> ≈ <code>-RoomModal.tsx:126–142, 221–291</code>.</p>
+<figure class="pair">
+  <div class="block before"><div class="tag">Before — same block in both modals</div>
+<pre>const [imageFile, setImageFile] = useState&lt;File | null&gt;(null)
+const [previewUrl, setPreviewUrl] = useState&lt;string | null&gt;(initialUrl)
+const [uploadingImage, setUploadingImage] = useState(false)
+
+useEffect(() =&gt; {
+  return () =&gt; { if (previewUrl?.startsWith('blob:')) URL.revokeObjectURL(previewUrl) }
+}, [previewUrl])
+
+function handleImageSelection(file: File) { /* …identical in both… */ }
+<span class="c">// + identical imagePayload / imageChanged / clearImage branch in submit</span></pre>
+  </div>
+  <div class="block after"><div class="tag">After — one hook</div>
+<pre><span class="c">// src/hooks/useImageUpload.ts</span>
+const image = useImageUpload(initialUrl, initialStorageId)
+<span class="c">// image.previewUrl, image.onSelect, image.uploading, await image.commit()</span>
+
+&lt;ImageField {...image} /&gt;   <span class="c">// shared field UI</span></pre>
+  </div>
+</figure>
+
+<!-- ============================================ -->
+<h2>Nested ternaries (lint rule says avoid)</h2>
+
+<h3 id="f2">2. A spinner ternary whose branches are identical</h3>
+<p class="why">The dark/light condition picks the <em>same</em> classes either way — it does nothing. This exact spinner
+(with the dead ternary) is pasted ~12 times across admin pages.</p>
+<p class="where">Where: <code>bookings/index.tsx:384</code>, <code>$bookingId.tsx:205,649</code>, <code>hotels/$hotelId.tsx</code> (×4), <code>walk-in</code>, <code>rooms</code>, <code>complaints</code>…</p>
+<figure class="pair">
+  <div class="block before"><div class="tag">Before — both branches are the same string</div>
+<pre>&lt;div
+  className={`animate-spin rounded-full size-8 border-2 ${
+    isDark
+      ? 'border-violet-500/20 border-t-violet-500'
+      : 'border-violet-500/20 border-t-violet-500'
+  }`}
+&gt;&lt;/div&gt;</pre>
+  </div>
+  <div class="block after"><div class="tag">After — drop the ternary, extract a component</div>
+<pre><span class="c">// src/components/AdminSpinner.tsx</span>
+export function AdminSpinner() {
+  return (
+    &lt;div className="flex items-center justify-center py-20"&gt;
+      &lt;div className="animate-spin rounded-full size-8 border-2
+                      border-violet-500/20 border-t-violet-500" /&gt;
+    &lt;/div&gt;
+  )
+}
+<span class="c">// usage: {isLoading &amp;&amp; &lt;AdminSpinner /&gt;}</span></pre>
+  </div>
+</figure>
+
+<h3 id="f7">7. Triple-nested ternary for submit-button labels</h3>
+<p class="why">Picking "Uploading… / Saving… / Update / Create" via nested ternaries is hard to read. A small named
+function with early returns is clearer and reused across the three modals.</p>
+<p class="where">Where: <code>-HotelModal.tsx:1012</code>, <code>-RoomModal.tsx:643</code>, <code>admin/index.lazy.tsx:388</code>.</p>
+<figure class="pair">
+  <div class="block before"><div class="tag">Before</div>
+<pre>{isSubmitting || uploadingImage
+  ? uploadingImage
+    ? t('common.uploadingImage')
+    : t('common.saving')
+  : hotelId
+    ? t('admin.hotels.modal.updateHotel')
+    : t('admin.hotels.modal.createHotel')}</pre>
+  </div>
+  <div class="block after"><div class="tag">After</div>
+<pre>function submitLabel() {
+  if (uploadingImage) return t('common.uploadingImage')
+  if (isSubmitting)   return t('common.saving')
+  return hotelId
+    ? t('admin.hotels.modal.updateHotel')
+    : t('admin.hotels.modal.createHotel')
+}
+
+{submitLabel()}</pre>
+  </div>
+</figure>
+
+<h3 id="f8">8. Seven-level nested ternary for the payment banner</h3>
+<p class="why">The booking payment banner walks through 7 statuses with a deeply nested ternary. A keyed lookup is flat,
+easy to extend, and removes the indentation pyramid.</p>
+<p class="where">Where: <code>_authenticated/bookings.tsx:124–174</code>.</p>
+<figure class="pair">
+  <div class="block before"><div class="tag">Before — 50 lines of nested ?:</div>
+<pre>const paymentBanner =
+  !trackedPayment || trackedPayment.status === 'initialized'
+    ? { Icon: Loader2,   /* processing */ ... }
+    : trackedPayment.status === 'paid'
+      ? { Icon: CheckCircle, /* success */ ... }
+      : trackedPayment.status === 'refund_required' ||
+        trackedPayment.status === 'refund_initiated'
+        ? { Icon: AlertTriangle, ... }
+        : trackedPayment.status === 'refunded'
+          ? { ... }
+          : trackedPayment.status === 'reversed'
+            ? { ... }
+            : { Icon: XCircle, /* failed */ ... }</pre>
+  </div>
+  <div class="block after"><div class="tag">After — lookup table</div>
+<pre>const PAYMENT_BANNERS: Record&lt;string, BannerConfig&gt; = {
+  processing:      { Icon: Loader2,       ... },
+  paid:            { Icon: CheckCircle,   ... },
+  refund_required: { Icon: AlertTriangle, ... },
+  refund_initiated:{ Icon: AlertTriangle, ... },
+  refunded:        { Icon: AlertTriangle, ... },
+  reversed:        { Icon: AlertTriangle, ... },
+  failed:          { Icon: XCircle,       ... },
+}
+
+const status = !trackedPayment || trackedPayment.status === 'initialized'
+  ? 'processing' : trackedPayment.status
+const paymentBanner = PAYMENT_BANNERS[status] ?? PAYMENT_BANNERS.failed</pre>
+  </div>
+</figure>
+
+<h3 id="f9">9. Analytics cards repeat <code>isDark</code> class pairs and tooltips</h3>
+<p class="why">All six analytics cards derive <code>isDark</code> and inline paired dark/light class strings; three of them
+contain a near-identical tooltip, and <code>AnalyticsTrendChart</code> has four nested <code>isCurrency ? isDark ? …</code> ternaries
+for colours. Centralising the theme decision removes the repetition and the nesting.</p>
+<p class="where">Where: tooltip at <code>AnalyticsTrendChart.tsx:66</code>, <code>AnalyticsStatusBreakdown.tsx:66</code>, <code>AnalyticsOccupancyCard.tsx:199</code>; colour ternaries at <code>AnalyticsTrendChart.tsx:120–142</code>.</p>
+<figure class="pair">
+  <div class="block before"><div class="tag">Before — repeated tooltip + nested colour ternaries</div>
+<pre><span class="c">// tooltip shell, repeated in 3 cards</span>
+&lt;div className={`rounded-xl border px-3.5 py-2.5 shadow-xl backdrop-blur-md ${
+  isDark ? 'border-slate-700/60 bg-slate-900/95' : 'border-slate-200 bg-white/95'
+}`}&gt; … &lt;/div&gt;
+
+const strokeColor = isCurrency
+  ? isDark ? '#38bdf8' : '#0284c7'
+  : isDark ? '#818cf8' : '#4f46e5'</pre>
+  </div>
+  <div class="block after"><div class="tag">After — shared component + lookup</div>
+<pre>&lt;AnalyticsTooltip label={point.label} value={...} /&gt;   <span class="c">// theme handled inside</span>
+
+const STROKE = {
+  currency: { dark: '#38bdf8', light: '#0284c7' },
+  count:    { dark: '#818cf8', light: '#4f46e5' },
+}
+const strokeColor = STROKE[isCurrency ? 'currency' : 'count'][isDark ? 'dark' : 'light']</pre>
+  </div>
+</figure>
+
+<!-- ============================================ -->
+<h2>Dead code &amp; small cleanups</h2>
+
+<h3 id="f10">10. Redundant sync effects and a no-op filter (bookings list)</h3>
+<p class="why">Two <code>useEffect</code>s mirror URL search params into local state, then a <code>useMemo</code> re-filters by status that the
+server query <em>already</em> filtered. Reading <code>search.*</code> directly (and writing via <code>navigate</code>) removes the state,
+the effects, and the duplicate filter. This matches the pattern removed in commit <code>97d34ab</code>.</p>
+<p class="where">Where: effects <code>bookings/index.tsx:120–126</code>; redundant filter <code>:242–259</code> (status already applied at <code>:133</code>).</p>
+<figure class="pair">
+  <div class="block before"><div class="tag">Before</div>
+<pre>const [statusFilter, setStatusFilter] = useState(search.status)
+useEffect(() =&gt; { setStatusFilter(search.status) }, [search.status])
+useEffect(() =&gt; { setPaymentStatusFilter(search.paymentStatus) }, [search.paymentStatus])
+
+const filteredBookings = useMemo(() =&gt; bookings.filter((item) =&gt; {
+  if (statusFilter !== 'all' &amp;&amp; item.booking.status !== statusFilter) return false  <span class="c">// already filtered by the query</span>
+  …
+}), [bookings, paymentStatusFilter, statusFilter])</pre>
+  </div>
+  <div class="block after"><div class="tag">After</div>
+<pre><span class="c">// no local mirror state, no effects — derive from the URL</span>
+const statusFilter = search.status
+const filteredBookings = useMemo(() =&gt; bookings.filter((item) =&gt;
+  paymentStatusFilter === 'all'
+  || (item.booking.paymentStatus ?? 'unpaid_unknown') === paymentStatusFilter
+), [bookings, paymentStatusFilter])</pre>
+  </div>
+</figure>
+
+<h3 id="f11">11. <code>src/components/ui/chart.tsx</code> is unused (~378 LOC)</h3>
+<p class="why">Nothing imports <code>ui/chart</code> — the analytics views build directly on <code>recharts</code>. After a final
+reachability check it can be deleted outright.</p>
+<p class="where">Where: <code>src/components/ui/chart.tsx</code> (no consumers). Also unused: <code>lib/distance.ts</code> exports
+<code>calculateDistanceMiles</code>/<code>formatDistanceMiles</code> (referenced only in <code>doc/</code>).</p>
+<figure>
+  <div class="block after"><div class="tag">Action</div>
+<pre><span class="c"># verify, then remove</span>
+grep -r "ui/chart" src   <span class="c"># expect no matches</span>
+git rm src/components/ui/chart.tsx</pre>
+  </div>
+</figure>
+
+<h3 id="f12">12. Type-safety nits — <code>(api as any)</code> and <code>error: any</code></h3>
+<p class="why">Several calls cast the generated Convex <code>api</code> to <code>any</code>, defeating its types, and a few catches use
+<code>error: any</code> against the strict-mode guidance. There is already a typed <code>getErrorMessage(unknown)</code> helper in
+<code>-OutsourceModal.tsx</code> to reuse.</p>
+<p class="where">Where: <code>bookings/index.tsx:129</code>, <code>walk-in/index.tsx:85,112,113</code>, <code>$bookingId.tsx:90</code>, <code>-OutsourceModal.tsx:65,76</code>; <code>error: any</code> at <code>walk-in/index.tsx:160,188</code>.</p>
+<figure class="pair">
+  <div class="block before"><div class="tag">Before</div>
+<pre>const bookingsPage = usePaginatedQuery((api as any).bookings.getByHotel, { … })
+
+try { … } catch (error: any) { toast.error(error.message) }</pre>
+  </div>
+  <div class="block after"><div class="tag">After</div>
+<pre>const bookingsPage = usePaginatedQuery(api.bookings.getByHotel, { … })  <span class="c">// fix the generated type instead of casting</span>
+
+try { … } catch (error) { toast.error(getErrorMessage(error)) }</pre>
+  </div>
+</figure>
+
+<!-- ============================================ -->
+<h2>Suggested new shared modules</h2>
+<ul class="tight">
+  <li><code>src/lib/forms.ts</code> — <code>getFirstErrorMessage</code> (kills finding&nbsp;1).</li>
+  <li><code>src/lib/currency.ts</code> — <code>formatEtb</code>, <code>formatUsd</code> (finding&nbsp;3).</li>
+  <li><code>src/lib/bookingStatus.ts</code> + <code>BookingStatusBadge</code> (finding&nbsp;4).</li>
+  <li><code>src/components/form/TextField.tsx</code> (finding&nbsp;5).</li>
+  <li><code>src/hooks/useImageUpload.ts</code> + <code>ImageField</code> (finding&nbsp;6).</li>
+  <li><code>src/components/AdminSpinner.tsx</code> (finding&nbsp;2).</li>
+  <li><code>src/components/admin-analytics/AnalyticsTooltip.tsx</code> (finding&nbsp;9).</li>
+</ul>
+
+<h2>Suggested order</h2>
+<ol class="tight">
+  <li><strong>Mechanical, zero-risk first:</strong> findings 1, 2, 3, 11 — pure extraction/deletion, easy to review.</li>
+  <li><strong>Readability:</strong> findings 7, 8, 10, 12 — flatten ternaries, drop redundant state.</li>
+  <li><strong>Structural:</strong> findings 5, 6, 4, 9 — shared field/hook/badge; these shrink the giant modals
+  (<code>-BookingModal</code> 1073, <code>-HotelModal</code> 1028, <code>-RoomModal</code> 659 LOC) the most.</li>
+</ol>
+
+<footer>
+  Generated from a read-only pass over <code>src/</code> by four parallel code-simplifier agents.
+  No source files were changed. Line numbers reflect the working tree at 2026-06-29.
+</footer>
+
+</div>
+</body>
+</html>
