@@ -8,6 +8,7 @@ import { buildRedirectSearch, sanitizeRedirect } from '../lib/authRouting'
 import { useI18n } from '../lib/i18n/provider'
 import { getClerkAuthAppearance } from '../lib/clerkAppearance'
 import { useTheme } from '../lib/theme'
+import { staticAssets } from '../lib/staticAssets'
 
 export const Route = createFileRoute('/sign-in/$')({
   beforeLoad: ({ context, search }) => {
@@ -62,7 +63,7 @@ function SignInCatchAll() {
           <Link to="/" className="inline-flex items-center group">
             <div className="brand-logo-shell h-12 px-1 flex items-center justify-center group-hover:shadow-violet-500/40 transition-all duration-300">
               <img
-                src="/logo.webp"
+                src={staticAssets.logo}
                 alt="Trip Way Hotels"
                 className="h-9 w-auto object-contain logo-tight"
               />
@@ -101,7 +102,7 @@ function SignInCatchAll() {
             <ThemeToggle compact />
             <div className="brand-logo-shell h-8 px-1 flex items-center justify-center">
               <img
-                src="/logo.webp"
+                src={staticAssets.logo}
                 alt="Luxe Hotels"
                 className="h-6 w-auto object-contain logo-tight"
               />

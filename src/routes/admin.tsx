@@ -22,6 +22,7 @@ import {
   Users,
   X,
 } from 'lucide-react'
+import { staticAssets } from '../lib/staticAssets'
 import { api } from '../../convex/_generated/api'
 import { LanguageSwitcher } from '../components/LanguageSwitcher'
 import { MobileAccountActions } from '../components/MobileAccountActions'
@@ -274,7 +275,7 @@ function AdminLayout() {
           <div className="flex items-center gap-3">
             <div className="brand-logo-shell h-10 px-1 flex items-center justify-center">
               <img
-                src="/logo.webp"
+                src={staticAssets.logo}
                 alt="Luxe Hotels"
                 className="h-8 w-auto object-contain logo-tight"
               />
@@ -396,7 +397,7 @@ function AdminLayout() {
           <div className="flex items-center gap-3">
             <div className="brand-logo-shell h-10 px-1 flex items-center justify-center">
               <img
-                src="/logo.webp"
+                src={staticAssets.logo}
                 alt="Luxe Hotels"
                 className="h-8 w-auto object-contain logo-tight"
               />

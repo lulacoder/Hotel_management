@@ -11,6 +11,7 @@ import {
 } from 'lucide-react'
 
 import ClerkHeader from '../integrations/clerk/header-user'
+import { staticAssets } from '../lib/staticAssets'
 import { useI18n } from '../lib/i18n/provider'
 import {
   DEFAULT_AUTH_SEARCH,
@@ -138,7 +139,7 @@ export default function Header() {
                   <div className="flex items-center gap-3">
                     <div className="brand-logo-shell h-9 px-1">
                       <img
-                        src="/logo.webp"
+                        src={staticAssets.logo}
                         alt="TripWays Hotels"
                         className="logo-tight h-full w-auto object-contain"
                       />
@@ -269,7 +270,7 @@ export default function Header() {
             <Link to="/" className="group flex items-center">
               <div className="brand-logo-shell h-9 px-1 transition-all duration-300 group-hover:opacity-90">
                 <img
-                  src="/logo.webp"
+                  src={staticAssets.logo}
                   alt="TripWays Hotels"
                   className="logo-tight h-full w-auto object-contain"
                 />

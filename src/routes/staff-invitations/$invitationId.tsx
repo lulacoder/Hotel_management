@@ -19,6 +19,7 @@ import {
 import { useEffect, useState } from 'react'
 
 import { api } from '../../../convex/_generated/api'
+import { staticAssets } from '../../lib/staticAssets'
 import { Button } from '../../components/ui/button'
 import { ThemeToggle } from '../../components/ThemeToggle'
 import { useI18n } from '../../lib/i18n/provider'
@@ -282,7 +283,7 @@ function StaffInvitationPage() {
         <header className="flex items-center justify-between">
           <Link to="/" className="brand-logo-shell flex h-10 items-center px-1">
             <img
-              src="/logo.webp"
+              src={staticAssets.logo}
               alt="TripWays Hotels"
               className="h-8 w-auto object-contain logo-tight"
             />

@@ -2,6 +2,7 @@ import { Link } from '@tanstack/react-router'
 import { UserButton } from '@clerk/clerk-react'
 import { Home, MapPin, Menu } from 'lucide-react'
 import { useState } from 'react'
+import { staticAssets } from '../../../lib/staticAssets'
 
 import { LanguageSwitcher } from '../../../components/LanguageSwitcher'
 import { MobileAccountActions } from '../../../components/MobileAccountActions'
@@ -40,7 +41,7 @@ export function SelectLocationHeader({
         <div className="flex items-center gap-3">
           <div className="brand-logo-shell h-10 px-1">
             <img
-              src="/logo.webp"
+              src={staticAssets.logo}
               alt="Luxe Hotels"
               className="h-8 w-auto object-contain logo-tight"
             />
@@ -113,7 +114,7 @@ export function SelectLocationHeader({
                 <div className="flex items-center gap-3">
                   <div className="brand-logo-shell h-10 px-1">
                     <img
-                      src="/logo.webp"
+                      src={staticAssets.logo}
                       alt="Luxe Hotels"
                       className="h-8 w-auto object-contain logo-tight"
                     />

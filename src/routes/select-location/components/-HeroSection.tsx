@@ -4,6 +4,7 @@ import { Loader2, Navigation, Search } from 'lucide-react'
 import { getGeolocationErrorMessage } from '../../../hooks/useGeolocation'
 import { useI18n } from '../../../lib/i18n/provider'
 import { useTheme } from '../../../lib/theme'
+import { staticAssets } from '../../../lib/staticAssets'
 import type { ReactNode } from 'react'
 
 interface HeroSectionProps {
@@ -42,9 +43,11 @@ export function HeroSection({
   return (
     <div className="relative overflow-hidden px-4 py-6 sm:py-8 md:py-10">
       <img
-        src="/assets/trifways-lakeside-hotel.webp"
+        src={staticAssets.trifwaysLakesideHotel}
         alt=""
         aria-hidden="true"
+        fetchPriority="high"
+        decoding="async"
         className="absolute inset-0 size-full object-cover object-center"
       />
       <div

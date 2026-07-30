@@ -2,6 +2,7 @@ import { Link } from '@tanstack/react-router'
 import { UserButton } from '@clerk/clerk-react'
 import { Home, MapPin, Menu, X } from 'lucide-react'
 import { useState } from 'react'
+import { staticAssets } from '../../../lib/staticAssets'
 
 import { LanguageSwitcher } from '../../../components/LanguageSwitcher'
 import { MobileAccountActions } from '../../../components/MobileAccountActions'
@@ -104,7 +105,7 @@ export function HotelPageChrome({
           <div className="flex items-center gap-3">
             <div className="brand-logo-shell flex h-10 items-center justify-center px-1">
               <img
-                src="/logo.webp"
+                src={staticAssets.logo}
                 alt="Luxe Hotels"
                 className="logo-tight h-8 w-auto object-contain"
               />
