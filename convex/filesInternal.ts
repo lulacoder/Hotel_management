@@ -1,6 +1,7 @@
 import { v } from 'convex/values'
 
 import { internalMutation } from './_generated/server'
+import { r2 } from './r2'
 
 // Internal mutation to clean up orphaned file uploads that were never assigned to a resource.
 // Finds all 'pending' fileUploads older than the specified grace period (default 2 hours).
@@ -41,13 +42,25 @@ export const cleanupOrphanUploads = internalMutation({
     const cleanupResults = await Promise.all(
       candidates.map(async (upload) => {
         const linkedHotel = activeHotels.find(
-          (hotel) => hotel.imageStorageId === upload.storageId,
+          (hotel) =>
+            (upload.storageId !== undefined &&
+              hotel.imageStorageId === upload.storageId) ||
+            (upload.r2Key !== undefined && hotel.imageR2Key === upload.r2Key),
         )
         const linkedRoom = allRooms.find(
-          (room) => !room.isDeleted && room.imageStorageId === upload.storageId,
+          (room) =>
+            !room.isDeleted &&
+            ((upload.storageId !== undefined &&
+              room.imageStorageId === upload.storageId) ||
+              (upload.r2Key !== undefined &&
+                room.imageR2Key === upload.r2Key)),
         )
         const linkedBooking = allBookings.find(
-          (booking) => booking.nationalIdStorageId === upload.storageId,
+          (booking) =>
+            (upload.storageId !== undefined &&
+              booking.nationalIdStorageId === upload.storageId) ||
+            (upload.r2Key !== undefined &&
+              booking.nationalIdR2Key === upload.r2Key),
         )
 
         if (linkedHotel || linkedRoom || linkedBooking) {
@@ -64,7 +77,12 @@ export const cleanupOrphanUploads = internalMutation({
           return 0
         }
 
-        await ctx.storage.delete(upload.storageId)
+        if (upload.storageId) {
+          await ctx.storage.delete(upload.storageId)
+        }
+        if (upload.r2Key) {
+          await r2.deleteObject(ctx, upload.r2Key)
+        }
         await ctx.db.patch(upload._id, {
           status: 'deleted',
           deletedAt: now,

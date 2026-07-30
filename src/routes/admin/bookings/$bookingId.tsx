@@ -78,12 +78,20 @@ function BookingDetailPage() {
   const verifyPayment = useMutation(api.bookings.verifyPayment)
   const rejectPayment = useMutation(api.bookings.rejectPayment)
 
-  const nationalIdImageUrl = useQuery(
+  const legacyNationalIdImageUrl = useQuery(
     api.files.getFileUrl,
     bookingDetail?.booking.nationalIdStorageId
       ? { storageId: bookingDetail.booking.nationalIdStorageId }
       : 'skip',
   )
+  const r2NationalIdMetadata = useQuery(
+    api.r2.getMetadata,
+    bookingDetail?.booking.nationalIdR2Key
+      ? { key: bookingDetail.booking.nationalIdR2Key }
+      : 'skip',
+  )
+  const nationalIdImageUrl =
+    r2NationalIdMetadata?.url ?? legacyNationalIdImageUrl
 
   const { statusConfig, transitionLabel } = useBookingStatusConfig()
 

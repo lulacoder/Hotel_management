@@ -1,32 +1,31 @@
 import { useCallback, useEffect, useState } from 'react'
 
-import type { Id } from '../../convex/_generated/dataModel'
-import { uploadImageToConvex, validateImageFile } from '@/lib/imageUpload'
+import { uploadImageToR2, validateImageFile } from '@/lib/imageUpload'
 
 interface UseImageUploadParams {
-  initialStorageId?: Id<'_storage'> | null
+  initialR2Key?: string | null
   initialUrl?: string | null
 }
 
 interface UploadCommitParams {
-  generateUploadUrl: (args: Record<string, never>) => Promise<string>
-  trackUpload: (args: { storageId: Id<'_storage'> }) => Promise<null>
+  generateUploadUrl: (
+    args: Record<string, never>,
+  ) => Promise<{ key: string; url: string }>
+  syncMetadata: (args: { key: string }) => Promise<unknown>
 }
 
 export interface ImageUpdatePayload {
-  imageStorageId?: Id<'_storage'>
+  imageR2Key?: string
   clearImage?: boolean
 }
 
 export function useImageUpload({
-  initialStorageId = null,
+  initialR2Key = null,
   initialUrl = null,
 }: UseImageUploadParams) {
   const [selectedFile, setSelectedFile] = useState<File | null>(null)
   const [previewUrl, setPreviewUrl] = useState(initialUrl ?? '')
-  const [storageId, setStorageId] = useState<Id<'_storage'> | null>(
-    initialStorageId,
-  )
+  const [r2Key, setR2Key] = useState<string | null>(initialR2Key)
   const [changed, setChanged] = useState(false)
   const [shouldClear, setShouldClear] = useState(false)
   const [uploading, setUploading] = useState(false)
@@ -55,38 +54,38 @@ export function useImageUpload({
   const remove = useCallback(() => {
     setSelectedFile(null)
     setPreviewUrl('')
-    setStorageId(null)
+    setR2Key(null)
     setChanged(true)
     setShouldClear(true)
   }, [])
 
   const commit = useCallback(
-    async (params: UploadCommitParams): Promise<Id<'_storage'> | null> => {
+    async (params: UploadCommitParams): Promise<string | null> => {
       if (!selectedFile) {
-        return storageId
+        return r2Key
       }
 
       setUploading(true)
       try {
-        const nextStorageId = await uploadImageToConvex({
+        const nextR2Key = await uploadImageToR2({
           file: selectedFile,
           generateUploadUrl: params.generateUploadUrl,
-          trackUpload: params.trackUpload,
+          syncMetadata: params.syncMetadata,
         })
 
         setSelectedFile(null)
-        setStorageId(nextStorageId)
+        setR2Key(nextR2Key)
         setShouldClear(false)
-        return nextStorageId
+        return nextR2Key
       } finally {
         setUploading(false)
       }
     },
-    [selectedFile, storageId],
+    [selectedFile, r2Key],
   )
 
   const buildUpdatePayload = useCallback(
-    (nextStorageId: Id<'_storage'> | null = storageId): ImageUpdatePayload => {
+    (nextR2Key: string | null = r2Key): ImageUpdatePayload => {
       if (!changed) {
         return {}
       }
@@ -95,9 +94,9 @@ export function useImageUpload({
         return { clearImage: true }
       }
 
-      return nextStorageId ? { imageStorageId: nextStorageId } : {}
+      return nextR2Key ? { imageR2Key: nextR2Key } : {}
     },
-    [changed, shouldClear, storageId],
+    [changed, shouldClear, r2Key],
   )
 
   return {
@@ -108,7 +107,7 @@ export function useImageUpload({
     remove,
     selectFile,
     selectedFile,
-    storageId,
+    r2Key,
     uploading,
   }
 }

@@ -15,6 +15,7 @@
   },
   "dependencies": {
     "@clerk/clerk-react": "^5.49.0",
+    "@convex-dev/r2": "^0.10.2",
     "@convex-dev/react-query": "0.1.0",
     "@convex-dev/resend": "^0.2.4",
     "@tailwindcss/vite": "^4.2.2",

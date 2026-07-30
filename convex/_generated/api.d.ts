@@ -41,6 +41,7 @@ import type * as notificationsInternal from "../notificationsInternal.js";
 import type * as paymentEmails from "../paymentEmails.js";
 import type * as push from "../push.js";
 import type * as pushTokens from "../pushTokens.js";
+import type * as r2 from "../r2.js";
 import type * as ratings from "../ratings.js";
 import type * as ratingsInternal from "../ratingsInternal.js";
 import type * as rooms from "../rooms.js";
@@ -90,6 +91,7 @@ declare const fullApi: ApiFromModules<{
   paymentEmails: typeof paymentEmails;
   push: typeof push;
   pushTokens: typeof pushTokens;
+  r2: typeof r2;
   ratings: typeof ratings;
   ratingsInternal: typeof ratingsInternal;
   rooms: typeof rooms;
@@ -128,4 +130,5 @@ export declare const internal: FilterApi<
 
 export declare const components: {
   resend: import("@convex-dev/resend/_generated/component.js").ComponentApi<"resend">;
+  r2: import("@convex-dev/r2/_generated/component.js").ComponentApi<"r2">;
 };

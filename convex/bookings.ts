@@ -35,6 +35,7 @@ import {
   isCompletedBookingStatus,
 } from './lib/bookingLifecycle'
 import * as fileTracking from './fileTracking'
+import { r2 } from './r2'
 
 // Status validators
 const bookingStatusValidator = v.union(
@@ -84,6 +85,7 @@ const bookingValidator = v.object({
   paymentStatus: v.optional(paymentStatusValidator),
   transactionId: v.optional(v.string()),
   nationalIdStorageId: v.optional(v.id('_storage')),
+  nationalIdR2Key: v.optional(v.string()),
   pricePerNight: v.number(),
   totalPrice: v.number(),
   packageType: v.optional(packageTypeValidator),
@@ -675,11 +677,22 @@ export const submitPaymentProof = mutation({
   args: {
     bookingId: v.id('bookings'),
     transactionId: v.string(),
-    nationalIdStorageId: v.id('_storage'),
+    nationalIdStorageId: v.optional(v.id('_storage')),
+    nationalIdR2Key: v.optional(v.string()),
   },
   returns: v.null(),
   handler: async (ctx, args) => {
     const customer = await requireCustomer(ctx)
+
+    if (
+      (!args.nationalIdStorageId && !args.nationalIdR2Key) ||
+      (args.nationalIdStorageId && args.nationalIdR2Key)
+    ) {
+      throw new ConvexError({
+        code: 'INVALID_INPUT',
+        message: 'Submit exactly one national ID image.',
+      })
+    }
 
     const booking = await ctx.db.get(args.bookingId)
     if (!booking) {
@@ -719,28 +732,49 @@ export const submitPaymentProof = mutation({
     }
 
     const previousStorageId = booking.nationalIdStorageId
+    const previousR2Key = booking.nationalIdR2Key
 
     await ctx.db.patch(args.bookingId, {
       status: 'pending_payment',
       paymentStatus: 'pending',
       transactionId: trimmedTransactionId,
       nationalIdStorageId: args.nationalIdStorageId,
+      nationalIdR2Key: args.nationalIdR2Key,
       updatedAt: Date.now(),
       updatedBy: customer._id,
     })
 
-    await fileTracking.assign(ctx, {
-      uploadedBy: customer._id,
-      storageId: args.nationalIdStorageId,
-      resourceType: 'booking',
-      resourceId: args.bookingId,
-    })
+    if (args.nationalIdStorageId) {
+      await fileTracking.assign(ctx, {
+        uploadedBy: customer._id,
+        storageId: args.nationalIdStorageId,
+        resourceType: 'booking',
+        resourceId: args.bookingId,
+      })
+    }
+
+    if (args.nationalIdR2Key) {
+      await fileTracking.assignR2(ctx, {
+        uploadedBy: customer._id,
+        r2Key: args.nationalIdR2Key,
+        resourceType: 'booking',
+        resourceId: args.bookingId,
+      })
+    }
 
     if (previousStorageId && previousStorageId !== args.nationalIdStorageId) {
       await ctx.storage.delete(previousStorageId)
       await fileTracking.markDeleted(ctx, {
         uploadedBy: customer._id,
         storageId: previousStorageId,
+      })
+    }
+
+    if (previousR2Key && previousR2Key !== args.nationalIdR2Key) {
+      await r2.deleteObject(ctx, previousR2Key)
+      await fileTracking.markR2Deleted(ctx, {
+        uploadedBy: customer._id,
+        r2Key: previousR2Key,
       })
     }
 
@@ -1120,6 +1154,7 @@ export const rejectPayment = mutation({
       status: 'cancelled',
       paymentStatus: 'failed',
       nationalIdStorageId: undefined,
+      nationalIdR2Key: undefined,
       updatedAt: now,
       updatedBy: user._id,
     })
@@ -1129,6 +1164,14 @@ export const rejectPayment = mutation({
       await fileTracking.markDeleted(ctx, {
         uploadedBy: user._id,
         storageId: booking.nationalIdStorageId,
+      })
+    }
+
+    if (booking.nationalIdR2Key) {
+      await r2.deleteObject(ctx, booking.nationalIdR2Key)
+      await fileTracking.markR2Deleted(ctx, {
+        uploadedBy: user._id,
+        r2Key: booking.nationalIdR2Key,
       })
     }
 
@@ -1146,7 +1189,9 @@ export const rejectPayment = mutation({
         paymentStatus: 'failed',
       },
       metadata: {
-        nationalIdDeleted: Boolean(booking.nationalIdStorageId),
+        nationalIdDeleted: Boolean(
+          booking.nationalIdStorageId || booking.nationalIdR2Key,
+        ),
       },
     })
 

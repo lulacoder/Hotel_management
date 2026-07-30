@@ -45,6 +45,7 @@ function buildRoomDefaultValues(
         smokingAllowed?: boolean
         imageUrl?: string
         imageStorageId?: Id<'_storage'> | null
+        imageR2Key?: string | null
       }
     | null
     | undefined,
@@ -93,12 +94,12 @@ function RoomModalContent({
   const isDark = theme === 'dark'
   const createRoom = useMutation(api.rooms.create)
   const updateRoom = useMutation(api.rooms.update)
-  const generateUploadUrl = useMutation(api.files.generateUploadUrl)
-  const trackUpload = useMutation(api.files.trackUpload)
+  const generateUploadUrl = useMutation(api.r2.generateUploadUrl)
+  const syncMetadata = useMutation(api.r2.syncMetadata)
 
   const [submitError, setSubmitError] = useState('')
   const imageUpload = useImageUpload({
-    initialStorageId: room?.imageStorageId ?? null,
+    initialR2Key: room?.imageR2Key ?? null,
     initialUrl: room?.imageUrl ?? '',
   })
 
@@ -153,9 +154,9 @@ function RoomModalContent({
       setSubmitError('')
 
       try {
-        const nextImageStorageId = await imageUpload.commit({
+        const nextImageR2Key = await imageUpload.commit({
           generateUploadUrl,
-          trackUpload,
+          syncMetadata,
         })
 
         const payload = {
@@ -174,7 +175,7 @@ function RoomModalContent({
 
         if (roomId) {
           const imagePayload =
-            imageUpload.buildUpdatePayload(nextImageStorageId)
+            imageUpload.buildUpdatePayload(nextImageR2Key)
 
           await updateRoom({
             roomId,
@@ -187,7 +188,7 @@ function RoomModalContent({
             hotelId,
             ...payload,
             amenities: payload.amenities.length ? payload.amenities : undefined,
-            imageStorageId: nextImageStorageId ?? undefined,
+            imageR2Key: nextImageR2Key ?? undefined,
           })
         }
 

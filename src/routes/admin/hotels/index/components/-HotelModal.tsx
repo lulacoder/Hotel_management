@@ -71,6 +71,7 @@ function buildHotelDefaultValues(
         metadata?: Record<string, unknown>
         imageUrl?: string
         imageStorageId?: Id<'_storage'> | null
+        imageR2Key?: string | null
       }
     | null
     | undefined,
@@ -125,12 +126,12 @@ function HotelModalContent({
   const isDark = theme === 'dark'
   const createHotel = useMutation(api.hotels.create)
   const updateHotel = useMutation(api.hotels.update)
-  const generateUploadUrl = useMutation(api.files.generateUploadUrl)
-  const trackUpload = useMutation(api.files.trackUpload)
+  const generateUploadUrl = useMutation(api.r2.generateUploadUrl)
+  const syncMetadata = useMutation(api.r2.syncMetadata)
 
   const [submitError, setSubmitError] = useState('')
   const imageUpload = useImageUpload({
-    initialStorageId: hotel?.imageStorageId ?? null,
+    initialR2Key: hotel?.imageR2Key ?? null,
     initialUrl: hotel?.imageUrl ?? '',
   })
 
@@ -278,9 +279,9 @@ function HotelModalContent({
       setSubmitError('')
 
       try {
-        const nextImageStorageId = await imageUpload.commit({
+        const nextImageR2Key = await imageUpload.commit({
           generateUploadUrl,
-          trackUpload,
+          syncMetadata,
         })
 
         const latitude = value.latitude.trim()
@@ -324,7 +325,7 @@ function HotelModalContent({
 
         if (hotelId) {
           const imagePayload =
-            imageUpload.buildUpdatePayload(nextImageStorageId)
+            imageUpload.buildUpdatePayload(nextImageR2Key)
 
           await updateHotel({
             hotelId,
@@ -334,7 +335,7 @@ function HotelModalContent({
         } else {
           await createHotel({
             ...payload,
-            imageStorageId: nextImageStorageId ?? undefined,
+            imageR2Key: nextImageR2Key ?? undefined,
           })
         }
 

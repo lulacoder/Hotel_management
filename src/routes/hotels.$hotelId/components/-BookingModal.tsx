@@ -14,7 +14,7 @@ import { z } from 'zod'
 
 import { api } from '../../../../convex/_generated/api'
 import {
-  uploadImageToConvex,
+  uploadImageToR2,
   validateImageFile,
 } from '../../../lib/imageUpload'
 import {
@@ -95,8 +95,8 @@ export function BookingModal({
   )
   const holdRoom = useMutation(api.bookings.holdRoom)
   const submitPaymentProof = useMutation(api.bookings.submitPaymentProof)
-  const generateUploadUrl = useMutation(api.files.generateUploadUrl)
-  const trackUpload = useMutation(api.files.trackUpload)
+  const generateUploadUrl = useMutation(api.r2.generateUploadUrl)
+  const syncMetadata = useMutation(api.r2.syncMetadata)
 
   const [bookingFlow, setBookingFlow] = useState<BookingFlowState>({
     bookingId: existingBooking?._id ?? null,
@@ -267,16 +267,16 @@ export function BookingModal({
         setLoadingPhase('bank')
 
         try {
-          const nationalIdStorageId = await uploadImageToConvex({
+          const nationalIdR2Key = await uploadImageToR2({
             file: value.nationalIdFile as File,
             generateUploadUrl,
-            trackUpload,
+            syncMetadata,
           })
 
           await submitPaymentProof({
             bookingId,
             transactionId: value.transactionId.trim(),
-            nationalIdStorageId,
+            nationalIdR2Key,
           })
 
           setSubmitted(true)

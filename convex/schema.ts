@@ -89,6 +89,7 @@ export default defineSchema({
     lastRenovationDate: v.optional(v.string()), // "YYYY-MM-DD" format
     metadata: v.optional(v.record(v.string(), v.any())),
     imageStorageId: v.optional(v.union(v.id('_storage'), v.null())),
+    imageR2Key: v.optional(v.union(v.string(), v.null())),
     // Denormalized review tally, maintained by ratings.upsertRating /
     // ratings.softDeleteRating so rating summaries don't need to read every
     // review. Distinct from the legacy imported `rating` field above.
@@ -133,6 +134,7 @@ export default defineSchema({
     bedOptions: v.optional(v.string()), // "2 Queen Beds", "1 King Bed"
     smokingAllowed: v.optional(v.boolean()),
     imageStorageId: v.optional(v.union(v.id('_storage'), v.null())),
+    imageR2Key: v.optional(v.union(v.string(), v.null())),
     isDeleted: v.boolean(),
     createdAt: v.number(),
     updatedAt: v.number(),
@@ -144,7 +146,8 @@ export default defineSchema({
     .index('by_hotel_and_type', ['hotelId', 'type']),
 
   fileUploads: defineTable({
-    storageId: v.id('_storage'),
+    storageId: v.optional(v.id('_storage')),
+    r2Key: v.optional(v.string()),
     uploadedBy: v.id('users'),
     status: v.union(
       v.literal('pending'),
@@ -160,6 +163,7 @@ export default defineSchema({
     deletedAt: v.optional(v.number()),
   })
     .index('by_storage_id', ['storageId'])
+    .index('by_r2_key', ['r2Key'])
     .index('by_status_and_uploaded_at', ['status', 'uploadedAt']),
 
   // Guest profiles for walk-in guests
@@ -255,6 +259,7 @@ export default defineSchema({
     ),
     transactionId: v.optional(v.string()),
     nationalIdStorageId: v.optional(v.id('_storage')),
+    nationalIdR2Key: v.optional(v.string()),
     pricePerNight: v.number(), // In cents, snapshot at booking time
     totalPrice: v.number(), // In cents
     packageType: v.optional(

@@ -3,6 +3,7 @@ import { mutation, query } from './_generated/server'
 import { requireAdmin, requireHotelManagement, requireUser } from './lib/auth'
 import { createAuditLog } from './audit'
 import * as fileTracking from './fileTracking'
+import { r2 } from './r2'
 import type { Doc } from './_generated/dataModel'
 import type { QueryCtx} from './_generated/server';
 
@@ -41,6 +42,7 @@ const hotelValidator = v.object({
   lastRenovationDate: v.optional(v.string()),
   metadata: v.optional(v.record(v.string(), v.any())),
   imageStorageId: v.optional(v.union(v.id('_storage'), v.null())),
+  imageR2Key: v.optional(v.union(v.string(), v.null())),
   ratingSum: v.optional(v.number()),
   ratingCount: v.optional(v.number()),
   isDeleted: v.boolean(),
@@ -92,6 +94,13 @@ const attachHotelImageUrl = async (
   ctx: QueryCtx,
   hotel: Doc<'hotels'>,
 ): Promise<Doc<'hotels'> & { imageUrl?: string }> => {
+  if (hotel.imageR2Key) {
+    return {
+      ...hotel,
+      imageUrl: await r2.getUrl(hotel.imageR2Key, { expiresIn: 60 * 60 }),
+    }
+  }
+
   if (!hotel.imageStorageId) {
     return hotel
   }
@@ -262,6 +271,7 @@ export const create = mutation({
     lastRenovationDate: v.optional(v.string()),
     metadata: v.optional(v.record(v.string(), v.any())),
     imageStorageId: v.optional(v.id('_storage')),
+    imageR2Key: v.optional(v.string()),
   },
   returns: v.id('hotels'),
   handler: async (ctx, args) => {
@@ -286,6 +296,7 @@ export const create = mutation({
       lastRenovationDate: args.lastRenovationDate,
       metadata: args.metadata,
       imageStorageId: args.imageStorageId ?? null,
+      imageR2Key: args.imageR2Key ?? null,
       isDeleted: false,
       createdAt: now,
       updatedAt: now,
@@ -295,6 +306,15 @@ export const create = mutation({
       await fileTracking.assign(ctx, {
         uploadedBy: admin._id,
         storageId: args.imageStorageId,
+        resourceType: 'hotel',
+        resourceId: hotelId,
+      })
+    }
+
+    if (args.imageR2Key) {
+      await fileTracking.assignR2(ctx, {
+        uploadedBy: admin._id,
+        r2Key: args.imageR2Key,
         resourceType: 'hotel',
         resourceId: hotelId,
       })
@@ -348,6 +368,7 @@ export const update = mutation({
     lastRenovationDate: v.optional(v.string()),
     metadata: v.optional(v.record(v.string(), v.any())),
     imageStorageId: v.optional(v.id('_storage')),
+    imageR2Key: v.optional(v.string()),
     clearImage: v.optional(v.boolean()),
   },
   returns: v.null(),
@@ -369,7 +390,10 @@ export const update = mutation({
       })
     }
 
-    if (args.clearImage && args.imageStorageId) {
+    if (
+      (args.clearImage && (args.imageStorageId || args.imageR2Key)) ||
+      (args.imageStorageId && args.imageR2Key)
+    ) {
       throw new ConvexError({
         code: 'INVALID_ARGUMENT',
         message: 'Cannot clear and replace image in the same request.',
@@ -416,9 +440,13 @@ export const update = mutation({
     trackChange('metadata', args.metadata, hotel.metadata)
 
     const shouldUpdateImage =
-      args.clearImage || args.imageStorageId !== undefined
+      args.clearImage ||
+      args.imageStorageId !== undefined ||
+      args.imageR2Key !== undefined
     const nextImageStorageId = args.clearImage
       ? null
+      : args.imageR2Key !== undefined
+        ? null
       : args.imageStorageId !== undefined
         ? args.imageStorageId
         : (hotel.imageStorageId ?? null)
@@ -427,11 +455,25 @@ export const update = mutation({
       previousValues.imageStorageId = hotel.imageStorageId ?? null
       newValues.imageStorageId = nextImageStorageId
       updates.imageStorageId = nextImageStorageId
+      const nextImageR2Key = args.clearImage
+        ? null
+        : args.imageR2Key !== undefined
+          ? args.imageR2Key
+          : null
+      previousValues.imageR2Key = hotel.imageR2Key ?? null
+      newValues.imageR2Key = nextImageR2Key
+      updates.imageR2Key = nextImageR2Key
     }
 
     await ctx.db.patch(args.hotelId, updates)
 
     if (shouldUpdateImage) {
+      const nextImageR2Key = args.clearImage
+        ? null
+        : args.imageR2Key !== undefined
+          ? args.imageR2Key
+          : null
+      const previousImageR2Key = hotel.imageR2Key ?? null
       const previousImageStorageId = hotel.imageStorageId ?? null
       if (
         previousImageStorageId &&
@@ -444,10 +486,27 @@ export const update = mutation({
         })
       }
 
+      if (previousImageR2Key && previousImageR2Key !== nextImageR2Key) {
+        await r2.deleteObject(ctx, previousImageR2Key)
+        await fileTracking.markR2Deleted(ctx, {
+          uploadedBy: user._id,
+          r2Key: previousImageR2Key,
+        })
+      }
+
       if (nextImageStorageId && nextImageStorageId !== previousImageStorageId) {
         await fileTracking.assign(ctx, {
           uploadedBy: user._id,
           storageId: nextImageStorageId,
+          resourceType: 'hotel',
+          resourceId: args.hotelId,
+        })
+      }
+
+      if (nextImageR2Key && nextImageR2Key !== previousImageR2Key) {
+        await fileTracking.assignR2(ctx, {
+          uploadedBy: user._id,
+          r2Key: nextImageR2Key,
           resourceType: 'hotel',
           resourceId: args.hotelId,
         })

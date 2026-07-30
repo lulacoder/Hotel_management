@@ -26,16 +26,12 @@ export const enMessages = {
   'header.signOut': 'Sign out',
   'landing.redirecting': 'Redirecting to dashboard...',
   'landing.clickIfNotRedirected': 'Click here if not redirected',
-  'landing.premiumBadge': 'Premium Hotel Booking Platform',
   'landing.titleLine1': 'Stay in places',
   'landing.titleLine2': 'worth remembering',
   'landing.subtitle':
     'Browse trusted hotels, reserve in minutes, and manage every booking from one polished experience.',
   'landing.browseHotels': 'Browse Hotels',
   'landing.createFreeAccount': 'Create Free Account',
-  'landing.pill1': 'Location-first browsing',
-  'landing.pill2': 'Date-aware booking',
-  'landing.pill3': 'Booking history',
   'landing.searchWhere': 'Where to?',
   'landing.searchWherePlaceholder': 'Search destinations',
   'landing.searchCheckIn': 'Check in',
@@ -46,15 +42,6 @@ export const enMessages = {
   'landing.alreadyHaveAccount': 'Already have an account? Sign in',
   'landing.galleryPoolTitle': 'Poolside stays',
   'landing.galleryPoolDesc': 'Open-air hotel moments',
-  'landing.galleryLobbyTitle': 'Hotel amenities',
-  'landing.galleryLobbyDesc': 'Arrival and service spaces',
-  'landing.galleryRoomTitle': 'Room comfort',
-  'landing.galleryRoomDesc': 'Private spaces to compare',
-  'landing.galleryRatingSort': 'Rating sort',
-  'landing.galleryRatingTitle': 'Guest ratings',
-  'landing.galleryRatingDesc': 'Sort available',
-  'landing.galleryListingsTitle': 'Live browse',
-  'landing.galleryListingsDesc': 'Existing listings',
   'landing.featureHandpickedTitle': 'Hotel Discovery',
   'landing.featureHandpickedDesc': 'Browse active hotel listings',
   'landing.featureSecureTitle': 'Secure Account Flow',
@@ -65,28 +52,24 @@ export const enMessages = {
   'landing.featureDealsDesc': 'Return to review your stays',
   'landing.marketplaceKicker': 'Marketplace flow',
   'landing.marketplaceTitle':
-    'Start with the full hotel marketplace, then narrow the stay around your trip.',
+    'Start with every hotel we list, then narrow down to the one that fits your trip.',
   'landing.marketplaceDesc':
-    'The browse experience already supports destination search, city filters, categories, rating sort, and location-aware discovery from one focused page.',
-  'landing.browserEyebrow': 'Browse workspace',
-  'landing.browserTitle': 'Find a stay without jumping between pages',
-  'landing.browserAction': 'Open browse',
+    'Search by destination, filter by city or category, sort by guest rating, and find stays near you, all from one page.',
   'landing.browserPreviewTitle': 'Location-led hotel discovery',
   'landing.browserPreviewDesc':
-    'Use the existing search and filters to move from broad exploration to a specific hotel.',
+    'Go from a broad search to a specific hotel in a few taps.',
   'landing.marketplacePoint1Title': 'Search by destination',
   'landing.marketplacePoint1Desc':
-    'Look across hotel names, cities, countries, descriptions, and tags from the current discovery page.',
+    'Look across hotel names, cities, countries, descriptions, and tags in a single search.',
   'landing.marketplacePoint2Title': 'Sort around confidence',
   'landing.marketplacePoint2Desc':
     'Switch from name-based browsing to rating-led discovery when you want the strongest reviewed options first.',
   'landing.marketplacePoint3Title': 'Continue into booking',
   'landing.marketplacePoint3Desc':
-    'Move from a hotel card into room selection, date choices, and the booking flow already built into the product.',
-  'landing.staysKicker': 'Stay previews',
+    'Move from a hotel card into room selection, dates, and confirmation without losing your place.',
   'landing.staysTitle': 'Browse by the kind of experience you want to feel.',
   'landing.staysDesc':
-    'Use the existing hotel imagery as a preview of the moods guests can compare before opening the live marketplace.',
+    'Every trip has a mood. Pick the one that matches yours and start there.',
   'landing.stayPoolTitle': 'Open-air comfort',
   'landing.stayPoolDesc': 'Poolside views and calm resort-style spaces.',
   'landing.stayBoutiqueTitle': 'Boutique rooms',
@@ -94,23 +77,19 @@ export const enMessages = {
   'landing.stayServiceTitle': 'Service-first hotels',
   'landing.stayServiceDesc':
     'Lobby, amenities, and arrival experience up front.',
-  'landing.flowKicker': 'Booking path',
   'landing.flowTitle': 'A practical path from search to stay management.',
   'landing.flowDesc':
-    'The landing page should do more than point guests at a button. It now explains how discovery, dates, booking, and account access fit together.',
-  'landing.flowCta': 'Browse the current hotel list',
+    'Three steps from a destination in mind to a booking you can manage.',
   'landing.flowStep1Title': 'Search and filter',
   'landing.flowStep1Desc':
-    'Open the existing discovery page and refine by destination, category, rating, or distance when location is available.',
+    'Narrow by destination, category, rating, or distance from where you are.',
   'landing.flowStep2Title': 'Choose stay dates',
   'landing.flowStep2Desc':
-    'Move into a hotel detail page, compare available rooms, and pick the dates that match the trip.',
+    'Compare available rooms, then pick the nights that match your trip.',
   'landing.flowStep3Title': 'Manage after booking',
   'landing.flowStep3Desc':
     'Signed-in guests can return to their account to track upcoming bookings and stay history.',
-  'landing.finalKicker': 'Ready when the trip is',
-  'landing.finalTitle':
-    'Open the marketplace and let the current hotel flow do the rest.',
+  'landing.finalTitle': 'Your next stay is a few clicks away.',
   'common.allRightsReserved': 'All rights reserved.',
   'signIn.welcomeBack': 'Welcome back',
   'signIn.description':

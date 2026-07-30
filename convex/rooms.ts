@@ -5,6 +5,7 @@ import { createAuditLog } from './audit'
 import { isHoldExpired } from './lib/dates'
 import { checkRoomAvailability, findBlockedRoomIds } from './lib/availability'
 import * as fileTracking from './fileTracking'
+import { r2 } from './r2'
 import type { Doc, Id } from './_generated/dataModel'
 import type { QueryCtx} from './_generated/server';
 
@@ -49,6 +50,7 @@ const roomValidator = v.object({
   bedOptions: v.optional(v.string()),
   smokingAllowed: v.optional(v.boolean()),
   imageStorageId: v.optional(v.union(v.id('_storage'), v.null())),
+  imageR2Key: v.optional(v.union(v.string(), v.null())),
   isDeleted: v.boolean(),
   createdAt: v.number(),
   updatedAt: v.number(),
@@ -66,6 +68,13 @@ const attachRoomImageUrl = async (
   ctx: QueryCtx,
   room: Doc<'rooms'>,
 ): Promise<Doc<'rooms'> & { imageUrl?: string }> => {
+  if (room.imageR2Key) {
+    return {
+      ...room,
+      imageUrl: await r2.getUrl(room.imageR2Key, { expiresIn: 60 * 60 }),
+    }
+  }
+
   if (!room.imageStorageId) {
     return room
   }
@@ -365,6 +374,7 @@ export const create = mutation({
     bedOptions: v.optional(v.string()),
     smokingAllowed: v.optional(v.boolean()),
     imageStorageId: v.optional(v.id('_storage')),
+    imageR2Key: v.optional(v.string()),
   },
   returns: v.id('rooms'),
   handler: async (ctx, args) => {
@@ -423,6 +433,7 @@ export const create = mutation({
       bedOptions: args.bedOptions,
       smokingAllowed: args.smokingAllowed,
       imageStorageId: args.imageStorageId ?? null,
+      imageR2Key: args.imageR2Key ?? null,
       isDeleted: false,
       createdAt: now,
       updatedAt: now,
@@ -432,6 +443,15 @@ export const create = mutation({
       await fileTracking.assign(ctx, {
         uploadedBy: user._id,
         storageId: args.imageStorageId,
+        resourceType: 'room',
+        resourceId: roomId,
+      })
+    }
+
+    if (args.imageR2Key) {
+      await fileTracking.assignR2(ctx, {
+        uploadedBy: user._id,
+        r2Key: args.imageR2Key,
         resourceType: 'room',
         resourceId: roomId,
       })
@@ -473,6 +493,7 @@ export const update = mutation({
     bedOptions: v.optional(v.string()),
     smokingAllowed: v.optional(v.boolean()),
     imageStorageId: v.optional(v.id('_storage')),
+    imageR2Key: v.optional(v.string()),
     clearImage: v.optional(v.boolean()),
   },
   returns: v.null(),
@@ -494,7 +515,10 @@ export const update = mutation({
       })
     }
 
-    if (args.clearImage && args.imageStorageId) {
+    if (
+      (args.clearImage && (args.imageStorageId || args.imageR2Key)) ||
+      (args.imageStorageId && args.imageR2Key)
+    ) {
       throw new ConvexError({
         code: 'INVALID_ARGUMENT',
         message: 'Cannot clear and replace image in the same request.',
@@ -561,9 +585,13 @@ export const update = mutation({
     trackChange('smokingAllowed', args.smokingAllowed, room.smokingAllowed)
 
     const shouldUpdateImage =
-      args.clearImage || args.imageStorageId !== undefined
+      args.clearImage ||
+      args.imageStorageId !== undefined ||
+      args.imageR2Key !== undefined
     const nextImageStorageId = args.clearImage
       ? null
+      : args.imageR2Key !== undefined
+        ? null
       : args.imageStorageId !== undefined
         ? args.imageStorageId
         : (room.imageStorageId ?? null)
@@ -572,11 +600,25 @@ export const update = mutation({
       previousValues.imageStorageId = room.imageStorageId ?? null
       newValues.imageStorageId = nextImageStorageId
       updates.imageStorageId = nextImageStorageId
+      const nextImageR2Key = args.clearImage
+        ? null
+        : args.imageR2Key !== undefined
+          ? args.imageR2Key
+          : null
+      previousValues.imageR2Key = room.imageR2Key ?? null
+      newValues.imageR2Key = nextImageR2Key
+      updates.imageR2Key = nextImageR2Key
     }
 
     await ctx.db.patch(args.roomId, updates)
 
     if (shouldUpdateImage) {
+      const nextImageR2Key = args.clearImage
+        ? null
+        : args.imageR2Key !== undefined
+          ? args.imageR2Key
+          : null
+      const previousImageR2Key = room.imageR2Key ?? null
       const previousImageStorageId = room.imageStorageId ?? null
 
       if (
@@ -590,10 +632,27 @@ export const update = mutation({
         })
       }
 
+      if (previousImageR2Key && previousImageR2Key !== nextImageR2Key) {
+        await r2.deleteObject(ctx, previousImageR2Key)
+        await fileTracking.markR2Deleted(ctx, {
+          uploadedBy: user._id,
+          r2Key: previousImageR2Key,
+        })
+      }
+
       if (nextImageStorageId && nextImageStorageId !== previousImageStorageId) {
         await fileTracking.assign(ctx, {
           uploadedBy: user._id,
           storageId: nextImageStorageId,
+          resourceType: 'room',
+          resourceId: args.roomId,
+        })
+      }
+
+      if (nextImageR2Key && nextImageR2Key !== previousImageR2Key) {
+        await fileTracking.assignR2(ctx, {
+          uploadedBy: user._id,
+          r2Key: nextImageR2Key,
           resourceType: 'room',
           resourceId: args.roomId,
         })
