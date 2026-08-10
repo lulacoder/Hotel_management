@@ -43,6 +43,15 @@ export const amMessages = {
   'landing.alreadyHaveAccount': 'መለያ አለዎት? ግቡ',
   'landing.galleryPoolTitle': 'የፑል አጠገብ ቆይታዎች',
   'landing.galleryPoolDesc': 'ክፍት አየር ያላቸው የሆቴል ጊዜዎች',
+  'landing.hotelCarouselKicker': 'ተመራጭ ሆቴሎች',
+  'landing.hotelCarouselTitle': 'ጊዜ ወስደው ሊያዩዋቸው የሚገቡ ሆቴሎች።',
+  'landing.hotelCarouselDescription':
+    'አሁን ማስያዝ የሚችሏቸው ሆቴሎች ተንቀሳቃሽ ምርጫ። ሆቴል ይምረጡና ወደ ክፍሎቹ እና ዝርዝሩ በቀጥታ ይግቡ።',
+  'landing.hotelCarouselLabel': 'ተመራጭ ሆቴሎች',
+  'landing.hotelCarouselControls':
+    'ለማሰስ ይጎትቱ፣ ያንሸራትቱ ወይም የቀስት ቁልፎችን ይጠቀሙ',
+  'landing.hotelImageAlt': 'የ{name} ሆቴል እና ክፍሎች',
+  'landing.viewHotel': 'ሆቴሉን ይመልከቱ',
   'landing.featureHandpickedTitle': 'የሆቴል ፍለጋ',
   'landing.featureHandpickedDesc': 'ንቁ የሆቴል ዝርዝሮችን ይመልከቱ',
   'landing.featureSecureTitle': 'ደህንነቱ የተጠበቀ መለያ ፍሰት',

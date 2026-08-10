@@ -42,6 +42,15 @@ export const enMessages = {
   'landing.alreadyHaveAccount': 'Already have an account? Sign in',
   'landing.galleryPoolTitle': 'Poolside stays',
   'landing.galleryPoolDesc': 'Open-air hotel moments',
+  'landing.hotelCarouselKicker': 'Featured stays',
+  'landing.hotelCarouselTitle': 'Hotels worth slowing down for.',
+  'landing.hotelCarouselDescription':
+    'A moving edit of places you can book right now. Choose a hotel and step directly into its rooms and details.',
+  'landing.hotelCarouselLabel': 'Featured hotels',
+  'landing.hotelCarouselControls':
+    'Drag, swipe, or use the arrow keys to explore',
+  'landing.hotelImageAlt': 'Exterior and rooms at {name}',
+  'landing.viewHotel': 'View hotel',
   'landing.featureHandpickedTitle': 'Hotel Discovery',
   'landing.featureHandpickedDesc': 'Browse active hotel listings',
   'landing.featureSecureTitle': 'Secure Account Flow',

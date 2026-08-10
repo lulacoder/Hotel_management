@@ -6,6 +6,7 @@ import { CURRENT_YEAR } from '../lib/currentYear'
 import { DEFAULT_AUTH_SEARCH } from '../lib/navigationSearch'
 import { staticAssets } from '../lib/staticAssets'
 import { Hero } from './index/components/-Hero'
+import { HotelCarousel } from './index/components/-HotelCarousel'
 import { CapabilityIndex } from './index/components/-CapabilityIndex'
 import { Marketplace } from './index/components/-Marketplace'
 import { StayMoods } from './index/components/-StayMoods'
@@ -32,6 +33,7 @@ function LandingPage() {
   return (
     <div className="bg-white text-slate-900 dark:bg-slate-950 dark:text-slate-100 [font-family:var(--font-body)]">
       <Hero />
+      <HotelCarousel />
       <CapabilityIndex />
       <Marketplace />
       <StayMoods />

@@ -1376,6 +1376,50 @@ html[data-theme='light'] ::selection {
   }
 }
 
+.hotel-carousel-mask {
+  mask-image: linear-gradient(
+    to right,
+    transparent,
+    black 4rem,
+    black calc(100% - 4rem),
+    transparent
+  );
+}
+
+.hotel-carousel-viewport {
+  cursor: grab;
+  touch-action: pan-y pinch-zoom;
+  user-select: none;
+  scrollbar-width: none;
+  overscroll-behavior-inline: contain;
+}
+
+.hotel-carousel-viewport::-webkit-scrollbar {
+  display: none;
+}
+
+.hotel-carousel-viewport:active {
+  cursor: grabbing;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .hotel-carousel-mask {
+    mask-image: none;
+  }
+}
+
+@media (max-width: 640px) {
+  .hotel-carousel-mask {
+    mask-image: linear-gradient(
+      to right,
+      transparent,
+      black 1.25rem,
+      black calc(100% - 1.25rem),
+      transparent
+    );
+  }
+}
+
 /* Clerk component overrides for dark theme */
 .cl-rootBox {
   --clerk-color-primary: rgb(139, 92, 246);
