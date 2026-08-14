@@ -4,8 +4,10 @@ import { requireAdmin, requireHotelManagement, requireUser } from './lib/auth'
 import { createAuditLog } from './audit'
 import * as fileTracking from './fileTracking'
 import { r2 } from './r2'
+import { findBlockedRoomIds } from './lib/availability'
+import { validateBookingDates } from './lib/dates'
 import type { Doc } from './_generated/dataModel'
-import type { QueryCtx} from './_generated/server';
+import type { QueryCtx } from './_generated/server'
 
 // Validator for hotel document (used in return types)
 const hotelValidator = v.object({
@@ -52,6 +54,12 @@ const hotelValidator = v.object({
 
 const hotelWithImageValidator = hotelValidator.extend({
   imageUrl: v.optional(v.string()),
+})
+
+const availabilitySearchResultValidator = v.object({
+  hotel: hotelWithImageValidator,
+  matchingRoomCount: v.number(),
+  fromPrice: v.number(),
 })
 
 // Category validator for reuse
@@ -220,6 +228,101 @@ export const search = query({
     const hotels = await searchQuery.collect()
     return await Promise.all(
       hotels.map((hotel) => attachHotelImageUrl(ctx, hotel)),
+    )
+  },
+})
+
+// Finds hotels that can actually accommodate the requested stay instead of
+// returning discovery results that become unavailable during booking.
+export const searchAvailable = query({
+  args: {
+    destination: v.optional(v.string()),
+    checkIn: v.string(),
+    checkOut: v.string(),
+    guests: v.number(),
+    city: v.optional(v.string()),
+    category: v.optional(categoryValidator),
+  },
+  returns: v.array(availabilitySearchResultValidator),
+  handler: async (ctx, args) => {
+    validateBookingDates(args.checkIn, args.checkOut)
+
+    if (!Number.isInteger(args.guests) || args.guests < 1) {
+      throw new ConvexError({
+        code: 'INVALID_INPUT',
+        message: 'Guests must be a positive whole number.',
+      })
+    }
+
+    const destination = args.destination?.trim().toLocaleLowerCase()
+    const city = args.city?.trim().toLocaleLowerCase()
+    const activeHotels = await ctx.db
+      .query('hotels')
+      .withIndex('by_is_deleted', (q) => q.eq('isDeleted', false))
+      .collect()
+
+    const matchingHotels = activeHotels.filter((hotel) => {
+      if (city && hotel.city.toLocaleLowerCase() !== city) {
+        return false
+      }
+      if (args.category && hotel.category !== args.category) {
+        return false
+      }
+      if (!destination) {
+        return true
+      }
+
+      return [
+        hotel.name,
+        hotel.city,
+        hotel.address,
+        hotel.country,
+        hotel.stateProvince,
+        ...(hotel.tags ?? []),
+      ].some((value) => value?.toLocaleLowerCase().includes(destination))
+    })
+
+    const results = []
+    for (const hotel of matchingHotels) {
+      const candidateRooms = (
+        await ctx.db
+          .query('rooms')
+          .withIndex('by_hotel_and_status', (q) =>
+            q.eq('hotelId', hotel._id).eq('operationalStatus', 'available'),
+          )
+          .collect()
+      ).filter((room) => !room.isDeleted && room.maxOccupancy >= args.guests)
+
+      if (candidateRooms.length === 0) {
+        continue
+      }
+
+      const candidateRoomIds = new Set(candidateRooms.map((room) => room._id))
+      const blockedRoomIds = await findBlockedRoomIds(
+        ctx,
+        hotel._id,
+        candidateRoomIds,
+        { checkIn: args.checkIn, checkOut: args.checkOut },
+      )
+      const availableRooms = candidateRooms.filter(
+        (room) => !blockedRoomIds.has(room._id),
+      )
+
+      if (availableRooms.length === 0) {
+        continue
+      }
+
+      results.push({
+        hotel: await attachHotelImageUrl(ctx, hotel),
+        matchingRoomCount: availableRooms.length,
+        fromPrice: Math.min(...availableRooms.map((room) => room.basePrice)),
+      })
+    }
+
+    return results.sort(
+      (left, right) =>
+        left.fromPrice - right.fromPrice ||
+        left.hotel.name.localeCompare(right.hotel.name),
     )
   },
 })

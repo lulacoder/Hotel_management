@@ -56,11 +56,53 @@ const paymentStatusValidator = v.union(
   v.literal('refunded'),
 )
 
+const paymentStatusFilterValidator = v.union(
+  paymentStatusValidator,
+  v.literal('unpaid_unknown'),
+)
+
 const packageTypeValidator = v.union(
   v.literal('room_only'),
   v.literal('with_breakfast'),
   v.literal('full_package'),
 )
+
+const hotelCategoryValidator = v.union(
+  v.literal('Boutique'),
+  v.literal('Budget'),
+  v.literal('Luxury'),
+  v.literal('Resort and Spa'),
+  v.literal('Extended-Stay'),
+  v.literal('Suite'),
+)
+
+const chapaPaymentStatusValidator = v.union(
+  v.literal('initialized'),
+  v.literal('paid'),
+  v.literal('failed'),
+  v.literal('cancelled'),
+  v.literal('refund_required'),
+  v.literal('refund_initiated'),
+  v.literal('refunded'),
+  v.literal('reversed'),
+)
+
+const customerPaymentSummaryValidator = v.object({
+  _id: v.id('chapaPayments'),
+  txRef: v.string(),
+  bookingAmountCents: v.number(),
+  bookingCurrency: v.literal('USD'),
+  chargedAmountMinor: v.number(),
+  chargedCurrency: v.literal('ETB'),
+  fxRateEtbPerUsd: v.number(),
+  status: chapaPaymentStatusValidator,
+  checkoutUrl: v.string(),
+  paymentMethod: v.optional(v.string()),
+  lastError: v.optional(v.string()),
+  verifiedAt: v.optional(v.number()),
+  createdAt: v.number(),
+  updatedAt: v.number(),
+})
 
 const packageAddOnByType = {
   room_only: 0,
@@ -222,6 +264,7 @@ export const getByHotel = query({
   args: {
     hotelId: v.optional(v.id('hotels')),
     status: v.optional(bookingStatusValidator),
+    paymentStatus: v.optional(paymentStatusFilterValidator),
     paginationOpts: paginationOptsValidator,
   },
   returns: paginationResultValidator(bookingWithGuestInfoValidator),
@@ -238,13 +281,38 @@ export const getByHotel = query({
       }
     }
 
-    const paginatedBookings =
-      args.hotelId !== undefined
-        ? args.status
+    const indexedPaymentStatus =
+      args.paymentStatus === 'unpaid_unknown' ? undefined : args.paymentStatus
+
+    // Every filter combination is applied before pagination so a page can
+    // never look empty while matching bookings exist behind its cursor.
+    const paginatedBookings = args.hotelId
+      ? args.status
+        ? args.paymentStatus
           ? await ctx.db
+              .query('bookings')
+              .withIndex('by_hotel_status_and_payment_status', (q) =>
+                q
+                  .eq('hotelId', args.hotelId!)
+                  .eq('status', args.status!)
+                  .eq('paymentStatus', indexedPaymentStatus),
+              )
+              .order('desc')
+              .paginate(args.paginationOpts)
+          : await ctx.db
               .query('bookings')
               .withIndex('by_hotel_and_status', (q) =>
                 q.eq('hotelId', args.hotelId!).eq('status', args.status!),
+              )
+              .order('desc')
+              .paginate(args.paginationOpts)
+        : args.paymentStatus
+          ? await ctx.db
+              .query('bookings')
+              .withIndex('by_hotel_and_payment_status', (q) =>
+                q
+                  .eq('hotelId', args.hotelId!)
+                  .eq('paymentStatus', indexedPaymentStatus),
               )
               .order('desc')
               .paginate(args.paginationOpts)
@@ -253,10 +321,28 @@ export const getByHotel = query({
               .withIndex('by_hotel', (q) => q.eq('hotelId', args.hotelId!))
               .order('desc')
               .paginate(args.paginationOpts)
-        : args.status
+      : args.status
+        ? args.paymentStatus
           ? await ctx.db
               .query('bookings')
+              .withIndex('by_status_and_payment_status', (q) =>
+                q
+                  .eq('status', args.status!)
+                  .eq('paymentStatus', indexedPaymentStatus),
+              )
+              .order('desc')
+              .paginate(args.paginationOpts)
+          : await ctx.db
+              .query('bookings')
               .withIndex('by_status', (q) => q.eq('status', args.status!))
+              .order('desc')
+              .paginate(args.paginationOpts)
+        : args.paymentStatus
+          ? await ctx.db
+              .query('bookings')
+              .withIndex('by_payment_status', (q) =>
+                q.eq('paymentStatus', indexedPaymentStatus),
+              )
               .order('desc')
               .paginate(args.paginationOpts)
           : await ctx.db
@@ -1470,6 +1556,18 @@ export const getEnriched = query({
           v.literal('suite'),
           v.literal('deluxe'),
         ),
+        basePrice: v.number(),
+        maxOccupancy: v.number(),
+        operationalStatus: v.union(
+          v.literal('available'),
+          v.literal('maintenance'),
+          v.literal('cleaning'),
+          v.literal('out_of_order'),
+        ),
+        amenities: v.optional(v.array(v.string())),
+        description: v.optional(v.string()),
+        bedOptions: v.optional(v.string()),
+        smokingAllowed: v.optional(v.boolean()),
       }),
       hotel: v.object({
         _id: v.id('hotels'),
@@ -1477,7 +1575,21 @@ export const getEnriched = query({
         address: v.string(),
         city: v.string(),
         country: v.string(),
+        location: v.optional(
+          v.object({
+            lat: v.number(),
+            lng: v.number(),
+          }),
+        ),
+        description: v.optional(v.string()),
+        category: v.optional(hotelCategoryValidator),
+        tags: v.optional(v.array(v.string())),
+        parkingIncluded: v.optional(v.boolean()),
+        rating: v.optional(v.number()),
+        ratingSum: v.optional(v.number()),
+        ratingCount: v.optional(v.number()),
       }),
+      payment: v.union(customerPaymentSummaryValidator, v.null()),
     }),
     v.null(),
   ),
@@ -1500,11 +1612,16 @@ export const getEnriched = query({
       }
     }
 
-    const [room, hotel, guestProfile, linkedUser] = await Promise.all([
+    const [room, hotel, guestProfile, linkedUser, payment] = await Promise.all([
       ctx.db.get(booking.roomId),
       ctx.db.get(booking.hotelId),
       booking.guestProfileId ? ctx.db.get(booking.guestProfileId) : null,
       booking.userId ? ctx.db.get(booking.userId) : null,
+      ctx.db
+        .query('chapaPayments')
+        .withIndex('by_booking', (q) => q.eq('bookingId', booking._id))
+        .order('desc')
+        .first(),
     ])
 
     if (!room || !hotel) {
@@ -1532,6 +1649,13 @@ export const getEnriched = query({
         _id: room._id,
         roomNumber: room.roomNumber,
         type: room.type,
+        basePrice: room.basePrice,
+        maxOccupancy: room.maxOccupancy,
+        operationalStatus: room.operationalStatus,
+        amenities: room.amenities,
+        description: room.description,
+        bedOptions: room.bedOptions,
+        smokingAllowed: room.smokingAllowed,
       },
       hotel: {
         _id: hotel._id,
@@ -1539,7 +1663,33 @@ export const getEnriched = query({
         address: hotel.address,
         city: hotel.city,
         country: hotel.country,
+        location: hotel.location,
+        description: hotel.description,
+        category: hotel.category,
+        tags: hotel.tags,
+        parkingIncluded: hotel.parkingIncluded,
+        rating: hotel.rating,
+        ratingSum: hotel.ratingSum,
+        ratingCount: hotel.ratingCount,
       },
+      payment: payment
+        ? {
+            _id: payment._id,
+            txRef: payment.txRef,
+            bookingAmountCents: payment.bookingAmountCents,
+            bookingCurrency: payment.bookingCurrency,
+            chargedAmountMinor: payment.chargedAmountMinor,
+            chargedCurrency: payment.chargedCurrency,
+            fxRateEtbPerUsd: payment.fxRateEtbPerUsd,
+            status: payment.status,
+            checkoutUrl: payment.checkoutUrl,
+            paymentMethod: payment.paymentMethod,
+            lastError: payment.lastError,
+            verifiedAt: payment.verifiedAt,
+            createdAt: payment.createdAt,
+            updatedAt: payment.updatedAt,
+          }
+        : null,
     }
   },
 })

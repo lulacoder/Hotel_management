@@ -291,7 +291,15 @@ export default defineSchema({
     .index('by_room_and_dates', ['roomId', 'checkIn', 'checkOut'])
     .index('by_hold_expires', ['holdExpiresAt'])
     .index('by_user_and_status', ['userId', 'status'])
-    .index('by_hotel_and_status', ['hotelId', 'status']),
+    .index('by_hotel_and_status', ['hotelId', 'status'])
+    .index('by_payment_status', ['paymentStatus'])
+    .index('by_status_and_payment_status', ['status', 'paymentStatus'])
+    .index('by_hotel_and_payment_status', ['hotelId', 'paymentStatus'])
+    .index('by_hotel_status_and_payment_status', [
+      'hotelId',
+      'status',
+      'paymentStatus',
+    ]),
 
   // Hotel ratings table
   hotelRatings: defineTable({
