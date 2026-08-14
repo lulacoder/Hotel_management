@@ -65,10 +65,10 @@ export function StayMoods() {
               </div>
               <div className="mt-4 flex items-start justify-between gap-4 border-t border-slate-200 pt-3 dark:border-slate-800">
                 <div>
-                  <p className="text-base font-bold tracking-tight text-slate-900 transition-colors duration-200 group-hover:text-violet-600 dark:text-slate-100 dark:group-hover:text-violet-400">
+                  <p className="text-lg font-bold tracking-tight text-slate-900 transition-colors duration-200 group-hover:text-violet-600 sm:text-xl dark:text-slate-100 dark:group-hover:text-violet-400">
                     {stay.title}
                   </p>
-                  <p className="mt-1 text-sm text-slate-500 dark:text-slate-400">
+                  <p className="mt-1 text-sm text-slate-500 sm:text-base dark:text-slate-400">
                     {stay.desc}
                   </p>
                 </div>

@@ -1,11 +1,16 @@
 // Hero/intro section for the hotel discovery page with location status messaging.
-import { Loader2, Navigation, Search } from 'lucide-react'
+import { Loader2, Navigation, Search, Users } from 'lucide-react'
 
 import { getGeolocationErrorMessage } from '../../../hooks/useGeolocation'
 import { useI18n } from '../../../lib/i18n/provider'
 import { useTheme } from '../../../lib/theme'
 import { staticAssets } from '../../../lib/staticAssets'
+import {
+  getMinimumCheckoutDate,
+  getTodayDateString,
+} from '../../../lib/navigationSearch'
 import type { ReactNode } from 'react'
+import { DatePicker } from '@/components/ui/date-picker'
 
 interface HeroSectionProps {
   locationSupported: boolean
@@ -15,6 +20,13 @@ interface HeroSectionProps {
   requestLocation: () => void
   searchTerm: string
   onSearchTermChange: (value: string) => void
+  checkIn: string
+  checkOut: string
+  guests: number
+  hasValidStay: boolean
+  onCheckInChange: (value: string) => void
+  onCheckOutChange: (value: string) => void
+  onGuestsChange: (value: number) => void
   children: ReactNode
 }
 
@@ -26,6 +38,13 @@ export function HeroSection({
   requestLocation,
   searchTerm,
   onSearchTermChange,
+  checkIn,
+  checkOut,
+  guests,
+  hasValidStay,
+  onCheckInChange,
+  onCheckOutChange,
+  onGuestsChange,
   children,
 }: HeroSectionProps) {
   // Hero conveys search state and geolocation readiness to the user.
@@ -39,6 +58,8 @@ export function HeroSection({
     locationErrorMessage.length > 50
       ? `${locationErrorMessage.slice(0, 50)}...`
       : locationErrorMessage
+  const today = getTodayDateString()
+  const minCheckOut = getMinimumCheckoutDate(checkIn) ?? today
 
   return (
     <div className="relative overflow-hidden px-4 py-6 sm:py-8 md:py-10">
@@ -131,6 +152,59 @@ export function HeroSection({
               }`}
             />
           </div>
+
+          <div className="grid gap-2 sm:grid-cols-3">
+            <DatePicker
+              ariaLabel={t('landing.searchCheckIn')}
+              placeholder={t('landing.searchCheckIn')}
+              value={checkIn}
+              min={today}
+              onChange={(nextCheckIn) => {
+                onCheckInChange(nextCheckIn)
+
+                const nextMinCheckOut = getMinimumCheckoutDate(nextCheckIn)
+                if (
+                  nextMinCheckOut &&
+                  (!checkOut || checkOut < nextMinCheckOut)
+                ) {
+                  onCheckOutChange(nextMinCheckOut)
+                }
+              }}
+              className="h-11 rounded-xl border-slate-300/80 bg-white/90 py-0 dark:bg-slate-800/70"
+            />
+            <DatePicker
+              ariaLabel={t('landing.searchCheckOut')}
+              placeholder={t('landing.searchCheckOut')}
+              value={checkOut}
+              min={minCheckOut}
+              onChange={(nextCheckOut) => {
+                onCheckOutChange(
+                  nextCheckOut && nextCheckOut < minCheckOut
+                    ? minCheckOut
+                    : nextCheckOut,
+                )
+              }}
+              className="h-11 rounded-xl border-slate-300/80 bg-white/90 py-0 dark:bg-slate-800/70"
+            />
+            <label className="relative">
+              <Users className="absolute left-3 top-1/2 size-4 -translate-y-1/2 text-slate-400" />
+              <span className="sr-only">{t('landing.searchGuests')}</span>
+              <input
+                type="number"
+                min={1}
+                max={20}
+                value={guests}
+                onChange={(event) => onGuestsChange(Number(event.target.value))}
+                className="h-11 w-full rounded-xl border border-slate-300/80 bg-white/90 pl-10 pr-3 text-sm text-slate-800 outline-none focus:border-violet-500 sm:text-base dark:border-slate-700 dark:bg-slate-800/70 dark:text-slate-100"
+              />
+            </label>
+          </div>
+
+          {!hasValidStay && (checkIn || checkOut) && (
+            <p className="px-1 text-xs text-amber-600 sm:text-sm dark:text-amber-300">
+              {t('select.invalidStayDates')}
+            </p>
+          )}
 
           {children}
         </div>

@@ -19,6 +19,7 @@ import {
   getPackageLabelOrDefault,
 } from '../../../../lib/packages'
 import { useI18n } from '../../../../lib/i18n/provider'
+import { DEFAULT_HOTEL_DETAIL_SEARCH } from '../../../../lib/navigationSearch'
 import { canCancel, formatDate, formatPrice, formatTime } from './-helpers'
 import type { Id } from '../../../../../convex/_generated/dataModel'
 import type { PackageType } from '../../../../lib/packages'
@@ -129,16 +130,16 @@ export function BookingCard({
   const roomTypeLabel = roomTypeLabels[room.type] ?? room.type
 
   return (
-    <Card className="light-hover-surface rounded-2xl border-slate-800/50 bg-slate-900/50 transition-colors hover:border-slate-700">
+    <Card className="light-hover-surface rounded-2xl border-border bg-card text-card-foreground transition-all hover:border-violet-500/45">
       <CardContent className="p-6">
         <div className="flex justify-between items-start gap-4">
           <div className="flex-1">
             <div className="mb-3 flex items-start justify-between">
               <div>
-                <h3 className="text-lg font-semibold text-white">
+                <h3 className="text-lg font-semibold text-foreground">
                   {hotel.name}
                 </h3>
-                <div className="mt-1 flex items-center gap-1 text-sm text-slate-400">
+                <div className="mt-1 flex items-center gap-1 text-sm text-muted-foreground">
                   <MapPin className="size-4" />
                   {hotel.address}, {hotel.city}
                 </div>
@@ -146,7 +147,7 @@ export function BookingCard({
               <StatusBadge status={booking.status} />
             </div>
 
-            <div className="mb-4 flex items-center gap-2 text-slate-300">
+            <div className="mb-4 flex items-center gap-2 text-foreground">
               <BedDouble className="size-4 text-violet-400" />
               <span>
                 {roomTypeLabel} - {t('hotel.room')} {room.roomNumber}
@@ -154,11 +155,11 @@ export function BookingCard({
             </div>
 
             <div className="mb-4">
-              <Badge className="inline-flex items-center gap-2 border-slate-700 bg-slate-800 text-slate-300">
+              <Badge className="inline-flex items-center gap-2 border-border bg-muted text-foreground">
                 {t('booking.package')}:{' '}
                 {getPackageLabelOrDefault(booking.packageType, t)}
                 {booking.packageType && (
-                  <span className="text-slate-400">
+                  <span className="text-muted-foreground">
                     ({formatPackageAddOn(booking.packageAddOn ?? 0, t)})
                   </span>
                 )}
@@ -167,31 +168,31 @@ export function BookingCard({
 
             <div className="grid grid-cols-2 gap-4 text-sm sm:grid-cols-4">
               <div>
-                <span className="block text-slate-500">
+                <span className="block text-muted-foreground">
                   {t('booking.checkIn')}
                 </span>
-                <span className="font-medium text-slate-200">
+                <span className="font-medium text-foreground">
                   {formatDate(booking.checkIn, locale)}
                 </span>
               </div>
               <div>
-                <span className="block text-slate-500">
+                <span className="block text-muted-foreground">
                   {t('booking.checkOut')}
                 </span>
-                <span className="font-medium text-slate-200">
+                <span className="font-medium text-foreground">
                   {formatDate(booking.checkOut, locale)}
                 </span>
               </div>
               <div>
-                <span className="block text-slate-500">
+                <span className="block text-muted-foreground">
                   {t('booking.priceNight')}
                 </span>
-                <span className="font-medium text-slate-200">
+                <span className="font-medium text-foreground">
                   {formatPrice(booking.pricePerNight)}
                 </span>
               </div>
               <div>
-                <span className="block text-slate-500">
+                <span className="block text-muted-foreground">
                   {t('booking.total')}
                 </span>
                 <span className="font-semibold text-violet-400">
@@ -216,7 +217,7 @@ export function BookingCard({
         </div>
 
         {canCancel(booking.status) && (
-          <div className="mt-4 flex gap-3 border-t border-slate-800 pt-4">
+          <div className="mt-4 flex gap-3 border-t border-border pt-4">
             {booking.status === 'held' && (
               <Button
                 asChild
@@ -225,7 +226,10 @@ export function BookingCard({
                 <Link
                   to="/hotels/$hotelId"
                   params={{ hotelId: hotel._id }}
-                  search={{ resumeBookingId: booking._id }}
+                  search={{
+                    ...DEFAULT_HOTEL_DETAIL_SEARCH,
+                    resumeBookingId: booking._id,
+                  }}
                 >
                   {t('booking.confirmBooking')}
                 </Link>
@@ -235,7 +239,7 @@ export function BookingCard({
               variant="outline"
               onClick={() => onCancel(booking._id)}
               disabled={cancellingId === booking._id}
-              className="border-slate-700 bg-slate-800 text-red-400 hover:bg-red-500/20 hover:text-red-300"
+              className="border-border bg-background text-red-600 hover:bg-red-500/10 hover:text-red-700 dark:text-red-400 dark:hover:text-red-300"
             >
               {cancellingId === booking._id ? (
                 <>
@@ -251,6 +255,17 @@ export function BookingCard({
             </Button>
           </div>
         )}
+        <div className="mt-4 border-t border-border pt-4">
+          <Button
+            asChild
+            variant="outline"
+            className="border-border bg-background text-foreground hover:bg-muted"
+          >
+            <Link to="/bookings/$bookingId" params={{ bookingId: booking._id }}>
+              {t('trip.openCommandCenter')}
+            </Link>
+          </Button>
+        </div>
       </CardContent>
     </Card>
   )

@@ -30,13 +30,13 @@ export function CapabilityIndex() {
         {items.map((item, index) => (
           <Reveal key={item.title} delay={index * 0.07}>
             <div className="border-t border-slate-200 pt-5 dark:border-slate-800">
-              <span className="text-xs font-semibold tracking-[0.25em] text-slate-400 tabular-nums dark:text-slate-600">
+              <span className="text-sm font-semibold tracking-[0.25em] text-slate-400 tabular-nums sm:text-base dark:text-slate-600">
                 {String(index + 1).padStart(2, '0')}
               </span>
-              <h3 className="mt-4 text-lg font-bold tracking-tight text-slate-900 dark:text-slate-100">
+              <h3 className="mt-4 text-lg font-bold tracking-tight text-slate-900 sm:text-xl dark:text-slate-100">
                 {item.title}
               </h3>
-              <p className="mt-2 text-sm leading-relaxed text-slate-600 dark:text-slate-400">
+              <p className="mt-2 text-sm leading-relaxed text-slate-600 sm:text-base dark:text-slate-400">
                 {item.desc}
               </p>
             </div>

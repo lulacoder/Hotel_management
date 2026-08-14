@@ -62,15 +62,15 @@ function HotelCard({ hotel }: HotelCardProps) {
           <div className="mb-3 flex items-end justify-between gap-3">
             <div className="min-w-0">
               {hotel.category && (
-                <p className="mb-1 text-[0.65rem] font-bold tracking-[0.18em] text-violet-200 uppercase">
+                <p className="mb-1 text-xs font-bold tracking-[0.18em] text-violet-200 uppercase sm:text-sm">
                   {hotel.category}
                 </p>
               )}
-              <h3 className="truncate text-xl font-bold tracking-tight text-white [font-family:var(--font-heading)]">
+              <h3 className="truncate text-xl font-bold tracking-tight text-white sm:text-2xl [font-family:var(--font-heading)]">
                 {hotel.name}
               </h3>
-              <p className="mt-1 flex items-center gap-1.5 truncate text-sm text-slate-300">
-                <MapPin className="size-3.5 shrink-0" aria-hidden />
+              <p className="mt-1 flex items-center gap-1.5 truncate text-sm text-slate-300 sm:text-base">
+                <MapPin className="size-4 shrink-0" aria-hidden />
                 <span className="truncate">
                   {hotel.city}, {hotel.country}
                 </span>
@@ -78,9 +78,9 @@ function HotelCard({ hotel }: HotelCardProps) {
             </div>
 
             {rating !== undefined && (
-              <div className="flex shrink-0 items-center gap-1 rounded-full border border-white/15 bg-black/35 px-2.5 py-1.5 text-xs font-bold text-white backdrop-blur-md">
+              <div className="flex shrink-0 items-center gap-1 rounded-full border border-white/15 bg-black/35 px-2.5 py-1.5 text-sm font-bold text-white backdrop-blur-md sm:text-base">
                 <Star
-                  className="size-3.5 fill-amber-300 text-amber-300"
+                  className="size-4 fill-amber-300 text-amber-300"
                   aria-hidden
                 />
                 {rating.toFixed(1)}
@@ -92,7 +92,7 @@ function HotelCard({ hotel }: HotelCardProps) {
             to="/hotels/$hotelId"
             params={{ hotelId: hotel._id }}
             search={DEFAULT_HOTEL_DETAIL_SEARCH}
-            className="inline-flex h-11 w-full items-center justify-center gap-2 rounded-xl bg-white px-4 text-sm font-bold text-slate-950 transition-all duration-200 hover:bg-violet-100 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-white active:scale-[0.98]"
+            className="inline-flex h-11 w-full items-center justify-center gap-2 rounded-xl bg-white px-4 text-sm font-bold text-slate-950 transition-all duration-200 hover:bg-violet-100 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-white active:scale-[0.98] sm:h-12 sm:text-base"
           >
             {t('landing.viewHotel')}
             <ArrowUpRight className="size-4" aria-hidden />
@@ -177,7 +177,7 @@ export function HotelCarousel() {
     >
       <div className="mx-auto mb-9 flex w-full max-w-[1400px] flex-col justify-between gap-4 px-6 sm:px-10 md:flex-row md:items-end">
         <div className="max-w-2xl">
-          <p className="text-xs font-bold tracking-[0.2em] text-violet-600 uppercase dark:text-violet-400">
+          <p className="text-sm font-bold tracking-[0.2em] text-violet-600 uppercase sm:text-base dark:text-violet-400">
             {t('landing.hotelCarouselKicker')}
           </p>
           <h2
@@ -187,7 +187,7 @@ export function HotelCarousel() {
             {t('landing.hotelCarouselTitle')}
           </h2>
         </div>
-        <p className="max-w-md text-sm leading-relaxed text-slate-600 sm:text-base dark:text-slate-400">
+        <p className="max-w-md text-base leading-relaxed text-slate-600 sm:text-lg dark:text-slate-400">
           {t('landing.hotelCarouselDescription')}
         </p>
       </div>
@@ -235,7 +235,7 @@ export function HotelCarousel() {
 
       {hotels !== undefined && (
         <div className="mx-auto mt-5 flex w-full max-w-[1400px] justify-end px-6 sm:px-10">
-          <p className="inline-flex items-center gap-2 text-xs font-semibold tracking-wide text-slate-500 dark:text-slate-400">
+          <p className="inline-flex items-center gap-2 text-sm font-semibold tracking-wide text-slate-500 sm:text-base dark:text-slate-400">
             <ArrowLeftRight className="size-4" aria-hidden />
             {t('landing.hotelCarouselControls')}
           </p>

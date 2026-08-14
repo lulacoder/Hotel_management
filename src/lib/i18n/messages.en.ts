@@ -873,6 +873,43 @@ export const enMessages = {
   'announcements.priority.important': 'Important',
   'announcements.priority.normal': 'Notice',
   'announcements.from': 'From the Hotel',
+  'landing.searchAvailability': 'Search availability',
+  'select.invalidStayDates':
+    'Choose a checkout date after check-in to see live availability.',
+  'grid.fromPrice': 'From per night',
+  'grid.matchingRooms': '{count} matching rooms',
+  'hotel.searchGuests': 'Showing rooms for {count} guests',
+  'admin.profileMissingTitle': 'Your admin profile is not ready',
+  'admin.profileMissingDescription':
+    'We could not find the application profile linked to this signed-in account. Retry, or return to hotel search while an administrator checks your access.',
+  'admin.retryProfile': 'Retry profile',
+  'admin.bookings.action.cancelSuccess': 'Booking cancelled successfully.',
+  'admin.bookings.action.statusSuccess': 'Booking status updated successfully.',
+  'admin.bookings.action.cashSuccess': 'Cash payment recorded successfully.',
+  'admin.bookings.action.failed':
+    'The booking could not be updated. Please try again.',
+  'trip.openCommandCenter': 'View trip details',
+  'trip.commandCenter': 'Trip Command Center',
+  'trip.notFoundTitle': 'Booking not found',
+  'trip.notFoundBody':
+    'This booking is unavailable or you do not have access to it.',
+  'trip.backToBookings': 'Back to bookings',
+  'trip.reference': 'Booking #{reference}',
+  'trip.holdRemaining': 'Complete payment before the hold expires',
+  'trip.timeline.held': 'Room held',
+  'trip.timeline.pending_payment': 'Payment review',
+  'trip.timeline.confirmed': 'Confirmed',
+  'trip.timeline.checked_in': 'Checked in',
+  'trip.timeline.checked_out': 'Checked out',
+  'trip.stayDetails': 'Stay details',
+  'trip.paymentStatus': 'Payment status',
+  'trip.actions': 'What you can do now',
+  'trip.resumePayment': 'Resume or retry payment',
+  'trip.directions': 'Get directions',
+  'trip.bookAgain': 'Book this hotel again',
+  'trip.cancelSuccess': 'Your booking has been cancelled.',
+  'trip.copyFailed': 'Could not copy the booking reference.',
+  'bookings.cancelSuccess': 'Your booking has been cancelled.',
 } as const
 
 export type TranslationKey = keyof typeof enMessages

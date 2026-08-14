@@ -151,37 +151,39 @@ export function DatePicker({
           aria-label={ariaLabel}
           disabled={disabled}
           className={cn(
-            'flex w-full items-center justify-between gap-3 rounded-xl border border-slate-700 bg-slate-800/50 px-4 py-3 text-left text-slate-200 transition-all hover:border-violet-500/40 focus:border-violet-500/50 focus:outline-none disabled:cursor-not-allowed disabled:opacity-50',
+            'flex w-full items-center justify-between gap-3 rounded-xl border border-slate-300 bg-white px-4 py-3 text-left text-sm text-slate-900 transition-all hover:border-violet-400 focus:border-violet-500 focus:outline-none disabled:cursor-not-allowed disabled:opacity-50 sm:text-base dark:border-slate-700 dark:bg-slate-800/50 dark:text-slate-200 dark:hover:border-violet-500/40 dark:focus:border-violet-500/50',
             className,
           )}
         >
-          <span className={cn(!value && 'text-slate-500')}>{triggerLabel}</span>
-          <CalendarDays className="size-4 shrink-0 text-violet-400" />
+          <span className={cn(!value && 'text-slate-500 dark:text-slate-500')}>
+            {triggerLabel}
+          </span>
+          <CalendarDays className="size-4 shrink-0 text-violet-600 dark:text-violet-400" />
         </button>
       </PopoverPrimitive.Trigger>
       <PopoverPrimitive.Portal>
         <PopoverPrimitive.Content
           align="start"
           sideOffset={8}
-          className="z-50 w-[19rem] origin-(--radix-popover-content-transform-origin) rounded-2xl border border-slate-700 bg-slate-900 p-4 text-slate-200 shadow-2xl shadow-black/40 outline-none duration-100 data-open:animate-in data-open:fade-in-0 data-open:zoom-in-95 data-closed:animate-out data-closed:fade-out-0 data-closed:zoom-out-95"
+          className="z-50 w-[19rem] origin-(--radix-popover-content-transform-origin) rounded-2xl border border-slate-200 bg-white p-4 text-slate-900 shadow-2xl shadow-slate-900/15 outline-none duration-100 data-open:animate-in data-open:fade-in-0 data-open:zoom-in-95 data-closed:animate-out data-closed:fade-out-0 data-closed:zoom-out-95 dark:border-slate-700 dark:bg-slate-900 dark:text-slate-200 dark:shadow-black/40"
         >
           <div className="mb-3 flex items-center justify-between">
             <button
               type="button"
               aria-label={t('datePicker.previousMonth')}
               onClick={() => shiftMonth(-1)}
-              className="flex size-8 items-center justify-center rounded-lg text-slate-400 transition-colors hover:bg-slate-800 hover:text-slate-100"
+              className="flex size-8 cursor-pointer items-center justify-center rounded-lg text-gray-500 transition-colors hover:bg-violet-100 hover:text-violet-700 dark:text-slate-400 dark:hover:bg-slate-800 dark:hover:text-slate-100"
             >
               <ChevronLeft className="size-4" />
             </button>
-            <span className="text-sm font-semibold text-slate-100 capitalize">
+            <span className="text-sm font-semibold text-slate-900 capitalize dark:text-slate-100">
               {monthLabel}
             </span>
             <button
               type="button"
               aria-label={t('datePicker.nextMonth')}
               onClick={() => shiftMonth(1)}
-              className="flex size-8 items-center justify-center rounded-lg text-slate-400 transition-colors hover:bg-slate-800 hover:text-slate-100"
+              className="flex size-8 cursor-pointer items-center justify-center rounded-lg text-gray-500 transition-colors hover:bg-violet-100 hover:text-violet-700 dark:text-slate-400 dark:hover:bg-slate-800 dark:hover:text-slate-100"
             >
               <ChevronRight className="size-4" />
             </button>
@@ -191,7 +193,7 @@ export function DatePicker({
             {weekdays.map((weekday) => (
               <div
                 key={weekday}
-                className="flex h-8 items-center justify-center text-xs font-medium text-slate-500"
+                className="flex h-8 items-center justify-center text-xs font-medium text-slate-500 dark:text-slate-500"
               >
                 {weekday}
               </div>
@@ -209,18 +211,20 @@ export function DatePicker({
                   disabled={cell.disabled}
                   onClick={() => select(cell.iso)}
                   className={cn(
-                    'mx-auto flex size-9 items-center justify-center rounded-lg text-sm transition-colors',
-                    cell.outside ? 'text-slate-600' : 'text-slate-200',
+                    'mx-auto flex size-9 cursor-pointer items-center justify-center rounded-lg text-sm transition-colors',
+                    cell.outside
+                      ? 'text-gray-400 dark:text-slate-600'
+                      : 'text-slate-700 dark:text-slate-200',
                     !cell.disabled &&
                       !selected &&
-                      'hover:bg-slate-800 hover:text-slate-100',
+                      'hover:bg-violet-100 hover:font-semibold hover:text-violet-900 dark:hover:bg-slate-800 dark:hover:text-slate-100',
                     selected &&
-                      'bg-violet-600 font-semibold text-white hover:bg-violet-600',
+                      'bg-violet-600 font-semibold text-white hover:bg-violet-600 dark:text-white',
                     isToday &&
                       !selected &&
-                      'ring-1 ring-inset ring-violet-500/50',
+                      'ring-1 ring-violet-400 ring-inset dark:ring-violet-500/50',
                     cell.disabled &&
-                      'cursor-not-allowed text-slate-700 hover:bg-transparent',
+                      'cursor-not-allowed text-gray-300 hover:bg-transparent dark:text-slate-700',
                   )}
                 >
                   {cell.day}
@@ -229,11 +233,11 @@ export function DatePicker({
             })}
           </div>
 
-          <div className="mt-3 flex items-center justify-between border-t border-slate-800 pt-3">
+          <div className="mt-3 flex items-center justify-between border-t border-gray-200 pt-3 dark:border-slate-800">
             <button
               type="button"
               onClick={() => select('')}
-              className="text-sm font-medium text-slate-400 transition-colors hover:text-slate-200"
+              className="cursor-pointer text-sm font-medium text-gray-500 transition-colors hover:text-gray-900 dark:text-slate-400 dark:hover:text-slate-200"
             >
               {t('datePicker.clear')}
             </button>
@@ -241,7 +245,7 @@ export function DatePicker({
               type="button"
               disabled={(!!min && todayISO < min) || (!!max && todayISO > max)}
               onClick={() => select(todayISO)}
-              className="text-sm font-medium text-violet-400 transition-colors hover:text-violet-300 disabled:cursor-not-allowed disabled:opacity-40"
+              className="cursor-pointer text-sm font-medium text-violet-600 transition-colors hover:text-violet-800 disabled:cursor-not-allowed disabled:opacity-40 dark:text-violet-400 dark:hover:text-violet-300"
             >
               {t('datePicker.today')}
             </button>

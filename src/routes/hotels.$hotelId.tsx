@@ -18,6 +18,12 @@ import { usePaginatedQuery, useQuery } from '@/integrations/convex/hooks'
 
 export const Route = createFileRoute('/hotels/$hotelId')({
   validateSearch: (search: Record<string, unknown>) => ({
+    checkIn: typeof search.checkIn === 'string' ? search.checkIn : undefined,
+    checkOut: typeof search.checkOut === 'string' ? search.checkOut : undefined,
+    guests:
+      typeof search.guests === 'number' && search.guests >= 1
+        ? search.guests
+        : undefined,
     resumeBookingId:
       typeof search.resumeBookingId === 'string' && search.resumeBookingId
         ? search.resumeBookingId
@@ -78,12 +84,21 @@ function HotelDetailPage() {
     setShowBookingModal,
     showBookingModal,
   } = useHotelBookingState({
+    initialDates:
+      search.checkIn && search.checkOut && search.checkOut > search.checkIn
+        ? { checkIn: search.checkIn, checkOut: search.checkOut }
+        : undefined,
     hasResumeBookingSearch: Boolean(search.resumeBookingId),
     onClearResumeBooking: () =>
       navigate({
         params: { hotelId },
         replace: true,
-        search: (prev) => ({ ...prev, resumeBookingId: undefined }),
+        search: {
+          checkIn: search.checkIn,
+          checkOut: search.checkOut,
+          guests: search.guests,
+          resumeBookingId: undefined,
+        },
         to: '/hotels/$hotelId',
       }),
     resumeBooking,
@@ -96,6 +111,7 @@ function HotelDetailPage() {
           checkIn: selectedDates.checkIn,
           checkOut: selectedDates.checkOut,
           hotelId: hotelId as Id<'hotels'>,
+          minOccupancy: search.guests,
         }
       : 'skip',
   )
@@ -210,6 +226,12 @@ function HotelDetailPage() {
           hotelId={hotelId}
         />
 
+        {search.guests && (
+          <div className="mb-4 rounded-xl border border-violet-500/20 bg-violet-500/10 px-4 py-3 text-sm text-violet-300">
+            {t('hotel.searchGuests', { count: search.guests })}
+          </div>
+        )}
+
         <HotelDateSelection
           checkIn={selectedDates.checkIn}
           checkOut={selectedDates.checkOut}
@@ -285,6 +307,7 @@ function HotelDetailPage() {
           checkIn={selectedDates.checkIn}
           checkOut={selectedDates.checkOut}
           nights={nights}
+          guests={search.guests}
           existingBooking={
             resumeBooking &&
             ['held', 'pending_payment'].includes(resumeBooking.status)

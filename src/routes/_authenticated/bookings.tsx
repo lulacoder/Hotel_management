@@ -10,6 +10,7 @@ import {
   XCircle,
 } from 'lucide-react'
 import { useEffect, useMemo, useState } from 'react'
+import { toast } from 'sonner'
 
 import { api } from '../../../convex/_generated/api'
 import { isBookingStatus } from '../../../convex/lib/bookingLifecycle'
@@ -90,9 +91,12 @@ function BookingsPage() {
       await cancelBooking({
         bookingId,
       })
+      toast.success(t('bookings.cancelSuccess'))
     } catch (error) {
       console.error('Failed to cancel booking:', error)
-      alert(t('bookings.cancelFailed'))
+      toast.error(
+        error instanceof Error ? error.message : t('bookings.cancelFailed'),
+      )
     } finally {
       setCancellingId(null)
     }
@@ -196,7 +200,7 @@ function BookingsPage() {
   const PaymentBannerIcon = paymentBanner.Icon
 
   return (
-    <div className="min-h-screen bg-slate-950">
+    <div className="min-h-screen bg-background text-foreground">
       <BookingsHeader
         userName={
           user?.firstName || user?.emailAddresses[0]?.emailAddress || ''
@@ -247,16 +251,16 @@ function BookingsPage() {
 
         {/* Empty State */}
         {!isLoading && filteredBookings.length === 0 && (
-          <div className="rounded-2xl border border-slate-800/50 bg-slate-900/50 p-12 text-center">
-            <Calendar className="size-16 text-slate-600 mx-auto mb-4" />
-            <h2 className="text-xl font-semibold text-white mb-2">
+          <div className="rounded-2xl border border-border bg-card p-12 text-center text-card-foreground">
+            <Calendar className="mx-auto mb-4 size-16 text-muted-foreground" />
+            <h2 className="mb-2 text-xl font-semibold text-foreground">
               {statusFilter === 'all'
                 ? t('bookings.noBookingsYet')
                 : t('bookings.noStatusBookings', {
                     status: statusFilter.replace('_', ' '),
                   })}
             </h2>
-            <p className="text-slate-400 mb-6">
+            <p className="mb-6 text-muted-foreground">
               {statusFilter === 'all'
                 ? t('bookings.startSelectingLocation')
                 : t('bookings.tryChangingFilter')}

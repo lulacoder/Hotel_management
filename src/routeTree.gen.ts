@@ -34,6 +34,7 @@ import { Route as AdminAnnouncementsIndexRouteImport } from './routes/admin/anno
 import { Route as AdminHotelsHotelIdRouteImport } from './routes/admin/hotels/$hotelId'
 import { Route as AdminComplaintsComplaintIdRouteImport } from './routes/admin/complaints/$complaintId'
 import { Route as AdminBookingsBookingIdRouteImport } from './routes/admin/bookings/$bookingId'
+import { Route as AuthenticatedBookingsBookingIdRouteImport } from './routes/_authenticated/bookings_.$bookingId'
 
 const SignUpRoute = SignUpRouteImport.update({
   id: '/sign-up',
@@ -162,6 +163,12 @@ const AdminBookingsBookingIdRoute = AdminBookingsBookingIdRouteImport.update({
   path: '/bookings/$bookingId',
   getParentRoute: () => AdminRoute,
 } as any)
+const AuthenticatedBookingsBookingIdRoute =
+  AuthenticatedBookingsBookingIdRouteImport.update({
+    id: '/bookings_/$bookingId',
+    path: '/bookings/$bookingId',
+    getParentRoute: () => AuthenticatedRoute,
+  } as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
@@ -177,6 +184,7 @@ export interface FileRoutesByFullPath {
   '/sign-up/$': typeof SignUpSplatRoute
   '/staff-invitations/$invitationId': typeof StaffInvitationsInvitationIdRoute
   '/admin/': typeof AdminIndexRoute
+  '/bookings/$bookingId': typeof AuthenticatedBookingsBookingIdRoute
   '/admin/bookings/$bookingId': typeof AdminBookingsBookingIdRoute
   '/admin/complaints/$complaintId': typeof AdminComplaintsComplaintIdRoute
   '/admin/hotels/$hotelId': typeof AdminHotelsHotelIdRoute
@@ -202,6 +210,7 @@ export interface FileRoutesByTo {
   '/sign-up/$': typeof SignUpSplatRoute
   '/staff-invitations/$invitationId': typeof StaffInvitationsInvitationIdRoute
   '/admin': typeof AdminIndexRoute
+  '/bookings/$bookingId': typeof AuthenticatedBookingsBookingIdRoute
   '/admin/bookings/$bookingId': typeof AdminBookingsBookingIdRoute
   '/admin/complaints/$complaintId': typeof AdminComplaintsComplaintIdRoute
   '/admin/hotels/$hotelId': typeof AdminHotelsHotelIdRoute
@@ -230,6 +239,7 @@ export interface FileRoutesById {
   '/sign-up/$': typeof SignUpSplatRoute
   '/staff-invitations/$invitationId': typeof StaffInvitationsInvitationIdRoute
   '/admin/': typeof AdminIndexRoute
+  '/_authenticated/bookings_/$bookingId': typeof AuthenticatedBookingsBookingIdRoute
   '/admin/bookings/$bookingId': typeof AdminBookingsBookingIdRoute
   '/admin/complaints/$complaintId': typeof AdminComplaintsComplaintIdRoute
   '/admin/hotels/$hotelId': typeof AdminHotelsHotelIdRoute
@@ -258,6 +268,7 @@ export interface FileRouteTypes {
     | '/sign-up/$'
     | '/staff-invitations/$invitationId'
     | '/admin/'
+    | '/bookings/$bookingId'
     | '/admin/bookings/$bookingId'
     | '/admin/complaints/$complaintId'
     | '/admin/hotels/$hotelId'
@@ -283,6 +294,7 @@ export interface FileRouteTypes {
     | '/sign-up/$'
     | '/staff-invitations/$invitationId'
     | '/admin'
+    | '/bookings/$bookingId'
     | '/admin/bookings/$bookingId'
     | '/admin/complaints/$complaintId'
     | '/admin/hotels/$hotelId'
@@ -310,6 +322,7 @@ export interface FileRouteTypes {
     | '/sign-up/$'
     | '/staff-invitations/$invitationId'
     | '/admin/'
+    | '/_authenticated/bookings_/$bookingId'
     | '/admin/bookings/$bookingId'
     | '/admin/complaints/$complaintId'
     | '/admin/hotels/$hotelId'
@@ -512,17 +525,26 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AdminBookingsBookingIdRouteImport
       parentRoute: typeof AdminRoute
     }
+    '/_authenticated/bookings_/$bookingId': {
+      id: '/_authenticated/bookings_/$bookingId'
+      path: '/bookings/$bookingId'
+      fullPath: '/bookings/$bookingId'
+      preLoaderRoute: typeof AuthenticatedBookingsBookingIdRouteImport
+      parentRoute: typeof AuthenticatedRoute
+    }
   }
 }
 
 interface AuthenticatedRouteChildren {
   AuthenticatedAnnouncementsRoute: typeof AuthenticatedAnnouncementsRoute
   AuthenticatedBookingsRoute: typeof AuthenticatedBookingsRoute
+  AuthenticatedBookingsBookingIdRoute: typeof AuthenticatedBookingsBookingIdRoute
 }
 
 const AuthenticatedRouteChildren: AuthenticatedRouteChildren = {
   AuthenticatedAnnouncementsRoute: AuthenticatedAnnouncementsRoute,
   AuthenticatedBookingsRoute: AuthenticatedBookingsRoute,
+  AuthenticatedBookingsBookingIdRoute: AuthenticatedBookingsBookingIdRoute,
 }
 
 const AuthenticatedRouteWithChildren = AuthenticatedRoute._addFileChildren(

@@ -125,7 +125,7 @@ export default function Header() {
                 <Button
                   variant="ghost"
                   size="icon"
-                  className="rounded-xl text-slate-300 hover:bg-white/8 hover:text-violet-300"
+                  className="rounded-xl text-slate-300 hover:bg-violet-100 hover:text-violet-700 dark:hover:bg-white/8 dark:hover:text-violet-300"
                   aria-label={t('header.openMenu')}
                 >
                   <Menu className="size-5" />
@@ -164,11 +164,12 @@ export default function Header() {
                       onClick={() => setMenuOpen(false)}
                       className={cn(
                         'flex h-12 items-center gap-3 rounded-xl border border-transparent px-4 font-medium transition-all',
-                        'text-slate-400 hover:border-slate-700/70 hover:bg-slate-800/60 hover:text-slate-100',
+                        'text-gray-600 hover:border-violet-200 hover:bg-violet-100 hover:text-violet-800',
+                        'dark:text-slate-400 dark:hover:border-slate-700/70 dark:hover:bg-slate-800/60 dark:hover:text-slate-100',
                       )}
                       activeProps={{
                         className:
-                          'flex h-12 items-center gap-3 rounded-xl border border-violet-500/20 bg-violet-500/10 px-4 font-medium text-violet-300',
+                          'flex h-12 items-center gap-3 rounded-xl border border-violet-300 bg-violet-100 px-4 font-medium text-violet-800 dark:border-violet-500/20 dark:bg-violet-500/10 dark:text-violet-300',
                       }}
                     >
                       <item.icon className="size-5" />
@@ -185,7 +186,7 @@ export default function Header() {
                       <Button
                         asChild
                         variant="outline"
-                        className="h-12 w-full justify-center rounded-xl border-slate-700 bg-slate-800/60 px-4 text-sm font-semibold text-slate-200 hover:bg-slate-700"
+                        className="h-12 w-full justify-center rounded-xl border-slate-700 bg-slate-800/60 px-4 text-sm font-semibold text-gray-900 hover:bg-violet-100 hover:text-violet-800 dark:text-slate-200 dark:hover:bg-slate-700 dark:hover:text-slate-100"
                       >
                         <Link
                           to="/sign-in"
@@ -248,7 +249,7 @@ export default function Header() {
                       <button
                         type="button"
                         onClick={handleManageAccount}
-                        className="flex h-11 w-full cursor-pointer items-center gap-3 rounded-xl px-3 text-sm font-medium text-slate-300 transition-colors hover:bg-slate-700/60 hover:text-slate-100 focus-visible:bg-slate-700/60 focus-visible:text-slate-100"
+                        className="flex h-11 w-full cursor-pointer items-center gap-3 rounded-xl px-3 text-sm font-medium text-gray-700 transition-colors hover:bg-violet-100 hover:text-violet-800 focus-visible:bg-violet-100 focus-visible:text-violet-800 dark:text-slate-300 dark:hover:bg-slate-700/60 dark:hover:text-slate-100 dark:focus-visible:bg-slate-700/60 dark:focus-visible:text-slate-100"
                       >
                         <Settings className="size-4" />
                         <span>{t('header.manageAccount')}</span>
@@ -256,7 +257,7 @@ export default function Header() {
                       <button
                         type="button"
                         onClick={handleSignOut}
-                        className="flex h-11 w-full cursor-pointer items-center gap-3 rounded-xl px-3 text-sm font-medium text-slate-300 transition-colors hover:bg-rose-500/10 hover:text-rose-300 focus-visible:bg-rose-500/10 focus-visible:text-rose-300"
+                        className="flex h-11 w-full cursor-pointer items-center gap-3 rounded-xl px-3 text-sm font-medium text-gray-700 transition-colors hover:bg-rose-100 hover:text-rose-700 focus-visible:bg-rose-100 focus-visible:text-rose-700 dark:text-slate-300 dark:hover:bg-rose-500/10 dark:hover:text-rose-300 dark:focus-visible:bg-rose-500/10 dark:focus-visible:text-rose-300"
                       >
                         <LogOut className="size-4" />
                         <span>{t('header.signOut')}</span>

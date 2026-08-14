@@ -16,6 +16,7 @@ import { formatDistance } from '../../../lib/distance'
 import { getHotelCategoryLabel } from '../../../lib/hotelCategories'
 import { useI18n } from '../../../lib/i18n/provider'
 import { DEFAULT_HOTEL_DETAIL_SEARCH } from '../../../lib/navigationSearch'
+import { formatUsdAmount } from '../../../lib/currency'
 import {
   ConvexPreloader,
   useIntentPreloadTarget,
@@ -39,6 +40,8 @@ interface HotelGridProps {
     parkingIncluded?: boolean | undefined
     imageUrl?: string | undefined
     distance: number | null
+    fromPrice?: number | undefined
+    matchingRoomCount?: number | undefined
   }>
   sortBy: SortOption
   searchTerm: string
@@ -49,6 +52,10 @@ interface HotelGridProps {
   >
   onOpenRating: (hotelId: Id<'hotels'>) => void
   isLoading: boolean
+  checkIn: string
+  checkOut: string
+  guests: number
+  hasAvailabilitySearch: boolean
 }
 
 export function HotelGrid({
@@ -60,13 +67,15 @@ export function HotelGrid({
   ratingSummaryByHotelId,
   onOpenRating,
   isLoading,
+  checkIn,
+  checkOut,
+  guests,
+  hasAvailabilitySearch,
 }: HotelGridProps) {
   // Render filtered hotels with summary metrics and quick actions.
   const { t } = useI18n()
-  const {
-    store: preloadStore,
-    getIntentProps: getPreloadIntentProps,
-  } = useIntentPreloadTarget<Id<'hotels'>>()
+  const { store: preloadStore, getIntentProps: getPreloadIntentProps } =
+    useIntentPreloadTarget<Id<'hotels'>>()
 
   const buildPreloadQueries = useCallback(
     (hotelId: Id<'hotels'>): RequestForQueries => ({
@@ -111,7 +120,10 @@ export function HotelGrid({
 
   return (
     <>
-      <ConvexPreloader store={preloadStore} buildQueries={buildPreloadQueries} />
+      <ConvexPreloader
+        store={preloadStore}
+        buildQueries={buildPreloadQueries}
+      />
 
       <div className="flex items-center justify-between mb-6">
         <h3 className="text-xl font-semibold text-slate-200">
@@ -151,7 +163,12 @@ export function HotelGrid({
                 {...getPreloadIntentProps(hotel._id)}
                 to="/hotels/$hotelId"
                 params={{ hotelId: hotel._id }}
-                search={DEFAULT_HOTEL_DETAIL_SEARCH}
+                search={{
+                  ...DEFAULT_HOTEL_DETAIL_SEARCH,
+                  checkIn: hasAvailabilitySearch ? checkIn : undefined,
+                  checkOut: hasAvailabilitySearch ? checkOut : undefined,
+                  guests: hasAvailabilitySearch ? guests : undefined,
+                }}
                 className="block"
               >
                 <div className="h-48 bg-gradient-to-br from-slate-800 to-slate-900 relative overflow-hidden">
@@ -177,7 +194,7 @@ export function HotelGrid({
                   <div className="absolute top-4 left-4 right-4 flex items-start justify-between">
                     {hotel.category && (
                       <span
-                        className={`px-2 py-1 rounded-lg text-xs font-medium border shadow-sm ${categoryColors[hotel.category] || 'bg-slate-700 text-slate-50 border-slate-500/40'}`}
+                        className={`px-2 py-1 rounded-lg text-xs sm:text-sm font-medium border shadow-sm ${categoryColors[hotel.category] || 'bg-slate-700 text-slate-50 border-slate-500/40'}`}
                       >
                         {getHotelCategoryLabel(hotel.category, t)}
                       </span>
@@ -186,11 +203,11 @@ export function HotelGrid({
                     {displayRating !== undefined && (
                       <div className="flex items-center gap-1 bg-slate-900/80 backdrop-blur-sm px-2 py-1 rounded-lg">
                         <Star className="size-4 text-amber-400 fill-amber-400" />
-                        <span className="text-sm text-slate-200 font-medium">
+                        <span className="text-sm sm:text-base text-slate-200 font-medium">
                           {displayRating.toFixed(1)}
                         </span>
                         {displayCount > 0 && (
-                          <span className="text-xs text-slate-400">
+                          <span className="text-xs sm:text-sm text-slate-400">
                             ({displayCount})
                           </span>
                         )}
@@ -200,8 +217,8 @@ export function HotelGrid({
 
                   {hotel.distance !== null && (
                     <div className="absolute bottom-4 left-4 flex items-center gap-1.5 bg-slate-900/80 backdrop-blur-sm px-2.5 py-1.5 rounded-lg">
-                      <Navigation className="size-3.5 text-emerald-400" />
-                      <span className="text-sm text-slate-200 font-medium">
+                      <Navigation className="size-4 text-emerald-400" />
+                      <span className="text-sm sm:text-base text-slate-200 font-medium">
                         {formatDistance(hotel.distance)}
                       </span>
                     </div>
@@ -209,8 +226,8 @@ export function HotelGrid({
 
                   {hotel.parkingIncluded && (
                     <div className="absolute bottom-4 right-4 flex items-center gap-1 bg-emerald-500/20 backdrop-blur-sm px-2 py-1 rounded-lg border border-emerald-500/30">
-                      <Car className="size-3.5 text-emerald-400" />
-                      <span className="text-xs text-emerald-300">
+                      <Car className="size-4 text-emerald-400" />
+                      <span className="text-xs sm:text-sm text-emerald-300">
                         {t('grid.freeParking')}
                       </span>
                     </div>
@@ -218,10 +235,10 @@ export function HotelGrid({
                 </div>
 
                 <div className="p-5 pb-4">
-                  <h4 className="text-lg font-semibold text-slate-200 mb-2 group-hover:text-violet-400 transition-colors">
+                  <h4 className="text-lg sm:text-xl font-semibold text-slate-200 mb-2 group-hover:text-violet-400 transition-colors">
                     {hotel.name}
                   </h4>
-                  <div className="flex items-center gap-2 text-slate-400 text-sm mb-3">
+                  <div className="flex items-center gap-2 text-slate-400 text-sm sm:text-base mb-3">
                     <MapPin className="size-4" />
                     <span>
                       {hotel.city}
@@ -231,7 +248,7 @@ export function HotelGrid({
                   </div>
 
                   {hotel.description && (
-                    <p className="text-sm text-slate-500 line-clamp-2 mb-3">
+                    <p className="text-sm sm:text-base text-slate-500 line-clamp-2 mb-3">
                       {hotel.description}
                     </p>
                   )}
@@ -241,19 +258,38 @@ export function HotelGrid({
                       {hotel.tags.slice(0, 3).map((tag) => (
                         <span
                           key={tag}
-                          className="inline-flex items-center gap-1 px-2 py-0.5 bg-slate-800 rounded text-xs text-slate-400"
+                          className="inline-flex items-center gap-1 px-2 py-0.5 bg-slate-800 rounded text-xs sm:text-sm text-slate-400"
                         >
                           <Tag className="size-3" />
                           {tag}
                         </span>
                       ))}
                       {hotel.tags.length > 3 && (
-                        <span className="px-2 py-0.5 bg-slate-800 rounded text-xs text-slate-500">
+                        <span className="px-2 py-0.5 bg-slate-800 rounded text-xs sm:text-sm text-slate-500">
                           {t('grid.more', { count: hotel.tags.length - 3 })}
                         </span>
                       )}
                     </div>
                   )}
+                  {hasAvailabilitySearch &&
+                    hotel.fromPrice !== undefined &&
+                    hotel.matchingRoomCount !== undefined && (
+                      <div className="mt-4 flex items-end justify-between gap-3 border-t border-slate-800 pt-3">
+                        <div>
+                          <p className="text-xs sm:text-sm text-slate-500">
+                            {t('grid.fromPrice')}
+                          </p>
+                          <p className="font-semibold text-violet-400 sm:text-lg">
+                            {formatUsdAmount(hotel.fromPrice)}
+                          </p>
+                        </div>
+                        <p className="text-xs sm:text-sm text-emerald-400">
+                          {t('grid.matchingRooms', {
+                            count: hotel.matchingRoomCount,
+                          })}
+                        </p>
+                      </div>
+                    )}
                 </div>
               </Link>
 
@@ -262,15 +298,20 @@ export function HotelGrid({
                   {...getPreloadIntentProps(hotel._id)}
                   to="/hotels/$hotelId"
                   params={{ hotelId: hotel._id }}
-                  search={DEFAULT_HOTEL_DETAIL_SEARCH}
-                  className="text-violet-400 font-semibold group-hover:translate-x-1 transition-transform"
+                  search={{
+                    ...DEFAULT_HOTEL_DETAIL_SEARCH,
+                    checkIn: hasAvailabilitySearch ? checkIn : undefined,
+                    checkOut: hasAvailabilitySearch ? checkOut : undefined,
+                    guests: hasAvailabilitySearch ? guests : undefined,
+                  }}
+                  className="text-violet-400 font-semibold sm:text-lg group-hover:translate-x-1 transition-transform"
                 >
                   {t('grid.viewRooms')}
                 </Link>
                 <button
                   type="button"
                   onClick={() => onOpenRating(hotel._id)}
-                  className="light-hover-accent px-3 py-1.5 text-sm font-semibold text-slate-900 bg-white hover:bg-slate-100 rounded-lg transition-all border border-white/30"
+                  className="light-hover-accent px-3 py-1.5 text-sm sm:text-base font-semibold text-slate-900 bg-white hover:bg-slate-100 rounded-lg transition-all border border-white/30"
                 >
                   {t('grid.rateHotel')}
                 </button>

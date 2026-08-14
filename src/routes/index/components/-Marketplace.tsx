@@ -34,7 +34,7 @@ export function Marketplace() {
   return (
     <section className="mx-auto w-full max-w-[1400px] px-6 py-16 sm:px-10 lg:py-24">
       <Reveal className="max-w-3xl">
-        <p className="text-xs font-semibold tracking-[0.2em] text-violet-600 uppercase dark:text-violet-400">
+        <p className="text-sm font-semibold tracking-[0.2em] text-violet-600 uppercase sm:text-base dark:text-violet-400">
           {t('landing.marketplaceKicker')}
         </p>
         <h2 className="mt-4 text-3xl leading-[1.08] font-extrabold tracking-tight text-slate-900 sm:text-4xl lg:text-5xl dark:text-slate-100 [font-family:var(--font-heading)]">
@@ -60,10 +60,10 @@ export function Marketplace() {
               />
             </div>
             <figcaption className="mt-4 border-t border-slate-200 pt-3 dark:border-slate-800">
-              <p className="text-sm font-semibold text-slate-900 dark:text-slate-100">
+              <p className="text-base font-semibold text-slate-900 sm:text-lg dark:text-slate-100">
                 {t('landing.browserPreviewTitle')}
               </p>
-              <p className="mt-1 text-sm text-slate-500 dark:text-slate-400">
+              <p className="mt-1 text-sm text-slate-500 sm:text-base dark:text-slate-400">
                 {t('landing.browserPreviewDesc')}
               </p>
             </figcaption>
@@ -79,10 +79,10 @@ export function Marketplace() {
                   search={point.search}
                   className="group block py-6 first:pt-0"
                 >
-                  <h3 className="text-lg font-bold tracking-tight text-slate-900 transition-colors duration-200 group-hover:text-violet-600 dark:text-slate-100 dark:group-hover:text-violet-400">
+                  <h3 className="text-lg font-bold tracking-tight text-slate-900 transition-colors duration-200 group-hover:text-violet-600 sm:text-xl dark:text-slate-100 dark:group-hover:text-violet-400">
                     {point.title}
                   </h3>
-                  <p className="mt-2 text-sm leading-relaxed text-slate-600 dark:text-slate-400">
+                  <p className="mt-2 text-sm leading-relaxed text-slate-600 sm:text-base dark:text-slate-400">
                     {point.desc}
                   </p>
                 </Link>

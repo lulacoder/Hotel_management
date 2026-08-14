@@ -13,10 +13,7 @@ import { useForm, useStore } from '@tanstack/react-form'
 import { z } from 'zod'
 
 import { api } from '../../../../convex/_generated/api'
-import {
-  uploadImageToR2,
-  validateImageFile,
-} from '../../../lib/imageUpload'
+import { uploadImageToR2, validateImageFile } from '../../../lib/imageUpload'
 import {
   PACKAGES,
   formatPackageAddOn,
@@ -40,6 +37,7 @@ interface BookingModalProps {
   checkIn: string
   checkOut: string
   nights: number
+  guests?: number
   existingBooking?: {
     _id: Id<'bookings'>
     checkIn: string
@@ -79,6 +77,7 @@ export function BookingModal({
   checkIn,
   checkOut,
   nights,
+  guests,
   existingBooking,
   onClose,
   onSuccess,
@@ -963,6 +962,11 @@ export function BookingModal({
                 </p>
               </div>
             </div>
+            {guests && (
+              <p className="mt-3 text-sm text-slate-400">
+                {t('hotel.searchGuests', { count: guests })}
+              </p>
+            )}
             <div className="booking-summary-total mt-4 flex justify-between border-t border-slate-700 pt-4">
               <div className="text-sm text-slate-400">
                 <p>

@@ -29,7 +29,7 @@ export function BookingsHeader({ userName }: BookingsHeaderProps) {
   const [isOpen, setIsOpen] = useState(false)
 
   return (
-    <header className="sticky top-0 z-10 border-b border-slate-800/50 bg-slate-900/90 backdrop-blur-xl">
+    <header className="sticky top-0 z-10 border-b border-border bg-background/90 text-foreground backdrop-blur-xl">
       <div className="mx-auto flex max-w-7xl items-center justify-between p-4">
         <div className="flex items-center gap-4">
           <Button
@@ -42,7 +42,7 @@ export function BookingsHeader({ userName }: BookingsHeaderProps) {
               <ArrowLeft className="size-5" />
             </Link>
           </Button>
-          <h1 className="text-xl font-bold text-white">
+          <h1 className="text-xl font-bold text-foreground">
             {t('bookings.title')}
           </h1>
         </div>
@@ -51,7 +51,7 @@ export function BookingsHeader({ userName }: BookingsHeaderProps) {
           <LanguageSwitcher compact />
           <ThemeToggle compact />
           <NotificationBell />
-          <span className="text-sm text-slate-500">{userName}</span>
+          <span className="text-sm text-muted-foreground">{userName}</span>
           <UserButton afterSignOutUrl="/" />
         </div>
 
@@ -70,9 +70,9 @@ export function BookingsHeader({ userName }: BookingsHeaderProps) {
             </SheetTrigger>
             <SheetContent
               side="left"
-              className="w-80 border-r border-slate-800/50 bg-slate-900/95 p-0 text-slate-100"
+              className="w-80 border-r border-border bg-background/95 p-0 text-foreground"
             >
-              <SheetHeader className="border-b border-slate-800/50 px-5 py-4 text-left">
+              <SheetHeader className="border-b border-border px-5 py-4 text-left">
                 <div className="flex items-center gap-3">
                   <div className="brand-logo-shell h-10 px-1">
                     <img
@@ -82,10 +82,10 @@ export function BookingsHeader({ userName }: BookingsHeaderProps) {
                     />
                   </div>
                   <div>
-                    <SheetTitle className="text-slate-100">
+                    <SheetTitle className="text-foreground">
                       {t('bookings.title')}
                     </SheetTitle>
-                    <SheetDescription className="text-xs text-slate-500">
+                    <SheetDescription className="text-xs text-muted-foreground">
                       {t('header.navigationMenu')}
                     </SheetDescription>
                   </div>
@@ -96,7 +96,7 @@ export function BookingsHeader({ userName }: BookingsHeaderProps) {
                 <Link
                   to="/"
                   onClick={() => setIsOpen(false)}
-                  className="flex items-center gap-3 rounded-xl px-4 py-3 text-slate-400 transition-all hover:bg-white/5 hover:text-slate-100"
+                  className="flex items-center gap-3 rounded-xl px-4 py-3 text-muted-foreground transition-all hover:bg-muted hover:text-foreground"
                 >
                   <Home size={20} />
                   <span className="font-medium">{t('header.home')}</span>
@@ -105,7 +105,7 @@ export function BookingsHeader({ userName }: BookingsHeaderProps) {
                   to="/select-location"
                   search={DEFAULT_SELECT_LOCATION_SEARCH}
                   onClick={() => setIsOpen(false)}
-                  className="flex items-center gap-3 rounded-xl px-4 py-3 text-slate-400 transition-all hover:bg-white/5 hover:text-slate-100"
+                  className="flex items-center gap-3 rounded-xl px-4 py-3 text-muted-foreground transition-all hover:bg-muted hover:text-foreground"
                 >
                   <MapPin size={20} />
                   <span className="font-medium">
@@ -113,12 +113,12 @@ export function BookingsHeader({ userName }: BookingsHeaderProps) {
                   </span>
                 </Link>
 
-                <div className="mt-6 border-t border-slate-800/50 pt-6">
+                <div className="mt-6 border-t border-border pt-6">
                   <ThemeToggle className="w-full justify-center" />
                 </div>
               </nav>
 
-              <div className="mt-auto border-t border-slate-800/50 bg-slate-800/30 p-4">
+              <div className="mt-auto border-t border-border bg-muted/60 p-4">
                 <MobileAccountActions
                   displayName={userName}
                   onRequestClose={() => setIsOpen(false)}

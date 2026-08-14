@@ -30,10 +30,38 @@ import {
   useQuery,
 } from '@/integrations/convex/hooks'
 
+type HotelCategory =
+  | 'Boutique'
+  | 'Budget'
+  | 'Luxury'
+  | 'Resort and Spa'
+  | 'Extended-Stay'
+  | 'Suite'
+
+function isHotelCategory(value: string): value is HotelCategory {
+  return [
+    'Boutique',
+    'Budget',
+    'Luxury',
+    'Resort and Spa',
+    'Extended-Stay',
+    'Suite',
+  ].includes(value)
+}
+
 export const Route = createFileRoute('/select-location')({
   validateSearch: (search: Record<string, unknown>) => ({
     category: normalizeFilterValue(search.category),
+    checkIn: typeof search.checkIn === 'string' ? search.checkIn : '',
+    checkOut: typeof search.checkOut === 'string' ? search.checkOut : '',
     city: normalizeFilterValue(search.city),
+    guests:
+      typeof search.guests === 'number' &&
+      Number.isInteger(search.guests) &&
+      search.guests >= 1 &&
+      search.guests <= 20
+        ? search.guests
+        : 1,
     q: normalizeSearchTerm(search.q),
     rate: typeof search.rate === 'string' ? search.rate : undefined,
     sort: normalizeSortOption(search.sort),
@@ -62,9 +90,28 @@ function SelectLocationPage() {
   const selectedCity = search.city
   const selectedCategory = search.category
   const sortBy = search.sort
+  const hasValidStay =
+    /^\d{4}-\d{2}-\d{2}$/.test(search.checkIn) &&
+    /^\d{4}-\d{2}-\d{2}$/.test(search.checkOut) &&
+    search.checkOut > search.checkIn
 
   // Primary data sources for cards and aggregated rating metadata.
   const hotels = useQuery(api.hotels.list, {})
+  const availabilityResults = useQuery(
+    api.hotels.searchAvailable,
+    hasValidStay
+      ? {
+          category: isHotelCategory(selectedCategory)
+            ? selectedCategory
+            : undefined,
+          checkIn: search.checkIn,
+          checkOut: search.checkOut,
+          city: selectedCity !== 'all' ? selectedCity : undefined,
+          destination: searchTerm.trim() || undefined,
+          guests: search.guests,
+        }
+      : 'skip',
+  )
   const ratingHotelIdFromSearch = useMemo<Id<'hotels'> | null>(() => {
     if (!hotels || !search.rate) {
       return null
@@ -116,9 +163,16 @@ function SelectLocationPage() {
   // Compute hotels with distance
   const hotelsWithDistance = useMemo(() => {
     // Enrich hotels with computed distance when geolocation is available.
-    if (!hotels) return []
+    const sourceHotels = hasValidStay
+      ? availabilityResults?.map((result) => ({
+          ...result.hotel,
+          fromPrice: result.fromPrice,
+          matchingRoomCount: result.matchingRoomCount,
+        }))
+      : hotels
+    if (!sourceHotels) return []
 
-    return hotels.map((hotel) => {
+    return sourceHotels.map((hotel) => {
       let distance: number | null = null
 
       if (userLat !== null && userLng !== null && hotel.location) {
@@ -132,7 +186,7 @@ function SelectLocationPage() {
 
       return { ...hotel, distance }
     })
-  }, [hotels, userLat, userLng])
+  }, [availabilityResults, hasValidStay, hotels, userLat, userLng])
 
   const ratingSummaryByHotelId = useMemo(() => {
     const map: Partial<Record<string, { average: number; count: number }>> = {}
@@ -169,7 +223,7 @@ function SelectLocationPage() {
   // Filter and sort hotels
   const filteredHotels = useMemo(() => {
     // Apply search/filter criteria and then sort by selected option.
-    const needle = searchTerm.toLowerCase()
+    const needle = hasValidStay ? '' : searchTerm.toLowerCase()
     const result = hotelsWithDistance.filter((hotel) => {
       const matchesSearch =
         needle.length === 0 ||
@@ -213,6 +267,7 @@ function SelectLocationPage() {
     selectedCategory,
     sortBy,
     ratingSummaryByHotelId,
+    hasValidStay,
   ])
 
   const hasUserLocation = userLat !== null && userLng !== null
@@ -271,7 +326,10 @@ function SelectLocationPage() {
   const updateSearch = (
     nextSearch: Partial<{
       category: string
+      checkIn: string
+      checkOut: string
       city: string
+      guests: number
       q: string
       sort: SortOption
     }>,
@@ -389,6 +447,13 @@ function SelectLocationPage() {
         requestLocation={requestLocation}
         searchTerm={searchTerm}
         onSearchTermChange={(value) => updateSearch({ q: value })}
+        checkIn={search.checkIn}
+        checkOut={search.checkOut}
+        guests={search.guests}
+        hasValidStay={hasValidStay}
+        onCheckInChange={(value) => updateSearch({ checkIn: value })}
+        onCheckOutChange={(value) => updateSearch({ checkOut: value })}
+        onGuestsChange={(value) => updateSearch({ guests: value })}
       >
         <SearchFilters
           selectedCity={selectedCity}
@@ -412,7 +477,14 @@ function SelectLocationPage() {
           selectedCategory={selectedCategory}
           ratingSummaryByHotelId={ratingSummaryByHotelId}
           onOpenRating={openRatingModal}
-          isLoading={hotels === undefined}
+          isLoading={
+            hotels === undefined ||
+            (hasValidStay && availabilityResults === undefined)
+          }
+          checkIn={search.checkIn}
+          checkOut={search.checkOut}
+          guests={search.guests}
+          hasAvailabilitySearch={hasValidStay}
         />
       </main>
 

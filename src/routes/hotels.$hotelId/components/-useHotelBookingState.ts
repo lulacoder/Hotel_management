@@ -10,20 +10,21 @@ interface ResumeBookingState {
 }
 
 interface UseHotelBookingStateOptions {
+  initialDates?: { checkIn: string; checkOut: string }
   hasResumeBookingSearch: boolean
   onClearResumeBooking: () => void
   resumeBooking: ResumeBookingState | null | undefined
 }
 
 export function useHotelBookingState({
+  initialDates,
   hasResumeBookingSearch,
   onClearResumeBooking,
   resumeBooking,
 }: UseHotelBookingStateOptions) {
-  const [selectedDates, setSelectedDates] = useState({
-    checkIn: '',
-    checkOut: '',
-  })
+  const [selectedDates, setSelectedDates] = useState(
+    initialDates ?? { checkIn: '', checkOut: '' },
+  )
   const [showBookingModal, setShowBookingModal] = useState<Id<'rooms'> | null>(
     null,
   )
