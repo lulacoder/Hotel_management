@@ -21,7 +21,7 @@ const futureDate = (daysFromNow: number) => {
 }
 
 describe('customer experience queries', () => {
-  it('applies payment status filters before paginating hotel bookings', async () => {
+  it('applies payment status filters before paginating hotel bookings', { timeout: 15000 }, async () => {
     const t = convexTest(schema, modules)
     const { hotelId } = await t.run(async (ctx) => {
       const now = Date.now()

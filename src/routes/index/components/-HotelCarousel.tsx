@@ -120,12 +120,35 @@ function CarouselSkeleton() {
 export function HotelCarousel() {
   const { t } = useI18n()
   const hotels = useQuery(api.hotels.list, {})
+  const featuredHotels = useMemo(() => {
+    if (!hotels) return []
+    return [...hotels]
+      .sort(
+        (left, right) =>
+          Number(Boolean(right.imageUrl)) - Number(Boolean(left.imageUrl)),
+      )
+      .slice(0, 12)
+  }, [hotels])
+
+  // Ensure sufficient cards (minimum 16 cards and at least 3 repetitions)
+  // so Embla Carousel's loop engine can continuously cycle without ever hitting a boundary.
+  const carouselHotels = useMemo(() => {
+    if (!featuredHotels.length) return []
+    const targetCount = Math.max(16, featuredHotels.length * 3)
+    const repetitions = Math.max(
+      3,
+      Math.ceil(targetCount / featuredHotels.length),
+    )
+    return Array.from({ length: repetitions }, () => featuredHotels).flat()
+  }, [featuredHotels])
+
   const prefersReducedMotion = useReducedMotion()
+
   const carouselPlugins = useMemo(
     () => [
       AutoScroll({
         playOnInit: !prefersReducedMotion,
-        speed: 0.6,
+        speed: 0.75,
         startDelay: 0,
         stopOnFocusIn: false,
         stopOnInteraction: false,
@@ -135,36 +158,16 @@ export function HotelCarousel() {
     ],
     [prefersReducedMotion],
   )
+
   const [carouselRef, carouselApi] = useEmblaCarousel(
     {
       align: 'start',
-      containScroll: false,
       dragFree: true,
       loop: true,
+      skipSnaps: true,
     },
     carouselPlugins,
   )
-
-  const featuredHotels = hotels
-    ? [...hotels]
-        .sort(
-          (left, right) =>
-            Number(Boolean(right.imageUrl)) - Number(Boolean(left.imageUrl)),
-        )
-        .slice(0, 12)
-    : []
-  const minimumCards = 5
-  const carouselHotels = featuredHotels.length
-    ? Array.from(
-        {
-          length: Math.max(
-            1,
-            Math.ceil(minimumCards / featuredHotels.length),
-          ),
-        },
-        () => featuredHotels,
-      ).flat()
-    : []
 
   if (hotels?.length === 0) {
     return null
@@ -203,13 +206,17 @@ export function HotelCarousel() {
             aria-label={t('landing.hotelCarouselLabel')}
             role="region"
             tabIndex={0}
-            onMouseLeave={(event) => {
-              const viewport = event.currentTarget
-              window.setTimeout(() => {
-                if (!viewport.matches(':hover')) {
-                  carouselApi?.plugins().autoScroll.play(0)
-                }
-              }, 400)
+            onMouseEnter={() => {
+              const autoScroll = carouselApi?.plugins()?.autoScroll
+              if (autoScroll?.isPlaying()) {
+                autoScroll.stop()
+              }
+            }}
+            onMouseLeave={() => {
+              const autoScroll = carouselApi?.plugins()?.autoScroll
+              if (autoScroll && !autoScroll.isPlaying()) {
+                autoScroll.play()
+              }
             }}
             onKeyDown={(event) => {
               if (event.key !== 'ArrowLeft' && event.key !== 'ArrowRight') {
@@ -224,7 +231,7 @@ export function HotelCarousel() {
               }
             }}
           >
-            <div className="hotel-carousel-track flex w-max gap-5 px-2">
+            <div className="hotel-carousel-track flex touch-pan-y gap-5 px-2">
               {carouselHotels.map((hotel, index) => (
                 <HotelCard key={`${hotel._id}-${index}`} hotel={hotel} />
               ))}

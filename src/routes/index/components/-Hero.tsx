@@ -1,40 +1,61 @@
 // Landing hero: asymmetric split with copy on the left and a single portrait image.
 import { Link, useNavigate } from '@tanstack/react-router'
 import { ArrowRight, MapPin, Search, Users } from 'lucide-react'
-import { useState } from 'react'
+import { useRef, useState } from 'react'
 import { useI18n } from '../../../lib/i18n/provider'
 import {
   DEFAULT_AUTH_SEARCH,
+  DEFAULT_HOTEL_DETAIL_SEARCH,
   DEFAULT_SELECT_LOCATION_SEARCH,
   getMinimumCheckoutDate,
   getTodayDateString,
 } from '../../../lib/navigationSearch'
 import { Reveal } from './-Reveal'
+import { HeroSearchAutocomplete } from './-HeroSearchAutocomplete'
 import { Button } from '@/components/ui/button'
 import { DatePicker } from '@/components/ui/date-picker'
 import { staticAssets } from '@/lib/staticAssets'
+import type { Id } from '../../../../convex/_generated/dataModel'
 
 export function Hero() {
   const { t } = useI18n()
   const navigate = useNavigate()
   const [destination, setDestination] = useState('')
+  const [selectedHotelId, setSelectedHotelId] = useState<Id<'hotels'> | null>(null)
+  const [selectedHotelName, setSelectedHotelName] = useState<string | null>(null)
   const [checkIn, setCheckIn] = useState('')
   const [checkOut, setCheckOut] = useState('')
   const [guests, setGuests] = useState(1)
+  const [isAutocompleteOpen, setIsAutocompleteOpen] = useState(false)
+  const inputRef = useRef<HTMLInputElement>(null)
 
   const today = getTodayDateString()
   const minCheckOut = getMinimumCheckoutDate(checkIn) ?? today
 
   const submitAvailabilitySearch = (event: React.FormEvent) => {
     event.preventDefault()
-    if (!checkIn || !checkOut) return
+    setIsAutocompleteOpen(false)
+
+    if (selectedHotelId && destination.trim() === selectedHotelName?.trim()) {
+      void navigate({
+        to: '/hotels/$hotelId',
+        params: { hotelId: selectedHotelId },
+        search: {
+          ...DEFAULT_HOTEL_DETAIL_SEARCH,
+          checkIn: checkIn || undefined,
+          checkOut: checkOut || undefined,
+          guests: guests > 1 ? guests : undefined,
+        },
+      })
+      return
+    }
 
     void navigate({
       to: '/select-location',
       search: {
         ...DEFAULT_SELECT_LOCATION_SEARCH,
-        checkIn,
-        checkOut,
+        checkIn: checkIn || '',
+        checkOut: checkOut || '',
         guests,
         q: destination.trim(),
       },
@@ -59,16 +80,55 @@ export function Hero() {
             onSubmit={submitAvailabilitySearch}
             className="mt-9 grid gap-2 rounded-2xl border border-slate-200 bg-white/80 p-2 sm:grid-cols-2 dark:border-slate-800 dark:bg-slate-900/60"
           >
-            <label className="relative sm:col-span-2">
-              <MapPin className="absolute left-3 top-1/2 size-4 -translate-y-1/2 text-slate-400" />
-              <span className="sr-only">{t('landing.searchWhere')}</span>
-              <input
-                value={destination}
-                onChange={(event) => setDestination(event.target.value)}
-                placeholder={t('landing.searchWherePlaceholder')}
-                className="h-11 w-full rounded-xl border border-slate-200 bg-white pl-10 pr-3 text-sm text-slate-900 outline-none focus:border-violet-500 sm:text-base dark:border-slate-700 dark:bg-slate-800 dark:text-slate-100"
+            <div className="relative sm:col-span-2">
+              <label className="relative block">
+                <MapPin className="absolute left-3 top-1/2 size-4 -translate-y-1/2 text-slate-400" />
+                <span className="sr-only">{t('landing.searchWhere')}</span>
+                <input
+                  ref={inputRef}
+                  value={destination}
+                  onFocus={() => setIsAutocompleteOpen(true)}
+                  onChange={(event) => {
+                    const value = event.target.value
+                    setDestination(value)
+                    if (selectedHotelName && value !== selectedHotelName) {
+                      setSelectedHotelId(null)
+                      setSelectedHotelName(null)
+                    }
+                    setIsAutocompleteOpen(true)
+                  }}
+                  placeholder={t('landing.searchWherePlaceholder')}
+                  aria-expanded={isAutocompleteOpen}
+                  aria-haspopup="listbox"
+                  autoComplete="off"
+                  className="h-11 w-full rounded-xl border border-slate-200 bg-white pl-10 pr-3 text-sm text-slate-900 outline-none focus:border-violet-500 sm:text-base dark:border-slate-700 dark:bg-slate-800 dark:text-slate-100"
+                />
+              </label>
+              <HeroSearchAutocomplete
+                searchTerm={destination}
+                isOpen={isAutocompleteOpen}
+                onClose={() => setIsAutocompleteOpen(false)}
+                onSelectCity={(city) => {
+                  setDestination(city)
+                  setSelectedHotelId(null)
+                  setSelectedHotelName(null)
+                  setIsAutocompleteOpen(false)
+                }}
+                onSelectHotel={(hotel) => {
+                  setDestination(hotel.name)
+                  setSelectedHotelId(hotel.id)
+                  setSelectedHotelName(hotel.name)
+                  setIsAutocompleteOpen(false)
+                }}
+                onSelectViewAll={(query) => {
+                  setDestination(query)
+                  setSelectedHotelId(null)
+                  setSelectedHotelName(null)
+                  setIsAutocompleteOpen(false)
+                }}
+                inputRef={inputRef}
               />
-            </label>
+            </div>
             <DatePicker
               ariaLabel={t('landing.searchCheckIn')}
               placeholder={t('landing.searchCheckIn')}

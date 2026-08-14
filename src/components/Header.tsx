@@ -118,7 +118,7 @@ export default function Header() {
             : 'bg-transparent',
         )}
       >
-        <div className="mx-auto flex h-16 max-w-7xl items-center justify-between px-4 sm:h-20 sm:px-6 lg:px-8">
+        <div className="mx-auto flex h-16 w-full max-w-[1400px] items-center justify-between px-6 sm:h-20 sm:px-10">
           <div className="flex items-center gap-3 sm:gap-4">
             <Sheet open={menuOpen} onOpenChange={setMenuOpen}>
               <SheetTrigger asChild>
