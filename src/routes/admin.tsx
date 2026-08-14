@@ -137,7 +137,7 @@ function AdminLayout() {
   const isRoomAdmin = profile?.role === 'room_admin'
   const hotelAssignmentRole = hotelAssignment?.role ?? null
 
-  if (!isLoaded || profile === undefined || profile === null) {
+  if (!isLoaded) {
     return (
       <div
         className={`flex min-h-screen items-center justify-center ${isDark ? 'bg-slate-950' : 'bg-slate-50'}`}
@@ -153,6 +153,55 @@ function AdminLayout() {
   if (!isSignedIn) {
     return (
       <Navigate to="/sign-in" search={buildRedirectSearch(location.href)} />
+    )
+  }
+
+  if (profile === undefined) {
+    return (
+      <div
+        className={`flex min-h-screen items-center justify-center ${isDark ? 'bg-slate-950' : 'bg-slate-50'}`}
+      >
+        <div className="relative">
+          <div className="animate-spin rounded-full size-12 border-2 border-violet-500/20 border-t-violet-500"></div>
+          <div className="absolute inset-0 animate-ping rounded-full size-12 border border-violet-500/10"></div>
+        </div>
+      </div>
+    )
+  }
+
+  if (profile === null) {
+    return (
+      <div
+        className={`flex min-h-screen items-center justify-center px-4 ${isDark ? 'bg-slate-950' : 'bg-slate-50'}`}
+      >
+        <div className="admin-surface max-w-md p-8 text-center">
+          <div className="mx-auto mb-5 flex size-16 items-center justify-center rounded-2xl border border-amber-500/25 bg-amber-500/10">
+            <Users className="size-8 text-amber-500" />
+          </div>
+          <h1 className="text-xl font-semibold text-slate-900 dark:text-slate-100">
+            {t('admin.profileMissingTitle')}
+          </h1>
+          <p className="mt-2 text-sm leading-relaxed text-slate-500 dark:text-slate-400">
+            {t('admin.profileMissingDescription')}
+          </p>
+          <div className="mt-6 flex flex-col justify-center gap-3 sm:flex-row">
+            <button
+              type="button"
+              onClick={() => window.location.reload()}
+              className="admin-button-primary cursor-pointer px-5 py-2.5 text-sm"
+            >
+              {t('admin.retryProfile')}
+            </button>
+            <Link
+              to="/select-location"
+              search={DEFAULT_SELECT_LOCATION_SEARCH}
+              className="admin-button-secondary px-5 py-2.5 text-sm"
+            >
+              {t('admin.returnHome')}
+            </Link>
+          </div>
+        </div>
+      </div>
     )
   }
 

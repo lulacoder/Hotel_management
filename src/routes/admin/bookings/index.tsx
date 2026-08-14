@@ -1,7 +1,16 @@
 // Admin bookings list route with filtering and booking management actions.
 import { Link, createFileRoute, useNavigate } from '@tanstack/react-router'
-import { Calendar, CircleDollarSign, Eye, Hotel, X } from 'lucide-react'
-import { useEffect, useMemo, useState } from 'react'
+import {
+  Calendar,
+  CheckCircle2,
+  CircleDollarSign,
+  Eye,
+  Hotel,
+  Loader2,
+  X,
+  XCircle,
+} from 'lucide-react'
+import { useEffect, useState } from 'react'
 import { m } from 'motion/react'
 import { api } from '../../../../convex/_generated/api'
 import {
@@ -89,6 +98,15 @@ function BookingsPage() {
     useState<Id<'bookings'> | null>(null)
   const [outsourceBookingId, setOutsourceBookingId] =
     useState<Id<'bookings'> | null>(null)
+  const [bookingAction, setBookingAction] = useState<{
+    bookingId: Id<'bookings'>
+    kind: 'cancel' | 'cash' | 'status'
+  } | null>(null)
+  const [actionFeedback, setActionFeedback] = useState<{
+    bookingId: Id<'bookings'>
+    message: string
+    tone: 'error' | 'success'
+  } | null>(null)
 
   const { hotelAssignment, profile } = useAdminSession()
 
@@ -110,6 +128,8 @@ function BookingsPage() {
       hotelId:
         selectedHotel !== 'all' ? (selectedHotel as Id<'hotels'>) : undefined,
       status: isBookingStatus(statusFilter) ? statusFilter : undefined,
+      paymentStatus:
+        paymentStatusFilter !== 'all' ? paymentStatusFilter : undefined,
     },
     { initialNumItems: 20 },
   ) as {
@@ -138,7 +158,27 @@ function BookingsPage() {
 
   const handleCancel = async (bookingId: Id<'bookings'>) => {
     if (confirm(t('bookings.confirmCancel'))) {
-      await cancelBooking({ bookingId })
+      setBookingAction({ bookingId, kind: 'cancel' })
+      setActionFeedback(null)
+      try {
+        await cancelBooking({ bookingId })
+        setActionFeedback({
+          bookingId,
+          message: t('admin.bookings.action.cancelSuccess'),
+          tone: 'success',
+        })
+      } catch (error) {
+        setActionFeedback({
+          bookingId,
+          message:
+            error instanceof Error
+              ? error.message
+              : t('admin.bookings.action.failed'),
+          tone: 'error',
+        })
+      } finally {
+        setBookingAction(null)
+      }
     }
   }
 
@@ -146,29 +186,56 @@ function BookingsPage() {
     bookingId: Id<'bookings'>,
     nextStatus: ManualBookingTransitionStatus,
   ) => {
-    await updateBookingStatus({ bookingId, nextStatus })
+    setBookingAction({ bookingId, kind: 'status' })
+    setActionFeedback(null)
+    try {
+      await updateBookingStatus({ bookingId, nextStatus })
+      setActionFeedback({
+        bookingId,
+        message: t('admin.bookings.action.statusSuccess'),
+        tone: 'success',
+      })
+    } catch (error) {
+      setActionFeedback({
+        bookingId,
+        message:
+          error instanceof Error
+            ? error.message
+            : t('admin.bookings.action.failed'),
+        tone: 'error',
+      })
+    } finally {
+      setBookingAction(null)
+    }
   }
 
   const handleAcceptCashPayment = async (bookingId: Id<'bookings'>) => {
-    await acceptCashPayment({ bookingId })
+    setBookingAction({ bookingId, kind: 'cash' })
+    setActionFeedback(null)
+    try {
+      await acceptCashPayment({ bookingId })
+      setActionFeedback({
+        bookingId,
+        message: t('admin.bookings.action.cashSuccess'),
+        tone: 'success',
+      })
+    } catch (error) {
+      setActionFeedback({
+        bookingId,
+        message:
+          error instanceof Error
+            ? error.message
+            : t('admin.bookings.action.failed'),
+        tone: 'error',
+      })
+    } finally {
+      setBookingAction(null)
+    }
   }
 
   const { statusConfig, transitionLabel } = useBookingStatusConfig()
 
-  const filteredBookings = useMemo(() => {
-    return bookings.filter((item) => {
-      const bookingPaymentStatus =
-        item.booking.paymentStatus ?? 'unpaid_unknown'
-      if (
-        paymentStatusFilter !== 'all' &&
-        bookingPaymentStatus !== paymentStatusFilter
-      ) {
-        return false
-      }
-
-      return true
-    })
-  }, [bookings, paymentStatusFilter])
+  const filteredBookings = bookings
 
   const canManageBooking = (hotelId: Id<'hotels'>) =>
     profile.role === 'room_admin' ||
@@ -440,9 +507,15 @@ function BookingsPage() {
                             variant="secondary"
                             size="lg"
                             onClick={() => handleAcceptCashPayment(booking._id)}
+                            disabled={bookingAction?.bookingId === booking._id}
                             className="gap-2 px-4 text-emerald-400"
                           >
-                            <CircleDollarSign className="size-4" />
+                            {bookingAction?.bookingId === booking._id &&
+                            bookingAction?.kind === 'cash' ? (
+                              <Loader2 className="size-4 animate-spin" />
+                            ) : (
+                              <CircleDollarSign className="size-4" />
+                            )}
                             {t('admin.bookings.acceptCash')}
                           </Button>
                         )}
@@ -457,8 +530,15 @@ function BookingsPage() {
                                 variant="destructive"
                                 size="lg"
                                 onClick={() => handleCancel(booking._id)}
+                                disabled={
+                                  bookingAction?.bookingId === booking._id
+                                }
                                 className="px-4"
                               >
+                                {bookingAction?.bookingId === booking._id &&
+                                  bookingAction?.kind === 'cancel' && (
+                                    <Loader2 className="size-4 animate-spin" />
+                                  )}
                                 {transitionLabel[nextStatus]}
                               </Button>
                             ) : (
@@ -470,8 +550,15 @@ function BookingsPage() {
                                 onClick={() =>
                                   handleStatusChange(booking._id, nextStatus)
                                 }
+                                disabled={
+                                  bookingAction?.bookingId === booking._id
+                                }
                                 className="px-4"
                               >
+                                {bookingAction?.bookingId === booking._id &&
+                                  bookingAction?.kind === 'status' && (
+                                    <Loader2 className="size-4 animate-spin" />
+                                  )}
                                 {transitionLabel[nextStatus]}
                               </Button>
                             ),
@@ -495,6 +582,23 @@ function BookingsPage() {
                         )}
                     </div>
                   </div>
+                  {actionFeedback?.bookingId === booking._id && (
+                    <div
+                      role="status"
+                      className={`mt-4 flex items-start gap-2 rounded-xl border px-3 py-2 text-sm ${
+                        actionFeedback?.tone === 'success'
+                          ? 'border-emerald-500/25 bg-emerald-500/10 text-emerald-400'
+                          : 'border-red-500/25 bg-red-500/10 text-red-400'
+                      }`}
+                    >
+                      {actionFeedback?.tone === 'success' ? (
+                        <CheckCircle2 className="mt-0.5 size-4 shrink-0" />
+                      ) : (
+                        <XCircle className="mt-0.5 size-4 shrink-0" />
+                      )}
+                      <span>{actionFeedback?.message}</span>
+                    </div>
+                  )}
                 </div>
               </m.div>
             )
