@@ -2,9 +2,10 @@
 import { useAuth } from '@clerk/clerk-react'
 import { Navigate, createFileRoute } from '@tanstack/react-router'
 import { useI18n } from '../lib/i18n/provider'
-import { CURRENT_YEAR } from '../lib/currentYear'
 import { DEFAULT_AUTH_SEARCH } from '../lib/navigationSearch'
 import { staticAssets } from '../lib/staticAssets'
+import { Seo } from '../components/Seo'
+import { Footer } from '../components/Footer'
 import { Hero } from './index/components/-Hero'
 import { HotelCarousel } from './index/components/-HotelCarousel'
 import { CapabilityIndex } from './index/components/-CapabilityIndex'
@@ -24,6 +25,34 @@ function LandingPage() {
   const { isSignedIn, isLoaded } = useAuth()
   const { t } = useI18n()
 
+  // Structured schemas for Google rich search results
+  const landingJsonLd = [
+    {
+      '@type': 'WebSite',
+      name: 'TripWays Hotels',
+      url: 'https://tripways.com',
+      potentialAction: {
+        '@type': 'SearchAction',
+        target: 'https://tripways.com/select-location?q={search_term_string}',
+        'query-input': 'required name=search_term_string',
+      },
+    },
+    {
+      '@type': 'Organization',
+      name: 'TripWays Hotels',
+      url: 'https://tripways.com',
+      logo: staticAssets.logo,
+      description:
+        'TripWays brings together handpicked luxury hotels, boutique rooms, and resort suites with seamless booking and instant confirmation.',
+      contactPoint: {
+        '@type': 'ContactPoint',
+        telephone: '+251-11-000-0000',
+        contactType: 'customer service',
+        availableLanguage: ['English', 'Amharic'],
+      },
+    },
+  ]
+
   // Signed-in users should continue through role-aware post-login routing
   // instead of sitting on a passive loading screen.
   if (isLoaded && isSignedIn) {
@@ -32,6 +61,12 @@ function LandingPage() {
 
   return (
     <div className="bg-white text-slate-900 dark:bg-slate-950 dark:text-slate-100 [font-family:var(--font-body)]">
+      <Seo
+        title={t('landing.titleLine1') + ' ' + t('landing.titleLine2')}
+        description={t('landing.subtitle')}
+        canonicalUrl="/"
+        jsonLd={landingJsonLd}
+      />
       <Hero />
       <HotelCarousel />
       <CapabilityIndex />
@@ -39,20 +74,7 @@ function LandingPage() {
       <StayMoods />
       <BookingPath />
       <ClosingCta />
-
-      <footer className="border-t border-slate-200 dark:border-slate-800">
-        <div className="mx-auto flex w-full max-w-[1400px] flex-col items-center justify-between gap-4 px-6 py-10 sm:flex-row sm:px-10">
-          <img
-            src={staticAssets.logo}
-            alt="TripWays Hotels"
-            className="h-8 w-auto opacity-90"
-          />
-          <p className="text-sm text-slate-500 dark:text-slate-400">
-            &copy; {CURRENT_YEAR} TripWays Hotels.{' '}
-            {t('common.allRightsReserved')}
-          </p>
-        </div>
-      </footer>
+      <Footer />
     </div>
   )
 }

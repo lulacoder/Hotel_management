@@ -29,14 +29,26 @@ export function HotelPageChrome({
     <>
       <header className="sticky top-0 z-50 border-b border-slate-800/50 bg-slate-900/80 backdrop-blur-xl">
         <div className="mx-auto flex max-w-7xl items-center justify-between p-4">
-          <Link
-            to="/select-location"
-            search={DEFAULT_SELECT_LOCATION_SEARCH}
-            className="flex items-center gap-2 text-slate-400 transition-colors hover:text-slate-200"
-          >
-            <MapPin className="size-5" />
-            <span className="hidden md:inline">{t('hotel.backToHotels')}</span>
-          </Link>
+          <div className="flex items-center gap-4">
+            <Link to="/" className="inline-flex items-center group">
+              <div className="brand-logo-shell h-8 px-1 flex items-center justify-center">
+                <img
+                  src={staticAssets.logo}
+                  alt="TripWays Hotels"
+                  className="h-6 w-auto object-contain logo-tight"
+                />
+              </div>
+            </Link>
+            <span className="text-slate-600 hidden sm:inline">/</span>
+            <Link
+              to="/select-location"
+              search={DEFAULT_SELECT_LOCATION_SEARCH}
+              className="flex items-center gap-1.5 text-sm text-slate-400 transition-colors hover:text-slate-200"
+            >
+              <MapPin className="size-4 text-violet-400" />
+              <span>{t('hotel.backToHotels')}</span>
+            </Link>
+          </div>
 
           <div className="hidden items-center gap-4 md:flex">
             <LanguageSwitcher compact />

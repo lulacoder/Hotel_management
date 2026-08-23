@@ -7,6 +7,8 @@ import { api } from '../../convex/_generated/api'
 import { useI18n } from '../lib/i18n/provider'
 import { getHotelCategoryLabel } from '../lib/hotelCategories'
 import { DEFAULT_SELECT_LOCATION_SEARCH } from '../lib/navigationSearch'
+import { Seo } from '../components/Seo'
+import { Footer } from '../components/Footer'
 import { BookingModal } from './hotels.$hotelId/components/-BookingModal'
 import { HotelAnnouncementsPreview } from './hotels.$hotelId/components/-HotelAnnouncementsPreview'
 import { HotelDateSelection } from './hotels.$hotelId/components/-HotelDateSelection'
@@ -154,8 +156,88 @@ function HotelDetailPage() {
     )
   }
 
+  const hotelJsonLd = [
+    {
+      '@type': 'BreadcrumbList',
+      itemListElement: [
+        {
+          '@type': 'ListItem',
+          position: 1,
+          name: 'Home',
+          item: 'https://tripways.com',
+        },
+        {
+          '@type': 'ListItem',
+          position: 2,
+          name: 'Browse Hotels',
+          item: 'https://tripways.com/select-location',
+        },
+        {
+          '@type': 'ListItem',
+          position: 3,
+          name: hotel.name,
+          item: `https://tripways.com/hotels/${hotel._id}`,
+        },
+      ],
+    },
+    {
+      '@type': 'Hotel',
+      name: hotel.name,
+      description:
+        hotel.description ||
+        `Luxury hotel stay at ${hotel.name} in ${hotel.city}, ${hotel.country}.`,
+      image: hotel.imageUrl || undefined,
+      address: {
+        '@type': 'PostalAddress',
+        streetAddress: hotel.address,
+        addressLocality: hotel.city,
+        addressRegion: hotel.stateProvince || undefined,
+        postalCode: hotel.postalCode || undefined,
+        addressCountry: hotel.country,
+      },
+      ...(hotel.location
+        ? {
+            geo: {
+              '@type': 'GeoCoordinates',
+              latitude: hotel.location.lat,
+              longitude: hotel.location.lng,
+            },
+          }
+        : {}),
+      ...(hotel.rating
+        ? {
+            aggregateRating: {
+              '@type': 'AggregateRating',
+              ratingValue: hotel.rating,
+              reviewCount: hotel.ratingCount || 1,
+            },
+          }
+        : {}),
+      ...(hotel.tags && hotel.tags.length > 0
+        ? {
+            amenityFeature: hotel.tags.map((tag) => ({
+              '@type': 'LocationFeatureSpecification',
+              name: tag,
+              value: true,
+            })),
+          }
+        : {}),
+    },
+  ]
+
   return (
     <div className="min-h-screen bg-gradient-to-b from-slate-950 via-slate-900 to-slate-950">
+      <Seo
+        title={`${hotel.name} - ${hotel.city}`}
+        description={
+          hotel.description ||
+          `Book your stay at ${hotel.name} in ${hotel.city}, ${hotel.country}. Enjoy premier amenities, verified reviews, and instant confirmation with TripWays.`
+        }
+        canonicalUrl={`/hotels/${hotelId}`}
+        ogImage={hotel.imageUrl}
+        ogType="hotel"
+        jsonLd={hotelJsonLd}
+      />
       <HotelPageChrome
         isSignedIn={Boolean(isSignedIn)}
         userFirstName={user?.firstName ?? undefined}
@@ -321,6 +403,8 @@ function HotelDetailPage() {
           }}
         />
       )}
+
+      <Footer />
     </div>
   )
 }

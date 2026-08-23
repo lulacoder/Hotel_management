@@ -17,6 +17,7 @@ import { isBookingStatus } from '../../../convex/lib/bookingLifecycle'
 import { LoadMoreButton } from '../../components/LoadMoreButton'
 import { useI18n } from '../../lib/i18n/provider'
 import { DEFAULT_SELECT_LOCATION_SEARCH } from '../../lib/navigationSearch'
+import { Seo } from '../../components/Seo'
 
 import { BookingsHeader } from './bookings/components/-BookingsHeader'
 import { BookingsFilters } from './bookings/components/-BookingsFilters'
@@ -201,6 +202,7 @@ function BookingsPage() {
 
   return (
     <div className="min-h-screen bg-background text-foreground">
+      <Seo title={t('header.myBookings')} noIndex />
       <BookingsHeader
         userName={
           user?.firstName || user?.emailAddresses[0]?.emailAddress || ''

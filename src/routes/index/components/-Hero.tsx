@@ -12,10 +12,10 @@ import {
 } from '../../../lib/navigationSearch'
 import { Reveal } from './-Reveal'
 import { HeroSearchAutocomplete } from './-HeroSearchAutocomplete'
+import type { Id } from '../../../../convex/_generated/dataModel'
 import { Button } from '@/components/ui/button'
 import { DatePicker } from '@/components/ui/date-picker'
 import { staticAssets } from '@/lib/staticAssets'
-import type { Id } from '../../../../convex/_generated/dataModel'
 
 export function Hero() {
   const { t } = useI18n()
@@ -66,6 +66,11 @@ export function Hero() {
     <section className="mx-auto w-full max-w-[1400px] px-6 pt-12 pb-20 sm:px-10 lg:pt-20 lg:pb-28">
       <div className="grid items-center gap-12 lg:grid-cols-[1.15fr_0.85fr] lg:gap-16">
         <Reveal>
+          <div className="mb-5 inline-flex items-center gap-2 rounded-full border border-violet-500/20 bg-violet-500/10 px-3.5 py-1.5 text-xs font-semibold text-violet-700 dark:text-violet-300">
+            <span className="flex size-2 rounded-full bg-violet-500 animate-pulse" />
+            <span>{t('landing.socialProof')}</span>
+          </div>
+
           <h1 className="text-[2.75rem] leading-[1.02] font-extrabold tracking-tighter text-slate-900 sm:text-6xl lg:text-7xl dark:text-white [font-family:var(--font-heading)]">
             {t('landing.titleLine1')}
             <br />
@@ -179,6 +184,26 @@ export function Hero() {
               {t('landing.searchAvailability')}
             </button>
           </form>
+
+          <div className="mt-4 flex flex-wrap items-center gap-2">
+            <span className="text-xs font-medium text-slate-500 dark:text-slate-400">
+              {t('landing.popularDestinationsLabel')}
+            </span>
+            {['Addis Ababa', 'Bishoftu', 'Hawassa', 'Bahir Dar'].map((city) => (
+              <button
+                key={city}
+                type="button"
+                onClick={() => {
+                  setDestination(city)
+                  setSelectedHotelId(null)
+                  setSelectedHotelName(null)
+                }}
+                className="cursor-pointer rounded-lg border border-slate-200 bg-white/80 px-2.5 py-1 text-xs font-medium text-slate-700 transition-all hover:border-violet-300 hover:bg-violet-50 hover:text-violet-700 dark:border-slate-800 dark:bg-slate-900/60 dark:text-slate-300 dark:hover:border-violet-500/30 dark:hover:bg-violet-500/10 dark:hover:text-violet-300"
+              >
+                {city}
+              </button>
+            ))}
+          </div>
 
           <div className="mt-8 flex flex-wrap items-center gap-3">
             <Button

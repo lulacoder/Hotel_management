@@ -272,24 +272,38 @@ export function HotelGrid({
                     </div>
                   )}
                   {hasAvailabilitySearch &&
-                    hotel.fromPrice !== undefined &&
-                    hotel.matchingRoomCount !== undefined && (
-                      <div className="mt-4 flex items-end justify-between gap-3 border-t border-slate-800 pt-3">
-                        <div>
-                          <p className="text-xs sm:text-sm text-slate-500">
-                            {t('grid.fromPrice')}
-                          </p>
-                          <p className="font-semibold text-violet-400 sm:text-lg">
-                            {formatUsdAmount(hotel.fromPrice)}
-                          </p>
-                        </div>
-                        <p className="text-xs sm:text-sm text-emerald-400">
-                          {t('grid.matchingRooms', {
-                            count: hotel.matchingRoomCount,
-                          })}
+                  hotel.fromPrice !== undefined &&
+                  hotel.matchingRoomCount !== undefined ? (
+                    <div className="mt-4 flex items-end justify-between gap-3 border-t border-slate-800 pt-3">
+                      <div>
+                        <p className="text-xs sm:text-sm text-slate-500">
+                          {t('grid.fromPrice')}
+                        </p>
+                        <p className="font-semibold text-violet-400 sm:text-lg">
+                          {formatUsdAmount(hotel.fromPrice)}
                         </p>
                       </div>
-                    )}
+                      <p className="text-xs sm:text-sm text-emerald-400">
+                        {t('grid.matchingRooms', {
+                          count: hotel.matchingRoomCount,
+                        })}
+                      </p>
+                    </div>
+                  ) : (
+                    <div className="mt-4 flex items-end justify-between gap-3 border-t border-slate-800/60 pt-3">
+                      <div>
+                        <p className="text-[11px] text-slate-500 uppercase tracking-wider">
+                          {t('grid.fromPrice')}
+                        </p>
+                        <p className="font-semibold text-violet-400 text-base">
+                          $0.00 <span className="text-xs font-normal text-slate-400">{t('landing.perNight')}</span>
+                        </p>
+                      </div>
+                      <span className="text-xs text-slate-400">
+                        {t('grid.instantBooking')}
+                      </span>
+                    </div>
+                  )}
                 </div>
               </Link>
 

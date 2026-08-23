@@ -96,7 +96,7 @@ export function HeroSearchAutocomplete({
         const tagsMatch = hotel.tags?.some((tag) =>
           tag.toLowerCase().includes(trimmed),
         )
-        const addressMatch = hotel.address?.toLowerCase().includes(trimmed)
+        const addressMatch = hotel.address.toLowerCase().includes(trimmed)
         return (
           nameMatch ||
           cityMatch ||
@@ -115,8 +115,8 @@ export function HeroSearchAutocomplete({
   }, [hotels, trimmed])
 
   // Flatten items for linear keyboard navigation
-  const flatItems = useMemo<AutocompleteItem[]>(() => {
-    const items: AutocompleteItem[] = []
+  const flatItems = useMemo<Array<AutocompleteItem>>(() => {
+    const items: Array<AutocompleteItem> = []
     for (const city of cityMatches) {
       items.push({ type: 'city', city: city.city, count: city.count })
     }
@@ -212,7 +212,7 @@ export function HeroSearchAutocomplete({
             handleSelectCity(item.city)
           } else if (item.type === 'hotel') {
             handleSelectHotel({ id: item.id, name: item.name })
-          } else if (item.type === 'view_all') {
+          } else {
             handleSelectViewAll(item.query)
           }
         }

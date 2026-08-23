@@ -1,6 +1,7 @@
 {
-  "short_name": "Luxe Hotels",
-  "name": "Luxe Hotels",
+  "short_name": "TripWays",
+  "name": "TripWays Hotels & Resorts",
+  "description": "Book luxury hotels, boutique stays, and premier resort suites with instant confirmation.",
   "icons": [
     {
       "src": "https://tripways-static-assets.leultesfaye0755.workers.dev/favicon-v2.ico",
@@ -18,8 +19,9 @@
       "sizes": "512x512"
     }
   ],
-  "start_url": ".",
+  "start_url": "/",
   "display": "standalone",
-  "theme_color": "#000000",
-  "background_color": "#ffffff"
+  "orientation": "portrait",
+  "theme_color": "#020617",
+  "background_color": "#020617"
 }

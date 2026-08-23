@@ -10,6 +10,7 @@ import { useI18n } from '../lib/i18n/provider'
 import { getClerkAuthAppearance } from '../lib/clerkAppearance'
 import { useTheme } from '../lib/theme'
 import { staticAssets } from '../lib/staticAssets'
+import { Seo } from '../components/Seo'
 
 export const Route = createFileRoute('/sign-up')({
   beforeLoad: ({ context, search }) => {
@@ -46,6 +47,7 @@ function SignUpPage() {
 
   return (
     <div className="min-h-screen bg-slate-950 flex">
+      <Seo title={t('header.signUp')} noIndex />
       {/* Left Panel - Branding */}
       <div className="hidden lg:flex lg:w-1/2 relative overflow-hidden">
         {/* Gradient Background */}

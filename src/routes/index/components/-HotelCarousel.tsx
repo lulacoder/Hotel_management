@@ -13,6 +13,7 @@ import {
 import { useMemo } from 'react'
 
 import { api } from '../../../../convex/_generated/api'
+import { getHotelCategoryLabel } from '../../../lib/hotelCategories'
 import { useI18n } from '../../../lib/i18n/provider'
 import { DEFAULT_HOTEL_DETAIL_SEARCH } from '../../../lib/navigationSearch'
 import type { Doc } from '../../../../convex/_generated/dataModel'
@@ -32,7 +33,7 @@ function HotelCard({ hotel }: HotelCardProps) {
       : hotel.rating
 
   return (
-    <article className="group relative w-[78vw] max-w-[360px] shrink-0 overflow-hidden rounded-[1.75rem] bg-slate-900 shadow-[0_28px_70px_-35px_rgba(15,23,42,0.8)] ring-1 ring-slate-900/10 sm:w-[360px] dark:ring-white/10">
+    <article className="group relative w-[78vw] max-w-[360px] shrink-0 overflow-hidden rounded-[1.75rem] bg-slate-900 shadow-[0_28px_70px_-35px_rgba(15,23,42,0.8)] ring-1 ring-slate-900/10 transition-all duration-300 hover:ring-violet-500/40 sm:w-[360px] dark:ring-white/10">
       <div className="relative aspect-[4/5] overflow-hidden bg-slate-800">
         {hotel.imageUrl ? (
           <img
@@ -44,7 +45,7 @@ function HotelCard({ hotel }: HotelCardProps) {
             decoding="async"
             fetchPriority="low"
             draggable={false}
-            className="size-full object-cover transition-transform duration-700 ease-out group-hover:scale-[1.035]"
+            className="size-full object-cover transition-transform duration-700 ease-out group-hover:scale-[1.04]"
           />
         ) : (
           <div className="flex size-full items-center justify-center bg-[radial-gradient(circle_at_top,rgb(76_29_149),rgb(15_23_42)_65%)]">
@@ -56,35 +57,49 @@ function HotelCard({ hotel }: HotelCardProps) {
           </div>
         )}
 
-        <div className="absolute inset-0 bg-gradient-to-t from-slate-950 via-slate-950/15 to-transparent" />
+        {/* Top Badges */}
+        <div className="absolute top-4 inset-x-4 flex items-start justify-between gap-2 z-10">
+          {hotel.category ? (
+            <span className="rounded-full border border-white/20 bg-slate-950/60 px-3 py-1 text-xs font-bold tracking-wider text-violet-200 uppercase backdrop-blur-md">
+              {getHotelCategoryLabel(hotel.category, t)}
+            </span>
+          ) : <span />}
 
-        <div className="absolute inset-x-0 bottom-0 p-5 sm:p-6">
-          <div className="mb-3 flex items-end justify-between gap-3">
-            <div className="min-w-0">
-              {hotel.category && (
-                <p className="mb-1 text-xs font-bold tracking-[0.18em] text-violet-200 uppercase sm:text-sm">
-                  {hotel.category}
-                </p>
-              )}
-              <h3 className="truncate text-xl font-bold tracking-tight text-white sm:text-2xl [font-family:var(--font-heading)]">
-                {hotel.name}
-              </h3>
-              <p className="mt-1 flex items-center gap-1.5 truncate text-sm text-slate-300 sm:text-base">
-                <MapPin className="size-4 shrink-0" aria-hidden />
-                <span className="truncate">
-                  {hotel.city}, {hotel.country}
-                </span>
-              </p>
+          {rating !== undefined && (
+            <div className="flex shrink-0 items-center gap-1 rounded-full border border-white/20 bg-slate-950/60 px-2.5 py-1 text-xs font-bold text-white backdrop-blur-md">
+              <Star
+                className="size-3.5 fill-amber-300 text-amber-300"
+                aria-hidden
+              />
+              {rating.toFixed(1)}
             </div>
+          )}
+        </div>
 
-            {rating !== undefined && (
-              <div className="flex shrink-0 items-center gap-1 rounded-full border border-white/15 bg-black/35 px-2.5 py-1.5 text-sm font-bold text-white backdrop-blur-md sm:text-base">
-                <Star
-                  className="size-4 fill-amber-300 text-amber-300"
-                  aria-hidden
-                />
-                {rating.toFixed(1)}
-              </div>
+        <div className="absolute inset-0 bg-gradient-to-t from-slate-950 via-slate-950/40 to-transparent" />
+
+        <div className="absolute inset-x-0 bottom-0 p-5 sm:p-6 z-10">
+          <div className="mb-4">
+            <h3 className="truncate text-xl font-bold tracking-tight text-white sm:text-2xl [font-family:var(--font-heading)]">
+              {hotel.name}
+            </h3>
+            <p className="mt-1 flex items-center gap-1.5 truncate text-sm text-slate-300 sm:text-base">
+              <MapPin className="size-4 shrink-0 text-violet-400" aria-hidden />
+              <span className="truncate">
+                {hotel.city}, {hotel.country}
+              </span>
+            </p>
+          </div>
+
+          <div className="mb-3 flex items-center justify-between border-t border-white/10 pt-3 text-xs text-slate-300">
+            <div>
+              <span className="text-[11px] text-slate-400 block uppercase tracking-wider">{t('landing.startingFrom')}</span>
+              <span className="text-base font-bold text-white">$0.00 <span className="text-xs font-normal text-slate-400">{t('landing.perNight')}</span></span>
+            </div>
+            {hotel.parkingIncluded && (
+              <span className="rounded-md border border-emerald-500/30 bg-emerald-500/20 px-2 py-0.5 text-xs text-emerald-300">
+                {t('hotel.freeParking')}
+              </span>
             )}
           </div>
 
@@ -92,7 +107,7 @@ function HotelCard({ hotel }: HotelCardProps) {
             to="/hotels/$hotelId"
             params={{ hotelId: hotel._id }}
             search={DEFAULT_HOTEL_DETAIL_SEARCH}
-            className="inline-flex h-11 w-full items-center justify-center gap-2 rounded-xl bg-white px-4 text-sm font-bold text-slate-950 transition-all duration-200 hover:bg-violet-100 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-white active:scale-[0.98] sm:h-12 sm:text-base"
+            className="inline-flex h-11 w-full items-center justify-center gap-2 rounded-xl bg-white px-4 text-sm font-bold text-slate-950 shadow-md transition-all duration-200 hover:bg-violet-100 hover:shadow-violet-500/20 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-white active:scale-[0.98] sm:h-12 sm:text-base"
           >
             {t('landing.viewHotel')}
             <ArrowUpRight className="size-4" aria-hidden />
@@ -207,13 +222,13 @@ export function HotelCarousel() {
             role="region"
             tabIndex={0}
             onMouseEnter={() => {
-              const autoScroll = carouselApi?.plugins()?.autoScroll
+              const autoScroll = carouselApi?.plugins().autoScroll
               if (autoScroll?.isPlaying()) {
                 autoScroll.stop()
               }
             }}
             onMouseLeave={() => {
-              const autoScroll = carouselApi?.plugins()?.autoScroll
+              const autoScroll = carouselApi?.plugins().autoScroll
               if (autoScroll && !autoScroll.isPlaying()) {
                 autoScroll.play()
               }

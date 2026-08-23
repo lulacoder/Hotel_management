@@ -9,6 +9,8 @@ import { useGeolocation } from '../hooks/useGeolocation'
 import { calculateDistance } from '../lib/distance'
 import { useI18n } from '../lib/i18n/provider'
 import { DEFAULT_SELECT_LOCATION_SEARCH } from '../lib/navigationSearch'
+import { Seo } from '../components/Seo'
+import { Footer } from '../components/Footer'
 import { SelectLocationHeader } from './select-location/components/-SelectLocationHeader'
 import { HeroSection } from './select-location/components/-HeroSection'
 import { SearchFilters } from './select-location/components/-SearchFilters'
@@ -430,8 +432,62 @@ function SelectLocationPage() {
     }
   }
 
+  // Dynamic SEO title & structured data
+  const seoTitle = useMemo(() => {
+    if (selectedCity && selectedCity !== 'all') {
+      return `Hotels in ${selectedCity} | Browse Stays`
+    }
+    if (selectedCategory && selectedCategory !== 'all') {
+      return `${selectedCategory} Hotels & Suites`
+    }
+    if (searchTerm) {
+      return `"${searchTerm}" Hotels & Destinations`
+    }
+    return 'Browse Luxury Hotels & Resorts'
+  }, [selectedCity, selectedCategory, searchTerm])
+
+  const selectLocationJsonLd = useMemo(() => {
+    const itemListElements = filteredHotels.slice(0, 10).map((hotel, index) => ({
+      '@type': 'ListItem',
+      position: index + 1,
+      name: hotel.name,
+      url: `https://tripways.com/hotels/${hotel._id}`,
+    }))
+
+    return [
+      {
+        '@type': 'BreadcrumbList',
+        itemListElement: [
+          {
+            '@type': 'ListItem',
+            position: 1,
+            name: 'Home',
+            item: 'https://tripways.com',
+          },
+          {
+            '@type': 'ListItem',
+            position: 2,
+            name: 'Browse Hotels',
+            item: 'https://tripways.com/select-location',
+          },
+        ],
+      },
+      {
+        '@type': 'ItemList',
+        name: seoTitle,
+        itemListElement: itemListElements,
+      },
+    ]
+  }, [filteredHotels, seoTitle])
+
   return (
     <div className="min-h-screen bg-gradient-to-b from-slate-950 via-slate-900 to-slate-950">
+      <Seo
+        title={seoTitle}
+        description="Explore and compare available luxury and boutique hotels across top destinations with verified guest ratings, real-time availability, and instant booking."
+        canonicalUrl="/select-location"
+        jsonLd={selectLocationJsonLd}
+      />
       <SelectLocationHeader
         isSignedIn={Boolean(isSignedIn)}
         userName={
@@ -532,6 +588,8 @@ function SelectLocationPage() {
           onSubmit={handleSubmitComplaint}
         />
       )}
+
+      <Footer />
     </div>
   )
 }

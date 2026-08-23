@@ -28,6 +28,7 @@ import { LanguageSwitcher } from '../components/LanguageSwitcher'
 import { MobileAccountActions } from '../components/MobileAccountActions'
 import { ThemeToggle } from '../components/ThemeToggle'
 import { NotificationBell } from '../components/NotificationBell'
+import { Seo } from '../components/Seo'
 import { AdminSessionProvider } from '../lib/adminSession'
 import { useI18n } from '../lib/i18n/provider'
 import { useTheme } from '../lib/theme'
@@ -295,6 +296,7 @@ function AdminLayout() {
     <div
       className={`flex min-h-screen md:h-dvh md:overflow-hidden ${isDark ? 'bg-slate-950' : 'bg-slate-50'}`}
     >
+      <Seo title="Admin Management Portal" noIndex />
       {/* Mobile Menu Button - Only visible on small screens */}
       <button
         type="button"
