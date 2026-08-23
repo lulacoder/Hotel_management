@@ -1,4 +1,4 @@
-import { useEffect, useId, useMemo, useRef, useState } from 'react'
+import { useEffect, useMemo, useRef, useState } from 'react'
 import { Building2, ChevronRight, Compass, MapPin, Search, Star } from 'lucide-react'
 
 import { api } from '../../../../convex/_generated/api'
@@ -16,6 +16,7 @@ interface HeroSearchAutocompleteProps {
   onSelectHotel: (hotel: { id: Id<'hotels'>; name: string }) => void
   onSelectViewAll?: (query: string) => void
   inputRef: React.RefObject<HTMLInputElement | null>
+  listboxId: string
 }
 
 type AutocompleteItem =
@@ -39,11 +40,11 @@ export function HeroSearchAutocomplete({
   onSelectHotel,
   onSelectViewAll,
   inputRef,
+  listboxId,
 }: HeroSearchAutocompleteProps) {
   const { t } = useI18n()
   const containerRef = useRef<HTMLDivElement>(null)
   const [selectedIndex, setSelectedIndex] = useState<number>(-1)
-  const listboxId = useId()
 
   const hotels = useQuery(api.hotels.list, {})
   const trimmed = searchTerm.trim().toLowerCase()

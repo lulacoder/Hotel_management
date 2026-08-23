@@ -60,7 +60,8 @@ function LandingPage() {
   }
 
   return (
-    <div className="bg-white text-slate-900 dark:bg-slate-950 dark:text-slate-100 [font-family:var(--font-body)]">
+    // Main landmark keeps assistive tech consistent with the other public routes.
+    <main className="bg-white text-slate-900 dark:bg-slate-950 dark:text-slate-100 [font-family:var(--font-body)]">
       <Seo
         title={t('landing.titleLine1') + ' ' + t('landing.titleLine2')}
         description={t('landing.subtitle')}
@@ -75,6 +76,6 @@ function LandingPage() {
       <BookingPath />
       <ClosingCta />
       <Footer />
-    </div>
+    </main>
   )
 }

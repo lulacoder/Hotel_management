@@ -37,10 +37,25 @@
       rel="dns-prefetch"
       href="//tripways-static-assets.leultesfaye0755.workers.dev"
     />
+    <!-- Google Fonts loaded async (media-swap) so the stylesheet never blocks first paint;
+         noscript keeps fonts working when JS is disabled. -->
+    <link
+      rel="preload"
+      as="style"
+      href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&family=Outfit:wght@400;500;600;700;800&display=swap"
+    />
     <link
       rel="stylesheet"
       href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&family=Outfit:wght@400;500;600;700;800&display=swap"
+      media="print"
+      onload="this.media='all'"
     />
+    <noscript>
+      <link
+        rel="stylesheet"
+        href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&family=Outfit:wght@400;500;600;700;800&display=swap"
+      />
+    </noscript>
     <link
       rel="icon"
       type="image/x-icon"

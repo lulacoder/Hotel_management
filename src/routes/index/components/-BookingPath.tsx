@@ -27,23 +27,26 @@ export function BookingPath() {
 
           <ol className="mt-12 space-y-10">
             {steps.map((step, index) => (
-              <Reveal key={step.title} delay={index * 0.1}>
-                <li className="flex items-start gap-6 sm:gap-10">
-                  <span
-                    aria-hidden
-                    className="text-5xl leading-none font-extrabold tracking-tighter text-slate-200 tabular-nums select-none sm:text-7xl dark:text-slate-800"
-                  >
-                    {index + 1}
-                  </span>
-                  <div className="pt-1">
-                    <h3 className="text-lg font-bold tracking-tight text-slate-900 sm:text-xl dark:text-slate-100">
-                      {step.title}
-                    </h3>
-                    <p className="mt-2 max-w-[52ch] text-sm leading-relaxed text-slate-600 sm:text-base dark:text-slate-400">
-                      {step.desc}
-                    </p>
-                  </div>
-                </li>
+              <Reveal
+                key={step.title}
+                as="li"
+                delay={index * 0.1}
+                className="flex items-start gap-6 sm:gap-10"
+              >
+                <span
+                  aria-hidden
+                  className="text-5xl leading-none font-extrabold tracking-tighter text-slate-200 tabular-nums select-none sm:text-7xl dark:text-slate-800"
+                >
+                  {index + 1}
+                </span>
+                <div className="pt-1">
+                  <h3 className="text-lg font-bold tracking-tight text-slate-900 sm:text-xl dark:text-slate-100">
+                    {step.title}
+                  </h3>
+                  <p className="mt-2 max-w-[52ch] text-sm leading-relaxed text-slate-600 sm:text-base dark:text-slate-400">
+                    {step.desc}
+                  </p>
+                </div>
               </Reveal>
             ))}
           </ol>

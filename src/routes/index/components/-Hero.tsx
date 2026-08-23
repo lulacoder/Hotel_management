@@ -1,7 +1,7 @@
 // Landing hero: asymmetric split with copy on the left and a single portrait image.
 import { Link, useNavigate } from '@tanstack/react-router'
 import { ArrowRight, MapPin, Search, Users } from 'lucide-react'
-import { useRef, useState } from 'react'
+import { useId, useRef, useState } from 'react'
 import { useI18n } from '../../../lib/i18n/provider'
 import {
   DEFAULT_AUTH_SEARCH,
@@ -28,6 +28,8 @@ export function Hero() {
   const [guests, setGuests] = useState(1)
   const [isAutocompleteOpen, setIsAutocompleteOpen] = useState(false)
   const inputRef = useRef<HTMLInputElement>(null)
+  // Shared between the combobox input and the suggestion listbox for ARIA wiring.
+  const listboxId = useId()
 
   const today = getTodayDateString()
   const minCheckOut = getMinimumCheckoutDate(checkIn) ?? today
@@ -103,8 +105,10 @@ export function Hero() {
                     setIsAutocompleteOpen(true)
                   }}
                   placeholder={t('landing.searchWherePlaceholder')}
+                  role="combobox"
                   aria-expanded={isAutocompleteOpen}
-                  aria-haspopup="listbox"
+                  aria-controls={listboxId}
+                  aria-autocomplete="list"
                   autoComplete="off"
                   className="h-11 w-full rounded-xl border border-slate-200 bg-white pl-10 pr-3 text-sm text-slate-900 outline-none focus:border-violet-500 sm:text-base dark:border-slate-700 dark:bg-slate-800 dark:text-slate-100"
                 />
@@ -113,6 +117,7 @@ export function Hero() {
                 searchTerm={destination}
                 isOpen={isAutocompleteOpen}
                 onClose={() => setIsAutocompleteOpen(false)}
+                listboxId={listboxId}
                 onSelectCity={(city) => {
                   setDestination(city)
                   setSelectedHotelId(null)

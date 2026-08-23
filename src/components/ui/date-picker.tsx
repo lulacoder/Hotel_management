@@ -155,7 +155,9 @@ export function DatePicker({
             className,
           )}
         >
-          <span className={cn(!value && 'text-slate-500 dark:text-slate-500')}>
+          {/* Placeholder text needs dark-mode slate-400 to meet WCAG AA on the
+              translucent slate-800 trigger surface. */}
+          <span className={cn(!value && 'text-slate-500 dark:text-slate-400')}>
             {triggerLabel}
           </span>
           <CalendarDays className="size-4 shrink-0 text-violet-600 dark:text-violet-400" />
@@ -193,7 +195,7 @@ export function DatePicker({
             {weekdays.map((weekday) => (
               <div
                 key={weekday}
-                className="flex h-8 items-center justify-center text-xs font-medium text-slate-500 dark:text-slate-500"
+                className="flex h-8 items-center justify-center text-xs font-medium text-slate-500 dark:text-slate-400"
               >
                 {weekday}
               </div>

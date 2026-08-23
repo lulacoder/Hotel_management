@@ -27,6 +27,16 @@ const config = defineConfig({
         codeSplitting: {
           groups: [
             {
+              // Tiny universal libs (react, its store shim, clsx) are shared by
+              // startup code AND feature chunks like recharts. Without their own
+              // high-priority group Rolldown buries them inside vendor-charts,
+              // which would force the whole Recharts bundle to load eagerly on
+              // every page.
+              name: 'vendor-core',
+              test: /node_modules[\\/](react|react-dom|scheduler|use-sync-external-store|clsx)[\\/]/,
+              priority: 50,
+            },
+            {
               name: 'vendor-clerk',
               test: /node_modules[\\/]@clerk[\\/]/,
               priority: 30,

@@ -6,17 +6,25 @@ type RevealProps = {
   children: ReactNode
   className?: string
   delay?: number
+  // Lets callers keep list semantics (e.g. render as <li> inside an <ol>).
+  as?: 'div' | 'li'
 }
 
-export function Reveal({ children, className, delay = 0 }: RevealProps) {
+export function Reveal({ children, className, delay = 0, as = 'div' }: RevealProps) {
   const prefersReducedMotion = useReducedMotion()
 
   if (prefersReducedMotion) {
-    return <div className={className}>{children}</div>
+    return as === 'li' ? (
+      <li className={className}>{children}</li>
+    ) : (
+      <div className={className}>{children}</div>
+    )
   }
 
+  const MotionTag = as === 'li' ? motion.li : motion.div
+
   return (
-    <motion.div
+    <MotionTag
       className={className}
       initial={{ opacity: 0, y: 24 }}
       whileInView={{ opacity: 1, y: 0 }}
@@ -24,6 +32,6 @@ export function Reveal({ children, className, delay = 0 }: RevealProps) {
       transition={{ duration: 0.55, delay, ease: [0.22, 1, 0.36, 1] }}
     >
       {children}
-    </motion.div>
+    </MotionTag>
   )
 }
