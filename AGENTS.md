@@ -91,6 +91,23 @@ hotel_management/
 - Lean on the dependencies already in the project before writing your own implementation or adding packages. Do not assume a library lacks a capability without checking its documentation and types.
 - Make architectural decisions for the long term. Do not accept a stopgap that only works for now and is meant to be replaced later.
 
+TypeScript Preferences
+
+- If your TypeScript code looks like a Python dev wrote it, it's bad TypeScript code.
+- Avoid one-liners that are just casting wrappers.
+- Write TypeScript in ways that Matt Pocock and Theo would be proud of.
+- Comments are a great way to clarify functions and how code is used. Don't comment every line, but feel free to concisely describe how functions/classes are used above their definitions. Keep comments up to date when making changes.
+
+## Tech & Code Style Preferences
+
+- Follow YAGNI (You Aren't Gonna Need It) principles — do not add unrequested code or over-architect solutions.
+
+## Comments
+
+- Every function gets a comment above it explaining what it does, its parameters, and its return value.
+- Add inline comments on critical/non-obvious lines explaining why the line exists — don't comment lines where the intent is already obvious from the code.
+
+
 
 ### Imports
 
