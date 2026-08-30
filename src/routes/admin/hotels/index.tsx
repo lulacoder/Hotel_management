@@ -25,6 +25,7 @@ import {
   useIntentPreloadTarget,
 } from '@/integrations/convex/preload'
 import { Button } from '@/components/ui/button'
+import { useConfirm } from '@/components/ui/confirm-dialog'
 import { AdminSpinner } from '@/components/AdminSpinner'
 
 export const Route = createFileRoute('/admin/hotels/')({
@@ -44,14 +45,13 @@ const itemVariants = {
 function HotelsPage() {
   // Query hotels + role context, then derive visible/editable records.
   const { t } = useI18n()
+  const confirm = useConfirm()
   const { theme } = useTheme()
   const isDark = theme === 'dark'
   const [searchTerm, setSearchTerm] = useState('')
   const [showCreateModal, setShowCreateModal] = useState(false)
   const [editingHotel, setEditingHotel] = useState<Id<'hotels'> | null>(null)
   const [activeMenu, setActiveMenu] = useState<Id<'hotels'> | null>(null)
-  const [hotelToDelete, setHotelToDelete] = useState<Id<'hotels'> | null>(null)
-  const [isDeleting, setIsDeleting] = useState(false)
   const menuRef = useRef<HTMLDivElement | null>(null)
 
   const { hotelAssignment, profile } = useAdminSession()
@@ -117,16 +117,19 @@ function HotelsPage() {
     return () => document.removeEventListener('pointerdown', handlePointerDown)
   }, [activeMenu])
 
-  const confirmDelete = async () => {
-    // Soft delete after confirmation; restricted to top-level admins.
-    if (!canAddHotel || !hotelToDelete) return
-    setIsDeleting(true)
-    try {
-      await deleteHotel({ hotelId: hotelToDelete })
-      setHotelToDelete(null)
-    } finally {
-      setIsDeleting(false)
-    }
+  const handleDeleteHotel = async (hotelId: Id<'hotels'>) => {
+    if (!canAddHotel) return
+    setActiveMenu(null)
+    const confirmed = await confirm({
+      title: t('admin.hotels.confirmDeleteTitle'),
+      description: t('admin.hotels.confirmDeleteWarning'),
+      confirmText: t('common.delete'),
+      cancelText: t('common.cancel'),
+      variant: 'destructive',
+    })
+    if (!confirmed) return
+
+    await deleteHotel({ hotelId })
   }
 
   return (
@@ -292,10 +295,7 @@ function HotelsPage() {
                     {canAddHotel && (
                       <button
                         type="button"
-                        onClick={() => {
-                          setHotelToDelete(hotel._id)
-                          setActiveMenu(null)
-                        }}
+                        onClick={() => handleDeleteHotel(hotel._id)}
                         className={`admin-menu-item flex items-center gap-3 px-4 py-3 text-red-400 w-full ${
                           isDark ? 'hover:bg-slate-700' : 'hover:bg-red-50'
                         }`}
@@ -359,44 +359,6 @@ function HotelsPage() {
             setEditingHotel(null)
           }}
         />
-      )}
-
-      {/* Delete confirmation */}
-      {hotelToDelete !== null && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center overflow-y-auto bg-black/60 p-4 backdrop-blur-sm">
-          <div className="admin-modal-panel my-4 w-full max-w-md">
-            <div className="admin-modal-header">
-              <h2
-                className={`text-xl font-semibold ${
-                  isDark ? 'text-slate-100' : 'text-slate-900'
-                }`}
-              >
-                {t('admin.hotels.confirmDeleteTitle')}
-              </h2>
-              <p className="mt-1 text-sm text-slate-500">
-                {t('admin.hotels.confirmDeleteWarning')}
-              </p>
-            </div>
-            <div className="admin-modal-body flex justify-end gap-3">
-              <Button
-                type="button"
-                variant="outline"
-                onClick={() => setHotelToDelete(null)}
-                disabled={isDeleting}
-              >
-                {t('common.cancel')}
-              </Button>
-              <Button
-                type="button"
-                variant="destructive"
-                onClick={confirmDelete}
-                disabled={isDeleting}
-              >
-                {isDeleting ? t('admin.hotels.deleting') : t('common.delete')}
-              </Button>
-            </div>
-          </div>
-        </div>
       )}
     </div>
   )

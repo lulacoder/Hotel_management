@@ -9,6 +9,7 @@ import { Suspense, lazy } from 'react'
 
 import Header from '../components/Header'
 import { Button } from '../components/ui/button'
+import { ConfirmProvider } from '../components/ui/confirm-dialog'
 import { Toaster } from '../components/ui/sonner'
 import { TooltipProvider } from '../components/ui/tooltip'
 
@@ -60,31 +61,33 @@ export function RootAppShell() {
   return (
     <I18nProvider>
       <ThemeProvider>
-        <ClerkProvider>
-          <ConvexProvider>
-            <LazyMotion features={domAnimation}>
-              <TooltipProvider>
-                <Header />
-                <Outlet />
-                <Toaster
-                  position="bottom-right"
-                  toastOptions={{
-                    style: {
-                      background: 'var(--popover)',
-                      border: '1px solid var(--border)',
-                      color: 'var(--popover-foreground)',
-                    },
-                  }}
-                />
-                {RootDevtools ? (
-                  <Suspense fallback={null}>
-                    <RootDevtools />
-                  </Suspense>
-                ) : null}
-              </TooltipProvider>
-            </LazyMotion>
-          </ConvexProvider>
-        </ClerkProvider>
+        <ConfirmProvider>
+          <ClerkProvider>
+            <ConvexProvider>
+              <LazyMotion features={domAnimation}>
+                <TooltipProvider>
+                  <Header />
+                  <Outlet />
+                  <Toaster
+                    position="bottom-right"
+                    toastOptions={{
+                      style: {
+                        background: 'var(--popover)',
+                        border: '1px solid var(--border)',
+                        color: 'var(--popover-foreground)',
+                      },
+                    }}
+                  />
+                  {RootDevtools ? (
+                    <Suspense fallback={null}>
+                      <RootDevtools />
+                    </Suspense>
+                  ) : null}
+                </TooltipProvider>
+              </LazyMotion>
+            </ConvexProvider>
+          </ClerkProvider>
+        </ConfirmProvider>
       </ThemeProvider>
     </I18nProvider>
   )

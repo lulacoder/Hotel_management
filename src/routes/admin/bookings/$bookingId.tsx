@@ -27,6 +27,7 @@ import { BookingStatusBadge } from './components/-BookingStatusBadge'
 import type { ManualBookingTransitionStatus } from '../../../../convex/lib/bookingLifecycle'
 import type { Id } from '../../../../convex/_generated/dataModel'
 import { useTheme } from '@/lib/theme'
+import { useConfirm } from '@/components/ui/confirm-dialog'
 import { useAction, useMutation, useQuery } from '@/integrations/convex/hooks'
 import { AdminSpinner } from '@/components/AdminSpinner'
 import { formatEtbAmount, formatUsdAmount } from '@/lib/currency'
@@ -64,6 +65,7 @@ function BookingDetailPage() {
   const { bookingId } = Route.useParams()
   const typedBookingId = bookingId as Id<'bookings'>
   const { t } = useI18n()
+  const confirm = useConfirm()
   const { theme } = useTheme()
   const isDark = theme === 'dark'
   const [showOutsourceModal, setShowOutsourceModal] = useState(false)
@@ -141,12 +143,26 @@ function BookingDetailPage() {
     // Paid bookings cancel through the staff refund path so the money stays tracked
     if (nextStatus === 'cancelled') {
       if (bookingDetail?.booking.paymentStatus === 'paid') {
-        if (!window.confirm(t('admin.bookings.confirmCancelPaid'))) return
+        const confirmed = await confirm({
+          title: t('admin.bookings.cancelAndFlagRefund'),
+          description: t('admin.bookings.confirmCancelPaid'),
+          confirmText: t('admin.bookings.cancelAndFlagRefund'),
+          cancelText: t('common.cancel'),
+          variant: 'destructive',
+        })
+        if (!confirmed) return
         await cancelPaidBooking({ bookingId: typedBookingId })
         return
       }
 
-      if (!window.confirm(t('bookings.confirmCancel'))) return
+      const confirmed = await confirm({
+        title: t('booking.cancel'),
+        description: t('bookings.confirmCancel'),
+        confirmText: t('booking.cancel'),
+        cancelText: t('common.cancel'),
+        variant: 'destructive',
+      })
+      if (!confirmed) return
       await cancelBooking({ bookingId: typedBookingId })
       return
     }
@@ -162,12 +178,26 @@ function BookingDetailPage() {
   }
 
   const handleVerifyPayment = async () => {
-    if (!window.confirm(t('admin.bookings.confirmApprovePayment'))) return
+    const confirmed = await confirm({
+      title: t('admin.bookings.approvePayment'),
+      description: t('admin.bookings.confirmApprovePayment'),
+      confirmText: t('admin.bookings.approvePayment'),
+      cancelText: t('common.cancel'),
+      variant: 'success',
+    })
+    if (!confirmed) return
     await verifyPayment({ bookingId: typedBookingId })
   }
 
   const handleRejectPayment = async () => {
-    if (!window.confirm(t('admin.bookings.confirmRejectPayment'))) return
+    const confirmed = await confirm({
+      title: t('admin.bookings.rejectPayment'),
+      description: t('admin.bookings.confirmRejectPayment'),
+      confirmText: t('admin.bookings.rejectPayment'),
+      cancelText: t('common.cancel'),
+      variant: 'destructive',
+    })
+    if (!confirmed) return
     await rejectPayment({ bookingId: typedBookingId })
   }
 
@@ -188,7 +218,14 @@ function BookingDetailPage() {
       ? `Issue a full ${amount} refund through Chapa? This moves real money.`
       : `Confirm that the full ${amount} manual refund has been paid?`
 
-    if (!window.confirm(confirmation)) return
+    const confirmed = await confirm({
+      title: isChapa ? 'Issue Chapa Refund' : 'Confirm Manual Refund',
+      description: confirmation,
+      confirmText: isChapa ? 'Issue Refund' : 'Confirm Refund',
+      cancelText: t('common.cancel'),
+      variant: 'warning',
+    })
+    if (!confirmed) return
 
     setRefundSubmitting(true)
     setRefundFeedback(null)

@@ -1,4 +1,5 @@
 import { useAuth } from '@clerk/clerk-react'
+import { Link } from '@tanstack/react-router'
 import { useEffect, useRef, useState } from 'react'
 import { Bell, BellOff, Check, CheckCheck, Trash2 } from 'lucide-react'
 import { toast } from 'sonner'
@@ -7,6 +8,7 @@ import { api } from '../../convex/_generated/api'
 import { cn } from '../lib/utils'
 import { LoadMoreButton } from './LoadMoreButton'
 import { Button } from './ui/button'
+import { useConfirm } from './ui/confirm-dialog'
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -116,6 +118,20 @@ export function NotificationBell({
   const markAsRead = useMutation(api.notifications.markAsRead)
   const markAllAsRead = useMutation(api.notifications.markAllAsRead)
   const clearAll = useMutation(api.notifications.clearAll)
+  const confirm = useConfirm()
+
+  const handleClearAll = async () => {
+    const confirmed = await confirm({
+      title: 'Clear all notifications?',
+      description:
+        'Are you sure you want to remove all notifications? This action cannot be undone.',
+      confirmText: 'Clear All',
+      cancelText: 'Cancel',
+      variant: 'destructive',
+    })
+    if (!confirmed) return
+    await clearAll({})
+  }
 
   useEffect(() => {
     if (unreadCount === undefined) return
@@ -192,7 +208,7 @@ export function NotificationBell({
               <Button
                 variant="ghost"
                 size="icon-xs"
-                onClick={() => clearAll({})}
+                onClick={handleClearAll}
                 title="Clear all notifications"
                 className="text-muted-foreground hover:text-red-500"
               >
@@ -226,9 +242,9 @@ export function NotificationBell({
             const link = bookingLink(notification.type, notification.bookingId)
 
             return (
-              <a
+              <Link
                 key={notification._id}
-                href={link}
+                to={link}
                 onClick={() => {
                   if (!notification.isRead) {
                     void markAsRead({ notificationId: notification._id })
@@ -290,7 +306,7 @@ export function NotificationBell({
                     <Check size={14} />
                   </Button>
                 )}
-              </a>
+              </Link>
             )
           })}
 

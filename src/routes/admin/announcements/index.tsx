@@ -18,6 +18,7 @@ import { LoadMoreButton } from '../../../components/LoadMoreButton'
 import { useAdminSession } from '../../../lib/adminSession'
 import { useI18n } from '../../../lib/i18n/provider'
 import { useTheme } from '../../../lib/theme'
+import { useConfirm } from '../../../components/ui/confirm-dialog'
 import { AnnouncementForm } from './components/-AnnouncementForm'
 import type { Id } from '../../../../convex/_generated/dataModel'
 import {
@@ -74,6 +75,7 @@ function timeAgo(timestamp: number): string {
 
 function AdminAnnouncementsPage() {
   const { t, locale } = useI18n()
+  const confirm = useConfirm()
   const { theme } = useTheme()
   const isDark = theme === 'dark'
   const dateLocale = locale === 'am' ? 'am-ET' : 'en-US'
@@ -157,7 +159,15 @@ function AdminAnnouncementsPage() {
   }
 
   async function handleDelete(id: Id<'announcements'>) {
-    if (!window.confirm(t('admin.announcements.deleteConfirm'))) return
+    const confirmed = await confirm({
+      title: t('common.delete'),
+      description: t('admin.announcements.deleteConfirm'),
+      confirmText: t('common.delete'),
+      cancelText: t('common.cancel'),
+      variant: 'destructive',
+    })
+    if (!confirmed) return
+
     try {
       await remove({ announcementId: id })
       toast.success('Announcement deleted')

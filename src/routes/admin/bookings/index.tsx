@@ -42,6 +42,7 @@ import {
   useQuery,
 } from '@/integrations/convex/hooks'
 import { Button } from '@/components/ui/button'
+import { useConfirm } from '@/components/ui/confirm-dialog'
 import { LoadMoreButton } from '@/components/LoadMoreButton'
 import { AdminSpinner } from '@/components/AdminSpinner'
 import { formatEtbAmount, formatUsdAmount } from '@/lib/currency'
@@ -90,13 +91,18 @@ type AdminBookingListItem = {
 
 function BookingsPage() {
   const { t } = useI18n()
+  const confirm = useConfirm()
   const { theme } = useTheme()
   const isDark = theme === 'dark'
   const navigate = useNavigate()
   const search = Route.useSearch()
   const statusFilter = search.status
   const paymentStatusFilter = search.paymentStatus
-  const [selectedHotel, setSelectedHotel] = useState<string>('all')
+  const { hotelAssignment, profile, isRoomAdmin } = useAdminSession()
+
+  const [selectedHotel, setSelectedHotel] = useState<string>(() =>
+    isRoomAdmin ? 'all' : (hotelAssignment?.hotelId ?? 'all'),
+  )
   const [selectedBookingId, setSelectedBookingId] =
     useState<Id<'bookings'> | null>(null)
   const [outsourceBookingId, setOutsourceBookingId] =
@@ -111,29 +117,35 @@ function BookingsPage() {
     tone: 'error' | 'success'
   } | null>(null)
 
-  const { hotelAssignment, profile } = useAdminSession()
-
   const hotels = useQuery(api.hotels.list, {})
-  const visibleHotels =
-    profile.role === 'room_admin'
-      ? hotels
-      : hotels?.filter((hotel) => hotel._id === hotelAssignment?.hotelId)
+  const visibleHotels = isRoomAdmin
+    ? hotels
+    : hotels?.filter((hotel) => hotel._id === hotelAssignment?.hotelId)
 
   useEffect(() => {
-    if (profile.role !== 'room_admin' && hotelAssignment?.hotelId) {
+    if (!isRoomAdmin && hotelAssignment?.hotelId) {
       setSelectedHotel(hotelAssignment.hotelId)
     }
-  }, [profile.role, hotelAssignment?.hotelId])
+  }, [isRoomAdmin, hotelAssignment?.hotelId])
+
+  const effectiveHotelId = isRoomAdmin
+    ? selectedHotel !== 'all'
+      ? (selectedHotel as Id<'hotels'>)
+      : undefined
+    : hotelAssignment?.hotelId
+
+  const isHotelFilterReady = isRoomAdmin || Boolean(hotelAssignment?.hotelId)
 
   const bookingsPage = usePaginatedQuery(
     api.bookings.getByHotel,
-    {
-      hotelId:
-        selectedHotel !== 'all' ? (selectedHotel as Id<'hotels'>) : undefined,
-      status: isBookingStatus(statusFilter) ? statusFilter : undefined,
-      paymentStatus:
-        paymentStatusFilter !== 'all' ? paymentStatusFilter : undefined,
-    },
+    isHotelFilterReady
+      ? {
+          hotelId: effectiveHotelId,
+          status: isBookingStatus(statusFilter) ? statusFilter : undefined,
+          paymentStatus:
+            paymentStatusFilter !== 'all' ? paymentStatusFilter : undefined,
+        }
+      : 'skip',
     { initialNumItems: 20 },
   ) as {
     results: Array<AdminBookingListItem>
@@ -167,13 +179,21 @@ function BookingsPage() {
   ) => {
     const requiresRefund = paymentStatus === 'paid'
 
-    if (
-      !confirm(
-        requiresRefund
-          ? t('admin.bookings.confirmCancelPaid')
-          : t('bookings.confirmCancel'),
-      )
-    ) {
+    const confirmed = await confirm({
+      title: requiresRefund
+        ? t('admin.bookings.cancelAndFlagRefund')
+        : t('booking.cancel'),
+      description: requiresRefund
+        ? t('admin.bookings.confirmCancelPaid')
+        : t('bookings.confirmCancel'),
+      confirmText: requiresRefund
+        ? t('admin.bookings.cancelAndFlagRefund')
+        : t('booking.cancel'),
+      cancelText: t('common.cancel'),
+      variant: 'destructive',
+    })
+
+    if (!confirmed) {
       return
     }
 
@@ -312,8 +332,9 @@ function BookingsPage() {
             value={selectedHotel}
             onChange={(e) => setSelectedHotel(e.target.value)}
             className="admin-select"
+            disabled={!isRoomAdmin}
           >
-            {profile.role === 'room_admin' && (
+            {isRoomAdmin && (
               <option value="all">{t('admin.bookings.selectHotel')}</option>
             )}
             {visibleHotels?.map((hotel) => (

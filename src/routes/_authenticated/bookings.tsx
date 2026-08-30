@@ -15,6 +15,7 @@ import { toast } from 'sonner'
 import { api } from '../../../convex/_generated/api'
 import { isBookingStatus } from '../../../convex/lib/bookingLifecycle'
 import { LoadMoreButton } from '../../components/LoadMoreButton'
+import { useConfirm } from '../../components/ui/confirm-dialog'
 import { useI18n } from '../../lib/i18n/provider'
 import { DEFAULT_SELECT_LOCATION_SEARCH } from '../../lib/navigationSearch'
 import { Seo } from '../../components/Seo'
@@ -50,6 +51,7 @@ function BookingsPage() {
   const { user } = useUser()
   // Load current user profile/bookings and derive filter-ready display data.
   const { t } = useI18n()
+  const confirm = useConfirm()
   const navigate = useNavigate()
   const search = Route.useSearch()
   const [cancellingId, setCancellingId] = useState<string | null>(null)
@@ -84,7 +86,13 @@ function BookingsPage() {
   const handleCancel = async (bookingId: Id<'bookings'>) => {
     if (!user?.id) return
 
-    const confirmed = window.confirm(t('bookings.confirmCancel'))
+    const confirmed = await confirm({
+      title: t('booking.cancel'),
+      description: t('bookings.confirmCancel'),
+      confirmText: t('booking.cancel'),
+      cancelText: t('common.cancel'),
+      variant: 'destructive',
+    })
     if (!confirmed) return
 
     setCancellingId(bookingId)

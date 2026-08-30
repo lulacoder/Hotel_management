@@ -17,6 +17,7 @@ import { toast } from 'sonner'
 
 import { api } from '../../../../convex/_generated/api'
 import { Button } from '../../../components/ui/button'
+import { useConfirm } from '../../../components/ui/confirm-dialog'
 import { useAdminSession } from '../../../lib/adminSession'
 import { useI18n } from '../../../lib/i18n/provider'
 import { useTheme } from '../../../lib/theme'
@@ -59,6 +60,7 @@ const STATUS_META: Record<
 
 function AdminInvitationsPage() {
   const { t, locale } = useI18n()
+  const confirm = useConfirm()
   const { theme } = useTheme()
   const isDark = theme === 'dark'
   const { isRoomAdmin, hotelAssignment } = useAdminSession()
@@ -204,7 +206,15 @@ function AdminInvitationsPage() {
   }
 
   const handleRevoke = async (invitationId: Id<'hotelStaffInvitations'>) => {
-    if (!confirm(t('admin.invitations.confirmRevoke'))) return
+    const confirmed = await confirm({
+      title: t('admin.invitations.revoke'),
+      description: t('admin.invitations.confirmRevoke'),
+      confirmText: t('admin.invitations.revoke'),
+      cancelText: t('common.cancel'),
+      variant: 'destructive',
+    })
+    if (!confirmed) return
+
     setBusyInvitationId(invitationId)
     try {
       await revokeInvitation({ invitationId })

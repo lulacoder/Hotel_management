@@ -6,6 +6,7 @@ import { cn } from '../lib/utils'
 import { useI18n } from '../lib/i18n/provider'
 import { useTheme } from '../lib/theme'
 import { NotificationBell } from './NotificationBell'
+import { useConfirm } from './ui/confirm-dialog'
 
 interface MobileAccountActionsProps {
   displayName?: string
@@ -30,6 +31,7 @@ export function MobileAccountActions({
   const navigate = useNavigate()
   const { t } = useI18n()
   const { theme } = useTheme()
+  const confirm = useConfirm()
 
   const useDarkSurface = isDark ?? theme === 'dark'
   const primaryEmail = user?.primaryEmailAddress?.emailAddress
@@ -57,6 +59,15 @@ export function MobileAccountActions({
   }
 
   const handleSignOut = async () => {
+    const confirmed = await confirm({
+      title: t('header.signOut'),
+      description: 'Are you sure you want to sign out of your account?',
+      confirmText: t('header.signOut'),
+      cancelText: t('common.cancel'),
+      variant: 'destructive',
+    })
+    if (!confirmed) return
+
     onRequestClose?.()
     await clerk.signOut({ redirectUrl: '/' })
     await navigate({ to: '/' })

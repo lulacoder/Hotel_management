@@ -15,6 +15,7 @@ import { useEffect, useMemo, useState } from 'react'
 
 import { api } from '../../../convex/_generated/api'
 import { Button } from '../../components/ui/button'
+import { useConfirm } from '../../components/ui/confirm-dialog'
 import { useMutation, useQuery } from '../../integrations/convex/hooks'
 import { formatUsdAmount } from '../../lib/currency'
 import { useI18n } from '../../lib/i18n/provider'
@@ -58,6 +59,7 @@ function useHoldCountdown(expiresAt?: number): string | null {
 function BookingCommandCenter() {
   const { bookingId } = Route.useParams()
   const { t } = useI18n()
+  const confirm = useConfirm()
   const detail = useQuery(api.bookings.getEnriched, {
     bookingId: bookingId as Id<'bookings'>,
   })
@@ -114,7 +116,15 @@ function BookingCommandCenter() {
     : null
 
   const handleCancel = async () => {
-    if (!window.confirm(t('bookings.confirmCancel'))) return
+    const confirmed = await confirm({
+      title: t('booking.cancel'),
+      description: t('bookings.confirmCancel'),
+      confirmText: t('booking.cancel'),
+      cancelText: t('common.cancel'),
+      variant: 'destructive',
+    })
+    if (!confirmed) return
+
     setIsCancelling(true)
     setFeedback(null)
     try {

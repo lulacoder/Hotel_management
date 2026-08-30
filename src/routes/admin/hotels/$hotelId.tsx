@@ -32,6 +32,7 @@ import { BankAccountModal } from './$hotelId/components/-BankAccountModal'
 import type { Id } from '../../../../convex/_generated/dataModel'
 import { useMutation, useQuery } from '@/integrations/convex/hooks'
 import { Button } from '@/components/ui/button'
+import { useConfirm } from '@/components/ui/confirm-dialog'
 import { useAdminSession } from '@/lib/adminSession'
 import { AdminSpinner } from '@/components/AdminSpinner'
 import { formatUsdAmount } from '@/lib/currency'
@@ -58,6 +59,7 @@ function HotelDetailPage() {
   const { hotelId } = Route.useParams()
   const search = Route.useSearch()
   const { theme } = useTheme()
+  const confirm = useConfirm()
   const isDark = theme === 'dark'
   const [showCreateRoom, setShowCreateRoom] = useState(false)
   const [editingRoom, setEditingRoom] = useState<Id<'rooms'> | null>(null)
@@ -112,16 +114,30 @@ function HotelDetailPage() {
   }, [backfillBankAccounts, canManagePaymentSettings, hotelId])
 
   const handleDeleteRoom = async (roomId: Id<'rooms'>) => {
-    if (confirm(t('admin.hotels.confirmDeleteRoom'))) {
-      await deleteRoom({ roomId })
-    }
     setActiveMenu(null)
+    const confirmed = await confirm({
+      title: t('common.delete'),
+      description: t('admin.hotels.confirmDeleteRoom'),
+      confirmText: t('common.delete'),
+      cancelText: t('common.cancel'),
+      variant: 'destructive',
+    })
+    if (!confirmed) return
+
+    await deleteRoom({ roomId })
   }
 
   const handleDeleteRating = async (ratingId: Id<'hotelRatings'>) => {
-    if (confirm(t('admin.hotels.confirmDeleteRating'))) {
-      await deleteRating({ ratingId })
-    }
+    const confirmed = await confirm({
+      title: t('common.delete'),
+      description: t('admin.hotels.confirmDeleteRating'),
+      confirmText: t('common.delete'),
+      cancelText: t('common.cancel'),
+      variant: 'destructive',
+    })
+    if (!confirmed) return
+
+    await deleteRating({ ratingId })
   }
 
   const handleStatusChange = async (
@@ -143,9 +159,14 @@ function HotelDetailPage() {
       return
     }
 
-    if (!confirm(t('admin.hotels.payment.confirmDeleteAccount'))) {
-      return
-    }
+    const confirmed = await confirm({
+      title: t('common.delete'),
+      description: t('admin.hotels.payment.confirmDeleteAccount'),
+      confirmText: t('common.delete'),
+      cancelText: t('common.cancel'),
+      variant: 'destructive',
+    })
+    if (!confirmed) return
 
     await deleteBankAccount({ accountId: account._id })
   }

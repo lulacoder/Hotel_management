@@ -10,6 +10,7 @@ import { AssignModal } from './components/-AssignModal'
 import type { Id } from '../../../../convex/_generated/dataModel'
 import { useMutation, useQuery } from '@/integrations/convex/hooks'
 import { Button } from '@/components/ui/button'
+import { useConfirm } from '@/components/ui/confirm-dialog'
 import { useAdminSession } from '@/lib/adminSession'
 
 export const Route = createFileRoute('/admin/users/')({
@@ -20,6 +21,7 @@ export const Route = createFileRoute('/admin/users/')({
 function AdminUsersPage() {
   // Query users and assignment actions; keep search + modal state local.
   const { t } = useI18n()
+  const confirm = useConfirm()
   const { theme } = useTheme()
   const isDark = theme === 'dark'
   const [searchQuery, setSearchQuery] = useState('')
@@ -51,7 +53,14 @@ function AdminUsersPage() {
 
   const handleUnassign = async (targetUserId: Id<'users'>) => {
     // Remove hotel assignment after user confirmation.
-    if (!confirm(t('admin.users.confirmUnassign'))) return
+    const confirmed = await confirm({
+      title: t('admin.users.unassign'),
+      description: t('admin.users.confirmUnassign'),
+      confirmText: t('admin.users.unassign'),
+      cancelText: t('common.cancel'),
+      variant: 'destructive',
+    })
+    if (!confirmed) return
 
     setError(null)
     try {

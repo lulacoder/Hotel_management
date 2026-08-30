@@ -22,6 +22,7 @@ import { LanguageSwitcher } from './LanguageSwitcher'
 import { NotificationBell } from './NotificationBell'
 import { ThemeToggle } from './ThemeToggle'
 import { Button } from './ui/button'
+import { useConfirm } from './ui/confirm-dialog'
 import {
   Sheet,
   SheetContent,
@@ -39,6 +40,7 @@ export default function Header() {
   const clerk = useClerk()
   const navigate = useNavigate()
   const { t } = useI18n()
+  const confirm = useConfirm()
   const location = useLocation()
 
   const isAuthPage =
@@ -103,6 +105,15 @@ export default function Header() {
   }
 
   const handleSignOut = async () => {
+    const confirmed = await confirm({
+      title: t('header.signOut'),
+      description: 'Are you sure you want to sign out of your account?',
+      confirmText: t('header.signOut'),
+      cancelText: t('common.cancel'),
+      variant: 'destructive',
+    })
+    if (!confirmed) return
+
     setMenuOpen(false)
     await clerk.signOut({ redirectUrl: '/' })
     navigate({ to: '/' })
