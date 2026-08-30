@@ -631,18 +631,16 @@ html[data-theme='light'] .booking-copy-button:hover {
 }
 
 html[data-theme='light'] .booking-action-primary {
-  background: rgb(15 23 42);
-  border: 1px solid rgb(15 23 42 / 0.92);
+  background: rgb(124 58 237);
+  border: 1px solid rgb(124 58 237);
   color: rgb(255 255 255);
-  box-shadow: 0 14px 30px -16px rgb(15 23 42 / 0.35);
+  box-shadow: 0 10px 25px -5px rgb(124 58 237 / 0.25);
 }
 
 html[data-theme='light'] .booking-action-primary:hover {
-  background: rgb(30 41 59);
-  border-color: rgb(30 41 59 / 0.95);
-  box-shadow:
-    0 16px 30px -18px rgb(15 23 42 / 0.38),
-    0 6px 16px -14px rgb(15 23 42 / 0.12);
+  background: rgb(139 92 246);
+  border-color: rgb(139 92 246);
+  box-shadow: 0 12px 28px -6px rgb(124 58 237 / 0.35);
 }
 
 html[data-theme='light'] .booking-action-success {

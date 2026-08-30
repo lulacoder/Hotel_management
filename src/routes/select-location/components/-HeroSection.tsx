@@ -1,5 +1,4 @@
-// Hero/intro section for the hotel discovery page with location status messaging.
-import { Loader2, Navigation, Search, Users } from 'lucide-react'
+import { Loader2, Navigation, Search } from 'lucide-react'
 
 import { getGeolocationErrorMessage } from '../../../hooks/useGeolocation'
 import { useI18n } from '../../../lib/i18n/provider'
@@ -11,6 +10,7 @@ import {
 } from '../../../lib/navigationSearch'
 import type { ReactNode } from 'react'
 import { DatePicker } from '@/components/ui/date-picker'
+import { GuestStepper } from '@/components/GuestStepper'
 
 interface HeroSectionProps {
   locationSupported: boolean
@@ -186,18 +186,13 @@ export function HeroSection({
               }}
               className="h-11 rounded-xl border-slate-300/80 bg-white/90 py-0 dark:bg-slate-800/70"
             />
-            <label className="relative">
-              <Users className="absolute left-3 top-1/2 size-4 -translate-y-1/2 text-slate-400" />
-              <span className="sr-only">{t('landing.searchGuests')}</span>
-              <input
-                type="number"
-                min={1}
-                max={20}
-                value={guests}
-                onChange={(event) => onGuestsChange(Number(event.target.value))}
-                className="h-11 w-full rounded-xl border border-slate-300/80 bg-white/90 pl-10 pr-3 text-sm text-slate-800 outline-none focus:border-violet-500 sm:text-base dark:border-slate-700 dark:bg-slate-800/70 dark:text-slate-100"
-              />
-            </label>
+            <GuestStepper
+              value={guests}
+              onChange={onGuestsChange}
+              min={1}
+              max={20}
+              className="h-11 border-slate-300/80 bg-white/90 py-0 dark:bg-slate-800/70"
+            />
           </div>
 
           {!hasValidStay && (checkIn || checkOut) && (

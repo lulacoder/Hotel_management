@@ -547,7 +547,7 @@ function SelectLocationPage() {
       <button
         type="button"
         onClick={openComplaintModal}
-        className="fixed bottom-6 right-6 z-40 inline-flex cursor-pointer items-center gap-2 rounded-full bg-white px-4 py-3 font-semibold text-slate-900 shadow-lg shadow-white/20 transition-all hover:bg-slate-100"
+        className="fixed bottom-6 right-6 z-40 inline-flex cursor-pointer items-center gap-2 rounded-full border border-violet-500/20 bg-violet-600 px-4 py-3 font-semibold text-white shadow-xl shadow-violet-600/30 transition-all hover:bg-violet-500 hover:shadow-violet-600/40 hover:-translate-y-0.5 active:translate-y-0"
         aria-label={t('complaint.fab')}
       >
         <MessageSquarePlus className="size-5" />

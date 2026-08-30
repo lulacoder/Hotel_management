@@ -1,6 +1,6 @@
 // Landing hero: asymmetric split with copy on the left and a single portrait image.
 import { Link, useNavigate } from '@tanstack/react-router'
-import { ArrowRight, MapPin, Search, Users } from 'lucide-react'
+import { ArrowRight, MapPin, Search } from 'lucide-react'
 import { useId, useRef, useState } from 'react'
 import { useI18n } from '../../../lib/i18n/provider'
 import {
@@ -15,6 +15,7 @@ import { HeroSearchAutocomplete } from './-HeroSearchAutocomplete'
 import type { Id } from '../../../../convex/_generated/dataModel'
 import { Button } from '@/components/ui/button'
 import { DatePicker } from '@/components/ui/date-picker'
+import { GuestStepper } from '@/components/GuestStepper'
 import { staticAssets } from '@/lib/staticAssets'
 
 export function Hero() {
@@ -168,19 +169,13 @@ export function Hero() {
               }}
               className="h-11 rounded-xl border-slate-200 py-0 dark:bg-slate-800"
             />
-            <label className="relative">
-              <Users className="absolute left-3 top-1/2 size-4 -translate-y-1/2 text-slate-400" />
-              <span className="sr-only">{t('landing.searchGuests')}</span>
-              <input
-                required
-                type="number"
-                min={1}
-                max={20}
-                value={guests}
-                onChange={(event) => setGuests(Number(event.target.value))}
-                className="h-11 w-full rounded-xl border border-slate-200 bg-white pl-10 pr-3 text-sm text-slate-900 outline-none focus:border-violet-500 sm:text-base dark:border-slate-700 dark:bg-slate-800 dark:text-slate-100"
-              />
-            </label>
+            <GuestStepper
+              value={guests}
+              onChange={setGuests}
+              min={1}
+              max={20}
+              className="h-11 border-slate-200 py-0 dark:bg-slate-800"
+            />
             <button
               type="submit"
               className="flex h-11 cursor-pointer items-center justify-center gap-2 rounded-xl bg-violet-600 px-5 text-sm font-semibold text-white transition-colors hover:bg-violet-500 sm:text-base"
@@ -231,7 +226,7 @@ export function Hero() {
               asChild
               variant="outline"
               size="lg"
-              className="h-12 rounded-xl border-slate-300 px-7 text-sm font-semibold text-slate-900 transition-all duration-300 hover:-translate-y-0.5 hover:bg-slate-900 hover:text-white active:translate-y-0 sm:text-base dark:border-slate-700 dark:text-slate-100 dark:hover:bg-slate-100 dark:hover:text-slate-900"
+              className="h-12 rounded-xl border border-slate-300 bg-white/80 px-7 text-sm font-semibold text-slate-800 backdrop-blur-sm transition-all duration-300 hover:-translate-y-0.5 hover:border-violet-400 hover:bg-violet-50 hover:text-violet-700 hover:shadow-md hover:shadow-violet-500/10 active:translate-y-0 sm:text-base dark:border-slate-700 dark:bg-slate-900/60 dark:text-slate-200 dark:hover:border-violet-500/50 dark:hover:bg-violet-950/30 dark:hover:text-violet-300 dark:hover:shadow-violet-950/20"
             >
               <Link to="/sign-up" search={DEFAULT_AUTH_SEARCH}>
                 {t('landing.createFreeAccount')}

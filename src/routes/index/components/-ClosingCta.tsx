@@ -40,7 +40,7 @@ export function ClosingCta() {
               asChild
               variant="outline"
               size="lg"
-              className="h-12 rounded-xl border-slate-300 px-7 text-sm font-semibold text-slate-900 transition-all duration-300 hover:-translate-y-0.5 hover:bg-slate-900 hover:text-white active:translate-y-0 sm:text-base dark:border-slate-700 dark:text-slate-100 dark:hover:bg-slate-100 dark:hover:text-slate-900"
+              className="h-12 rounded-xl border border-slate-300 bg-white/80 px-7 text-sm font-semibold text-slate-800 backdrop-blur-sm transition-all duration-300 hover:-translate-y-0.5 hover:border-violet-400 hover:bg-violet-50 hover:text-violet-700 hover:shadow-md hover:shadow-violet-500/10 active:translate-y-0 sm:text-base dark:border-slate-700 dark:bg-slate-900/60 dark:text-slate-200 dark:hover:border-violet-500/50 dark:hover:bg-violet-950/30 dark:hover:text-violet-300 dark:hover:shadow-violet-950/20"
             >
               <Link to="/sign-in" search={DEFAULT_AUTH_SEARCH}>
                 {t('landing.alreadyHaveAccount')}

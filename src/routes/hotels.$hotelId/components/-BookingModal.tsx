@@ -443,7 +443,7 @@ export function BookingModal({
           onClick={() =>
             setBookingFlow((flow) => ({ ...flow, step: 'details' }))
           }
-          className="booking-action-primary flex-1 cursor-pointer rounded-xl bg-white px-4 py-3 font-medium text-slate-900 transition-all hover:bg-slate-100"
+          className="booking-action-primary flex-1 cursor-pointer rounded-xl bg-violet-600 px-4 py-3 font-semibold text-white shadow-lg shadow-violet-600/20 transition-all hover:bg-violet-500"
         >
           {t('bookingModal.continue')}
         </button>
@@ -542,7 +542,7 @@ export function BookingModal({
         <button
           type="submit"
           disabled={loadingPhase === 'hold'}
-          className="booking-action-primary flex-1 cursor-pointer rounded-xl bg-white px-4 py-3 font-medium text-slate-900 transition-all hover:bg-slate-100 disabled:opacity-50"
+          className="booking-action-primary flex-1 cursor-pointer rounded-xl bg-violet-600 px-4 py-3 font-semibold text-white shadow-lg shadow-violet-600/20 transition-all hover:bg-violet-500 disabled:opacity-50"
         >
           {loadingPhase === 'hold'
             ? t('bookingModal.holding')
@@ -701,7 +701,7 @@ export function BookingModal({
               type="button"
               onClick={handleChapaCheckout}
               disabled={chapaLoading}
-              className="booking-action-primary flex-1 cursor-pointer rounded-xl bg-white px-4 py-3 font-medium text-slate-900 transition-all hover:bg-slate-100 disabled:opacity-50"
+              className="booking-action-primary flex-1 cursor-pointer rounded-xl bg-violet-600 px-4 py-3 font-semibold text-white shadow-lg shadow-violet-600/20 transition-all hover:bg-violet-500 disabled:opacity-50"
             >
               {chapaLoading
                 ? t('bookingModal.redirectingToChapa')
