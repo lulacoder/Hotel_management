@@ -191,6 +191,31 @@ export default defineSchema({
     .index('by_hotel', ['hotelId'])
     .index('by_hotel_and_is_deleted', ['hotelId', 'isDeleted']),
 
+  // Transactional reservations prevent concurrent actions from creating
+  // multiple provider checkouts for the same booking.
+  chapaCheckoutAttempts: defineTable({
+    bookingId: v.id('bookings'),
+    txRef: v.string(),
+    bookingAmountCents: v.number(),
+    bookingCurrency: v.literal('USD'),
+    chargedAmountMinor: v.number(),
+    chargedCurrency: v.literal('ETB'),
+    fxRateEtbPerUsd: v.number(),
+    providerMode: v.union(v.literal('test'), v.literal('live')),
+    origin: v.union(v.literal('web'), v.literal('mobile')),
+    status: v.union(
+      v.literal('initializing'),
+      v.literal('initialized'),
+      v.literal('failed'),
+    ),
+    checkoutUrl: v.optional(v.string()),
+    lastError: v.optional(v.string()),
+    createdAt: v.number(),
+    updatedAt: v.number(),
+  })
+    .index('by_booking', ['bookingId'])
+    .index('by_tx_ref', ['txRef']),
+
   chapaPayments: defineTable({
     bookingId: v.id('bookings'),
     txRef: v.string(),
@@ -221,12 +246,21 @@ export default defineSchema({
     webhookReceivedAt: v.optional(v.number()),
     verifiedAt: v.optional(v.number()),
     refundedAt: v.optional(v.number()),
+    refundReference: v.optional(v.string()),
+    refundRefId: v.optional(v.string()),
+    refundAmountMinor: v.optional(v.number()),
+    refundRequestedBy: v.optional(v.id('users')),
+    refundRequestedAt: v.optional(v.number()),
+    refundVerifiedAt: v.optional(v.number()),
+    refundLastError: v.optional(v.string()),
     createdAt: v.number(),
     updatedAt: v.number(),
   })
     .index('by_booking', ['bookingId'])
     .index('by_tx_ref', ['txRef'])
-    .index('by_status', ['status']),
+    .index('by_status', ['status'])
+    .index('by_refund_reference', ['refundReference'])
+    .index('by_refund_ref_id', ['refundRefId']),
 
   // Bookings table
   bookings: defineTable({
@@ -247,6 +281,7 @@ export default defineSchema({
       v.literal('outsourced'),
     ),
     holdExpiresAt: v.optional(v.number()), // Timestamp for hold expiration
+    proofReviewDeadline: v.optional(v.number()), // Staff review deadline for a submitted bank proof
     outsourcedToHotelId: v.optional(v.id('hotels')),
     outsourcedAt: v.optional(v.number()),
     paymentStatus: v.optional(
@@ -257,6 +292,36 @@ export default defineSchema({
         v.literal('refunded'),
       ),
     ),
+    paymentMethod: v.optional(
+      v.union(
+        v.literal('cash'),
+        v.literal('bank_transfer'),
+        v.literal('chapa'),
+      ),
+    ),
+    refundStatus: v.optional(
+      v.union(
+        v.literal('required'),
+        v.literal('processing'),
+        v.literal('refunded'),
+        v.literal('reversed'),
+        v.literal('verification_required'),
+      ),
+    ),
+    refundMethod: v.optional(v.union(v.literal('chapa'), v.literal('manual'))),
+    refundReason: v.optional(
+      v.union(
+        v.literal('late_payment'),
+        v.literal('staff_cancelled'),
+        v.literal('no_show'),
+      ),
+    ),
+    refundActionRequired: v.optional(v.boolean()),
+    refundRequiredAt: v.optional(v.number()),
+    refundStartedAt: v.optional(v.number()),
+    refundCompletedAt: v.optional(v.number()),
+    refundLastError: v.optional(v.string()),
+    manualRefundReference: v.optional(v.string()),
     transactionId: v.optional(v.string()),
     nationalIdStorageId: v.optional(v.id('_storage')),
     nationalIdR2Key: v.optional(v.string()),
@@ -290,11 +355,24 @@ export default defineSchema({
     .index('by_room_and_check_out', ['roomId', 'checkOut'])
     .index('by_room_and_dates', ['roomId', 'checkIn', 'checkOut'])
     .index('by_hold_expires', ['holdExpiresAt'])
+    .index('by_proof_review_deadline', ['proofReviewDeadline'])
     .index('by_user_and_status', ['userId', 'status'])
     .index('by_hotel_and_status', ['hotelId', 'status'])
     .index('by_payment_status', ['paymentStatus'])
+    .index('by_refund_status', ['refundStatus'])
     .index('by_status_and_payment_status', ['status', 'paymentStatus'])
+    .index('by_status_payment_and_check_in', [
+      'status',
+      'paymentStatus',
+      'checkIn',
+    ])
     .index('by_hotel_and_payment_status', ['hotelId', 'paymentStatus'])
+    .index('by_hotel_and_refund_status', ['hotelId', 'refundStatus'])
+    .index('by_refund_action_required', ['refundActionRequired'])
+    .index('by_hotel_and_refund_action_required', [
+      'hotelId',
+      'refundActionRequired',
+    ])
     .index('by_hotel_status_and_payment_status', [
       'hotelId',
       'status',
@@ -338,6 +416,10 @@ export default defineSchema({
       v.literal('booking_confirmed'), // → customer: payment verified / booking confirmed
       v.literal('booking_cancelled'), // → customer: staff cancelled their booking
       v.literal('booking_payment_rejected'), // → customer: payment proof was rejected
+      v.literal('booking_refund_required'), // → staff: a paid booking needs a refund
+      v.literal('booking_refund_processing'), // → legacy customer rows, no longer created
+      v.literal('booking_refunded'), // → customer: a refund was completed
+      v.literal('booking_refund_reversed'), // → staff/customer: a refund failed after submission
     ),
     bookingId: v.id('bookings'),
     hotelId: v.id('hotels'),
@@ -347,7 +429,9 @@ export default defineSchema({
   })
     .index('by_user', ['userId'])
     .index('by_user_and_is_read', ['userId', 'isRead'])
-    .index('by_created_at', ['createdAt']),
+    .index('by_created_at', ['createdAt'])
+    // Lets a repeated fan-out find the alert it should refresh instead of duplicate
+    .index('by_booking_and_type', ['bookingId', 'type']),
 
   // Expo push notification tokens — one row per (user, device).
   // Multiple rows per user are allowed (multi-device).
@@ -363,7 +447,7 @@ export default defineSchema({
 
   // Audit events table for tracking changes
   auditEvents: defineTable({
-    actorId: v.id('users'),
+    actorId: v.optional(v.id('users')),
     action: v.string(),
     targetType: v.union(
       v.literal('hotel'),

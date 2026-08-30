@@ -56,9 +56,7 @@ export const sendExpoPush = internalAction({
       userId: args.userId,
     })
 
-    const valid = tokens.filter((t) =>
-      t.token.startsWith('ExponentPushToken['),
-    )
+    const valid = tokens.filter((t) => t.token.startsWith('ExponentPushToken['))
 
     if (valid.length === 0) {
       return null
@@ -101,11 +99,9 @@ export const sendExpoPush = internalAction({
             ticket.details?.error === 'DeviceNotRegistered'
           ) {
             const deadToken = batch[i].to
-            await ctx.scheduler.runAfter(
-              0,
-              internal.pushTokens.deleteByToken,
-              { token: deadToken },
-            )
+            await ctx.scheduler.runAfter(0, internal.pushTokens.deleteByToken, {
+              token: deadToken,
+            })
           }
         }
       } catch {

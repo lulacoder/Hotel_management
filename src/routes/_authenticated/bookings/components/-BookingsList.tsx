@@ -13,6 +13,8 @@ interface BookingsListProps {
       pricePerNight: number
       totalPrice: number
       status: string
+      paymentStatus?: string | undefined
+      refundStatus?: string | undefined
       holdExpiresAt?: number | undefined
       packageType?: PackageType | undefined
       packageAddOn?: number | undefined

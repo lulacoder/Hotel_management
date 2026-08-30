@@ -16,6 +16,45 @@ import type {
 } from '../../convex/lib/bookingLifecycle'
 import type { LucideIcon } from 'lucide-react'
 
+export const REFUND_STATUS_LABEL_KEYS = {
+  required: 'admin.bookings.refundRequired',
+  processing: 'admin.bookings.refundProcessing',
+  refunded: 'admin.bookings.refundCompleted',
+  reversed: 'admin.bookings.refundReversed',
+  verification_required: 'admin.bookings.refundVerificationRequired',
+} as const
+
+export type BookingRefundStatus = keyof typeof REFUND_STATUS_LABEL_KEYS
+
+// Resolves a stored refund status to its message key, ignoring unknown values
+export function getRefundStatusLabelKey(
+  refundStatus: string | undefined,
+): (typeof REFUND_STATUS_LABEL_KEYS)[BookingRefundStatus] | undefined {
+  if (refundStatus === undefined) return undefined
+  return REFUND_STATUS_LABEL_KEYS[refundStatus as BookingRefundStatus]
+}
+
+// Collapses the internal refund states into the three outcomes a guest cares
+// about, so operational steps like provider verification never reach them
+const CUSTOMER_REFUND_VIEW = {
+  required: 'inProgress',
+  processing: 'inProgress',
+  verification_required: 'inProgress',
+  refunded: 'refunded',
+  reversed: 'reversed',
+} as const
+
+export type CustomerRefundView =
+  (typeof CUSTOMER_REFUND_VIEW)[BookingRefundStatus]
+
+// Resolves a stored refund status to the guest-facing view, ignoring unknowns
+export function getCustomerRefundView(
+  refundStatus: string | undefined,
+): CustomerRefundView | undefined {
+  if (refundStatus === undefined) return undefined
+  return CUSTOMER_REFUND_VIEW[refundStatus as BookingRefundStatus]
+}
+
 export interface BookingStatusDisplay {
   label: string
   icon: LucideIcon

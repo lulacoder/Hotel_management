@@ -1,5 +1,5 @@
 import { ConvexError } from 'convex/values'
-import { datesOverlap, isHoldExpired } from './dates'
+import { datesOverlap, hasHoldReleasedRoom } from './dates'
 import { isTerminalBookingStatus } from './bookingLifecycle'
 import type { QueryCtx } from '../_generated/server'
 import type { Id } from '../_generated/dataModel'
@@ -24,7 +24,7 @@ export async function assertRoomAvailable(
 
   for (const booking of existingBookings) {
     if (isTerminalBookingStatus(booking.status)) continue
-    if (booking.status === 'held' && isHoldExpired(booking.holdExpiresAt))
+    if (booking.status === 'held' && hasHoldReleasedRoom(booking.holdExpiresAt))
       continue
 
     if (
@@ -60,7 +60,7 @@ export async function checkRoomAvailability(
 
   for (const booking of existingBookings) {
     if (isTerminalBookingStatus(booking.status)) continue
-    if (booking.status === 'held' && isHoldExpired(booking.holdExpiresAt))
+    if (booking.status === 'held' && hasHoldReleasedRoom(booking.holdExpiresAt))
       continue
 
     if (
@@ -103,7 +103,7 @@ export async function findBlockedRoomIds(
   for (const booking of candidateBookings) {
     if (!candidateRoomIds.has(booking.roomId)) continue
     if (isTerminalBookingStatus(booking.status)) continue
-    if (booking.status === 'held' && isHoldExpired(booking.holdExpiresAt))
+    if (booking.status === 'held' && hasHoldReleasedRoom(booking.holdExpiresAt))
       continue
 
     if (

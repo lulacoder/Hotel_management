@@ -18,10 +18,12 @@ import { Button } from '../../components/ui/button'
 import { useMutation, useQuery } from '../../integrations/convex/hooks'
 import { formatUsdAmount } from '../../lib/currency'
 import { useI18n } from '../../lib/i18n/provider'
+import { getCustomerRefundView } from '../../lib/bookingStatus'
 import {
   DEFAULT_HOTEL_DETAIL_SEARCH,
   DEFAULT_SELECT_LOCATION_SEARCH,
 } from '../../lib/navigationSearch'
+import { canCustomerCancelBooking } from './bookings/components/-helpers'
 import type { Id } from '../../../convex/_generated/dataModel'
 
 export const Route = createFileRoute('/_authenticated/bookings_/$bookingId')({
@@ -101,10 +103,12 @@ function BookingCommandCenter() {
   const currentIndex = STATUS_ORDER.indexOf(
     booking.status as (typeof STATUS_ORDER)[number],
   )
-  const canCancel = ['held', 'pending_payment', 'confirmed'].includes(
+  const canCancel = canCustomerCancelBooking(
     booking.status,
+    booking.paymentStatus,
   )
   const canResumePayment = ['held', 'pending_payment'].includes(booking.status)
+  const refundView = getCustomerRefundView(booking.refundStatus)
   const directionsUrl = hotel.location
     ? `https://www.google.com/maps/dir/?api=1&destination=${hotel.location.lat},${hotel.location.lng}`
     : null
@@ -257,6 +261,22 @@ function BookingCommandCenter() {
                 <p className="mt-2 capitalize text-muted-foreground">
                   {payment.status.replaceAll('_', ' ')}
                 </p>
+              </div>
+            )}
+            {refundView && (
+              <div
+                className={`mt-5 rounded-xl border p-4 text-sm ${
+                  refundView === 'refunded'
+                    ? 'border-emerald-500/30 bg-emerald-500/10 text-emerald-500'
+                    : refundView === 'reversed'
+                      ? 'border-red-500/30 bg-red-500/10 text-red-500'
+                      : 'border-blue-500/30 bg-blue-500/10 text-blue-500'
+                }`}
+              >
+                <p className="font-semibold">
+                  {t(`refund.customer.label.${refundView}`)}
+                </p>
+                <p className="mt-1">{t(`refund.customer.${refundView}`)}</p>
               </div>
             )}
           </section>

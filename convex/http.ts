@@ -136,8 +136,7 @@ http.route({
   handler: httpAction(async (ctx, request) => {
     // Resend's webhook helper only needs the mutation args, not transaction options.
     const resendCtx: ResendWebhookMutationCtx = {
-      runMutation: (mutation, ...args) =>
-        ctx.runMutation(mutation, args[0]),
+      runMutation: (mutation, ...args) => ctx.runMutation(mutation, args[0]),
     }
 
     return await resend.handleResendEventWebhook(resendCtx, request)

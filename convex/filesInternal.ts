@@ -52,8 +52,7 @@ export const cleanupOrphanUploads = internalMutation({
             !room.isDeleted &&
             ((upload.storageId !== undefined &&
               room.imageStorageId === upload.storageId) ||
-              (upload.r2Key !== undefined &&
-                room.imageR2Key === upload.r2Key)),
+              (upload.r2Key !== undefined && room.imageR2Key === upload.r2Key)),
         )
         const linkedBooking = allBookings.find(
           (booking) =>

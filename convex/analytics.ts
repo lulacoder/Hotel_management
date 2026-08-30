@@ -121,7 +121,9 @@ const topHotelsValidator = v.object({
 type ActiveHotelDoc = Doc<'hotels'>
 type ActiveRoomDoc = Doc<'rooms'>
 
-function mapBookings(bookings: Array<Doc<'bookings'>>): Array<AnalyticsBookingRecord> {
+function mapBookings(
+  bookings: Array<Doc<'bookings'>>,
+): Array<AnalyticsBookingRecord> {
   return bookings.map((booking) => ({
     _id: booking._id,
     hotelId: booking.hotelId,
@@ -284,7 +286,7 @@ export const getDashboardSummary = query({
     const { scope } = await getScopeContext(ctx)
     const hotels = await listScopedHotels(
       ctx,
-      scope.kind === 'hotel' ? (scope.hotelId) : undefined,
+      scope.kind === 'hotel' ? scope.hotelId : undefined,
     )
     const hotelIds = new Set(hotels.map((hotel) => hotel._id))
     const rooms = await listScopedRooms(ctx, hotelIds)
@@ -295,7 +297,11 @@ export const getDashboardSummary = query({
     )
     // Occupancy and arrivals on the summary only look at today's bucket,
     // so 'today' is the tightest correct bound regardless of args.window.
-    const occupancyBookings = await listOccupancyBookings(ctx, hotelIds, 'today')
+    const occupancyBookings = await listOccupancyBookings(
+      ctx,
+      hotelIds,
+      'today',
+    )
     const mappedRooms = mapRooms(rooms)
     const activeRoomIds = new Set(
       rooms.filter((room) => !room.isDeleted).map((room) => room._id),
@@ -350,7 +356,7 @@ export const getRevenueTrend = query({
 
     const hotels = await listScopedHotels(
       ctx,
-      scope.kind === 'hotel' ? (scope.hotelId) : undefined,
+      scope.kind === 'hotel' ? scope.hotelId : undefined,
     )
     const hotelIds = new Set(hotels.map((hotel) => hotel._id))
     const bookings = mapBookings(
@@ -373,7 +379,7 @@ export const getBookingTrend = query({
     const { scope } = await getScopeContext(ctx)
     const hotels = await listScopedHotels(
       ctx,
-      scope.kind === 'hotel' ? (scope.hotelId) : undefined,
+      scope.kind === 'hotel' ? scope.hotelId : undefined,
     )
     const hotelIds = new Set(hotels.map((hotel) => hotel._id))
     const bookings = mapBookings(
@@ -396,7 +402,7 @@ export const getStatusBreakdowns = query({
     const { scope } = await getScopeContext(ctx)
     const hotels = await listScopedHotels(
       ctx,
-      scope.kind === 'hotel' ? (scope.hotelId) : undefined,
+      scope.kind === 'hotel' ? scope.hotelId : undefined,
     )
     const hotelIds = new Set(hotels.map((hotel) => hotel._id))
     const rooms = mapRooms(await listScopedRooms(ctx, hotelIds))
@@ -431,7 +437,7 @@ export const getOccupancyTrend = query({
 
     const hotels = await listScopedHotels(
       ctx,
-      scope.kind === 'hotel' ? (scope.hotelId) : undefined,
+      scope.kind === 'hotel' ? scope.hotelId : undefined,
     )
     const hotelIds = new Set(hotels.map((hotel) => hotel._id))
     const rooms = await listScopedRooms(ctx, hotelIds)

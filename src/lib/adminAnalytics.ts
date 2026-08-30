@@ -18,6 +18,7 @@ export type PaymentStatusFilter =
   | 'paid'
   | 'failed'
   | 'refunded'
+  | 'refund_required'
   | 'unpaid_unknown'
 
 export type RoomOperationalStatusFilter =
@@ -90,6 +91,7 @@ export function normalizePaymentStatusFilter(
     'paid',
     'failed',
     'refunded',
+    'refund_required',
     'unpaid_unknown',
   ].includes(String(value))
     ? (value as PaymentStatusFilter)

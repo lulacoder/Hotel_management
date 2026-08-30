@@ -72,7 +72,9 @@ export function calculateConfirmedRevenuePipeline(
   }, 0)
 }
 
-export function countActiveStays(bookings: Array<AnalyticsBookingRecord>): number {
+export function countActiveStays(
+  bookings: Array<AnalyticsBookingRecord>,
+): number {
   return bookings.filter((booking) => booking.status === 'checked_in').length
 }
 

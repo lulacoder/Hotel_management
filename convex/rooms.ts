@@ -2,12 +2,12 @@ import { ConvexError, v } from 'convex/values'
 import { mutation, query } from './_generated/server'
 import { requireHotelAccess } from './lib/auth'
 import { createAuditLog } from './audit'
-import { isHoldExpired } from './lib/dates'
+import { hasHoldReleasedRoom } from './lib/dates'
 import { checkRoomAvailability, findBlockedRoomIds } from './lib/availability'
 import * as fileTracking from './fileTracking'
 import { r2 } from './r2'
 import type { Doc, Id } from './_generated/dataModel'
-import type { QueryCtx} from './_generated/server';
+import type { QueryCtx } from './_generated/server'
 
 // Room type validator
 const roomTypeValidator = v.union(
@@ -114,7 +114,7 @@ function getDerivedLiveState(
 
   const hasHeld = bookings.some(
     (booking) =>
-      booking.status === 'held' && !isHoldExpired(booking.holdExpiresAt),
+      booking.status === 'held' && !hasHoldReleasedRoom(booking.holdExpiresAt),
   )
 
   if (hasHeld) {
@@ -592,9 +592,9 @@ export const update = mutation({
       ? null
       : args.imageR2Key !== undefined
         ? null
-      : args.imageStorageId !== undefined
-        ? args.imageStorageId
-        : (room.imageStorageId ?? null)
+        : args.imageStorageId !== undefined
+          ? args.imageStorageId
+          : (room.imageStorageId ?? null)
 
     if (shouldUpdateImage) {
       previousValues.imageStorageId = room.imageStorageId ?? null
@@ -768,7 +768,7 @@ export const softDelete = mutation({
     ).flat()
 
     const hasActiveBookings = activeBookings.some(
-      (b) => !(b.status === 'held' && isHoldExpired(b.holdExpiresAt)),
+      (b) => !(b.status === 'held' && hasHoldReleasedRoom(b.holdExpiresAt)),
     )
 
     if (hasActiveBookings) {

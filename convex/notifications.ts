@@ -16,6 +16,10 @@ const notificationTypeValidator = v.union(
   v.literal('booking_confirmed'),
   v.literal('booking_cancelled'),
   v.literal('booking_payment_rejected'),
+  v.literal('booking_refund_required'),
+  v.literal('booking_refund_processing'),
+  v.literal('booking_refunded'),
+  v.literal('booking_refund_reversed'),
 )
 
 const notificationValidator = v.object({
@@ -40,7 +44,11 @@ function mapNotificationToPush(
     | 'booking_payment_proof_submitted'
     | 'booking_confirmed'
     | 'booking_cancelled'
-    | 'booking_payment_rejected',
+    | 'booking_payment_rejected'
+    | 'booking_refund_required'
+    | 'booking_refund_processing'
+    | 'booking_refunded'
+    | 'booking_refund_reversed',
   message: string,
 ): { title: string; body: string } | null {
   switch (type) {
@@ -52,6 +60,15 @@ function mapNotificationToPush(
       return { title: 'Payment needs attention', body: message }
     case 'booking_payment_proof_submitted':
       return null
+    case 'booking_refund_required':
+      return { title: 'Refund required', body: message }
+    // Legacy only, nothing creates this type any more, but stored rows still render
+    case 'booking_refund_processing':
+      return { title: 'Refund in progress', body: message }
+    case 'booking_refunded':
+      return { title: 'Refund completed', body: message }
+    case 'booking_refund_reversed':
+      return { title: 'Refund needs attention', body: message }
     default:
       return null
   }
@@ -217,7 +234,9 @@ export const createNotification = internalMutation({
 })
 
 // Creates notifications for every hotel staff member at a given hotel.
-// Used to fan-out a single booking event to all relevant staff.
+// Used to fan-out a single booking event to all relevant staff. A staff member
+// who still has this exact alert unread has it refreshed rather than repeated,
+// so a retried refund does not bury the queue in identical rows.
 export const notifyHotelStaff = internalMutation({
   args: {
     hotelId: v.id('hotels'),
@@ -232,11 +251,36 @@ export const notifyHotelStaff = internalMutation({
       .withIndex('by_hotel', (q) => q.eq('hotelId', args.hotelId))
       .collect()
 
+    const existing = await ctx.db
+      .query('notifications')
+      .withIndex('by_booking_and_type', (q) =>
+        q.eq('bookingId', args.bookingId).eq('type', args.type),
+      )
+      .collect()
+
+    // Index the outstanding alerts by recipient so each staff member is either
+    // refreshed or inserted, never both
+    const unreadByUser = new Map<string, (typeof existing)[number]>()
+    for (const notification of existing) {
+      if (notification.isRead) continue
+      unreadByUser.set(notification.userId, notification)
+    }
+
     const now = Date.now()
 
     await Promise.all(
-      staffMembers.map((staff) =>
-        ctx.db.insert('notifications', {
+      staffMembers.map((staff) => {
+        const outstanding = unreadByUser.get(staff.userId)
+        // Bump the existing alert to the top with the newest wording so a repeat
+        // event still reads as current without adding a duplicate row
+        if (outstanding) {
+          return ctx.db.patch(outstanding._id, {
+            message: args.message,
+            createdAt: now,
+          })
+        }
+
+        return ctx.db.insert('notifications', {
           userId: staff.userId,
           type: args.type,
           bookingId: args.bookingId,
@@ -244,8 +288,8 @@ export const notifyHotelStaff = internalMutation({
           message: args.message,
           isRead: false,
           createdAt: now,
-        }),
-      ),
+        })
+      }),
     )
 
     return null

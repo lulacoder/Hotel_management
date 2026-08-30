@@ -385,6 +385,33 @@ export const enMessages = {
   'admin.bookings.guest': 'Guest',
   'admin.bookings.walkIn': 'Walk-in',
   'admin.bookings.payment': 'Payment',
+  'admin.bookings.refundStatus': 'Refund status',
+  'admin.bookings.refundRequired': 'Refund required',
+  'admin.bookings.refundProcessing': 'Refund processing',
+  'admin.bookings.refundCompleted': 'Refunded',
+  'admin.bookings.refundReversed': 'Refund reversed',
+  'admin.bookings.refundVerificationRequired': 'Check Chapa before retrying',
+  'admin.bookings.refundMethod': 'Refund method',
+  'admin.bookings.refundMethodManual': 'Manual refund',
+  'admin.bookings.refundReason': 'Reason',
+  'admin.bookings.refundAmount': 'Full refund amount',
+  'admin.bookings.refundRequiredAt': 'Required since',
+  'admin.bookings.issueChapaRefund': 'Issue full Chapa refund',
+  'admin.bookings.completeManualRefund': 'Mark manual refund complete',
+  'admin.bookings.cashierRefundReadOnly':
+    'Cashiers can review this task. A hotel administrator must execute the refund.',
+  'admin.bookings.refundVerificationWarning':
+    'Chapa may have accepted this refund. Check the Chapa dashboard before taking another action.',
+  'admin.bookings.refundActionFailed': 'The refund action failed.',
+  'refund.customer.inProgress':
+    'Your full refund is being processed. We will let you know once it lands.',
+  'refund.customer.refunded':
+    'Your full refund has been processed. Please allow 2–3 business days for the funds to reflect in your account.',
+  'refund.customer.reversed':
+    'The refund did not complete. The hotel has been alerted to resolve it.',
+  'refund.customer.label.inProgress': 'Refund in progress',
+  'refund.customer.label.refunded': 'Refund completed',
+  'refund.customer.label.reversed': 'Refund needs attention',
   'admin.bookings.viewDetail': 'View Detail',
   'admin.bookings.openPage': 'Open Page',
   'admin.bookings.acceptCash': 'Accept Cash',
@@ -407,6 +434,9 @@ export const enMessages = {
   'admin.bookings.destinationUnavailable': 'Destination hotel not available',
   'admin.bookings.pending': 'Pending',
   'admin.bookings.actions': 'Actions',
+  'admin.bookings.cancelAndFlagRefund': 'Cancel and flag refund',
+  'admin.bookings.confirmCancelPaid':
+    'Cancel this paid booking and flag it for refund? The payment will remain marked paid until staff completes the refund.',
   'admin.bookings.acceptCashPayment': 'Accept Cash Payment',
   'admin.bookings.paymentVerification': 'Payment Verification',
   'admin.bookings.chapaPayment': 'Chapa Payment',
@@ -784,6 +814,7 @@ export const enMessages = {
   'admin.analytics.payment.paid': 'Paid',
   'admin.analytics.payment.failed': 'Failed',
   'admin.analytics.payment.refunded': 'Refunded',
+  'admin.analytics.payment.refundRequired': 'Refund required',
   'admin.analytics.payment.unknown': 'Unspecified',
   'admin.rooms.analyticsFilterNotice':
     'Analytics drill-down is highlighting rooms with {status} status.',
@@ -891,6 +922,8 @@ export const enMessages = {
     'We could not find the application profile linked to this signed-in account. Retry, or return to hotel search while an administrator checks your access.',
   'admin.retryProfile': 'Retry profile',
   'admin.bookings.action.cancelSuccess': 'Booking cancelled successfully.',
+  'admin.bookings.action.cancelRefundSuccess':
+    'Booking cancelled and flagged for refund.',
   'admin.bookings.action.statusSuccess': 'Booking status updated successfully.',
   'admin.bookings.action.cashSuccess': 'Cash payment recorded successfully.',
   'admin.bookings.action.failed':
@@ -917,7 +950,8 @@ export const enMessages = {
   'trip.cancelSuccess': 'Your booking has been cancelled.',
   'trip.copyFailed': 'Could not copy the booking reference.',
   'bookings.cancelSuccess': 'Your booking has been cancelled.',
-  'landing.socialProof': '50+ Handpicked Stays • Instant Booking • Verified Reviews',
+  'landing.socialProof':
+    '50+ Handpicked Stays • Instant Booking • Verified Reviews',
   'landing.popularDestinationsLabel': 'Popular:',
   'landing.startingFrom': 'Starting from',
   'landing.perNight': '/ night',

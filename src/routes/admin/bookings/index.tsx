@@ -45,7 +45,10 @@ import { Button } from '@/components/ui/button'
 import { LoadMoreButton } from '@/components/LoadMoreButton'
 import { AdminSpinner } from '@/components/AdminSpinner'
 import { formatEtbAmount, formatUsdAmount } from '@/lib/currency'
-import { useBookingStatusConfig } from '@/lib/bookingStatus'
+import {
+  getRefundStatusLabelKey,
+  useBookingStatusConfig,
+} from '@/lib/bookingStatus'
 
 export const Route = createFileRoute('/admin/bookings/')({
   validateSearch: (search: Record<string, unknown>) => ({
@@ -141,6 +144,7 @@ function BookingsPage() {
   const isBookingsLoading = bookingsPage.status === 'LoadingFirstPage'
 
   const cancelBooking = useMutation(api.bookings.cancelBooking)
+  const cancelPaidBooking = useMutation(api.bookings.cancelPaidBooking)
   const updateBookingStatus = useMutation(api.bookings.updateStatus)
   const acceptCashPayment = useMutation(api.bookings.acceptCashPayment)
   const selectedBookingDetail = useQuery(
@@ -156,29 +160,49 @@ function BookingsPage() {
     outsourceBookingId ? { bookingId: outsourceBookingId } : 'skip',
   )
 
-  const handleCancel = async (bookingId: Id<'bookings'>) => {
-    if (confirm(t('bookings.confirmCancel'))) {
-      setBookingAction({ bookingId, kind: 'cancel' })
-      setActionFeedback(null)
-      try {
+  // Paid bookings cancel through the staff refund path so the money stays tracked
+  const handleCancel = async (
+    bookingId: Id<'bookings'>,
+    paymentStatus?: string,
+  ) => {
+    const requiresRefund = paymentStatus === 'paid'
+
+    if (
+      !confirm(
+        requiresRefund
+          ? t('admin.bookings.confirmCancelPaid')
+          : t('bookings.confirmCancel'),
+      )
+    ) {
+      return
+    }
+
+    setBookingAction({ bookingId, kind: 'cancel' })
+    setActionFeedback(null)
+    try {
+      if (requiresRefund) {
+        await cancelPaidBooking({ bookingId })
+      } else {
         await cancelBooking({ bookingId })
-        setActionFeedback({
-          bookingId,
-          message: t('admin.bookings.action.cancelSuccess'),
-          tone: 'success',
-        })
-      } catch (error) {
-        setActionFeedback({
-          bookingId,
-          message:
-            error instanceof Error
-              ? error.message
-              : t('admin.bookings.action.failed'),
-          tone: 'error',
-        })
-      } finally {
-        setBookingAction(null)
       }
+      setActionFeedback({
+        bookingId,
+        message: requiresRefund
+          ? t('admin.bookings.action.cancelRefundSuccess')
+          : t('admin.bookings.action.cancelSuccess'),
+        tone: 'success',
+      })
+    } catch (error) {
+      setActionFeedback({
+        bookingId,
+        message:
+          error instanceof Error
+            ? error.message
+            : t('admin.bookings.action.failed'),
+        tone: 'error',
+      })
+    } finally {
+      setBookingAction(null)
     }
   }
 
@@ -344,6 +368,9 @@ function BookingsPage() {
             <option value="refunded">
               {t('admin.analytics.payment.refunded')}
             </option>
+            <option value="refund_required">
+              {t('admin.analytics.payment.refundRequired')}
+            </option>
             <option value="unpaid_unknown">
               {t('admin.analytics.payment.unknown')}
             </option>
@@ -377,6 +404,9 @@ function BookingsPage() {
           {filteredBookings.map((item) => {
             const booking = item.booking
             const canManageBookings = canManageBooking(booking.hotelId)
+            const refundStatusLabelKey = getRefundStatusLabelKey(
+              booking.refundStatus,
+            )
 
             return (
               <m.div key={booking._id} variants={itemVariants}>
@@ -468,6 +498,18 @@ function BookingsPage() {
                             {booking.paymentStatus || t('admin.bookings.na')}
                           </p>
                         </div>
+                        {refundStatusLabelKey && (
+                          <div>
+                            <p
+                              className={`mb-1 ${isDark ? 'text-slate-500' : 'text-slate-400'}`}
+                            >
+                              {t('admin.bookings.refundStatus')}
+                            </p>
+                            <p className="font-medium text-amber-400">
+                              {t(refundStatusLabelKey)}
+                            </p>
+                          </div>
+                        )}
                       </div>
                     </div>
 
@@ -529,7 +571,12 @@ function BookingsPage() {
                                 type="button"
                                 variant="destructive"
                                 size="lg"
-                                onClick={() => handleCancel(booking._id)}
+                                onClick={() =>
+                                  handleCancel(
+                                    booking._id,
+                                    booking.paymentStatus,
+                                  )
+                                }
                                 disabled={
                                   bookingAction?.bookingId === booking._id
                                 }
@@ -539,7 +586,9 @@ function BookingsPage() {
                                   bookingAction?.kind === 'cancel' && (
                                     <Loader2 className="size-4 animate-spin" />
                                   )}
-                                {transitionLabel[nextStatus]}
+                                {booking.paymentStatus === 'paid'
+                                  ? t('admin.bookings.cancelAndFlagRefund')
+                                  : transitionLabel[nextStatus]}
                               </Button>
                             ) : (
                               <Button

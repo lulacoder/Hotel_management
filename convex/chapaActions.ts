@@ -6,7 +6,7 @@ import { ConvexError, v } from 'convex/values'
 
 import { internal } from './_generated/api'
 import { action, internalAction } from './_generated/server'
-import type { Id } from './_generated/dataModel'
+import type { Doc, Id } from './_generated/dataModel'
 
 const CHAPA_API_BASE = 'https://api.chapa.co/v1'
 
@@ -17,6 +17,23 @@ interface ChapaInitializeResponse {
   status: string
   data?: {
     checkout_url?: string
+  }
+}
+
+interface ChapaRefundResponse {
+  message?: unknown
+  status?: string
+  data?: {
+    ref_id?: string
+    reference?: string
+    status?: string
+  }
+}
+
+interface ChapaRefundVerifyResponse extends ChapaRefundResponse {
+  data?: ChapaRefundResponse['data'] & {
+    amount?: string
+    currency?: string
   }
 }
 
@@ -62,6 +79,7 @@ interface InitializeCheckoutResult {
 
 type CheckoutOrigin = 'web' | 'mobile'
 
+// Reads a required server environment variable or fails configuration early
 function getEnv(name: string) {
   const value = process.env[name]
   if (!value) {
@@ -70,6 +88,7 @@ function getEnv(name: string) {
   return value
 }
 
+// Converts a provider decimal amount into integer minor units
 function parseMinorAmount(amount: string | null | undefined) {
   if (!amount) {
     return null
@@ -83,6 +102,7 @@ function parseMinorAmount(amount: string | null | undefined) {
   return Math.round(parsed * 100)
 }
 
+// Splits a guest name into the first and last names expected by Chapa
 function splitName(fullName: string | null | undefined) {
   const parts = (fullName ?? '').trim().split(/\s+/).filter(Boolean)
 
@@ -92,6 +112,7 @@ function splitName(fullName: string | null | undefined) {
   }
 }
 
+// Generates a booking-scoped Chapa transaction reference
 function generateTxRef(bookingId: Id<'bookings'>) {
   return [
     'bkg',
@@ -101,7 +122,11 @@ function generateTxRef(bookingId: Id<'bookings'>) {
   ].join('_')
 }
 
-function extractChapaErrorMessage(message: unknown) {
+// Extracts the first useful error message from a Chapa response
+function extractChapaErrorMessage(
+  message: unknown,
+  fallback = 'Failed to initialize Chapa checkout.',
+) {
   if (typeof message === 'string' && message.trim()) {
     return message
   }
@@ -127,9 +152,57 @@ function extractChapaErrorMessage(message: unknown) {
     }
   }
 
-  return 'Failed to initialize Chapa checkout.'
+  return fallback
 }
 
+// Generates the unique merchant reference that locks one refund attempt
+function generateRefundReference(bookingId: Id<'bookings'>) {
+  return [
+    'refund',
+    bookingId.slice(-8),
+    Date.now().toString(36),
+    crypto.randomBytes(3).toString('hex'),
+  ].join('_')
+}
+
+// Normalizes Chapa's refund status vocabulary for the local lifecycle
+function normalizeRefundStatus(status: string | undefined) {
+  switch (status?.toLowerCase()) {
+    case 'refunded':
+    case 'success':
+    case 'successful':
+      return 'refunded' as const
+    case 'reversed':
+    case 'failed':
+      return 'reversed' as const
+    case 'initiated':
+    case 'processing':
+    case 'pending':
+      return 'processing' as const
+    default:
+      return undefined
+  }
+}
+
+// Compares equal-length hexadecimal signatures without leaking byte position
+function timingSafeHexEqual(
+  received: string | undefined,
+  expected: string,
+): boolean {
+  if (!received || !/^[0-9a-f]+$/i.test(received)) {
+    return false
+  }
+
+  const receivedBytes = Buffer.from(received, 'hex')
+  const expectedBytes = Buffer.from(expected, 'hex')
+
+  return (
+    receivedBytes.length === expectedBytes.length &&
+    crypto.timingSafeEqual(receivedBytes, expectedBytes)
+  )
+}
+
+// Accepts either Chapa signature header after constant-time verification
 function verifyWebhookSignature(args: {
   body: string
   chapaSignature?: string
@@ -146,15 +219,19 @@ function verifyWebhookSignature(args: {
     .update(args.body)
     .digest('hex')
 
-  const chapaSignatureValid =
-    Boolean(args.chapaSignature) && args.chapaSignature === expectedKeySignature
-  const payloadSignatureValid =
-    Boolean(args.xChapaSignature) &&
-    args.xChapaSignature === expectedPayloadSignature
+  const chapaSignatureValid = timingSafeHexEqual(
+    args.chapaSignature,
+    expectedKeySignature,
+  )
+  const payloadSignatureValid = timingSafeHexEqual(
+    args.xChapaSignature,
+    expectedPayloadSignature,
+  )
 
   return chapaSignatureValid || payloadSignatureValid
 }
 
+// Re-fetches a transaction from Chapa before trusting provider input
 async function verifyTransactionWithChapa(txRef: string) {
   const secretKey = getEnv('CHAPA_SECRET_KEY')
 
@@ -185,13 +262,19 @@ async function verifyTransactionWithChapa(txRef: string) {
   } satisfies VerifiedTransaction
 }
 
+// Maps a Chapa event name to its local payment status
 function getStatusFromEvent(event: string | undefined) {
   switch (event) {
     case 'charge.success':
       return 'paid'
+    // Chapa names its refund webhooks refund.*, so charge.refunded alone would
+    // never match a real refund notification
     case 'charge.refunded':
+    case 'refund.success':
       return 'refunded'
     case 'charge.reversed':
+    case 'refund.reversed':
+    case 'refund.failed':
       return 'reversed'
     case 'charge.failed/cancelled':
       return 'failed'
@@ -200,6 +283,7 @@ function getStatusFromEvent(event: string | undefined) {
   }
 }
 
+// Maps a verified provider status to its local payment status
 function getStatusFromProvider(status: string | undefined) {
   switch (status) {
     case 'success':
@@ -219,6 +303,40 @@ function getStatusFromProvider(status: string | undefined) {
   }
 }
 
+// Moves the booking off its in-flight refund state once the payment row records
+// a settled refund, otherwise a completed refund keeps reading as processing
+async function propagateRefundOutcome(
+  ctx: any,
+  args: {
+    booking: Doc<'bookings'> | null
+    payment: Doc<'chapaPayments'> | null
+    txRef: string
+  },
+) {
+  const { booking, payment } = args
+
+  if (
+    !booking ||
+    !payment ||
+    (payment.status !== 'refunded' && payment.status !== 'reversed')
+  ) {
+    return
+  }
+
+  await ctx.runMutation(internal.bookings.applyChapaRefundOutcome, {
+    bookingId: booking._id,
+    outcome: payment.status,
+    txRef: args.txRef,
+    refundReference: payment.refundReference,
+    refundRefId: payment.refundRefId,
+    error:
+      payment.status === 'reversed'
+        ? 'Chapa reversed the refund before it completed.'
+        : undefined,
+  })
+}
+
+// Reconciles one provider event against its stored payment and booking
 async function reconcileTransaction(
   ctx: any,
   args: {
@@ -274,18 +392,11 @@ async function reconcileTransaction(
       },
     )
 
-    if (
-      booking &&
-      updatedPayment &&
-      (updatedPayment.status === 'refunded' ||
-        updatedPayment.status === 'reversed')
-    ) {
-      await ctx.runMutation(internal.bookings.applyChapaPaymentStatus, {
-        bookingId: booking._id,
-        paymentStatus:
-          updatedPayment.status === 'refunded' ? 'refunded' : 'failed',
-      })
-    }
+    await propagateRefundOutcome(ctx, {
+      booking,
+      payment: updatedPayment,
+      txRef: payment.txRef,
+    })
 
     return {
       body: 'OK',
@@ -400,11 +511,22 @@ async function reconcileTransaction(
       verifiedAt: Date.now(),
     })
 
+    if (paymentStatus === 'refund_required' && booking) {
+      // Surface late or duplicate Chapa charges as staff refund work
+      await ctx.runMutation(internal.bookings.markChapaRefundRequired, {
+        bookingId: booking._id,
+        txRef: payment.txRef,
+      })
+    }
+
     return {
       body: 'OK',
       statusCode: 200,
     }
   }
+
+  const settledRefund =
+    resolvedStatus === 'refunded' || resolvedStatus === 'reversed'
 
   const updatedPayment = await ctx.runMutation(
     internal.chapaInternal.updatePaymentRecord,
@@ -420,6 +542,7 @@ async function reconcileTransaction(
           ? verification.mode
           : undefined,
       providerStatus: verification.status,
+      refundedAt: settledRefund ? Date.now() : undefined,
       source: args.source,
       verifiedAt: Date.now(),
     },
@@ -437,12 +560,251 @@ async function reconcileTransaction(
     })
   }
 
+  // A refund Chapa only admits to on verification still has to reach the booking
+  await propagateRefundOutcome(ctx, {
+    booking,
+    payment: updatedPayment,
+    txRef: payment.txRef,
+  })
+
   return {
     body: 'OK',
     statusCode: 200,
   }
 }
 
+// Lets an authorized hotel administrator submit one full Chapa refund
+export const initiateRefund = action({
+  args: {
+    bookingId: v.id('bookings'),
+  },
+  returns: v.object({
+    success: v.boolean(),
+    state: v.union(
+      v.literal('processing'),
+      v.literal('refunded'),
+      v.literal('verification_required'),
+      v.literal('required'),
+    ),
+    error: v.optional(v.string()),
+  }),
+  handler: async (ctx, args) => {
+    const secretKey = getEnv('CHAPA_SECRET_KEY')
+    const reservation = await ctx.runMutation(
+      internal.chapaInternal.reserveRefund,
+      {
+        bookingId: args.bookingId,
+        refundReference: generateRefundReference(args.bookingId),
+      },
+    )
+
+    if (reservation.state === 'refunded') {
+      return { success: true, state: 'refunded' as const }
+    }
+
+    if (reservation.state === 'processing') {
+      return { success: true, state: 'processing' as const }
+    }
+
+    if (reservation.state === 'verification_required') {
+      return {
+        success: false,
+        state: 'verification_required' as const,
+        error: 'Check the Chapa dashboard before taking any further action.',
+      }
+    }
+
+    const body = new URLSearchParams({
+      amount: (reservation.amountMinor / 100).toFixed(2),
+      reason: `Full refund for booking ${reservation.bookingId}`,
+      reference: reservation.refundReference,
+    })
+
+    let response: Response
+    let data: ChapaRefundResponse
+
+    try {
+      // Address the refund by Chapa's own payment reference, which is what the
+      // endpoint resolves, and submit the stored ETB charge rather than
+      // recomputing it from current FX
+      response = await fetch(
+        `${CHAPA_API_BASE}/refund/${encodeURIComponent(reservation.chapaReference)}`,
+        {
+          method: 'POST',
+          headers: {
+            Authorization: `Bearer ${secretKey}`,
+            'Content-Type': 'application/x-www-form-urlencoded',
+          },
+          body,
+          signal: AbortSignal.timeout(30_000),
+        },
+      )
+      data = (await response.json()) as ChapaRefundResponse
+    } catch (error) {
+      const message =
+        error instanceof Error
+          ? error.message
+          : 'Chapa returned an unreadable refund response.'
+
+      // A transport failure may hide an accepted refund, so block every retry
+      await ctx.runMutation(
+        internal.chapaInternal.markRefundVerificationRequired,
+        {
+          txRef: reservation.txRef,
+          refundReference: reservation.refundReference,
+          error: message,
+        },
+      )
+
+      return {
+        success: false,
+        state: 'verification_required' as const,
+        error:
+          'Chapa may have accepted the refund. Check the dashboard before taking any further action.',
+      }
+    }
+
+    const providerStatus = normalizeRefundStatus(
+      data.data?.status ?? data.status,
+    )
+    const refundRefId = data.data?.ref_id
+
+    if (!response.ok || data.status === 'failed') {
+      const error = extractChapaErrorMessage(
+        data.message,
+        'Chapa rejected the refund request.',
+      )
+
+      if (response.status >= 500) {
+        // Server errors are ambiguous because Chapa may have accepted the POST
+        await ctx.runMutation(
+          internal.chapaInternal.markRefundVerificationRequired,
+          {
+            txRef: reservation.txRef,
+            refundReference: reservation.refundReference,
+            error,
+          },
+        )
+
+        return {
+          success: false,
+          state: 'verification_required' as const,
+          error:
+            'Chapa may have accepted the refund. Check the dashboard before taking any further action.',
+        }
+      }
+
+      // A provider 4xx is a proven rejection and is safe for a later retry
+      await ctx.runMutation(internal.chapaInternal.rejectRefund, {
+        txRef: reservation.txRef,
+        refundReference: reservation.refundReference,
+        error,
+      })
+
+      return { success: false, state: 'required' as const, error }
+    }
+
+    // Chapa routinely accepts a refund without echoing ref_id, so fall back to
+    // the payment reference the endpoint already resolved rather than stranding
+    // an accepted refund in manual verification
+    const verificationRef = refundRefId ?? reservation.chapaReference
+
+    // Save the verification handle before returning because it is the only way
+    // to poll this refund later
+    await ctx.runMutation(internal.chapaInternal.recordRefundAcceptance, {
+      txRef: reservation.txRef,
+      refundReference: reservation.refundReference,
+      refundRefId: verificationRef,
+    })
+
+    if (providerStatus === 'refunded' || providerStatus === 'reversed') {
+      await ctx.runMutation(internal.chapaInternal.applyVerifiedRefund, {
+        txRef: reservation.txRef,
+        refundRefId: verificationRef,
+        status: providerStatus,
+        payload: data,
+      })
+    }
+
+    return {
+      success: true,
+      state:
+        providerStatus === 'refunded'
+          ? ('refunded' as const)
+          : ('processing' as const),
+    }
+  },
+})
+
+// Polls accepted Chapa refunds so missed webhooks cannot strand them forever
+export const verifyPendingRefunds = internalAction({
+  args: {},
+  returns: v.number(),
+  handler: async (ctx): Promise<number> => {
+    const secretKey = getEnv('CHAPA_SECRET_KEY')
+    const payments = await ctx.runQuery(
+      internal.chapaInternal.listRefundsToVerify,
+      {},
+    )
+    // Repair first, so a booking whose payment row already settled is fixed even
+    // when no refund is left to poll
+    let updatedCount: number = await ctx.runMutation(
+      internal.chapaInternal.settleDriftedRefunds,
+      {},
+    )
+
+    // Verify each bounded item independently so one provider error does not stop the batch
+    for (const payment of payments) {
+      if (!payment.refundRefId) continue
+
+      try {
+        const response = await fetch(
+          `${CHAPA_API_BASE}/refund/${encodeURIComponent(payment.refundRefId)}/verify`,
+          {
+            method: 'GET',
+            headers: { Authorization: `Bearer ${secretKey}` },
+            signal: AbortSignal.timeout(30_000),
+          },
+        )
+        const data = (await response.json()) as ChapaRefundVerifyResponse
+        const status = normalizeRefundStatus(data.data?.status ?? data.status)
+        const amountMinor = parseMinorAmount(data.data?.amount)
+
+        if (
+          !response.ok ||
+          !status ||
+          (amountMinor !== null && amountMinor !== payment.refundAmountMinor) ||
+          (data.data?.currency &&
+            data.data.currency !== payment.chargedCurrency)
+        ) {
+          continue
+        }
+
+        await ctx.runMutation(internal.chapaInternal.applyVerifiedRefund, {
+          txRef: payment.txRef,
+          refundRefId: payment.refundRefId,
+          status,
+          payload: data,
+        })
+
+        // Only a settled result counts, otherwise a refund Chapa leaves
+        // initiated would report progress on every single poll
+        if (status !== 'processing') {
+          updatedCount += 1
+        }
+      } catch (error) {
+        console.error(
+          `Failed to verify Chapa refund ${payment.refundRefId}:`,
+          error,
+        )
+      }
+    }
+
+    return updatedCount
+  },
+})
+
+// Lets a signed-in booking owner initialize or reuse one hosted checkout
 export const initializeHostedCheckout = action({
   args: {
     bookingId: v.id('bookings'),
@@ -463,56 +825,6 @@ export const initializeHostedCheckout = action({
       })
     }
 
-    const currentUser = await ctx.runQuery(internal.users.getByClerkUserId, {
-      clerkUserId: identity.subject,
-    })
-    const booking = await ctx.runQuery(internal.bookings.getBookingById, {
-      bookingId: args.bookingId,
-    })
-
-    if (!currentUser || !booking) {
-      throw new ConvexError({
-        code: 'NOT_FOUND',
-        message: 'Booking not found.',
-      })
-    }
-
-    if (booking.userId !== currentUser._id) {
-      throw new ConvexError({
-        code: 'FORBIDDEN',
-        message: 'You can only pay for your own booking.',
-      })
-    }
-
-    if (booking.status !== 'held') {
-      throw new ConvexError({
-        code: 'INVALID_STATE',
-        message: 'Only held bookings can be paid with Chapa.',
-      })
-    }
-
-    if (booking.holdExpiresAt && booking.holdExpiresAt < Date.now()) {
-      throw new ConvexError({
-        code: 'EXPIRED',
-        message: 'Your booking hold has expired.',
-      })
-    }
-
-    const latestPayment = await ctx.runQuery(
-      internal.chapaInternal.getLatestByBooking,
-      {
-        bookingId: args.bookingId,
-      },
-    )
-
-    if (latestPayment?.status === 'initialized') {
-      return {
-        success: true,
-        checkoutUrl: latestPayment.checkoutUrl,
-        txRef: latestPayment.txRef,
-      }
-    }
-
     const secretKey = getEnv('CHAPA_SECRET_KEY')
     const appBaseUrl = getEnv('APP_BASE_URL')
     const callbackBaseUrl = getEnv('CHAPA_CALLBACK_BASE_URL')
@@ -525,80 +837,132 @@ export const initializeHostedCheckout = action({
       throw new Error('CHAPA_FIXED_ETB_PER_USD must be a positive number')
     }
 
-    const txRef = generateTxRef(args.bookingId)
-    const chargedAmountMinor = Math.round(
-      (booking.totalPrice / 100) * fxRate * 100,
+    // Atomically reserve the one checkout attempt allowed to contact Chapa
+    const reservation = await ctx.runMutation(
+      internal.chapaInternal.reserveHostedCheckout,
+      {
+        bookingId: args.bookingId,
+        txRef: generateTxRef(args.bookingId),
+        fxRateEtbPerUsd: fxRate,
+        providerMode: providerMode === 'live' ? 'live' : 'test',
+        origin,
+      },
     )
-    const amount = (chargedAmountMinor / 100).toFixed(2)
-    const callbackUrl = `${callbackBaseUrl}/chapa/callback`
-    const returnUrl =
-      origin === 'mobile'
-        ? `${callbackBaseUrl}/chapa/mobile-return?tx_ref=${encodeURIComponent(txRef)}`
-        : `${appBaseUrl}/bookings?payment=processing&tx_ref=${encodeURIComponent(txRef)}`
-    const { firstName, lastName } = splitName(booking.guestName)
-    const email = booking.guestEmail || currentUser.email
 
-    if (!email) {
+    if (reservation.state === 'invalid_email') {
       return {
         success: false,
         error: 'A guest email is required before starting payment.',
       }
     }
 
-    const response = await fetch(`${CHAPA_API_BASE}/transaction/initialize`, {
-      body: JSON.stringify({
-        amount,
-        callback_url: callbackUrl,
-        currency: 'ETB',
-        customization: {
-          description: `Booking ${args.bookingId.slice(-6).toUpperCase()} from ${booking.checkIn} to ${booking.checkOut}`,
-          title: brandName,
-        },
-        email,
-        first_name: firstName,
-        last_name: lastName,
-        meta: {
-          bookingAmountCents: booking.totalPrice,
-          bookingId: args.bookingId,
-          fxRateEtbPerUsd: fxRate,
-        },
-        return_url: returnUrl,
-        tx_ref: txRef,
-      }),
-      headers: {
-        Authorization: `Bearer ${secretKey}`,
-        'Content-Type': 'application/json',
-      },
-      method: 'POST',
-    })
-
-    const data = (await response.json()) as ChapaInitializeResponse
-
-    if (!response.ok || data.status !== 'success' || !data.data?.checkout_url) {
+    if (reservation.state === 'initialized') {
       return {
-        success: false,
-        error: extractChapaErrorMessage(data.message),
+        success: true,
+        checkoutUrl: reservation.checkoutUrl,
+        txRef: reservation.txRef,
       }
     }
 
-    await ctx.runMutation(internal.chapaInternal.createPaymentRecord, {
-      bookingAmountCents: booking.totalPrice,
-      bookingId: args.bookingId,
-      chargedAmountMinor,
-      checkoutUrl: data.data.checkout_url,
-      fxRateEtbPerUsd: fxRate,
-      providerMode: providerMode === 'live' ? 'live' : 'test',
-      txRef,
-    })
+    if (reservation.state === 'initializing') {
+      return {
+        success: false,
+        error: 'Your secure checkout is already being prepared. Please retry.',
+        txRef: reservation.txRef,
+      }
+    }
+
+    const amount = (reservation.chargedAmountMinor / 100).toFixed(2)
+    const callbackUrl = `${callbackBaseUrl}/chapa/callback`
+    const returnUrl =
+      reservation.origin === 'mobile'
+        ? `${callbackBaseUrl}/chapa/mobile-return?tx_ref=${encodeURIComponent(reservation.txRef)}`
+        : `${appBaseUrl}/bookings?payment=processing&tx_ref=${encodeURIComponent(reservation.txRef)}`
+    const { firstName, lastName } = splitName(reservation.guestName)
+
+    let response: Response
+    let data: ChapaInitializeResponse
+
+    try {
+      // Ask Chapa for a hosted page only after this caller wins the reservation
+      response = await fetch(`${CHAPA_API_BASE}/transaction/initialize`, {
+        body: JSON.stringify({
+          amount,
+          callback_url: callbackUrl,
+          currency: 'ETB',
+          customization: {
+            description: `Booking ${args.bookingId.slice(-6).toUpperCase()} from ${reservation.checkIn} to ${reservation.checkOut}`,
+            title: brandName,
+          },
+          email: reservation.email,
+          first_name: firstName,
+          last_name: lastName,
+          meta: {
+            bookingAmountCents: reservation.bookingAmountCents,
+            bookingId: args.bookingId,
+            fxRateEtbPerUsd: reservation.fxRateEtbPerUsd,
+          },
+          return_url: returnUrl,
+          tx_ref: reservation.txRef,
+        }),
+        headers: {
+          Authorization: `Bearer ${secretKey}`,
+          'Content-Type': 'application/json',
+        },
+        method: 'POST',
+        signal: AbortSignal.timeout(30_000),
+      })
+
+      data = (await response.json()) as ChapaInitializeResponse
+    } catch (error) {
+      // Release transport and response failures because no checkout URL reached the customer
+      await ctx.runMutation(internal.chapaInternal.failHostedCheckout, {
+        txRef: reservation.txRef,
+        error:
+          error instanceof Error
+            ? error.message
+            : 'Chapa checkout initialization failed.',
+      })
+
+      return {
+        success: false,
+        error: 'Unable to prepare secure checkout. Please try again.',
+        txRef: reservation.txRef,
+      }
+    }
+
+    if (!response.ok || data.status !== 'success' || !data.data?.checkout_url) {
+      const error = extractChapaErrorMessage(data.message)
+      // Release definitive provider failures so the customer may retry
+      await ctx.runMutation(internal.chapaInternal.failHostedCheckout, {
+        txRef: reservation.txRef,
+        error,
+      })
+
+      return {
+        success: false,
+        error,
+      }
+    }
+
+    // Finalize the reservation and create its canonical payment record atomically
+    const finalized = await ctx.runMutation(
+      internal.chapaInternal.finalizeHostedCheckout,
+      {
+        txRef: reservation.txRef,
+        checkoutUrl: data.data.checkout_url,
+      },
+    )
 
     return {
       success: true,
-      checkoutUrl: data.data.checkout_url,
-      txRef,
+      checkoutUrl: finalized.checkoutUrl,
+      txRef: finalized.txRef,
     }
   },
 })
 
+// Reconciles a webhook forwarded by the internal Chapa HTTP handler
 export const processWebhook = internalAction({
   args: {
     body: v.string(),
@@ -660,6 +1024,7 @@ export const processWebhook = internalAction({
   },
 })
 
+// Reconciles a callback forwarded by the internal Chapa HTTP handler
 export const processCallback = internalAction({
   args: {
     refId: v.optional(v.string()),

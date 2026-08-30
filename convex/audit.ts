@@ -13,10 +13,10 @@ export type AuditTargetType =
   | 'user'
   | 'staff_invitation'
 
-// Internal mutation for logging audit events (called from other mutations)
+// Records an audit event on behalf of another server function
 export const logEvent = internalMutation({
   args: {
-    actorId: v.id('users'),
+    actorId: v.optional(v.id('users')),
     action: v.string(),
     targetType: v.union(
       v.literal('hotel'),
@@ -46,12 +46,11 @@ export const logEvent = internalMutation({
   },
 })
 
-// Helper function to create audit log directly within a mutation context
-// This avoids the need for scheduler for inline audit logging
+// Inserts an audit event in the caller's mutation transaction
 export async function createAuditLog(
   ctx: MutationCtx,
   params: {
-    actorId: Id<'users'>
+    actorId?: Id<'users'>
     action: string
     targetType: AuditTargetType
     targetId: string
@@ -74,7 +73,7 @@ export async function createAuditLog(
   })
 }
 
-// Query audit events by target (admin only)
+// Lets a room admin list audit events for one target
 export const getByTarget = query({
   args: {
     targetType: v.union(
@@ -92,7 +91,7 @@ export const getByTarget = query({
     v.object({
       _id: v.id('auditEvents'),
       _creationTime: v.number(),
-      actorId: v.id('users'),
+      actorId: v.optional(v.id('users')),
       action: v.string(),
       targetType: v.union(
         v.literal('hotel'),
@@ -125,7 +124,7 @@ export const getByTarget = query({
   },
 })
 
-// Query recent audit events (admin only)
+// Lets a room admin list the most recent audit events
 export const getRecent = query({
   args: {
     limit: v.optional(v.number()),
@@ -134,7 +133,7 @@ export const getRecent = query({
     v.object({
       _id: v.id('auditEvents'),
       _creationTime: v.number(),
-      actorId: v.id('users'),
+      actorId: v.optional(v.id('users')),
       action: v.string(),
       targetType: v.union(
         v.literal('hotel'),

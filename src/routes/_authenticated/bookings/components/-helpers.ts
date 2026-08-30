@@ -29,7 +29,4 @@ export const formatPrice = (cents: number) => {
   return formatUsdAmount(cents)
 }
 
-export const canCancel = (status: string) => {
-  // Cancellation is only allowed before stay completion.
-  return ['held', 'pending_payment', 'confirmed'].includes(status)
-}
+export { canCustomerCancelBooking } from '../../../../../convex/lib/bookingLifecycle'

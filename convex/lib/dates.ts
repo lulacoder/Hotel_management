@@ -151,10 +151,41 @@ export function getHoldExpirationTime(): number {
   return Date.now() + 15 * 60 * 1000 // 15 minutes in milliseconds
 }
 
+// How long staff have to approve or reject a submitted bank transfer proof.
+// The booking keeps its room for the whole window, so the window has to end.
+const PROOF_REVIEW_WINDOW_MS = 24 * 60 * 60 * 1000
+
 /**
- * Check if a hold has expired
+ * Get the deadline for staff to review a submitted payment proof (24 hours out)
  */
-export function isHoldExpired(holdExpiresAt: number | undefined): boolean {
-  if (!holdExpiresAt) return false
-  return Date.now() > holdExpiresAt
+export function getProofReviewDeadline(now: number = Date.now()): number {
+  return now + PROOF_REVIEW_WINDOW_MS
+}
+
+// Answers whether the review window on a submitted payment proof has run out.
+// A pending-payment booking with no deadline predates this field, so this fails
+// closed and keeps waiting for staff instead of expiring on the next sweep.
+export function hasProofReviewLapsed(
+  proofReviewDeadline: number | undefined,
+  now: number = Date.now(),
+): boolean {
+  return proofReviewDeadline !== undefined && now > proofReviewDeadline
+}
+
+// Answers whether a customer may still act on a hold. A held booking with no
+// expiry timestamp is a data defect, so this fails closed and refuses the action.
+export function isHoldExpiredAt(
+  holdExpiresAt: number | undefined,
+  now: number = Date.now(),
+): boolean {
+  return holdExpiresAt === undefined || now > holdExpiresAt
+}
+
+// Answers whether a hold has stopped reserving its room. The same missing
+// timestamp fails closed the other way here so a defect never frees a room.
+export function hasHoldReleasedRoom(
+  holdExpiresAt: number | undefined,
+  now: number = Date.now(),
+): boolean {
+  return holdExpiresAt !== undefined && now > holdExpiresAt
 }

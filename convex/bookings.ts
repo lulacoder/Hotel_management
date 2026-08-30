@@ -14,26 +14,24 @@ import {
   getHotelAssignment,
   requireCustomer,
   requireHotelAccess,
+  requireHotelManagement,
   requireUser,
 } from './lib/auth'
 import { uniqueIds } from './lib/arrays'
 import { createAuditLog } from './audit'
 import {
   getHoldExpirationTime,
-  isHoldExpired,
+  getProofReviewDeadline,
+  isHoldExpiredAt,
   validateBookingDates,
 } from './lib/dates'
 import { assertRoomAvailable } from './lib/availability'
 import {
-  canAcceptBookingPayment,
-  canOutsourceBooking,
-  canTransitionBooking,
-  canUseHeldBooking,
-  canVerifySubmittedPayment,
-  getInvalidBookingTransitionMessage,
+  canApplyBookingTransition,
   isCancelledOrExpiredBookingStatus,
-  isCompletedBookingStatus,
 } from './lib/bookingLifecycle'
+import { transitionBooking } from './lib/bookingTransitions'
+import { transitionRefund } from './lib/refunds'
 import * as fileTracking from './fileTracking'
 import { r2 } from './r2'
 
@@ -56,8 +54,31 @@ const paymentStatusValidator = v.union(
   v.literal('refunded'),
 )
 
+const refundStatusValidator = v.union(
+  v.literal('required'),
+  v.literal('processing'),
+  v.literal('refunded'),
+  v.literal('reversed'),
+  v.literal('verification_required'),
+)
+
+const paymentMethodValidator = v.union(
+  v.literal('cash'),
+  v.literal('bank_transfer'),
+  v.literal('chapa'),
+)
+
+const refundMethodValidator = v.union(v.literal('chapa'), v.literal('manual'))
+
+const refundReasonValidator = v.union(
+  v.literal('late_payment'),
+  v.literal('staff_cancelled'),
+  v.literal('no_show'),
+)
+
 const paymentStatusFilterValidator = v.union(
   paymentStatusValidator,
+  v.literal('refund_required'),
   v.literal('unpaid_unknown'),
 )
 
@@ -122,9 +143,20 @@ const bookingValidator = v.object({
   checkOut: v.string(),
   status: bookingStatusValidator,
   holdExpiresAt: v.optional(v.number()),
+  proofReviewDeadline: v.optional(v.number()),
   outsourcedToHotelId: v.optional(v.id('hotels')),
   outsourcedAt: v.optional(v.number()),
   paymentStatus: v.optional(paymentStatusValidator),
+  paymentMethod: v.optional(paymentMethodValidator),
+  refundStatus: v.optional(refundStatusValidator),
+  refundMethod: v.optional(refundMethodValidator),
+  refundReason: v.optional(refundReasonValidator),
+  refundActionRequired: v.optional(v.boolean()),
+  refundRequiredAt: v.optional(v.number()),
+  refundStartedAt: v.optional(v.number()),
+  refundCompletedAt: v.optional(v.number()),
+  refundLastError: v.optional(v.string()),
+  manualRefundReference: v.optional(v.string()),
   transactionId: v.optional(v.string()),
   nationalIdStorageId: v.optional(v.id('_storage')),
   nationalIdR2Key: v.optional(v.string()),
@@ -281,75 +313,113 @@ export const getByHotel = query({
       }
     }
 
+    const isRefundRequiredFilter = args.paymentStatus === 'refund_required'
     const indexedPaymentStatus =
-      args.paymentStatus === 'unpaid_unknown' ? undefined : args.paymentStatus
+      args.paymentStatus === 'unpaid_unknown' ||
+      args.paymentStatus === 'refund_required'
+        ? undefined
+        : args.paymentStatus
 
     // Every filter combination is applied before pagination so a page can
     // never look empty while matching bookings exist behind its cursor.
-    const paginatedBookings = args.hotelId
-      ? args.status
-        ? args.paymentStatus
+    const paginatedBookings = isRefundRequiredFilter
+      ? args.hotelId
+        ? args.status
           ? await ctx.db
               .query('bookings')
-              .withIndex('by_hotel_status_and_payment_status', (q) =>
-                q
-                  .eq('hotelId', args.hotelId!)
-                  .eq('status', args.status!)
-                  .eq('paymentStatus', indexedPaymentStatus),
+              .withIndex('by_hotel_and_refund_action_required', (q) =>
+                q.eq('hotelId', args.hotelId!).eq('refundActionRequired', true),
               )
+              .filter((q) => q.eq(q.field('status'), args.status!))
               .order('desc')
               .paginate(args.paginationOpts)
           : await ctx.db
               .query('bookings')
-              .withIndex('by_hotel_and_status', (q) =>
-                q.eq('hotelId', args.hotelId!).eq('status', args.status!),
+              .withIndex('by_hotel_and_refund_action_required', (q) =>
+                q.eq('hotelId', args.hotelId!).eq('refundActionRequired', true),
               )
               .order('desc')
               .paginate(args.paginationOpts)
-        : args.paymentStatus
+        : args.status
           ? await ctx.db
               .query('bookings')
-              .withIndex('by_hotel_and_payment_status', (q) =>
-                q
-                  .eq('hotelId', args.hotelId!)
-                  .eq('paymentStatus', indexedPaymentStatus),
+              .withIndex('by_refund_action_required', (q) =>
+                q.eq('refundActionRequired', true),
               )
+              .filter((q) => q.eq(q.field('status'), args.status!))
               .order('desc')
               .paginate(args.paginationOpts)
           : await ctx.db
               .query('bookings')
-              .withIndex('by_hotel', (q) => q.eq('hotelId', args.hotelId!))
-              .order('desc')
-              .paginate(args.paginationOpts)
-      : args.status
-        ? args.paymentStatus
-          ? await ctx.db
-              .query('bookings')
-              .withIndex('by_status_and_payment_status', (q) =>
-                q
-                  .eq('status', args.status!)
-                  .eq('paymentStatus', indexedPaymentStatus),
+              .withIndex('by_refund_action_required', (q) =>
+                q.eq('refundActionRequired', true),
               )
               .order('desc')
               .paginate(args.paginationOpts)
-          : await ctx.db
-              .query('bookings')
-              .withIndex('by_status', (q) => q.eq('status', args.status!))
-              .order('desc')
-              .paginate(args.paginationOpts)
-        : args.paymentStatus
-          ? await ctx.db
-              .query('bookings')
-              .withIndex('by_payment_status', (q) =>
-                q.eq('paymentStatus', indexedPaymentStatus),
-              )
-              .order('desc')
-              .paginate(args.paginationOpts)
-          : await ctx.db
-              .query('bookings')
-              .withIndex('by_created_at')
-              .order('desc')
-              .paginate(args.paginationOpts)
+      : args.hotelId
+        ? args.status
+          ? args.paymentStatus
+            ? await ctx.db
+                .query('bookings')
+                .withIndex('by_hotel_status_and_payment_status', (q) =>
+                  q
+                    .eq('hotelId', args.hotelId!)
+                    .eq('status', args.status!)
+                    .eq('paymentStatus', indexedPaymentStatus),
+                )
+                .order('desc')
+                .paginate(args.paginationOpts)
+            : await ctx.db
+                .query('bookings')
+                .withIndex('by_hotel_and_status', (q) =>
+                  q.eq('hotelId', args.hotelId!).eq('status', args.status!),
+                )
+                .order('desc')
+                .paginate(args.paginationOpts)
+          : args.paymentStatus
+            ? await ctx.db
+                .query('bookings')
+                .withIndex('by_hotel_and_payment_status', (q) =>
+                  q
+                    .eq('hotelId', args.hotelId!)
+                    .eq('paymentStatus', indexedPaymentStatus),
+                )
+                .order('desc')
+                .paginate(args.paginationOpts)
+            : await ctx.db
+                .query('bookings')
+                .withIndex('by_hotel', (q) => q.eq('hotelId', args.hotelId!))
+                .order('desc')
+                .paginate(args.paginationOpts)
+        : args.status
+          ? args.paymentStatus
+            ? await ctx.db
+                .query('bookings')
+                .withIndex('by_status_and_payment_status', (q) =>
+                  q
+                    .eq('status', args.status!)
+                    .eq('paymentStatus', indexedPaymentStatus),
+                )
+                .order('desc')
+                .paginate(args.paginationOpts)
+            : await ctx.db
+                .query('bookings')
+                .withIndex('by_status', (q) => q.eq('status', args.status!))
+                .order('desc')
+                .paginate(args.paginationOpts)
+          : args.paymentStatus
+            ? await ctx.db
+                .query('bookings')
+                .withIndex('by_payment_status', (q) =>
+                  q.eq('paymentStatus', indexedPaymentStatus),
+                )
+                .order('desc')
+                .paginate(args.paginationOpts)
+            : await ctx.db
+                .query('bookings')
+                .withIndex('by_created_at')
+                .order('desc')
+                .paginate(args.paginationOpts)
 
     const bookings = paginatedBookings.page
 
@@ -691,74 +761,6 @@ export const walkInBooking = mutation({
   },
 })
 
-// Confirms a held booking, transitioning it from 'held' to 'confirmed' status.
-// Only the customer who owns the booking can confirm it. Verifies that the hold
-// has not expired before confirming. Sets paymentStatus to 'pending' as a
-// placeholder for payment integration. Logs the status change as an audit event.
-export const confirmBooking = mutation({
-  args: {
-    bookingId: v.id('bookings'),
-  },
-  returns: v.null(),
-  handler: async (ctx, args) => {
-    const customer = await requireCustomer(ctx)
-
-    const booking = await ctx.db.get(args.bookingId)
-    if (!booking) {
-      throw new ConvexError({
-        code: 'NOT_FOUND',
-        message: 'Booking not found.',
-      })
-    }
-
-    // Verify ownership
-    if (booking.userId !== customer._id) {
-      throw new ConvexError({
-        code: 'FORBIDDEN',
-        message: 'You can only confirm your own bookings.',
-      })
-    }
-
-    // Verify booking is in held status
-    if (!canUseHeldBooking(booking.status)) {
-      throw new ConvexError({
-        code: 'INVALID_STATE',
-        message: `Cannot confirm booking with status '${booking.status}'. Only held bookings can be confirmed.`,
-      })
-    }
-
-    // Check if hold has expired
-    if (isHoldExpired(booking.holdExpiresAt)) {
-      throw new ConvexError({
-        code: 'EXPIRED',
-        message: 'Your hold has expired. Please create a new booking.',
-      })
-    }
-
-    const previousStatus = booking.status
-
-    await ctx.db.patch(args.bookingId, {
-      status: 'confirmed',
-      paymentStatus: 'pending', // Stub for payment integration
-      holdExpiresAt: undefined, // Clear hold expiration
-      updatedAt: Date.now(),
-      updatedBy: customer._id,
-    })
-
-    // Log the status change
-    await createAuditLog(ctx, {
-      actorId: customer._id,
-      action: 'booking_confirmed',
-      targetType: 'booking',
-      targetId: args.bookingId,
-      previousValue: { status: previousStatus },
-      newValue: { status: 'confirmed', paymentStatus: 'pending' },
-    })
-
-    return null
-  },
-})
-
 export const submitPaymentProof = mutation({
   args: {
     bookingId: v.id('bookings'),
@@ -795,20 +797,6 @@ export const submitPaymentProof = mutation({
       })
     }
 
-    if (!canUseHeldBooking(booking.status)) {
-      throw new ConvexError({
-        code: 'INVALID_STATE',
-        message: `Cannot submit payment proof for booking status '${booking.status}'.`,
-      })
-    }
-
-    if (isHoldExpired(booking.holdExpiresAt)) {
-      throw new ConvexError({
-        code: 'EXPIRED',
-        message: 'Your hold has expired. Please create a new booking.',
-      })
-    }
-
     const trimmedTransactionId = args.transactionId.trim()
     if (!trimmedTransactionId) {
       throw new ConvexError({
@@ -819,15 +807,24 @@ export const submitPaymentProof = mutation({
 
     const previousStorageId = booking.nationalIdStorageId
     const previousR2Key = booking.nationalIdR2Key
+    const now = Date.now()
 
-    await ctx.db.patch(args.bookingId, {
-      status: 'pending_payment',
-      paymentStatus: 'pending',
-      transactionId: trimmedTransactionId,
-      nationalIdStorageId: args.nationalIdStorageId,
-      nationalIdR2Key: args.nationalIdR2Key,
-      updatedAt: Date.now(),
-      updatedBy: customer._id,
+    // Move the proof into staff review and swap the short checkout hold for the
+    // longer review deadline, so the room is still reclaimable if nobody answers
+    await transitionBooking(ctx, {
+      booking,
+      event: 'payment_proof_submitted',
+      to: 'pending_payment',
+      actor: { kind: 'user', userId: customer._id },
+      changes: {
+        paymentStatus: 'pending',
+        holdExpiresAt: undefined,
+        proofReviewDeadline: getProofReviewDeadline(now),
+        transactionId: trimmedTransactionId,
+        nationalIdStorageId: args.nationalIdStorageId,
+        nationalIdR2Key: args.nationalIdR2Key,
+      },
+      now,
     })
 
     if (args.nationalIdStorageId) {
@@ -864,21 +861,6 @@ export const submitPaymentProof = mutation({
       })
     }
 
-    await createAuditLog(ctx, {
-      actorId: customer._id,
-      action: 'booking_payment_proof_submitted',
-      targetType: 'booking',
-      targetId: args.bookingId,
-      previousValue: {
-        status: booking.status,
-      },
-      newValue: {
-        status: 'pending_payment',
-        paymentStatus: 'pending',
-        transactionId: trimmedTransactionId,
-      },
-    })
-
     // Notify all hotel staff that a new payment proof is awaiting review.
     await ctx.runMutation(internal.notifications.notifyHotelStaff, {
       hotelId: booking.hotelId,
@@ -894,8 +876,9 @@ export const submitPaymentProof = mutation({
 // Cancels a booking by setting its status to 'cancelled'.
 // Customers can cancel their own bookings; hotel staff can cancel bookings
 // belonging to their assigned hotel; room admins can cancel any booking.
-// Bookings already in 'cancelled', 'expired', 'checked_out', or 'outsourced'
-// states cannot be cancelled. Logs the cancellation with an optional reason.
+// Bookings already in 'cancelled', 'expired', 'checked_in', 'checked_out', or
+// 'outsourced' states cannot be cancelled. Paid bookings require a separate
+// refund policy before cancellation. Logs the cancellation with an optional reason.
 export const cancelBooking = mutation({
   args: {
     bookingId: v.id('bookings'),
@@ -931,35 +914,18 @@ export const cancelBooking = mutation({
       return null
     }
 
-    // Cannot cancel checked_out or outsourced bookings
-    if (isCompletedBookingStatus(booking.status)) {
-      throw new ConvexError({
-        code: 'INVALID_STATE',
-        message: 'Cannot cancel a completed booking.',
-      })
-    }
-
-    const previousStatus = booking.status
-
-    await ctx.db.patch(args.bookingId, {
-      status: 'cancelled',
-      updatedAt: Date.now(),
-      updatedBy: user._id,
-    })
-
-    // Log the cancellation
-    await createAuditLog(ctx, {
-      actorId: user._id,
-      action: 'booking_cancelled',
-      targetType: 'booking',
-      targetId: args.bookingId,
-      previousValue: { status: previousStatus },
-      newValue: { status: 'cancelled' },
+    // Cancel through lifecycle rules so paid or checked-in bookings stay protected
+    await transitionBooking(ctx, {
+      booking,
+      event: 'booking_cancelled',
+      to: 'cancelled',
+      actor: { kind: 'user', userId: user._id },
+      changes: { proofReviewDeadline: undefined },
       metadata: args.reason ? { reason: args.reason } : undefined,
     })
 
     // Notify the booking owner only when a staff member / admin cancels on
-    // their behalf — skip the notification if the customer cancels themselves.
+    // their behalf, so skip the notification if the customer cancels themselves.
     const cancelledByStaff = user.role === 'room_admin' || canCancelAsHotelStaff
     if (cancelledByStaff && booking.userId) {
       await ctx.runMutation(internal.notifications.createNotification, {
@@ -975,11 +941,100 @@ export const cancelBooking = mutation({
   },
 })
 
-// Transitions a booking through its lifecycle statuses (hotel staff and room admin only).
-// Enforces allowed state transitions: held→confirmed/cancelled, confirmed→checked_in/cancelled,
-// checked_in→checked_out. Other terminal states (checked_out, cancelled, expired, outsourced)
-// cannot be transitioned further. Automatically sets paymentStatus to 'pending' when
-// confirming a held booking. Logs the status change as an audit event.
+// Lets authorized staff cancel a confirmed paid booking and flag its refund work
+export const cancelPaidBooking = mutation({
+  args: {
+    bookingId: v.id('bookings'),
+    reason: v.optional(v.string()),
+  },
+  returns: v.null(),
+  handler: async (ctx, args) => {
+    const user = await requireUser(ctx)
+    const booking = await ctx.db.get(args.bookingId)
+
+    if (!booking) {
+      throw new ConvexError({
+        code: 'NOT_FOUND',
+        message: 'Booking not found.',
+      })
+    }
+
+    const assignment = await getHotelAssignment(ctx, user._id)
+    const canCancelAsHotelAdmin =
+      assignment?.hotelId === booking.hotelId &&
+      assignment.role === 'hotel_admin'
+    const canCancelAsStaff = user.role === 'room_admin' || canCancelAsHotelAdmin
+
+    if (!canCancelAsStaff) {
+      throw new ConvexError({
+        code: 'FORBIDDEN',
+        message: 'Only authorized hotel staff can cancel a paid booking.',
+      })
+    }
+
+    if (booking.status === 'cancelled' && booking.refundStatus === 'required') {
+      return null
+    }
+
+    const now = Date.now()
+    const chapaPayment = await ctx.db
+      .query('chapaPayments')
+      .withIndex('by_booking', (q) => q.eq('bookingId', booking._id))
+      .order('desc')
+      .filter((q) => q.eq(q.field('status'), 'paid'))
+      .first()
+    const refundMethod = chapaPayment ? ('chapa' as const) : ('manual' as const)
+
+    // Cancel the stay while keeping the payment paid until a refund is completed
+    await transitionBooking(ctx, {
+      booking,
+      event: 'paid_booking_cancelled',
+      to: 'cancelled',
+      actor: { kind: 'user', userId: user._id },
+      changes: {
+        refundStatus: 'required',
+        refundMethod,
+        refundReason: 'staff_cancelled',
+        refundActionRequired: true,
+        refundRequiredAt: now,
+      },
+      metadata: args.reason ? { reason: args.reason } : undefined,
+      now,
+    })
+
+    // Mirror the refund obligation onto the latest paid Chapa transaction
+    if (chapaPayment?.status === 'paid') {
+      await ctx.db.patch(chapaPayment._id, {
+        status: 'refund_required',
+        lastError: 'Booking was cancelled by staff after payment.',
+        updatedAt: now,
+      })
+    }
+
+    // Alert all assigned staff so cashiers can see the task without executing it
+    await ctx.runMutation(internal.notifications.notifyHotelStaff, {
+      hotelId: booking.hotelId,
+      type: 'booking_refund_required',
+      bookingId: booking._id,
+      message: `Paid booking #${booking._id.slice(-6).toUpperCase()} was cancelled and requires a full ${refundMethod === 'chapa' ? 'Chapa' : 'manual'} refund.`,
+    })
+
+    if (booking.userId) {
+      await ctx.runMutation(internal.notifications.createNotification, {
+        userId: booking.userId,
+        type: 'booking_cancelled',
+        bookingId: booking._id,
+        hotelId: booking.hotelId,
+        message: `Your paid booking #${booking._id.slice(-6).toUpperCase()} was cancelled by the hotel. Your refund will follow${args.reason ? `: ${args.reason}` : '.'}`,
+      })
+    }
+
+    return null
+  },
+})
+
+// Applies the staff-only check-in and check-out transitions. Cancellation uses
+// cancelBooking so its payment guard, reason, and notification cannot be bypassed.
 export const updateStatus = mutation({
   args: {
     bookingId: v.id('bookings'),
@@ -1012,54 +1067,21 @@ export const updateStatus = mutation({
       return null
     }
 
-    if (!canTransitionBooking(booking.status, args.nextStatus)) {
-      throw new ConvexError({
-        code: 'INVALID_STATE',
-        message: getInvalidBookingTransitionMessage(
-          booking.status,
-          args.nextStatus,
-        ),
-      })
-    }
-
-    const patchData: {
-      status: typeof args.nextStatus
-      updatedAt: number
-      updatedBy: typeof user._id
-      holdExpiresAt?: undefined
-      paymentStatus?: 'pending'
-    } = {
-      status: args.nextStatus,
-      updatedAt: Date.now(),
-      updatedBy: user._id,
-    }
-
-    if (booking.status === 'held' && args.nextStatus === 'confirmed') {
-      patchData.holdExpiresAt = undefined
-      if (!booking.paymentStatus) {
-        patchData.paymentStatus = 'pending'
-      }
-    }
-
-    await ctx.db.patch(args.bookingId, patchData)
-
-    await createAuditLog(ctx, {
-      actorId: user._id,
-      action: 'booking_status_updated',
-      targetType: 'booking',
-      targetId: args.bookingId,
-      previousValue: { status: booking.status },
-      newValue: { status: args.nextStatus },
+    // Apply the staff check-in or check-out and record who performed it
+    await transitionBooking(ctx, {
+      booking,
+      event: 'staff_status_updated',
+      to: args.nextStatus,
+      actor: { kind: 'user', userId: user._id },
     })
 
     return null
   },
 })
 
-// Marks a booking's payment as 'paid' to record a cash payment (hotel staff and room admin only).
-// Idempotent — does nothing if the booking is already marked as paid.
-// Cannot be called on cancelled, expired, or outsourced bookings.
-// Logs the payment event as an audit record.
+// Records a cash payment and confirms an active held or pending-payment booking.
+// Hotel staff and room admins may also settle an already confirmed or active stay
+// without moving it backward. Repeated calls after payment are idempotent.
 export const acceptCashPayment = mutation({
   args: {
     bookingId: v.id('bookings'),
@@ -1087,31 +1109,31 @@ export const acceptCashPayment = mutation({
       })
     }
 
-    if (booking.paymentStatus === 'paid') {
+    const shouldConfirmBooking =
+      booking.status === 'held' || booking.status === 'pending_payment'
+    const nextStatus = shouldConfirmBooking ? 'confirmed' : booking.status
+
+    if (
+      booking.paymentStatus === 'paid' &&
+      nextStatus === booking.status &&
+      booking.holdExpiresAt === undefined &&
+      booking.proofReviewDeadline === undefined
+    ) {
       return null
     }
 
-    if (!canAcceptBookingPayment(booking.status)) {
-      throw new ConvexError({
-        code: 'INVALID_STATE',
-        message:
-          'Cannot accept payment for cancelled, expired, or outsourced bookings.',
-      })
-    }
-
-    await ctx.db.patch(args.bookingId, {
-      paymentStatus: 'paid',
-      updatedAt: Date.now(),
-      updatedBy: user._id,
-    })
-
-    await createAuditLog(ctx, {
-      actorId: user._id,
-      action: 'booking_payment_paid_cash',
-      targetType: 'booking',
-      targetId: args.bookingId,
-      previousValue: { paymentStatus: booking.paymentStatus ?? 'pending' },
-      newValue: { paymentStatus: 'paid' },
+    // Mark the payment paid without moving an active stay backward
+    await transitionBooking(ctx, {
+      booking,
+      event: 'cash_payment_accepted',
+      to: nextStatus,
+      actor: { kind: 'user', userId: user._id },
+      changes: {
+        paymentStatus: 'paid',
+        paymentMethod: 'cash',
+        holdExpiresAt: undefined,
+        proofReviewDeadline: undefined,
+      },
     })
 
     return null
@@ -1146,32 +1168,17 @@ export const verifyPayment = mutation({
       })
     }
 
-    if (!canVerifySubmittedPayment(booking.status)) {
-      throw new ConvexError({
-        code: 'INVALID_STATE',
-        message: `Cannot verify payment for booking status '${booking.status}'.`,
-      })
-    }
-
-    await ctx.db.patch(args.bookingId, {
-      status: 'confirmed',
-      paymentStatus: 'paid',
-      updatedAt: Date.now(),
-      updatedBy: user._id,
-    })
-
-    await createAuditLog(ctx, {
-      actorId: user._id,
-      action: 'booking_payment_verified',
-      targetType: 'booking',
-      targetId: args.bookingId,
-      previousValue: {
-        status: booking.status,
-        paymentStatus: booking.paymentStatus ?? 'pending',
-      },
-      newValue: {
-        status: 'confirmed',
+    // Confirm the booking, close out its deadlines, and audit the staff approval
+    await transitionBooking(ctx, {
+      booking,
+      event: 'bank_payment_verified',
+      to: 'confirmed',
+      actor: { kind: 'user', userId: user._id },
+      changes: {
         paymentStatus: 'paid',
+        paymentMethod: 'bank_transfer',
+        holdExpiresAt: undefined,
+        proofReviewDeadline: undefined,
       },
     })
 
@@ -1227,22 +1234,26 @@ export const rejectPayment = mutation({
       })
     }
 
-    if (!canVerifySubmittedPayment(booking.status)) {
-      throw new ConvexError({
-        code: 'INVALID_STATE',
-        message: `Cannot reject payment for booking status '${booking.status}'.`,
-      })
-    }
-
     const now = Date.now()
 
-    await ctx.db.patch(args.bookingId, {
-      status: 'cancelled',
-      paymentStatus: 'failed',
-      nationalIdStorageId: undefined,
-      nationalIdR2Key: undefined,
-      updatedAt: now,
-      updatedBy: user._id,
+    // Cancel the booking, fail the payment, and record removal of rejected evidence
+    await transitionBooking(ctx, {
+      booking,
+      event: 'bank_payment_rejected',
+      to: 'cancelled',
+      actor: { kind: 'user', userId: user._id },
+      changes: {
+        paymentStatus: 'failed',
+        proofReviewDeadline: undefined,
+        nationalIdStorageId: undefined,
+        nationalIdR2Key: undefined,
+      },
+      metadata: {
+        nationalIdDeleted: Boolean(
+          booking.nationalIdStorageId || booking.nationalIdR2Key,
+        ),
+      },
+      now,
     })
 
     if (booking.nationalIdStorageId) {
@@ -1261,26 +1272,6 @@ export const rejectPayment = mutation({
       })
     }
 
-    await createAuditLog(ctx, {
-      actorId: user._id,
-      action: 'booking_payment_rejected',
-      targetType: 'booking',
-      targetId: args.bookingId,
-      previousValue: {
-        status: booking.status,
-        paymentStatus: booking.paymentStatus ?? 'pending',
-      },
-      newValue: {
-        status: 'cancelled',
-        paymentStatus: 'failed',
-      },
-      metadata: {
-        nationalIdDeleted: Boolean(
-          booking.nationalIdStorageId || booking.nationalIdR2Key,
-        ),
-      },
-    })
-
     // Notify the customer that their payment was rejected.
     if (booking.userId) {
       await ctx.runMutation(internal.notifications.createNotification, {
@@ -1288,7 +1279,7 @@ export const rejectPayment = mutation({
         type: 'booking_payment_rejected',
         bookingId: args.bookingId,
         hotelId: booking.hotelId,
-        message: `Your payment proof for booking #${args.bookingId.slice(-6).toUpperCase()} was rejected. Please re-submit with a valid proof of payment.`,
+        message: `Your payment proof for booking #${args.bookingId.slice(-6).toUpperCase()} was rejected and the booking was cancelled. Please create a new booking to try again.`,
       })
     }
 
@@ -1337,13 +1328,6 @@ export const outsourceBooking = mutation({
       })
     }
 
-    if (!canOutsourceBooking(booking.status)) {
-      throw new ConvexError({
-        code: 'INVALID_STATE',
-        message: 'Only confirmed or checked-in bookings can be outsourced.',
-      })
-    }
-
     if (args.destinationHotelId === booking.hotelId) {
       throw new ConvexError({
         code: 'INVALID_INPUT',
@@ -1360,30 +1344,20 @@ export const outsourceBooking = mutation({
     }
 
     const now = Date.now()
-    await ctx.db.patch(args.bookingId, {
-      status: 'outsourced',
-      outsourcedToHotelId: args.destinationHotelId,
-      outsourcedAt: now,
-      updatedAt: now,
-      updatedBy: user._id,
-    })
-
-    await createAuditLog(ctx, {
-      actorId: user._id,
-      action: 'booking_outsourced',
-      targetType: 'booking',
-      targetId: args.bookingId,
-      previousValue: {
-        status: booking.status,
-      },
-      newValue: {
-        status: 'outsourced',
+    // Complete the source booking as outsourced and record its destination
+    await transitionBooking(ctx, {
+      booking,
+      event: 'booking_outsourced',
+      to: 'outsourced',
+      actor: { kind: 'user', userId: user._id },
+      changes: {
         outsourcedToHotelId: args.destinationHotelId,
         outsourcedAt: now,
       },
       metadata: {
         sourceHotelId: booking.hotelId,
       },
+      now,
     })
 
     return null
@@ -1424,11 +1398,18 @@ export const confirmChapaPayment = internalMutation({
     }
 
     if (booking.status === 'confirmed') {
-      await ctx.db.patch(args.bookingId, {
-        paymentStatus: 'paid',
-        transactionId: args.chapaReference,
-        updatedAt: Date.now(),
-        updatedBy: booking.userId,
+      // Synchronize Chapa payment details onto an already confirmed booking
+      await transitionBooking(ctx, {
+        booking,
+        event: 'chapa_payment_confirmed',
+        to: 'confirmed',
+        actor: { kind: 'provider', provider: 'chapa' },
+        changes: {
+          paymentStatus: 'paid',
+          paymentMethod: 'chapa',
+          transactionId: args.chapaReference,
+          holdExpiresAt: undefined,
+        },
       })
 
       try {
@@ -1443,46 +1424,38 @@ export const confirmChapaPayment = internalMutation({
       return 'synchronized'
     }
 
-    if (!canUseHeldBooking(booking.status)) {
+    if (
+      !canApplyBookingTransition(
+        'chapa_payment_confirmed',
+        booking.status,
+        'confirmed',
+      )
+    ) {
       return 'invalid_state'
-    }
-
-    if (isHoldExpired(booking.holdExpiresAt)) {
-      return 'expired'
     }
 
     const now = Date.now()
 
-    await ctx.db.patch(args.bookingId, {
-      status: 'confirmed',
-      paymentStatus: 'paid',
-      transactionId: args.chapaReference,
-      holdExpiresAt: undefined,
-      updatedAt: now,
-      updatedBy: booking.userId,
+    if (isHoldExpiredAt(booking.holdExpiresAt, now)) {
+      return 'expired'
+    }
+
+    // Confirm the live hold and attribute the payment transition to Chapa
+    await transitionBooking(ctx, {
+      booking,
+      event: 'chapa_payment_confirmed',
+      to: 'confirmed',
+      actor: { kind: 'provider', provider: 'chapa' },
+      changes: {
+        paymentStatus: 'paid',
+        paymentMethod: 'chapa',
+        transactionId: args.chapaReference,
+        holdExpiresAt: undefined,
+      },
+      now,
     })
 
     if (booking.userId) {
-      await createAuditLog(ctx, {
-        actorId: booking.userId,
-        action: 'booking_payment_verified',
-        targetType: 'booking',
-        targetId: args.bookingId,
-        previousValue: {
-          status: booking.status,
-          paymentStatus: booking.paymentStatus ?? 'pending',
-        },
-        newValue: {
-          status: 'confirmed',
-          paymentStatus: 'paid',
-          transactionId: args.chapaReference,
-        },
-        metadata: {
-          system: true,
-          provider: 'chapa',
-        },
-      })
-
       await ctx.runMutation(internal.notifications.createNotification, {
         userId: booking.userId,
         type: 'booking_confirmed',
@@ -1525,10 +1498,224 @@ export const applyChapaPaymentStatus = internalMutation({
       return null
     }
 
+    const now = Date.now()
     await ctx.db.patch(args.bookingId, {
       paymentStatus: args.paymentStatus,
-      updatedAt: Date.now(),
+      ...(args.paymentStatus === 'paid'
+        ? { paymentMethod: 'chapa' as const }
+        : {}),
+      updatedAt: now,
     })
+
+    // Keep provider-driven money changes in the same dispute audit trail
+    await createAuditLog(ctx, {
+      action: 'booking_chapa_payment_status_updated',
+      targetType: 'booking',
+      targetId: booking._id,
+      previousValue: { paymentStatus: booking.paymentStatus ?? null },
+      newValue: { paymentStatus: args.paymentStatus },
+      metadata: { actorKind: 'provider', provider: 'chapa' },
+    })
+
+    return null
+  },
+})
+
+// Creates the staff refund task when Chapa charges an unfulfillable booking
+export const markChapaRefundRequired = internalMutation({
+  args: {
+    bookingId: v.id('bookings'),
+    txRef: v.string(),
+  },
+  returns: v.null(),
+  handler: async (ctx, args) => {
+    const booking = await ctx.db.get(args.bookingId)
+    if (!booking || booking.refundStatus) {
+      return null
+    }
+
+    const now = Date.now()
+    // Record that money was captured even though the room could not be confirmed
+    await ctx.db.patch(booking._id, {
+      paymentStatus: 'paid',
+      paymentMethod: 'chapa',
+      updatedAt: now,
+    })
+    const paidBooking = (await ctx.db.get(booking._id))!
+
+    // Open one provider refund task with an immutable business reason
+    await transitionRefund(ctx, {
+      booking: paidBooking,
+      to: 'required',
+      method: 'chapa',
+      reason: 'late_payment',
+      actor: { kind: 'provider', provider: 'chapa' },
+      metadata: { txRef: args.txRef },
+      now,
+    })
+
+    // Alert hotel staff, including cashiers who can monitor but not execute
+    await ctx.runMutation(internal.notifications.notifyHotelStaff, {
+      hotelId: booking.hotelId,
+      type: 'booking_refund_required',
+      bookingId: booking._id,
+      message: `Chapa charged booking #${booking._id.slice(-6).toUpperCase()} after it could no longer be confirmed. A full refund is required.`,
+    })
+
+    if (booking.userId) {
+      await ctx.runMutation(internal.notifications.createNotification, {
+        userId: booking.userId,
+        type: 'booking_refund_required',
+        bookingId: booking._id,
+        hotelId: booking.hotelId,
+        message: `Your payment for booking #${booking._id.slice(-6).toUpperCase()} arrived after the room was released. The hotel has been asked to issue a full refund.`,
+      })
+    }
+
+    return null
+  },
+})
+
+// Completes a cash or bank refund after an authorized admin pays it manually
+export const completeManualRefund = mutation({
+  args: {
+    bookingId: v.id('bookings'),
+    reference: v.optional(v.string()),
+  },
+  returns: v.null(),
+  handler: async (ctx, args) => {
+    const booking = await ctx.db.get(args.bookingId)
+    if (!booking) {
+      throw new ConvexError({
+        code: 'NOT_FOUND',
+        message: 'Booking not found.',
+      })
+    }
+
+    const { user } = await requireHotelManagement(ctx, booking.hotelId)
+    if (booking.refundMethod !== 'manual') {
+      throw new ConvexError({
+        code: 'INVALID_STATE',
+        message: 'Chapa refunds must be completed through the Chapa action.',
+      })
+    }
+
+    if (booking.refundStatus === 'refunded') {
+      return null
+    }
+
+    if (!['required', 'reversed'].includes(booking.refundStatus ?? '')) {
+      throw new ConvexError({
+        code: 'INVALID_STATE',
+        message: 'This manual refund is not ready to be completed.',
+      })
+    }
+
+    const reference = args.reference?.trim() || undefined
+    // Close the manual task and attribute the payout to the authenticated admin
+    await transitionRefund(ctx, {
+      booking,
+      to: 'refunded',
+      actor: { kind: 'user', userId: user._id },
+      manualReference: reference,
+      metadata: { reference },
+    })
+
+    if (booking.userId) {
+      await ctx.runMutation(internal.notifications.createNotification, {
+        userId: booking.userId,
+        type: 'booking_refunded',
+        bookingId: booking._id,
+        hotelId: booking.hotelId,
+        message: `The full refund for booking #${booking._id.slice(-6).toUpperCase()} has been processed. Please allow 2–3 business days for the funds to reflect in your account.`,
+      })
+    }
+
+    return null
+  },
+})
+
+// Synchronizes a verified Chapa refund outcome onto the booking lifecycle
+export const applyChapaRefundOutcome = internalMutation({
+  args: {
+    bookingId: v.id('bookings'),
+    outcome: v.union(
+      v.literal('processing'),
+      v.literal('refunded'),
+      v.literal('reversed'),
+      v.literal('verification_required'),
+      v.literal('required'),
+    ),
+    txRef: v.string(),
+    refundReference: v.optional(v.string()),
+    refundRefId: v.optional(v.string()),
+    error: v.optional(v.string()),
+  },
+  returns: v.null(),
+  handler: async (ctx, args) => {
+    const booking = await ctx.db.get(args.bookingId)
+    if (!booking || booking.refundStatus === args.outcome) {
+      return null
+    }
+
+    // Apply the provider result with its identifiers in the audit metadata
+    await transitionRefund(ctx, {
+      booking,
+      to: args.outcome,
+      method: 'chapa',
+      actor: { kind: 'provider', provider: 'chapa' },
+      error: args.error,
+      metadata: {
+        txRef: args.txRef,
+        refundReference: args.refundReference,
+        refundRefId: args.refundRefId,
+      },
+    })
+
+    const needsStaffAttention = [
+      'reversed',
+      'verification_required',
+      'required',
+    ].includes(args.outcome)
+
+    if (needsStaffAttention) {
+      await ctx.runMutation(internal.notifications.notifyHotelStaff, {
+        hotelId: booking.hotelId,
+        type:
+          args.outcome === 'required'
+            ? 'booking_refund_required'
+            : 'booking_refund_reversed',
+        bookingId: booking._id,
+        message:
+          args.outcome === 'verification_required'
+            ? `Refund response for booking #${booking._id.slice(-6).toUpperCase()} is uncertain. Check Chapa before taking any further action.`
+            : `Refund for booking #${booking._id.slice(-6).toUpperCase()} needs administrator attention.`,
+      })
+    }
+
+    if (booking.userId) {
+      // The guest only hears settled outcomes, so an in-flight refund and an
+      // internally reopened task both stay silent
+      const type =
+        args.outcome === 'refunded'
+          ? ('booking_refunded' as const)
+          : args.outcome === 'reversed'
+            ? ('booking_refund_reversed' as const)
+            : null
+
+      if (type) {
+        await ctx.runMutation(internal.notifications.createNotification, {
+          userId: booking.userId,
+          type,
+          bookingId: booking._id,
+          hotelId: booking.hotelId,
+          message:
+            args.outcome === 'refunded'
+              ? `The full refund for booking #${booking._id.slice(-6).toUpperCase()} has been processed. Please allow 2–3 business days for the funds to reflect in your account.`
+              : `The refund for booking #${booking._id.slice(-6).toUpperCase()} did not complete. The hotel has been alerted.`,
+        })
+      }
+    }
 
     return null
   },

@@ -19,8 +19,14 @@ import {
   getPackageLabelOrDefault,
 } from '../../../../lib/packages'
 import { useI18n } from '../../../../lib/i18n/provider'
+import { getCustomerRefundView } from '../../../../lib/bookingStatus'
 import { DEFAULT_HOTEL_DETAIL_SEARCH } from '../../../../lib/navigationSearch'
-import { canCancel, formatDate, formatPrice, formatTime } from './-helpers'
+import {
+  canCustomerCancelBooking,
+  formatDate,
+  formatPrice,
+  formatTime,
+} from './-helpers'
 import type { Id } from '../../../../../convex/_generated/dataModel'
 import type { PackageType } from '../../../../lib/packages'
 
@@ -32,6 +38,8 @@ interface BookingCardProps {
     pricePerNight: number
     totalPrice: number
     status: string
+    paymentStatus?: string | undefined
+    refundStatus?: string | undefined
     holdExpiresAt?: number | undefined
     packageType?: PackageType | undefined
     packageAddOn?: number | undefined
@@ -128,6 +136,7 @@ export function BookingCard({
     deluxe: t('hotel.deluxeRoom'),
   }
   const roomTypeLabel = roomTypeLabels[room.type] ?? room.type
+  const refundView = getCustomerRefundView(booking.refundStatus)
 
   return (
     <Card className="light-hover-surface rounded-2xl border-border bg-card text-card-foreground transition-all hover:border-violet-500/45">
@@ -213,10 +222,24 @@ export function BookingCard({
                 </div>
               </div>
             )}
+
+            {refundView && (
+              <div
+                className={`mt-4 rounded-lg border p-3 text-sm ${
+                  refundView === 'refunded'
+                    ? 'border-emerald-500/30 bg-emerald-500/10 text-emerald-500'
+                    : refundView === 'reversed'
+                      ? 'border-red-500/30 bg-red-500/10 text-red-500'
+                      : 'border-blue-500/30 bg-blue-500/10 text-blue-500'
+                }`}
+              >
+                {t(`refund.customer.${refundView}`)}
+              </div>
+            )}
           </div>
         </div>
 
-        {canCancel(booking.status) && (
+        {canCustomerCancelBooking(booking.status, booking.paymentStatus) && (
           <div className="mt-4 flex gap-3 border-t border-border pt-4">
             {booking.status === 'held' && (
               <Button

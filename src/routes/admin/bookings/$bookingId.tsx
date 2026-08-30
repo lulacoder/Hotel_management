@@ -7,6 +7,8 @@ import {
   Copy,
   Hotel,
   Image,
+  Loader2,
+  RotateCcw,
   XCircle,
 } from 'lucide-react'
 import { useState } from 'react'
@@ -25,10 +27,13 @@ import { BookingStatusBadge } from './components/-BookingStatusBadge'
 import type { ManualBookingTransitionStatus } from '../../../../convex/lib/bookingLifecycle'
 import type { Id } from '../../../../convex/_generated/dataModel'
 import { useTheme } from '@/lib/theme'
-import { useMutation, useQuery } from '@/integrations/convex/hooks'
+import { useAction, useMutation, useQuery } from '@/integrations/convex/hooks'
 import { AdminSpinner } from '@/components/AdminSpinner'
 import { formatEtbAmount, formatUsdAmount } from '@/lib/currency'
-import { useBookingStatusConfig } from '@/lib/bookingStatus'
+import {
+  getRefundStatusLabelKey,
+  useBookingStatusConfig,
+} from '@/lib/bookingStatus'
 
 export const Route = createFileRoute('/admin/bookings/$bookingId')({
   // Register admin booking detail route for status/payment operations.
@@ -49,6 +54,11 @@ const itemVariants = {
   },
 }
 
+// Formats stored refund timestamps in the staff member's local time
+function formatRefundTimestamp(timestamp: number | undefined): string {
+  return timestamp ? new Date(timestamp).toLocaleString() : '—'
+}
+
 function BookingDetailPage() {
   // Fetch booking graph + role context used for permissions and actions.
   const { bookingId } = Route.useParams()
@@ -57,6 +67,8 @@ function BookingDetailPage() {
   const { theme } = useTheme()
   const isDark = theme === 'dark'
   const [showOutsourceModal, setShowOutsourceModal] = useState(false)
+  const [refundSubmitting, setRefundSubmitting] = useState(false)
+  const [refundFeedback, setRefundFeedback] = useState<string | null>(null)
 
   const { hotelAssignment, profile } = useAdminSession()
 
@@ -74,9 +86,13 @@ function BookingDetailPage() {
   )
 
   const updateBookingStatus = useMutation(api.bookings.updateStatus)
+  const cancelBooking = useMutation(api.bookings.cancelBooking)
+  const cancelPaidBooking = useMutation(api.bookings.cancelPaidBooking)
   const acceptCashPayment = useMutation(api.bookings.acceptCashPayment)
   const verifyPayment = useMutation(api.bookings.verifyPayment)
   const rejectPayment = useMutation(api.bookings.rejectPayment)
+  const initiateRefund = useAction(api.chapaActions.initiateRefund)
+  const completeManualRefund = useMutation(api.bookings.completeManualRefund)
 
   const legacyNationalIdImageUrl = useQuery(
     api.files.getFileUrl,
@@ -94,6 +110,9 @@ function BookingDetailPage() {
     r2NationalIdMetadata?.url ?? legacyNationalIdImageUrl
 
   const { statusConfig, transitionLabel } = useBookingStatusConfig()
+  const refundStatusLabelKey = getRefundStatusLabelKey(
+    bookingDetail?.booking.refundStatus,
+  )
 
   const canManageBookings =
     profile.role === 'room_admin' ||
@@ -107,9 +126,31 @@ function BookingDetailPage() {
     hotelAssignment?.hotelId === bookingDetail.hotel._id &&
     ['hotel_admin', 'hotel_cashier'].includes(hotelAssignment.role)
 
+  const canExecuteRefund =
+    profile.role === 'room_admin' ||
+    Boolean(
+      hotelAssignment &&
+      bookingDetail &&
+      hotelAssignment.hotelId === bookingDetail.hotel._id &&
+      hotelAssignment.role === 'hotel_admin',
+    )
+
   const handleStatusChange = async (
     nextStatus: ManualBookingTransitionStatus,
   ) => {
+    // Paid bookings cancel through the staff refund path so the money stays tracked
+    if (nextStatus === 'cancelled') {
+      if (bookingDetail?.booking.paymentStatus === 'paid') {
+        if (!window.confirm(t('admin.bookings.confirmCancelPaid'))) return
+        await cancelPaidBooking({ bookingId: typedBookingId })
+        return
+      }
+
+      if (!window.confirm(t('bookings.confirmCancel'))) return
+      await cancelBooking({ bookingId: typedBookingId })
+      return
+    }
+
     await updateBookingStatus({
       bookingId: typedBookingId,
       nextStatus,
@@ -133,6 +174,46 @@ function BookingDetailPage() {
   const handleCopyTransactionId = async () => {
     if (!bookingDetail?.booking.transactionId) return
     await navigator.clipboard.writeText(bookingDetail.booking.transactionId)
+  }
+
+  // Executes the explicit full refund selected by an authorized administrator
+  const handleRefund = async () => {
+    if (!bookingDetail?.booking.refundMethod) return
+
+    const isChapa = bookingDetail.booking.refundMethod === 'chapa'
+    const amount = isChapa
+      ? formatEtbAmount(chapaPayment?.chargedAmountMinor ?? 0)
+      : formatUsdAmount(bookingDetail.booking.totalPrice)
+    const confirmation = isChapa
+      ? `Issue a full ${amount} refund through Chapa? This moves real money.`
+      : `Confirm that the full ${amount} manual refund has been paid?`
+
+    if (!window.confirm(confirmation)) return
+
+    setRefundSubmitting(true)
+    setRefundFeedback(null)
+    try {
+      if (isChapa) {
+        const result = await initiateRefund({ bookingId: typedBookingId })
+        setRefundFeedback(
+          result.error ??
+            (result.state === 'refunded'
+              ? t('admin.bookings.refundCompleted')
+              : t('admin.bookings.refundProcessing')),
+        )
+      } else {
+        await completeManualRefund({ bookingId: typedBookingId })
+        setRefundFeedback(t('admin.bookings.refundCompleted'))
+      }
+    } catch (error) {
+      setRefundFeedback(
+        error instanceof Error
+          ? error.message
+          : t('admin.bookings.refundActionFailed'),
+      )
+    } finally {
+      setRefundSubmitting(false)
+    }
   }
 
   if (bookingDetail === undefined) {
@@ -303,6 +384,11 @@ function BookingDetailPage() {
               {bookingDetail.booking.paymentStatus ||
                 t('admin.bookings.pending')}
             </p>
+            {refundStatusLabelKey && (
+              <p className="mt-1 text-sm font-medium text-amber-400">
+                {t(refundStatusLabelKey)}
+              </p>
+            )}
           </div>
           <div className="admin-surface-muted p-4">
             <p
@@ -409,6 +495,118 @@ function BookingDetailPage() {
                 ETB/USD
               </p>
             </div>
+          </div>
+        </m.div>
+      )}
+
+      {bookingDetail.booking.refundStatus && (
+        <m.div variants={itemVariants} className="admin-surface p-6 mb-6">
+          <div className="mb-4 flex flex-wrap items-center justify-between gap-3">
+            <div>
+              <h2
+                className={`text-lg font-semibold ${isDark ? 'text-slate-200' : 'text-slate-800'}`}
+              >
+                {t('admin.bookings.refundStatus')}
+              </h2>
+              <p className={isDark ? 'text-slate-400' : 'text-slate-500'}>
+                {refundStatusLabelKey ? t(refundStatusLabelKey) : ''}
+              </p>
+            </div>
+            <span
+              className={`rounded-full border px-3 py-1 text-xs font-semibold ${
+                bookingDetail.booking.refundStatus === 'refunded'
+                  ? 'border-emerald-500/30 bg-emerald-500/10 text-emerald-400'
+                  : bookingDetail.booking.refundStatus === 'processing'
+                    ? 'border-blue-500/30 bg-blue-500/10 text-blue-400'
+                    : bookingDetail.booking.refundStatus === 'required'
+                      ? 'border-amber-500/30 bg-amber-500/10 text-amber-400'
+                      : 'border-red-500/30 bg-red-500/10 text-red-400'
+              }`}
+            >
+              {bookingDetail.booking.refundStatus.replaceAll('_', ' ')}
+            </span>
+          </div>
+
+          <div className="grid grid-cols-1 gap-4 text-sm md:grid-cols-2">
+            <div className="admin-surface-muted p-4">
+              <p className={isDark ? 'text-slate-500' : 'text-slate-400'}>
+                {t('admin.bookings.refundMethod')}
+              </p>
+              <p className={isDark ? 'text-slate-100' : 'text-slate-800'}>
+                {bookingDetail.booking.refundMethod === 'chapa'
+                  ? 'Chapa'
+                  : t('admin.bookings.refundMethodManual')}
+              </p>
+            </div>
+            <div className="admin-surface-muted p-4">
+              <p className={isDark ? 'text-slate-500' : 'text-slate-400'}>
+                {t('admin.bookings.refundReason')}
+              </p>
+              <p className="capitalize text-amber-400">
+                {bookingDetail.booking.refundReason?.replaceAll('_', ' ') ||
+                  '—'}
+              </p>
+            </div>
+            <div className="admin-surface-muted p-4">
+              <p className={isDark ? 'text-slate-500' : 'text-slate-400'}>
+                {t('admin.bookings.refundRequiredAt')}
+              </p>
+              <p className={isDark ? 'text-slate-100' : 'text-slate-800'}>
+                {formatRefundTimestamp(bookingDetail.booking.refundRequiredAt)}
+              </p>
+            </div>
+            <div className="admin-surface-muted p-4">
+              <p className={isDark ? 'text-slate-500' : 'text-slate-400'}>
+                {t('admin.bookings.refundAmount')}
+              </p>
+              <p className={isDark ? 'text-slate-100' : 'text-slate-800'}>
+                {bookingDetail.booking.refundMethod === 'chapa' && chapaPayment
+                  ? formatEtbAmount(chapaPayment.chargedAmountMinor)
+                  : formatUsdAmount(bookingDetail.booking.totalPrice)}
+              </p>
+            </div>
+          </div>
+
+          {(bookingDetail.booking.refundLastError ||
+            bookingDetail.booking.refundStatus === 'verification_required') && (
+            <div className="mt-4 rounded-xl border border-red-500/25 bg-red-500/10 p-4 text-sm text-red-400">
+              {bookingDetail.booking.refundLastError ||
+                t('admin.bookings.refundVerificationWarning')}
+            </div>
+          )}
+
+          <div className="mt-4 flex flex-wrap items-center gap-3">
+            {canExecuteRefund &&
+              ['required', 'reversed'].includes(
+                bookingDetail.booking.refundStatus,
+              ) && (
+                <button
+                  type="button"
+                  onClick={handleRefund}
+                  disabled={refundSubmitting}
+                  className="admin-button-soft inline-flex items-center gap-2 px-4 py-2 text-sm text-amber-400 disabled:opacity-50"
+                >
+                  {refundSubmitting ? (
+                    <Loader2 className="size-4 animate-spin" />
+                  ) : (
+                    <RotateCcw className="size-4" />
+                  )}
+                  {bookingDetail.booking.refundMethod === 'chapa'
+                    ? t('admin.bookings.issueChapaRefund')
+                    : t('admin.bookings.completeManualRefund')}
+                </button>
+              )}
+            {!canExecuteRefund &&
+              bookingDetail.booking.refundStatus !== 'refunded' && (
+                <p className="text-sm text-slate-400">
+                  {t('admin.bookings.cashierRefundReadOnly')}
+                </p>
+              )}
+            {refundFeedback && (
+              <p role="status" className="text-sm text-amber-400">
+                {refundFeedback}
+              </p>
+            )}
           </div>
         </m.div>
       )}
@@ -541,7 +739,10 @@ function BookingDetailPage() {
                       : 'admin-button-soft'
                   }`}
                 >
-                  {transitionLabel[nextStatus]}
+                  {nextStatus === 'cancelled' &&
+                  bookingDetail.booking.paymentStatus === 'paid'
+                    ? t('admin.bookings.cancelAndFlagRefund')
+                    : transitionLabel[nextStatus]}
                 </button>
               ),
             )}

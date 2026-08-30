@@ -1,9 +1,5 @@
 import { ConvexError, v } from 'convex/values'
-import {
-  internalMutation,
-  internalQuery,
-  mutation,
-} from './_generated/server'
+import { internalMutation, internalQuery, mutation } from './_generated/server'
 import { requireUser } from './lib/auth'
 
 // ---------------------------------------------------------------------------

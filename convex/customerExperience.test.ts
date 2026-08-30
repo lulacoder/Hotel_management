@@ -21,80 +21,84 @@ const futureDate = (daysFromNow: number) => {
 }
 
 describe('customer experience queries', () => {
-  it('applies payment status filters before paginating hotel bookings', { timeout: 15000 }, async () => {
-    const t = convexTest(schema, modules)
-    const { hotelId } = await t.run(async (ctx) => {
-      const now = Date.now()
-      const adminId = await ctx.db.insert('users', {
-        clerkUserId: 'admin',
-        email: 'admin@example.com',
-        role: 'room_admin',
-        createdAt: now,
-      })
-      const hotelId = await ctx.db.insert('hotels', {
-        name: 'Atlas Hotel',
-        address: '1 Main Street',
-        city: 'Addis Ababa',
-        country: 'Ethiopia',
-        isDeleted: false,
-        createdAt: now,
-        updatedAt: now,
-      })
-      const roomId = await ctx.db.insert('rooms', {
-        hotelId,
-        roomNumber: '101',
-        type: 'standard',
-        basePrice: 10000,
-        maxOccupancy: 2,
-        operationalStatus: 'available',
-        isDeleted: false,
-        createdAt: now,
-        updatedAt: now,
-      })
-
-      for (let index = 0; index < 5; index += 1) {
-        await ctx.db.insert('bookings', {
-          roomId,
-          hotelId,
-          checkIn: futureDate(index + 2),
-          checkOut: futureDate(index + 3),
-          status: 'confirmed',
-          paymentStatus: index < 3 ? 'paid' : undefined,
-          pricePerNight: 10000,
-          totalPrice: 10000,
-          createdAt: now + index,
-          updatedAt: now + index,
-          updatedBy: adminId,
+  it(
+    'applies payment status filters before paginating hotel bookings',
+    { timeout: 15000 },
+    async () => {
+      const t = convexTest(schema, modules)
+      const { hotelId } = await t.run(async (ctx) => {
+        const now = Date.now()
+        const adminId = await ctx.db.insert('users', {
+          clerkUserId: 'admin',
+          email: 'admin@example.com',
+          role: 'room_admin',
+          createdAt: now,
         })
-      }
+        const hotelId = await ctx.db.insert('hotels', {
+          name: 'Atlas Hotel',
+          address: '1 Main Street',
+          city: 'Addis Ababa',
+          country: 'Ethiopia',
+          isDeleted: false,
+          createdAt: now,
+          updatedAt: now,
+        })
+        const roomId = await ctx.db.insert('rooms', {
+          hotelId,
+          roomNumber: '101',
+          type: 'standard',
+          basePrice: 10000,
+          maxOccupancy: 2,
+          operationalStatus: 'available',
+          isDeleted: false,
+          createdAt: now,
+          updatedAt: now,
+        })
 
-      return { hotelId }
-    })
-    const admin = asUser(t, 'admin', 'admin@example.com')
+        for (let index = 0; index < 5; index += 1) {
+          await ctx.db.insert('bookings', {
+            roomId,
+            hotelId,
+            checkIn: futureDate(index + 2),
+            checkOut: futureDate(index + 3),
+            status: 'confirmed',
+            paymentStatus: index < 3 ? 'paid' : undefined,
+            pricePerNight: 10000,
+            totalPrice: 10000,
+            createdAt: now + index,
+            updatedAt: now + index,
+            updatedBy: adminId,
+          })
+        }
 
-    const paidPage = await admin.query(api.bookings.getByHotel, {
-      hotelId,
-      paymentStatus: 'paid',
-      paginationOpts: { numItems: 2, cursor: null },
-    })
-    expect(paidPage.page).toHaveLength(2)
-    expect(
-      paidPage.page.every((item) => item.booking.paymentStatus === 'paid'),
-    ).toBe(true)
-    expect(paidPage.isDone).toBe(false)
+        return { hotelId }
+      })
+      const admin = asUser(t, 'admin', 'admin@example.com')
 
-    const unknownPage = await admin.query(api.bookings.getByHotel, {
-      hotelId,
-      paymentStatus: 'unpaid_unknown',
-      paginationOpts: { numItems: 10, cursor: null },
-    })
-    expect(unknownPage.page).toHaveLength(2)
-    expect(
-      unknownPage.page.every(
-        (item) => item.booking.paymentStatus === undefined,
-      ),
-    ).toBe(true)
-  })
+      const paidPage = await admin.query(api.bookings.getByHotel, {
+        hotelId,
+        paymentStatus: 'paid',
+        paginationOpts: { numItems: 2, cursor: null },
+      })
+      expect(paidPage.page).toHaveLength(2)
+      expect(
+        paidPage.page.every((item) => item.booking.paymentStatus === 'paid'),
+      ).toBe(true)
+      expect(paidPage.isDone).toBe(false)
+
+      const unknownPage = await admin.query(api.bookings.getByHotel, {
+        hotelId,
+        paymentStatus: 'unpaid_unknown',
+        paginationOpts: { numItems: 10, cursor: null },
+      })
+      expect(unknownPage.page).toHaveLength(2)
+      expect(
+        unknownPage.page.every(
+          (item) => item.booking.paymentStatus === undefined,
+        ),
+      ).toBe(true)
+    },
+  )
 
   it('returns only operational, correctly sized, unblocked rooms in availability search', async () => {
     const t = convexTest(schema, modules)

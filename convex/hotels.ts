@@ -550,9 +550,9 @@ export const update = mutation({
       ? null
       : args.imageR2Key !== undefined
         ? null
-      : args.imageStorageId !== undefined
-        ? args.imageStorageId
-        : (hotel.imageStorageId ?? null)
+        : args.imageStorageId !== undefined
+          ? args.imageStorageId
+          : (hotel.imageStorageId ?? null)
 
     if (shouldUpdateImage) {
       previousValues.imageStorageId = hotel.imageStorageId ?? null

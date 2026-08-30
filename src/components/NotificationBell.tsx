@@ -41,6 +41,26 @@ const notificationMeta = {
     color: 'text-orange-600 dark:text-orange-400',
     dot: 'bg-orange-500 dark:bg-orange-400',
   },
+  booking_refund_required: {
+    label: 'Refund Required',
+    color: 'text-amber-600 dark:text-amber-400',
+    dot: 'bg-amber-500 dark:bg-amber-400',
+  },
+  booking_refund_processing: {
+    label: 'Refund In Progress',
+    color: 'text-blue-600 dark:text-blue-400',
+    dot: 'bg-blue-500 dark:bg-blue-400',
+  },
+  booking_refunded: {
+    label: 'Refund Completed',
+    color: 'text-emerald-600 dark:text-emerald-400',
+    dot: 'bg-emerald-500 dark:bg-emerald-400',
+  },
+  booking_refund_reversed: {
+    label: 'Refund Needs Attention',
+    color: 'text-red-600 dark:text-red-400',
+    dot: 'bg-red-500 dark:bg-red-400',
+  },
 } as const
 
 type NotificationType = keyof typeof notificationMeta
@@ -60,10 +80,15 @@ function bookingLink(
   type: NotificationType,
   bookingId: Id<'bookings'>,
 ): string {
-  if (type === 'booking_payment_proof_submitted') {
+  const isAdminSurface = window.location.pathname.startsWith('/admin')
+  if (
+    type === 'booking_payment_proof_submitted' ||
+    (isAdminSurface &&
+      ['booking_refund_required', 'booking_refund_reversed'].includes(type))
+  ) {
     return `/admin/bookings/${bookingId}`
   }
-  return '/bookings'
+  return `/bookings/${bookingId}`
 }
 
 interface NotificationBellProps {
