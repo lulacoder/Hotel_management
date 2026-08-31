@@ -284,7 +284,7 @@ function StaffInvitationPage() {
           <Link to="/" className="brand-logo-shell flex h-10 items-center px-1">
             <img
               src={staticAssets.logo}
-              alt="TripWays Hotels"
+              alt="Tripways Hotels"
               className="h-8 w-auto object-contain logo-tight"
             />
           </Link>

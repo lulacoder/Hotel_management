@@ -34,7 +34,7 @@ export function HotelPageChrome({
               <div className="brand-logo-shell h-8 px-1 flex items-center justify-center">
                 <img
                   src={staticAssets.logo}
-                  alt="TripWays Hotels"
+                  alt="Tripways Hotels"
                   className="h-6 w-auto object-contain logo-tight"
                 />
               </div>

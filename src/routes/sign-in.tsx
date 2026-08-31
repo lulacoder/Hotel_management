@@ -67,7 +67,7 @@ function SignInPage() {
             <div className="brand-logo-shell h-12 px-1 flex items-center justify-center group-hover:shadow-violet-500/40 transition-all duration-300">
               <img
                 src={staticAssets.logo}
-                alt="TripWays Hotels"
+                alt="Tripways Hotels"
                 className="h-9 w-auto object-contain logo-tight"
               />
             </div>
@@ -85,7 +85,7 @@ function SignInPage() {
 
           {/* Footer */}
           <p className="text-slate-600 text-sm">
-            &copy; {CURRENT_YEAR} TripWays Hotels.{' '}
+            &copy; {CURRENT_YEAR} Tripways Hotels.{' '}
             {t('common.allRightsReserved')}
           </p>
         </div>

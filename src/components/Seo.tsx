@@ -20,7 +20,7 @@ export interface SeoProps {
   jsonLd?: Record<string, unknown> | Array<Record<string, unknown>>
 }
 
-const DEFAULT_TITLE = 'TripWays Hotels | Luxury Stays & Boutique Hotel Booking'
+const DEFAULT_TITLE = 'Tripways Hotels | Luxury Stays & Boutique Hotel Booking'
 const DEFAULT_DESCRIPTION =
   'Discover and book handpicked luxury hotels, boutique stays, and premier resort suites. Enjoy seamless booking, instant confirmation, and exclusive guest experiences.'
 const DEFAULT_KEYWORDS = [
@@ -30,12 +30,12 @@ const DEFAULT_KEYWORDS = [
   'resort stays',
   'hotel reservations',
   'vacation suites',
-  'TripWays hotels',
+  'Tripways hotels',
   'Ethiopia hotels',
   'Addis Ababa hotels',
 ]
-const SITE_NAME = 'TripWays Hotels'
-const SITE_URL = 'https://tripways.com'
+const SITE_NAME = 'Tripways Hotels'
+const SITE_URL = 'https://Tripways.com'
 const DEFAULT_OG_IMAGE = staticAssets.infinityPool
 
 /**

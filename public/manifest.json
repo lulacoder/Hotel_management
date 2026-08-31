@@ -1,20 +1,20 @@
 {
-  "short_name": "TripWays",
-  "name": "TripWays Hotels & Resorts",
+  "short_name": "Tripways",
+  "name": "Tripways Hotels & Resorts",
   "description": "Book luxury hotels, boutique stays, and premier resort suites with instant confirmation.",
   "icons": [
     {
-      "src": "https://tripways-static-assets.leultesfaye0755.workers.dev/favicon-v2.ico",
+      "src": "https://Tripways-static-assets.leultesfaye0755.workers.dev/favicon-v2.ico",
       "sizes": "64x64 32x32 24x24 16x16",
       "type": "image/x-icon"
     },
     {
-      "src": "https://tripways-static-assets.leultesfaye0755.workers.dev/logo192-v2.png",
+      "src": "https://Tripways-static-assets.leultesfaye0755.workers.dev/logo192-v2.png",
       "type": "image/png",
       "sizes": "192x192"
     },
     {
-      "src": "https://tripways-static-assets.leultesfaye0755.workers.dev/logo512-v2.png",
+      "src": "https://Tripways-static-assets.leultesfaye0755.workers.dev/logo512-v2.png",
       "type": "image/png",
       "sizes": "512x512"
     }

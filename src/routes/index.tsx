@@ -29,21 +29,21 @@ function LandingPage() {
   const landingJsonLd = [
     {
       '@type': 'WebSite',
-      name: 'TripWays Hotels',
-      url: 'https://tripways.com',
+      name: 'Tripways Hotels',
+      url: 'https://Tripways.com',
       potentialAction: {
         '@type': 'SearchAction',
-        target: 'https://tripways.com/select-location?q={search_term_string}',
+        target: 'https://Tripways.com/select-location?q={search_term_string}',
         'query-input': 'required name=search_term_string',
       },
     },
     {
       '@type': 'Organization',
-      name: 'TripWays Hotels',
-      url: 'https://tripways.com',
+      name: 'Tripways Hotels',
+      url: 'https://Tripways.com',
       logo: staticAssets.logo,
       description:
-        'TripWays brings together handpicked luxury hotels, boutique rooms, and resort suites with seamless booking and instant confirmation.',
+        'Tripways brings together handpicked luxury hotels, boutique rooms, and resort suites with seamless booking and instant confirmation.',
       contactPoint: {
         '@type': 'ContactPoint',
         telephone: '+251-11-000-0000',

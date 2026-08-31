@@ -1,4 +1,4 @@
-# TripWays Hotels Robots Configuration
+# Tripways Hotels Robots Configuration
 User-agent: *
 Allow: /
 Allow: /select-location
@@ -15,4 +15,4 @@ Disallow: /sign-up
 Disallow: /staff-invitations/
 
 # Sitemaps
-Sitemap: https://tripways.com/sitemap.xml
+Sitemap: https://Tripways.com/sitemap.xml

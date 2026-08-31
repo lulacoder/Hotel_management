@@ -151,13 +151,13 @@ export default function Header() {
                     <div className="brand-logo-shell h-9 px-1">
                       <img
                         src={staticAssets.logo}
-                        alt="TripWays Hotels"
+                        alt="Tripways Hotels"
                         className="logo-tight h-full w-auto object-contain"
                       />
                     </div>
                     <div>
                       <SheetTitle className="text-slate-100">
-                        TripWays Hotels
+                        Tripways Hotels
                       </SheetTitle>
                       <SheetDescription className="text-xs text-slate-500">
                         {t('header.navigationMenu')}
@@ -283,7 +283,7 @@ export default function Header() {
               <div className="brand-logo-shell h-9 px-1 transition-all duration-300 group-hover:opacity-90">
                 <img
                   src={staticAssets.logo}
-                  alt="TripWays Hotels"
+                  alt="Tripways Hotels"
                   className="logo-tight h-full w-auto object-contain"
                 />
               </div>

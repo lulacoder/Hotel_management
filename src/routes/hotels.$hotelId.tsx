@@ -164,19 +164,19 @@ function HotelDetailPage() {
           '@type': 'ListItem',
           position: 1,
           name: 'Home',
-          item: 'https://tripways.com',
+          item: 'https://Tripways.com',
         },
         {
           '@type': 'ListItem',
           position: 2,
           name: 'Browse Hotels',
-          item: 'https://tripways.com/select-location',
+          item: 'https://Tripways.com/select-location',
         },
         {
           '@type': 'ListItem',
           position: 3,
           name: hotel.name,
-          item: `https://tripways.com/hotels/${hotel._id}`,
+          item: `https://Tripways.com/hotels/${hotel._id}`,
         },
       ],
     },
@@ -231,7 +231,7 @@ function HotelDetailPage() {
         title={`${hotel.name} - ${hotel.city}`}
         description={
           hotel.description ||
-          `Book your stay at ${hotel.name} in ${hotel.city}, ${hotel.country}. Enjoy premier amenities, verified reviews, and instant confirmation with TripWays.`
+          `Book your stay at ${hotel.name} in ${hotel.city}, ${hotel.country}. Enjoy premier amenities, verified reviews, and instant confirmation with Tripways.`
         }
         canonicalUrl={`/hotels/${hotelId}`}
         ogImage={hotel.imageUrl}

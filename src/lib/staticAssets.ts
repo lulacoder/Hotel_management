@@ -1,5 +1,5 @@
 const STATIC_ASSET_ORIGIN =
-  'https://tripways-static-assets.leultesfaye0755.workers.dev'
+  'https://Tripways-static-assets.leultesfaye0755.workers.dev'
 
 const assetUrl = (fileName: string) => `${STATIC_ASSET_ORIGIN}/${fileName}`
 

@@ -965,7 +965,7 @@ export const enMessages = {
   'footer.bestRate': 'Best Rate Promise',
   'footer.bestRateDesc': 'Transparent pricing with no surprises',
   'footer.brandDescription':
-    'TripWays brings together the finest collection of luxury, boutique, and resort hotels. Reserve your room in minutes with instant confirmation and exceptional service.',
+    'Tripways brings together the finest collection of luxury, boutique, and resort hotels. Reserve your room in minutes with instant confirmation and exceptional service.',
   'footer.topDestinations': 'Top Destinations',
   'footer.hotelsInCity': 'Hotels in {city}',
   'footer.collections': 'Collections',

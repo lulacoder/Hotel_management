@@ -1,7 +1,7 @@
 import { sanitizeRedirect } from './authRouting'
 
 const STAFF_INVITATION_CONTINUATION_KEY =
-  'tripways.staff-invitation-continuation'
+  'Tripways.staff-invitation-continuation'
 const STAFF_INVITATION_CONTINUATION_TTL_MS = 60 * 60 * 1000
 
 interface StaffInvitationContinuation {
@@ -15,7 +15,7 @@ export function isStaffInvitationRedirect(value: unknown): value is string {
   const redirect = sanitizeRedirect(value)
   if (!redirect) return false
 
-  const url = new URL(redirect, 'https://tripways.local')
+  const url = new URL(redirect, 'https://Tripways.local')
   const hasInvitationPath = /^\/staff-invitations\/[^/]+$/.test(url.pathname)
   const token = url.searchParams.get('token')
 

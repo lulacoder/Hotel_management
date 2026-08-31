@@ -137,7 +137,7 @@ async function getInvitationEmailContext(
     hotelName: hotel.name,
     hotelCity: hotel.city,
     role: invitation.role,
-    invitedByEmail: inviter?.email ?? 'TripWays administrator',
+    invitedByEmail: inviter?.email ?? 'Tripways administrator',
     expiresAt: invitation.expiresAt,
   }
 }
