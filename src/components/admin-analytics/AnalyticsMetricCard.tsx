@@ -54,7 +54,7 @@ export function AnalyticsMetricCard({
       initial={{ opacity: 0, y: 12, scale: 0.97 }}
       animate={{ opacity: 1, y: 0, scale: 1 }}
       transition={{ duration: 0.45, ease: [0.23, 1, 0.32, 1] }}
-      className="group/card relative"
+      className="group/card relative h-full"
     >
       {/* Ambient glow */}
       <div
@@ -64,7 +64,7 @@ export function AnalyticsMetricCard({
 
       {/* Card surface */}
       <Card
-        className={`relative overflow-hidden rounded-2xl border p-0 backdrop-blur-xl transition-all duration-300 group-hover/card:-translate-y-0.5 group-hover/card:shadow-lg ${
+        className={`relative h-full overflow-hidden rounded-2xl border p-0 backdrop-blur-xl transition-all duration-300 group-hover/card:-translate-y-0.5 group-hover/card:shadow-lg ${
           isDark
             ? 'border-slate-800/60 bg-slate-900/55 group-hover/card:border-slate-600/60 group-hover/card:bg-slate-900/80 group-hover/card:shadow-black/30'
             : 'border-slate-200/80 bg-white/80 shadow-sm group-hover/card:border-slate-300 group-hover/card:bg-white/90 group-hover/card:shadow-slate-200/50'
@@ -183,7 +183,7 @@ export function AnalyticsMetricCard({
   }
 
   return (
-    <button type="button" onClick={onClick} className="w-full text-left">
+    <button type="button" onClick={onClick} className="h-full w-full text-left">
       {content}
     </button>
   )

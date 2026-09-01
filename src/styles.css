@@ -1526,3 +1526,37 @@ html[data-theme='light'] ::selection {
     display: none;
   }
 }
+
+/* Clerk authentication component theme enhancements */
+html[data-theme='dark'] .cl-socialButtonsBlockButton {
+  background-color: #1e293b !important;
+  border-color: #334155 !important;
+  color: #ffffff !important;
+}
+
+html[data-theme='dark'] .cl-socialButtonsBlockButtonText,
+html[data-theme='dark'] .cl-socialButtonsBlockButton span,
+html[data-theme='dark'] .cl-socialButtonsBlockButton p {
+  color: #ffffff !important;
+}
+
+html[data-theme='dark'] .cl-socialButtonsBlockButton:hover {
+  background-color: #334155 !important;
+}
+
+html[data-theme='light'] .cl-socialButtonsBlockButton {
+  background-color: #ffffff !important;
+  border-color: #e2e8f0 !important;
+  color: #0f172a !important;
+}
+
+html[data-theme='light'] .cl-socialButtonsBlockButtonText,
+html[data-theme='light'] .cl-socialButtonsBlockButton span,
+html[data-theme='light'] .cl-socialButtonsBlockButton p {
+  color: #0f172a !important;
+}
+
+html[data-theme='light'] .cl-socialButtonsBlockButton:hover {
+  background-color: #f8fafc !important;
+}
+

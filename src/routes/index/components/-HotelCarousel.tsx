@@ -91,17 +91,14 @@ function HotelCard({ hotel }: HotelCardProps) {
             </p>
           </div>
 
-          <div className="mb-3 flex items-center justify-between border-t border-white/10 pt-3 text-xs text-slate-300">
-            <div>
-              <span className="text-[11px] text-slate-400 block uppercase tracking-wider">{t('landing.startingFrom')}</span>
-              <span className="text-base font-bold text-white">$0.00 <span className="text-xs font-normal text-slate-400">{t('landing.perNight')}</span></span>
-            </div>
+          <div className="mb-3 flex items-center justify-end border-t border-white/10 pt-3 text-xs text-slate-300">
             {hotel.parkingIncluded && (
               <span className="rounded-md border border-emerald-500/30 bg-emerald-500/20 px-2 py-0.5 text-xs text-emerald-300">
                 {t('hotel.freeParking')}
               </span>
             )}
           </div>
+
 
           <Link
             to="/hotels/$hotelId"

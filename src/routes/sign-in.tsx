@@ -46,17 +46,17 @@ function SignInPage() {
     : '/sign-up'
 
   return (
-    <div className="min-h-screen bg-slate-950 flex">
+    <div className="min-h-screen bg-slate-100 dark:bg-slate-950 flex">
       <Seo title={t('header.signIn')} noIndex />
       {/* Left Panel - Branding */}
       <div className="hidden lg:flex lg:w-1/2 relative overflow-hidden">
         {/* Gradient Background */}
-        <div className="absolute inset-0 bg-gradient-to-br from-violet-500/20 via-slate-900 to-slate-950" />
+        <div className="absolute inset-0 bg-gradient-to-br from-violet-500/20 via-slate-200 to-slate-100 dark:via-slate-900 dark:to-slate-950" />
 
         {/* Animated Gradient Orbs */}
-        <div className="absolute top-1/3 right-1/4 size-96 bg-violet-500/30 rounded-full blur-3xl animate-pulse" />
+        <div className="absolute top-1/3 right-1/4 size-96 bg-violet-500/15 dark:bg-violet-500/30 rounded-full blur-3xl animate-pulse" />
         <div
-          className="absolute bottom-1/3 left-1/4 size-80 bg-indigo-500/20 rounded-full blur-3xl animate-pulse"
+          className="absolute bottom-1/3 left-1/4 size-80 bg-indigo-500/10 dark:bg-indigo-500/20 rounded-full blur-3xl animate-pulse"
           style={{ animationDelay: '1s' }}
         />
 
@@ -75,16 +75,16 @@ function SignInPage() {
 
           {/* Main Content */}
           <div className="max-w-md">
-            <h1 className="text-4xl font-bold text-white mb-4 leading-tight">
+            <h1 className="text-4xl font-bold text-slate-900 dark:text-white mb-4 leading-tight">
               {t('signIn.welcomeBack')}
             </h1>
-            <p className="text-lg text-slate-400 leading-relaxed">
+            <p className="text-lg text-slate-600 dark:text-slate-400 leading-relaxed">
               {t('signIn.description')}
             </p>
           </div>
 
           {/* Footer */}
-          <p className="text-slate-600 text-sm">
+          <p className="text-slate-500 dark:text-slate-600 text-sm">
             &copy; {CURRENT_YEAR} Tripways Hotels.{' '}
             {t('common.allRightsReserved')}
           </p>
@@ -98,7 +98,7 @@ function SignInPage() {
           <Button
             asChild
             variant="ghost"
-            className="text-slate-400 hover:text-slate-200"
+            className="text-slate-600 hover:text-slate-800 dark:text-slate-400 dark:hover:text-slate-200"
           >
             <Link to="/">
               <ArrowLeft size={20} className="mr-2" />
@@ -125,10 +125,10 @@ function SignInPage() {
         <div className="flex-1 flex items-center justify-center p-6 lg:p-12">
           <div className="w-full max-w-md">
             <div className="lg:hidden text-center mb-8">
-              <h1 className="text-2xl font-bold text-white mb-2">
+              <h1 className="text-2xl font-bold text-slate-900 dark:text-white mb-2">
                 {t('signIn.welcomeBack')}
               </h1>
-              <p className="text-slate-400">{t('signIn.continue')}</p>
+              <p className="text-slate-600 dark:text-slate-400">{t('signIn.continue')}</p>
             </div>
 
             <SignIn
@@ -139,12 +139,12 @@ function SignInPage() {
               appearance={getClerkAuthAppearance(theme)}
             />
 
-            <p className="text-center text-slate-500 text-sm mt-6">
+            <p className="text-center text-slate-500 dark:text-slate-500 text-sm mt-6">
               {t('signIn.noAccount')}{' '}
               <Button
                 asChild
                 variant="link"
-                className="h-auto px-0 text-violet-400 hover:text-violet-300"
+                className="h-auto px-0 text-violet-600 hover:text-violet-500 dark:text-violet-400 dark:hover:text-violet-300"
               >
                 <Link to="/sign-up" search={search}>
                   {t('signIn.createOne')}

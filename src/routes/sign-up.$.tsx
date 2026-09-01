@@ -44,12 +44,12 @@ function SignUpCatchAll() {
     : '/sign-in'
 
   return (
-    <div className="min-h-screen bg-slate-950 flex">
+    <div className="min-h-screen bg-slate-100 dark:bg-slate-950 flex">
       <div className="hidden lg:flex lg:w-1/2 relative overflow-hidden">
-        <div className="absolute inset-0 bg-gradient-to-br from-violet-500/20 via-slate-900 to-slate-950" />
-        <div className="absolute top-1/4 left-1/4 size-96 bg-violet-500/30 rounded-full blur-3xl animate-pulse" />
+        <div className="absolute inset-0 bg-gradient-to-br from-violet-500/20 via-slate-200 to-slate-100 dark:via-slate-900 dark:to-slate-950" />
+        <div className="absolute top-1/4 left-1/4 size-96 bg-violet-500/15 dark:bg-violet-500/30 rounded-full blur-3xl animate-pulse" />
         <div
-          className="absolute bottom-1/4 right-1/4 size-80 bg-indigo-500/20 rounded-full blur-3xl animate-pulse"
+          className="absolute bottom-1/4 right-1/4 size-80 bg-indigo-500/10 dark:bg-indigo-500/20 rounded-full blur-3xl animate-pulse"
           style={{ animationDelay: '1s' }}
         />
         <div className="relative z-10 flex flex-col justify-between p-12 w-full">
@@ -64,15 +64,15 @@ function SignUpCatchAll() {
           </Link>
 
           <div className="max-w-md">
-            <h1 className="text-4xl font-bold text-white mb-4 leading-tight">
+            <h1 className="text-4xl font-bold text-slate-900 dark:text-white mb-4 leading-tight">
               {t('signUp.startJourney')}
             </h1>
-            <p className="text-lg text-slate-400 leading-relaxed">
+            <p className="text-lg text-slate-600 dark:text-slate-400 leading-relaxed">
               {t('signUp.description')}
             </p>
           </div>
 
-          <p className="text-slate-600 text-sm">
+          <p className="text-slate-500 dark:text-slate-600 text-sm">
             &copy; {CURRENT_YEAR} Luxe Hotels. {t('common.allRightsReserved')}
           </p>
         </div>
@@ -81,8 +81,8 @@ function SignUpCatchAll() {
       <div className="flex-1 flex flex-col">
         <div className="lg:hidden p-4 flex items-center justify-between">
           <Link to="/" className="flex items-center gap-2">
-            <ArrowLeft size={20} className="text-slate-400" />
-            <span className="text-slate-400 font-medium">
+            <ArrowLeft size={20} className="text-slate-600 dark:text-slate-400" />
+            <span className="text-slate-600 dark:text-slate-400 font-medium">
               {t('signIn.back')}
             </span>
           </Link>

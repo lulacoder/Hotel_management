@@ -248,22 +248,30 @@ function AdminInvitationsPage() {
 
   return (
     <div className="mx-auto max-w-7xl space-y-7">
-      <section className="relative overflow-hidden rounded-3xl border border-violet-500/20 bg-slate-950 px-6 py-8 shadow-2xl shadow-violet-950/20 sm:px-8">
-        <div className="absolute -right-16 -top-20 size-64 rounded-full bg-violet-500/15 blur-3xl" />
-        <div className="absolute bottom-0 right-24 size-32 rounded-full bg-indigo-400/10 blur-2xl" />
+      <section className={`relative overflow-hidden rounded-3xl border px-6 py-8 shadow-2xl sm:px-8 ${
+        isDark
+          ? 'border-violet-500/20 bg-slate-950 shadow-violet-950/20'
+          : 'border-violet-200/60 bg-gradient-to-br from-white via-violet-50/60 to-slate-50 shadow-slate-200/40'
+      }`}>
+        <div className={`absolute -right-16 -top-20 size-64 rounded-full blur-3xl ${isDark ? 'bg-violet-500/15' : 'bg-violet-300/20'}`} />
+        <div className={`absolute bottom-0 right-24 size-32 rounded-full blur-2xl ${isDark ? 'bg-indigo-400/10' : 'bg-indigo-300/15'}`} />
         <div className="relative grid gap-8 lg:grid-cols-[1.2fr_1fr] lg:items-end">
           <div>
-            <div className="mb-4 inline-flex items-center gap-2 rounded-full border border-violet-400/20 bg-violet-400/10 px-3 py-1.5 text-xs font-semibold uppercase tracking-[0.16em] text-violet-300">
+            <div className={`mb-4 inline-flex items-center gap-2 rounded-full border px-3 py-1.5 text-xs font-semibold uppercase tracking-[0.16em] ${
+              isDark
+                ? 'border-violet-400/20 bg-violet-400/10 text-violet-300'
+                : 'border-violet-300/40 bg-violet-100/60 text-violet-600'
+            }`}>
               <MailPlus className="size-3.5" />
               {t('admin.invitations.eyebrow')}
             </div>
             <h1
-              className="max-w-2xl text-3xl font-semibold tracking-tight text-white sm:text-4xl"
+              className={`max-w-2xl text-3xl font-semibold tracking-tight sm:text-4xl ${isDark ? 'text-white' : 'text-slate-900'}`}
               style={{ fontFamily: 'var(--font-heading)' }}
             >
               {t('admin.invitations.title')}
             </h1>
-            <p className="mt-3 max-w-2xl text-sm leading-7 text-slate-400 sm:text-base">
+            <p className={`mt-3 max-w-2xl text-sm leading-7 sm:text-base ${isDark ? 'text-slate-400' : 'text-slate-600'}`}>
               {t('admin.invitations.description')}
             </p>
           </div>
@@ -271,11 +279,15 @@ function AdminInvitationsPage() {
             {metricCards.map(({ key, value, icon: Icon, color, label }) => (
               <div
                 key={String(key)}
-                className="rounded-2xl border border-white/10 bg-white/[0.045] p-4 backdrop-blur-sm"
+                className={`rounded-2xl border p-4 backdrop-blur-sm ${
+                  isDark
+                    ? 'border-white/10 bg-white/[0.045]'
+                    : 'border-slate-200/80 bg-white/70'
+                }`}
               >
                 <Icon className={`mb-3 size-4 ${color}`} />
-                <p className="text-2xl font-semibold text-white">{value}</p>
-                <p className="mt-1 text-[11px] uppercase tracking-wider text-slate-500">
+                <p className={`text-2xl font-semibold ${isDark ? 'text-white' : 'text-slate-900'}`}>{value}</p>
+                <p className={`mt-1 text-[11px] uppercase tracking-wider ${isDark ? 'text-slate-500' : 'text-slate-400'}`}>
                   {t(label)}
                 </p>
               </div>
@@ -422,9 +434,13 @@ function AdminInvitationsPage() {
         </section>
 
         <section className="min-w-0 space-y-4">
-          <div className="flex flex-col gap-3 sm:flex-row">
+          <div className="flex flex-col gap-3 md:flex-row md:items-center">
             <div className="relative min-w-0 flex-1">
-              <Search className="absolute left-4 top-1/2 size-4 -translate-y-1/2 text-slate-500" />
+              <Search
+                className={`absolute left-4 top-1/2 -translate-y-1/2 size-4 pointer-events-none ${
+                  isDark ? 'text-slate-500' : 'text-slate-400'
+                }`}
+              />
               <input
                 value={search}
                 onChange={(event) => setSearch(event.target.value)}
@@ -432,28 +448,30 @@ function AdminInvitationsPage() {
                 className="admin-field w-full !pl-11"
               />
             </div>
-            <select
-              value={statusFilter}
-              onChange={(event) =>
-                setStatusFilter(event.target.value as typeof statusFilter)
-              }
-              className="admin-select sm:w-44"
-              aria-label={t('admin.invitations.statusFilter')}
-            >
-              <option value="all">{t('admin.invitations.status.all')}</option>
-              <option value="pending">
-                {t('admin.invitations.status.pending')}
-              </option>
-              <option value="expired">
-                {t('admin.invitations.status.expired')}
-              </option>
-              <option value="accepted">
-                {t('admin.invitations.status.accepted')}
-              </option>
-              <option value="revoked">
-                {t('admin.invitations.status.revoked')}
-              </option>
-            </select>
+            <div className="w-full shrink-0 md:w-52">
+              <select
+                value={statusFilter}
+                onChange={(event) =>
+                  setStatusFilter(event.target.value as typeof statusFilter)
+                }
+                className="admin-select w-full"
+                aria-label={t('admin.invitations.statusFilter')}
+              >
+                <option value="all">{t('admin.invitations.status.all')}</option>
+                <option value="pending">
+                  {t('admin.invitations.status.pending')}
+                </option>
+                <option value="expired">
+                  {t('admin.invitations.status.expired')}
+                </option>
+                <option value="accepted">
+                  {t('admin.invitations.status.accepted')}
+                </option>
+                <option value="revoked">
+                  {t('admin.invitations.status.revoked')}
+                </option>
+              </select>
+            </div>
           </div>
 
           <div className="admin-table-shell overflow-hidden">
