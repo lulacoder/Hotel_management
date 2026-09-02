@@ -9,8 +9,16 @@ import { getHotelCategoryLabel } from '../../../../../lib/hotelCategories'
 import { useTheme } from '../../../../../lib/theme'
 import type { Id } from '../../../../../../convex/_generated/dataModel'
 import { useMutation, useQuery } from '@/integrations/convex/hooks'
+import { Button } from '@/components/ui/button'
 import { ImageField } from '@/components/form/ImageField'
 import { TextAreaField, TextField } from '@/components/form/TextField'
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '@/components/ui/select'
 import { getFirstErrorMessage } from '@/lib/forms'
 import { useImageUpload } from '@/hooks/useImageUpload'
 
@@ -600,25 +608,23 @@ function HotelModalContent({
                   <label className={labelClass}>
                     {t('admin.hotels.modal.category')}
                   </label>
-                  <select
+                  <Select
                     value={field.state.value}
-                    onChange={(event) =>
-                      field.handleChange(
-                        event.target.value as HotelCategory | '',
-                      )
+                    onValueChange={(value) =>
+                      field.handleChange(value as HotelCategory | '')
                     }
-                    onBlur={field.handleBlur}
-                    className="admin-select"
                   >
-                    <option value="">
-                      {t('admin.hotels.modal.selectCategory')}
-                    </option>
-                    {categories.map((category) => (
-                      <option key={category} value={category}>
-                        {getHotelCategoryLabel(category, t)}
-                      </option>
-                    ))}
-                  </select>
+                    <SelectTrigger className="admin-select" onBlur={field.handleBlur}>
+                      <SelectValue placeholder={t('admin.hotels.modal.selectCategory')} />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {categories.map((category) => (
+                        <SelectItem key={category} value={category}>
+                          {getHotelCategoryLabel(category, t)}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
                 </div>
               )}
             </form.Field>
@@ -732,13 +738,13 @@ function HotelModalContent({
           </form.Field>
 
           <div className="admin-modal-footer">
-            <button
+            <Button
               type="button"
+              variant="outline"
               onClick={onClose}
-              className="admin-button-secondary flex-1"
             >
               {t('common.cancel')}
-            </button>
+            </Button>
             <form.Subscribe
               selector={(state) => ({
                 canSubmit: state.canSubmit,
@@ -748,13 +754,12 @@ function HotelModalContent({
               {({ canSubmit, submissionAttempts }) => {
                 const blocked = submissionAttempts > 0 && !canSubmit
                 return (
-                  <button
+                  <Button
                     type="submit"
                     disabled={isSubmitting || imageUpload.uploading || blocked}
-                    className="admin-button-primary flex-1 disabled:cursor-not-allowed disabled:opacity-50"
                   >
                     {submitLabel()}
-                  </button>
+                  </Button>
                 )
               }}
             </form.Subscribe>

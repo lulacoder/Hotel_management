@@ -10,6 +10,7 @@ import { useI18n } from '../../../../lib/i18n/provider'
 import { useTheme } from '../../../../lib/theme'
 import type { Id } from '../../../../../convex/_generated/dataModel'
 import { getFirstErrorMessage } from '@/lib/forms'
+import { Button } from '@/components/ui/button'
 
 type Priority = 'normal' | 'important' | 'urgent'
 
@@ -354,18 +355,18 @@ export function AnnouncementForm({ editing, onClose }: AnnouncementFormProps) {
           </div>
 
           <div className="admin-modal-footer pt-1">
-            <button
+            <Button
               type="button"
+              variant="outline"
               onClick={onClose}
               disabled={isSubmitting}
-              className="admin-button-secondary text-sm disabled:opacity-50"
             >
               {t('common.cancel')}
-            </button>
-            <button
+            </Button>
+            <Button
               type="submit"
               disabled={isSubmitting}
-              className={`admin-button-primary flex items-center gap-2 text-sm disabled:cursor-not-allowed disabled:opacity-60 ${
+              className={`gap-2 ${
                 priorityValue === 'urgent'
                   ? 'bg-gradient-to-r from-red-500 to-red-600 hover:from-red-600 hover:to-red-700'
                   : priorityValue === 'important'
@@ -377,7 +378,7 @@ export function AnnouncementForm({ editing, onClose }: AnnouncementFormProps) {
                 <span className="size-3.5 animate-spin rounded-full border-2 border-white/30 border-t-white" />
               ) : null}
               {submitLabel()}
-            </button>
+            </Button>
           </div>
         </form>
       </div>

@@ -3,10 +3,18 @@ import { useMemo, useState } from 'react'
 import { Loader2, X } from 'lucide-react'
 
 import { api } from '../../../../../convex/_generated/api'
+import { Button } from '@/components/ui/button'
 import { useI18n } from '../../../../lib/i18n/provider'
 import { useTheme } from '../../../../lib/theme'
 import type { Id } from '../../../../../convex/_generated/dataModel'
 import { useMutation, useQuery } from '@/integrations/convex/hooks'
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '@/components/ui/select'
 import { formatUsdAmount } from '@/lib/currency'
 import { getErrorMessage } from '@/lib/errors'
 
@@ -187,46 +195,47 @@ export function OutsourceModal({
             >
               {t('admin.bookings.outsourceModal.destinationHotelRequired')}
             </label>
-            <select
+            <Select
               value={destinationHotelId}
-              onChange={(event) => setDestinationHotelId(event.target.value)}
+              onValueChange={setDestinationHotelId}
               disabled={isSubmitting || isSuccess}
-              className="admin-select"
             >
-              <option value="">
-                {t('admin.bookings.outsourceModal.selectHotel')}
-              </option>
-              {destinationHotels?.map((hotel) => (
-                <option key={hotel._id} value={hotel._id}>
-                  {hotel.name} · {hotel.city}, {hotel.country}
-                </option>
-              ))}
-            </select>
+              <SelectTrigger className="admin-select">
+                <SelectValue placeholder={t('admin.bookings.outsourceModal.selectHotel')} />
+              </SelectTrigger>
+              <SelectContent>
+                {destinationHotels?.map((hotel) => (
+                  <SelectItem key={hotel._id} value={hotel._id}>
+                    {hotel.name} · {hotel.city}, {hotel.country}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
             {errorMessage && (
               <p className="mt-2 text-sm text-red-400">{errorMessage}</p>
             )}
           </div>
 
           <div className="admin-modal-footer">
-            <button
+            <Button
               type="button"
+              variant="outline"
               onClick={onClose}
               disabled={isSubmitting}
-              className="admin-button-secondary text-sm disabled:opacity-50"
             >
               {t('common.cancel')}
-            </button>
-            <button
+            </Button>
+            <Button
               type="button"
               onClick={handleSubmit}
               disabled={!destinationHotelId || isSubmitting || isSuccess}
-              className="admin-button-primary text-sm disabled:opacity-50 disabled:cursor-not-allowed inline-flex items-center gap-2"
+              className="gap-2"
             >
               {isSubmitting && <Loader2 className="size-4 animate-spin" />}
               {isSuccess
                 ? t('admin.bookings.outsourceModal.success')
                 : t('admin.bookings.outsourceModal.submit')}
-            </button>
+            </Button>
           </div>
         </div>
       </div>

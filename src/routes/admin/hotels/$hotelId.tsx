@@ -247,13 +247,15 @@ function HotelDetailPage() {
           <p className={`mb-6 ${isDark ? 'text-slate-500' : 'text-slate-500'}`}>
             {t('hotel.notFoundDescription')}
           </p>
-          <Link
-            to="/admin/hotels"
-            className="admin-button-secondary inline-flex items-center gap-2"
-          >
-            <ArrowLeft className="size-5" />
-            {t('admin.hotels.backToHotels')}
-          </Link>
+          <Button asChild variant="outline">
+            <Link
+              to="/admin/hotels"
+              className="gap-2"
+            >
+              <ArrowLeft className="size-5" />
+              {t('admin.hotels.backToHotels')}
+            </Link>
+          </Button>
         </div>
       </div>
     )

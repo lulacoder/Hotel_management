@@ -28,6 +28,7 @@ import type { ManualBookingTransitionStatus } from '../../../../convex/lib/booki
 import type { Id } from '../../../../convex/_generated/dataModel'
 import { useTheme } from '@/lib/theme'
 import { useConfirm } from '@/components/ui/confirm-dialog'
+import { Button } from '@/components/ui/button'
 import { useAction, useMutation, useQuery } from '@/integrations/convex/hooks'
 import { AdminSpinner } from '@/components/AdminSpinner'
 import { formatEtbAmount, formatUsdAmount } from '@/lib/currency'
@@ -266,14 +267,16 @@ function BookingDetailPage() {
           >
             {t('admin.bookings.notFound')}
           </h3>
-          <Link
-            to="/admin/bookings"
-            search={{ status: 'all', paymentStatus: 'all', window: '30d' }}
-            className="admin-button-secondary inline-flex items-center gap-2"
-          >
-            <ArrowLeft className="size-4" />
-            {t('admin.bookings.backToBookings')}
-          </Link>
+          <Button asChild variant="outline">
+            <Link
+              to="/admin/bookings"
+              search={{ status: 'all', paymentStatus: 'all', window: '30d' }}
+              className="gap-2"
+            >
+              <ArrowLeft className="size-4" />
+              {t('admin.bookings.backToBookings')}
+            </Link>
+          </Button>
         </div>
       </div>
     )
@@ -672,14 +675,16 @@ function BookingDetailPage() {
                       t('admin.bookings.na')}
                   </p>
                   {bookingDetail.booking.transactionId && (
-                    <button
+                    <Button
                       type="button"
+                      variant="outline"
+                      size="sm"
                       onClick={handleCopyTransactionId}
-                      className="admin-button-secondary inline-flex items-center gap-2 px-3 py-2 text-sm"
+                      className="gap-2"
                     >
                       <Copy className="size-4" />
                       {t('common.copy')}
-                    </button>
+                    </Button>
                   )}
                 </div>
               </div>

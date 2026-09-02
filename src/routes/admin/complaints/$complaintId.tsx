@@ -8,6 +8,7 @@ import { useI18n } from '../../../lib/i18n/provider'
 import type { Id } from '../../../../convex/_generated/dataModel'
 import { useTheme } from '@/lib/theme'
 import { useQuery } from '@/integrations/convex/hooks'
+import { Button } from '@/components/ui/button'
 import { AdminSpinner } from '@/components/AdminSpinner'
 
 export const Route = createFileRoute('/admin/complaints/$complaintId')({
@@ -86,13 +87,15 @@ function ComplaintDetailPage() {
           >
             {t('admin.complaints.notFound')}
           </h3>
-          <Link
-            to="/admin/complaints"
-            className="admin-button-secondary inline-flex items-center gap-2"
-          >
-            <ArrowLeft className="size-4" />
-            {t('admin.complaints.backToComplaints')}
-          </Link>
+          <Button asChild variant="outline">
+            <Link
+              to="/admin/complaints"
+              className="gap-2"
+            >
+              <ArrowLeft className="size-4" />
+              {t('admin.complaints.backToComplaints')}
+            </Link>
+          </Button>
         </div>
       </div>
     )

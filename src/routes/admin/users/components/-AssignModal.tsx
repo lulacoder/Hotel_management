@@ -8,6 +8,14 @@ import { useI18n } from '../../../../lib/i18n/provider'
 import { useTheme } from '../../../../lib/theme'
 import type { Id } from '../../../../../convex/_generated/dataModel'
 import { useMutation, useQuery } from '@/integrations/convex/hooks'
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '@/components/ui/select'
+import { Button } from '@/components/ui/button'
 import { getFirstErrorMessage } from '@/lib/forms'
 
 interface AssignModalProps {
@@ -129,25 +137,28 @@ export function AssignModal({ userId, onClose }: AssignModalProps) {
                 >
                   {t('admin.users.assignModal.selectHotel')}
                 </label>
-                <select
+                <Select
                   value={field.state.value}
-                  onChange={(event) => field.handleChange(event.target.value)}
-                  onBlur={field.handleBlur}
-                  className={`admin-select ${
-                    hotelError
-                      ? 'border-red-500/60 focus:border-red-500/80'
-                      : ''
-                  }`}
+                  onValueChange={(value) => field.handleChange(value)}
                 >
-                  <option value="">
-                    {t('admin.users.assignModal.chooseHotel')}
-                  </option>
-                  {hotels?.map((hotel) => (
-                    <option key={hotel._id} value={hotel._id}>
-                      {hotel.name} - {hotel.city}, {hotel.country}
-                    </option>
-                  ))}
-                </select>
+                  <SelectTrigger
+                    className={`admin-select ${
+                      hotelError
+                        ? 'border-red-500/60 focus:border-red-500/80'
+                        : ''
+                    }`}
+                    onBlur={field.handleBlur}
+                  >
+                    <SelectValue placeholder={t('admin.users.assignModal.chooseHotel')} />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {hotels?.map((hotel) => (
+                      <SelectItem key={hotel._id} value={hotel._id}>
+                        {hotel.name} - {hotel.city}, {hotel.country}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
                 {hotelError ? (
                   <p className="mt-2 text-xs text-red-400">{hotelError}</p>
                 ) : null}
@@ -243,24 +254,23 @@ export function AssignModal({ userId, onClose }: AssignModalProps) {
           </form.Field>
 
           <div className="admin-modal-footer">
-            <button
+            <Button
               type="button"
+              variant="outline"
               onClick={onClose}
-              className="admin-button-secondary"
             >
               {t('common.cancel')}
-            </button>
-            <button
+            </Button>
+            <Button
               type="submit"
               disabled={!selectedHotelId || isSubmitting}
-              className="admin-button-primary disabled:cursor-not-allowed disabled:opacity-50"
             >
               {isSubmitting
                 ? t('admin.users.assignModal.assigning')
                 : role === 'hotel_admin'
                   ? t('admin.users.assignModal.assignUser')
                   : t('admin.users.assignModal.assignUser')}
-            </button>
+            </Button>
           </div>
         </form>
       </div>

@@ -17,6 +17,13 @@ import { toast } from 'sonner'
 
 import { api } from '../../../../convex/_generated/api'
 import { Button } from '../../../components/ui/button'
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '../../../components/ui/select'
 import { useConfirm } from '../../../components/ui/confirm-dialog'
 import { useAdminSession } from '../../../lib/adminSession'
 import { useI18n } from '../../../lib/i18n/provider'
@@ -342,19 +349,21 @@ function AdminInvitationsPage() {
                 {t('admin.invitations.hotel')}
               </span>
               {isRoomAdmin ? (
-                <select
-                  required
+                <Select
                   value={selectedHotelId}
-                  onChange={(event) => setSelectedHotelId(event.target.value)}
-                  className="admin-select w-full"
+                  onValueChange={setSelectedHotelId}
                 >
-                  <option value="">{t('admin.invitations.chooseHotel')}</option>
-                  {hotels?.map((hotel) => (
-                    <option key={hotel._id} value={hotel._id}>
-                      {hotel.name} — {hotel.city}
-                    </option>
-                  ))}
-                </select>
+                  <SelectTrigger className="admin-select w-full">
+                    <SelectValue placeholder={t('admin.invitations.chooseHotel')} />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {hotels?.map((hotel) => (
+                      <SelectItem key={hotel._id} value={hotel._id}>
+                        {hotel.name} — {hotel.city}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
               ) : (
                 <div className="admin-surface-muted flex items-center gap-3 p-3.5">
                   <Building2 className="size-4 text-violet-400" />
@@ -449,28 +458,34 @@ function AdminInvitationsPage() {
               />
             </div>
             <div className="w-full shrink-0 md:w-52">
-              <select
+              <Select
                 value={statusFilter}
-                onChange={(event) =>
-                  setStatusFilter(event.target.value as typeof statusFilter)
+                onValueChange={(value) =>
+                  setStatusFilter(value as typeof statusFilter)
                 }
-                className="admin-select w-full"
-                aria-label={t('admin.invitations.statusFilter')}
               >
-                <option value="all">{t('admin.invitations.status.all')}</option>
-                <option value="pending">
-                  {t('admin.invitations.status.pending')}
-                </option>
-                <option value="expired">
-                  {t('admin.invitations.status.expired')}
-                </option>
-                <option value="accepted">
-                  {t('admin.invitations.status.accepted')}
-                </option>
-                <option value="revoked">
-                  {t('admin.invitations.status.revoked')}
-                </option>
-              </select>
+                <SelectTrigger
+                  className="admin-select w-full"
+                  aria-label={t('admin.invitations.statusFilter')}
+                >
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="all">{t('admin.invitations.status.all')}</SelectItem>
+                  <SelectItem value="pending">
+                    {t('admin.invitations.status.pending')}
+                  </SelectItem>
+                  <SelectItem value="expired">
+                    {t('admin.invitations.status.expired')}
+                  </SelectItem>
+                  <SelectItem value="accepted">
+                    {t('admin.invitations.status.accepted')}
+                  </SelectItem>
+                  <SelectItem value="revoked">
+                    {t('admin.invitations.status.revoked')}
+                  </SelectItem>
+                </SelectContent>
+              </Select>
             </div>
           </div>
 

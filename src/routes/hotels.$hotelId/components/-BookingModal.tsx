@@ -26,6 +26,13 @@ import { useI18n } from '../../../lib/i18n/provider'
 import type { Id } from '../../../../convex/_generated/dataModel'
 import type { PackageType } from '../../../lib/packages'
 import { useAction, useMutation, useQuery } from '@/integrations/convex/hooks'
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '@/components/ui/select'
 import { getErrorMessage, hasErrorCode } from '@/lib/errors'
 import { getFirstErrorMessage } from '@/lib/forms'
 import { formatUsdAmount } from '@/lib/currency'
@@ -736,31 +743,33 @@ export function BookingModal({
                       <label className="booking-field-label mb-2 block text-xs text-slate-500">
                         {t('bookingModal.selectBank')}
                       </label>
-                      <select
+                      <Select
                         value={effectiveSelectedBankAccountId}
-                        onChange={(event) =>
-                          field.handleChange(event.target.value)
+                        onValueChange={(value) =>
+                          field.handleChange(value)
                         }
-                        onBlur={field.handleBlur}
                         disabled={!bankAccounts || bankAccounts.length === 0}
-                        className={`booking-input booking-select w-full rounded-xl border bg-slate-800/60 px-3 py-2.5 text-slate-200 transition-all focus:border-violet-500/50 focus:outline-none ${
-                          fieldError
-                            ? 'border-red-500/60 focus:border-red-500/80'
-                            : 'border-slate-700'
-                        }`}
                       >
-                        {bankAccounts && bankAccounts.length > 0 ? (
-                          bankAccounts.map((account) => (
-                            <option key={account._id} value={account._id}>
-                              {account.bankName} - {account.accountNumber}
-                            </option>
-                          ))
-                        ) : (
-                          <option value="">
-                            {t('bookingModal.paymentNotConfigured')}
-                          </option>
-                        )}
-                      </select>
+                        <SelectTrigger
+                          className={`booking-input booking-select w-full rounded-xl border bg-slate-800/60 px-3 py-2.5 text-slate-200 transition-all focus:border-violet-500/50 focus:outline-none ${
+                            fieldError
+                              ? 'border-red-500/60 focus:border-red-500/80'
+                              : 'border-slate-700'
+                          }`}
+                          onBlur={field.handleBlur}
+                        >
+                          <SelectValue placeholder={t('bookingModal.paymentNotConfigured')} />
+                        </SelectTrigger>
+                        <SelectContent>
+                          {bankAccounts && bankAccounts.length > 0 ? (
+                            bankAccounts.map((account) => (
+                              <SelectItem key={account._id} value={account._id}>
+                                {account.bankName} - {account.accountNumber}
+                              </SelectItem>
+                            ))
+                          ) : null}
+                        </SelectContent>
+                      </Select>
                       {fieldError ? (
                         <p className="mt-2 text-xs text-red-400">
                           {fieldError}

@@ -8,6 +8,7 @@ import { useI18n } from '../../../../../lib/i18n/provider'
 import { useTheme } from '../../../../../lib/theme'
 import type { Id } from '../../../../../../convex/_generated/dataModel'
 import { getFirstErrorMessage } from '@/lib/forms'
+import { Button } from '@/components/ui/button'
 
 interface BankAccountModalProps {
   hotelId: Id<'hotels'>
@@ -182,22 +183,21 @@ export function BankAccountModal({
           </form.Field>
 
           <div className="admin-modal-footer">
-            <button
+            <Button
               type="button"
+              variant="outline"
               onClick={onClose}
-              className="admin-button-secondary flex-1"
             >
               {t('common.cancel')}
-            </button>
-            <button
+            </Button>
+            <Button
               type="submit"
               disabled={isSubmitting}
-              className="admin-button-primary flex-1 disabled:opacity-50"
             >
               {isSubmitting
                 ? t('common.saving')
                 : t('admin.hotels.payment.submit')}
-            </button>
+            </Button>
           </div>
         </form>
       </div>

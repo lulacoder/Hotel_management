@@ -42,6 +42,13 @@ import {
   useQuery,
 } from '@/integrations/convex/hooks'
 import { Button } from '@/components/ui/button'
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '@/components/ui/select'
 import { useConfirm } from '@/components/ui/confirm-dialog'
 import { LoadMoreButton } from '@/components/LoadMoreButton'
 import { AdminSpinner } from '@/components/AdminSpinner'
@@ -328,74 +335,86 @@ function BookingsPage() {
       >
         {/* Hotel Select */}
         <div className="flex-1">
-          <select
+          <Select
             value={selectedHotel}
-            onChange={(e) => setSelectedHotel(e.target.value)}
-            className="admin-select"
+            onValueChange={setSelectedHotel}
             disabled={!isRoomAdmin}
           >
-            {isRoomAdmin && (
-              <option value="all">{t('admin.bookings.selectHotel')}</option>
-            )}
-            {visibleHotels?.map((hotel) => (
-              <option key={hotel._id} value={hotel._id}>
-                {hotel.name} - {hotel.city}
-              </option>
-            ))}
-          </select>
+            <SelectTrigger className="admin-select">
+              <SelectValue />
+            </SelectTrigger>
+            <SelectContent>
+              {isRoomAdmin && (
+                <SelectItem value="all">{t('admin.bookings.selectHotel')}</SelectItem>
+              )}
+              {visibleHotels?.map((hotel) => (
+                <SelectItem key={hotel._id} value={hotel._id}>
+                  {hotel.name} - {hotel.city}
+                </SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
         </div>
 
         {/* Status Filter */}
         <div>
-          <select
+          <Select
             value={statusFilter}
-            onChange={(e) => {
-              const value = normalizeBookingStatusFilter(e.target.value)
-              updateSearchFilters({ status: value })
+            onValueChange={(value) => {
+              const normalized = normalizeBookingStatusFilter(value)
+              updateSearchFilters({ status: normalized })
             }}
-            className="admin-select md:w-48"
           >
-            <option value="all">{t('admin.bookings.allStatuses')}</option>
-            <option value="held">{t('booking.status.held')}</option>
-            <option value="pending_payment">
-              {t('booking.status.pendingPayment')}
-            </option>
-            <option value="confirmed">{t('booking.status.confirmed')}</option>
-            <option value="checked_in">{t('booking.status.checkedIn')}</option>
-            <option value="checked_out">
-              {t('booking.status.checkedOut')}
-            </option>
-            <option value="cancelled">{t('booking.status.cancelled')}</option>
-            <option value="expired">{t('booking.status.expired')}</option>
-            <option value="outsourced">{t('booking.status.outsourced')}</option>
-          </select>
+            <SelectTrigger className="admin-select md:w-48">
+              <SelectValue />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="all">{t('admin.bookings.allStatuses')}</SelectItem>
+              <SelectItem value="held">{t('booking.status.held')}</SelectItem>
+              <SelectItem value="pending_payment">
+                {t('booking.status.pendingPayment')}
+              </SelectItem>
+              <SelectItem value="confirmed">{t('booking.status.confirmed')}</SelectItem>
+              <SelectItem value="checked_in">{t('booking.status.checkedIn')}</SelectItem>
+              <SelectItem value="checked_out">
+                {t('booking.status.checkedOut')}
+              </SelectItem>
+              <SelectItem value="cancelled">{t('booking.status.cancelled')}</SelectItem>
+              <SelectItem value="expired">{t('booking.status.expired')}</SelectItem>
+              <SelectItem value="outsourced">{t('booking.status.outsourced')}</SelectItem>
+            </SelectContent>
+          </Select>
         </div>
 
         <div>
-          <select
+          <Select
             value={paymentStatusFilter}
-            onChange={(e) => {
-              const value = normalizePaymentStatusFilter(e.target.value)
-              updateSearchFilters({ paymentStatus: value })
+            onValueChange={(value) => {
+              const normalized = normalizePaymentStatusFilter(value)
+              updateSearchFilters({ paymentStatus: normalized })
             }}
-            className="admin-select md:w-48"
           >
-            <option value="all">{t('admin.analytics.payment.all')}</option>
-            <option value="pending">{t('admin.bookings.pending')}</option>
-            <option value="paid">{t('admin.analytics.payment.paid')}</option>
-            <option value="failed">
-              {t('admin.analytics.payment.failed')}
-            </option>
-            <option value="refunded">
-              {t('admin.analytics.payment.refunded')}
-            </option>
-            <option value="refund_required">
-              {t('admin.analytics.payment.refundRequired')}
-            </option>
-            <option value="unpaid_unknown">
-              {t('admin.analytics.payment.unknown')}
-            </option>
-          </select>
+            <SelectTrigger className="admin-select md:w-48">
+              <SelectValue />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="all">{t('admin.analytics.payment.all')}</SelectItem>
+              <SelectItem value="pending">{t('admin.bookings.pending')}</SelectItem>
+              <SelectItem value="paid">{t('admin.analytics.payment.paid')}</SelectItem>
+              <SelectItem value="failed">
+                {t('admin.analytics.payment.failed')}
+              </SelectItem>
+              <SelectItem value="refunded">
+                {t('admin.analytics.payment.refunded')}
+              </SelectItem>
+              <SelectItem value="refund_required">
+                {t('admin.analytics.payment.refundRequired')}
+              </SelectItem>
+              <SelectItem value="unpaid_unknown">
+                {t('admin.analytics.payment.unknown')}
+              </SelectItem>
+            </SelectContent>
+          </Select>
         </div>
       </m.div>
 
@@ -938,13 +957,14 @@ function BookingsPage() {
                           {t('admin.bookings.outsource')}
                         </Button>
                       )}
-                    <Link
-                      to="/admin/bookings/$bookingId"
-                      params={{ bookingId: selectedBookingId }}
-                      className="admin-button-secondary px-4 py-2 text-sm"
-                    >
-                      {t('admin.bookings.openFullPage')}
-                    </Link>
+                    <Button asChild variant="outline" size="sm">
+                      <Link
+                        to="/admin/bookings/$bookingId"
+                        params={{ bookingId: selectedBookingId }}
+                      >
+                        {t('admin.bookings.openFullPage')}
+                      </Link>
+                    </Button>
                   </div>
                 </div>
               )}

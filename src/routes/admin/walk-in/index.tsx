@@ -16,6 +16,7 @@ import type { Id } from '../../../../convex/_generated/dataModel'
 import type { PackageType } from '../../../lib/packages'
 import { DatePicker } from '@/components/ui/date-picker'
 import { useMutation, useQuery } from '@/integrations/convex/hooks'
+import { Button } from '@/components/ui/button'
 import { useAdminSession } from '@/lib/adminSession'
 import { AdminSpinner } from '@/components/AdminSpinner'
 import { formatUsdAmount } from '@/lib/currency'
@@ -275,13 +276,13 @@ function WalkInBookingPage() {
             placeholder={t('admin.walkIn.searchPlaceholder')}
             className={`flex-1 px-4 py-3 rounded-xl focus:outline-none transition-all ${inputClass}`}
           />
-          <button
+          <Button
             type="button"
+            variant="secondary"
             onClick={handleSearch}
-            className="admin-button-secondary px-4 py-3"
           >
             {t('admin.walkIn.search')}
-          </button>
+          </Button>
         </div>
 
         {searchResults && searchResults.length > 0 && (
@@ -527,16 +528,16 @@ function WalkInBookingPage() {
           </p>
         </div>
 
-        <button
+        <Button
           type="button"
           disabled={!selectedGuest || !selectedRoom || submitting}
           onClick={handleConfirmBooking}
-          className="admin-button-primary px-5 py-3 disabled:opacity-50 disabled:cursor-not-allowed"
+          size="lg"
         >
           {submitting
             ? t('admin.walkIn.booking')
             : t('admin.walkIn.bookConfirm')}
-        </button>
+        </Button>
       </m.div>
     </div>
   )

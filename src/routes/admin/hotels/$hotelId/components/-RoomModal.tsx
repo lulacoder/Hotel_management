@@ -8,8 +8,16 @@ import { useI18n } from '../../../../../lib/i18n/provider'
 import { useTheme } from '../../../../../lib/theme'
 import type { Id } from '../../../../../../convex/_generated/dataModel'
 import { useMutation, useQuery } from '@/integrations/convex/hooks'
+import { Button } from '@/components/ui/button'
 import { ImageField } from '@/components/form/ImageField'
 import { TextAreaField, TextField } from '@/components/form/TextField'
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '@/components/ui/select'
 import { getFirstErrorMessage } from '@/lib/forms'
 import { useImageUpload } from '@/hooks/useImageUpload'
 
@@ -320,19 +328,22 @@ function RoomModalContent({
                   <label className={labelClass}>
                     {t('admin.hotels.roomModal.roomType')}
                   </label>
-                  <select
+                  <Select
                     value={field.state.value}
-                    onChange={(event) =>
-                      field.handleChange(event.target.value as RoomType)
+                    onValueChange={(value) =>
+                      field.handleChange(value as RoomType)
                     }
-                    onBlur={field.handleBlur}
-                    className="admin-select"
                   >
-                    <option value="budget">{t('hotel.budgetRoom')}</option>
-                    <option value="standard">{t('hotel.standardRoom')}</option>
-                    <option value="suite">{t('hotel.suiteRoom')}</option>
-                    <option value="deluxe">{t('hotel.deluxeRoom')}</option>
-                  </select>
+                    <SelectTrigger className="admin-select" onBlur={field.handleBlur}>
+                      <SelectValue />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="budget">{t('hotel.budgetRoom')}</SelectItem>
+                      <SelectItem value="standard">{t('hotel.standardRoom')}</SelectItem>
+                      <SelectItem value="suite">{t('hotel.suiteRoom')}</SelectItem>
+                      <SelectItem value="deluxe">{t('hotel.deluxeRoom')}</SelectItem>
+                    </SelectContent>
+                  </Select>
                 </div>
               )}
             </form.Field>
@@ -460,13 +471,13 @@ function RoomModalContent({
           </div>
 
           <div className="admin-modal-footer">
-            <button
+            <Button
               type="button"
+              variant="outline"
               onClick={onClose}
-              className="admin-button-secondary flex-1"
             >
               {t('common.cancel')}
-            </button>
+            </Button>
             <form.Subscribe
               selector={(state) => ({
                 canSubmit: state.canSubmit,
@@ -476,13 +487,12 @@ function RoomModalContent({
               {({ canSubmit, submissionAttempts }) => {
                 const blocked = submissionAttempts > 0 && !canSubmit
                 return (
-                  <button
+                  <Button
                     type="submit"
                     disabled={isSubmitting || imageUpload.uploading || blocked}
-                    className="admin-button-primary flex-1 disabled:cursor-not-allowed disabled:opacity-50"
                   >
                     {submitLabel()}
-                  </button>
+                  </Button>
                 )
               }}
             </form.Subscribe>
