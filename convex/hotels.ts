@@ -6,6 +6,11 @@ import * as fileTracking from './fileTracking'
 import { r2 } from './r2'
 import { findBlockedRoomIds } from './lib/availability'
 import { validateBookingDates } from './lib/dates'
+import {
+  clampLimit,
+  validateHotelDescription,
+  validateHotelText,
+} from './lib/validation'
 import type { Doc } from './_generated/dataModel'
 import type { QueryCtx } from './_generated/server'
 
@@ -234,6 +239,8 @@ export const search = query({
 
 // Finds hotels that can actually accommodate the requested stay instead of
 // returning discovery results that become unavailable during booking.
+// Every filter is optional: a date-only search still returns all available
+// hotels. The ceilings below only exist to stop a runaway scan.
 export const searchAvailable = query({
   args: {
     destination: v.optional(v.string()),
@@ -242,24 +249,31 @@ export const searchAvailable = query({
     guests: v.number(),
     city: v.optional(v.string()),
     category: v.optional(categoryValidator),
+    limit: v.optional(v.number()),
   },
   returns: v.array(availabilitySearchResultValidator),
   handler: async (ctx, args) => {
     validateBookingDates(args.checkIn, args.checkOut)
 
-    if (!Number.isInteger(args.guests) || args.guests < 1) {
+    if (!Number.isInteger(args.guests) || args.guests < 1 || args.guests > 20) {
       throw new ConvexError({
         code: 'INVALID_INPUT',
-        message: 'Guests must be a positive whole number.',
+        message: 'Guests must be a whole number between 1 and 20.',
       })
     }
+    // Generous ceiling rather than a low default: an unfiltered date search has
+    // to keep returning every available hotel the way discovery expects.
+    const limit = clampLimit(args.limit, 200, 1, 200)
 
-    const destination = args.destination?.trim().toLocaleLowerCase()
-    const city = args.city?.trim().toLocaleLowerCase()
+    const destination = args.destination
+      ?.trim()
+      .slice(0, 100)
+      .toLocaleLowerCase()
+    const city = args.city?.trim().slice(0, 200).toLocaleLowerCase()
     const activeHotels = await ctx.db
       .query('hotels')
       .withIndex('by_is_deleted', (q) => q.eq('isDeleted', false))
-      .collect()
+      .take(500)
 
     const matchingHotels = activeHotels.filter((hotel) => {
       if (city && hotel.city.toLocaleLowerCase() !== city) {
@@ -284,13 +298,14 @@ export const searchAvailable = query({
 
     const results = []
     for (const hotel of matchingHotels) {
+      if (results.length >= limit) break
       const candidateRooms = (
         await ctx.db
           .query('rooms')
           .withIndex('by_hotel_and_status', (q) =>
             q.eq('hotelId', hotel._id).eq('operationalStatus', 'available'),
           )
-          .collect()
+          .take(500)
       ).filter((room) => !room.isDeleted && room.maxOccupancy >= args.guests)
 
       if (candidateRooms.length === 0) {
@@ -319,11 +334,13 @@ export const searchAvailable = query({
       })
     }
 
-    return results.sort(
-      (left, right) =>
-        left.fromPrice - right.fromPrice ||
-        left.hotel.name.localeCompare(right.hotel.name),
-    )
+    return results
+      .sort(
+        (left, right) =>
+          left.fromPrice - right.fromPrice ||
+          left.hotel.name.localeCompare(right.hotel.name),
+      )
+      .slice(0, limit)
   },
 })
 
@@ -381,15 +398,22 @@ export const create = mutation({
     const admin = await requireAdmin(ctx)
     const normalizedLocation = normalizeLocation(args)
 
+    // Trim hotel text and reject overlong values before insert
+    const name = validateHotelText(args.name, 'Hotel name')
+    const address = validateHotelText(args.address, 'Address')
+    const city = validateHotelText(args.city, 'City')
+    const country = validateHotelText(args.country, 'Country')
+    const description = validateHotelDescription(args.description)
+
     const now = Date.now()
     const hotelId = await ctx.db.insert('hotels', {
-      name: args.name,
-      address: args.address,
-      city: args.city,
-      country: args.country,
+      name,
+      address,
+      city,
+      country,
       location: normalizedLocation,
-      externalId: args.externalId,
-      description: args.description,
+      externalId: args.externalId?.trim().slice(0, 200),
+      description,
       category: args.category,
       tags: args.tags,
       parkingIncluded: args.parkingIncluded,
@@ -430,9 +454,9 @@ export const create = mutation({
       targetType: 'hotel',
       targetId: hotelId,
       newValue: {
-        name: args.name,
-        city: args.city,
-        country: args.country,
+        name,
+        city,
+        country,
       },
     })
 
@@ -522,13 +546,34 @@ export const update = mutation({
       }
     }
 
-    trackChange('name', args.name, hotel.name)
-    trackChange('address', args.address, hotel.address)
-    trackChange('city', args.city, hotel.city)
-    trackChange('country', args.country, hotel.country)
+    // Cap edited text the same way as create
+    const cappedName =
+      args.name === undefined
+        ? undefined
+        : validateHotelText(args.name, 'Hotel name')
+    const cappedAddress =
+      args.address === undefined
+        ? undefined
+        : validateHotelText(args.address, 'Address')
+    const cappedCity =
+      args.city === undefined ? undefined : validateHotelText(args.city, 'City')
+    const cappedCountry =
+      args.country === undefined
+        ? undefined
+        : validateHotelText(args.country, 'Country')
+    const cappedDescription = validateHotelDescription(args.description)
+
+    trackChange('name', cappedName, hotel.name)
+    trackChange('address', cappedAddress, hotel.address)
+    trackChange('city', cappedCity, hotel.city)
+    trackChange('country', cappedCountry, hotel.country)
     trackChange('location', normalizedLocation, hotel.location)
-    trackChange('externalId', args.externalId, hotel.externalId)
-    trackChange('description', args.description, hotel.description)
+    trackChange(
+      'externalId',
+      args.externalId?.trim().slice(0, 200),
+      hotel.externalId,
+    )
+    trackChange('description', cappedDescription, hotel.description)
     trackChange('category', args.category, hotel.category)
     trackChange('tags', args.tags, hotel.tags)
     trackChange('parkingIncluded', args.parkingIncluded, hotel.parkingIncluded)

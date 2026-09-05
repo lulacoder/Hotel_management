@@ -7,6 +7,7 @@ import {
   requireUser,
 } from './lib/auth'
 import { createAuditLog } from './audit'
+import { clampLimit } from './lib/validation'
 import type { MutationCtx } from './_generated/server'
 import type { Id } from './_generated/dataModel'
 
@@ -61,8 +62,12 @@ export const getSummaries = query({
     }),
   ),
   handler: async (ctx, args) => {
+    // Ceiling instead of a rejection: callers pass every hotel currently on
+    // screen, and one tally read per hotel keeps 500 cheap.
+    const hotelIds = args.hotelIds.slice(0, 500)
+
     return await Promise.all(
-      args.hotelIds.map(async (hotelId) => {
+      hotelIds.map(async (hotelId) => {
         const hotel = await ctx.db.get(hotelId)
 
         if (hotel && hotel.ratingCount !== undefined) {
@@ -90,7 +95,7 @@ export const getSummaries = query({
   },
 })
 
-// Retrieves up to a specified limit (default 50) of recent active ratings for a single hotel.
+// Retrieves up to a specified limit (default 50, max 100) of recent active ratings for a single hotel.
 // Soft-deleted ratings are excluded. Ordered descending by creation time.
 export const getHotelRatings = query({
   args: {
@@ -99,7 +104,7 @@ export const getHotelRatings = query({
   },
   returns: v.array(ratingValidator),
   handler: async (ctx, args) => {
-    const limit = args.limit ?? 50
+    const limit = clampLimit(args.limit, 50, 1, 100)
 
     return await ctx.db
       .query('hotelRatings')
@@ -302,7 +307,7 @@ export const getHotelRatingsAdmin = query({
   ),
   handler: async (ctx, args) => {
     await requireHotelAccess(ctx, args.hotelId)
-    const limit = args.limit ?? 50
+    const limit = clampLimit(args.limit, 50, 1, 100)
 
     const ratings = await ctx.db
       .query('hotelRatings')

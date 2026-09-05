@@ -8,6 +8,7 @@ import {
   requireUser,
 } from './lib/auth'
 import { uniqueIds } from './lib/arrays'
+import { clampLimit } from './lib/validation'
 
 const hotelStaffRoleValidator = v.union(
   v.literal('hotel_admin'),
@@ -51,11 +52,13 @@ export const getMyAssignment = query({
   },
 })
 
-// Lists all users in the system alongside their active hotel staff assignment (if any).
+// Lists users alongside their active hotel staff assignment (if any).
 // Requires the caller to have the 'room_admin' role. The assignment details include
 // the hotel's name and city for easier administration.
 export const listAllUsers = query({
-  args: {},
+  args: {
+    limit: v.optional(v.number()),
+  },
   returns: v.array(
     v.object({
       _id: v.id('users'),
@@ -75,10 +78,13 @@ export const listAllUsers = query({
       ),
     }),
   ),
-  handler: async (ctx, _args) => {
+  handler: async (ctx, args) => {
     await requireAdmin(ctx)
 
-    const users = await ctx.db.query('users').collect()
+    // Generous ceiling only, so the admin table keeps showing every user in
+    // creation order the way it did before.
+    const limit = clampLimit(args.limit, 1000, 1, 1000)
+    const users = await ctx.db.query('users').take(limit)
     const assignments = await Promise.all(
       users.map((user) =>
         ctx.db

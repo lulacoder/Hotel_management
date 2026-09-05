@@ -4,6 +4,7 @@ import { requireHotelAccess } from './lib/auth'
 import { createAuditLog } from './audit'
 import { hasHoldReleasedRoom } from './lib/dates'
 import { checkRoomAvailability, findBlockedRoomIds } from './lib/availability'
+import { trimAndCap } from './lib/validation'
 import * as fileTracking from './fileTracking'
 import { r2 } from './r2'
 import type { Doc, Id } from './_generated/dataModel'
@@ -420,17 +421,30 @@ export const create = mutation({
       })
     }
 
+    // Trim room text and reject overlong values
+    const roomNumber = trimAndCap(args.roomNumber, 50, 'Room number')
+    const description = args.description?.trim().slice(0, 2000) || undefined
+    const bedOptions = args.bedOptions?.trim().slice(0, 200) || undefined
+    if (!roomNumber) {
+      throw new ConvexError({
+        code: 'INVALID_INPUT',
+        message: 'Room number is required.',
+      })
+    }
+
     const now = Date.now()
     const roomId = await ctx.db.insert('rooms', {
       hotelId: args.hotelId,
-      roomNumber: args.roomNumber,
+      roomNumber,
       type: args.type,
       basePrice: args.basePrice,
       maxOccupancy: args.maxOccupancy,
       operationalStatus: args.operationalStatus ?? 'available',
-      amenities: args.amenities,
-      description: args.description,
-      bedOptions: args.bedOptions,
+      amenities: args.amenities
+        ?.map((a) => a.trim().slice(0, 100))
+        .filter((a) => a.length > 0),
+      description,
+      bedOptions,
       smokingAllowed: args.smokingAllowed,
       imageStorageId: args.imageStorageId ?? null,
       imageR2Key: args.imageR2Key ?? null,
@@ -525,19 +539,33 @@ export const update = mutation({
       })
     }
 
+    // Cap edited room text the same way as create
+    const cappedRoomNumber =
+      args.roomNumber === undefined
+        ? undefined
+        : trimAndCap(args.roomNumber, 50, 'Room number')
+    const cappedDescription =
+      args.description === undefined
+        ? undefined
+        : args.description.trim().slice(0, 2000) || undefined
+    const cappedBedOptions =
+      args.bedOptions === undefined
+        ? undefined
+        : args.bedOptions.trim().slice(0, 200) || undefined
+
     // If changing room number, check for duplicates
-    if (args.roomNumber && args.roomNumber !== room.roomNumber) {
+    if (cappedRoomNumber && cappedRoomNumber !== room.roomNumber) {
       const existingRoom = await ctx.db
         .query('rooms')
         .withIndex('by_hotel_and_room_number', (q) =>
-          q.eq('hotelId', room.hotelId).eq('roomNumber', args.roomNumber!),
+          q.eq('hotelId', room.hotelId).eq('roomNumber', cappedRoomNumber),
         )
         .first()
 
       if (existingRoom && !existingRoom.isDeleted) {
         throw new ConvexError({
           code: 'DUPLICATE',
-          message: `Room number ${args.roomNumber} already exists in this hotel.`,
+          message: `Room number ${cappedRoomNumber} already exists in this hotel.`,
         })
       }
     }
@@ -575,13 +603,13 @@ export const update = mutation({
       }
     }
 
-    trackChange('roomNumber', args.roomNumber, room.roomNumber)
+    trackChange('roomNumber', cappedRoomNumber, room.roomNumber)
     trackChange('type', args.type, room.type)
     trackChange('basePrice', args.basePrice, room.basePrice)
     trackChange('maxOccupancy', args.maxOccupancy, room.maxOccupancy)
     trackChange('amenities', args.amenities, room.amenities)
-    trackChange('description', args.description, room.description)
-    trackChange('bedOptions', args.bedOptions, room.bedOptions)
+    trackChange('description', cappedDescription, room.description)
+    trackChange('bedOptions', cappedBedOptions, room.bedOptions)
     trackChange('smokingAllowed', args.smokingAllowed, room.smokingAllowed)
 
     const shouldUpdateImage =

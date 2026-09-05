@@ -1,6 +1,7 @@
 import { ConvexError, v } from 'convex/values'
 import { mutation, query } from './_generated/server'
 import { getHotelAssignment, requireUser } from './lib/auth'
+import type { MutationCtx, QueryCtx } from './_generated/server'
 
 const guestProfileValidator = v.object({
   _id: v.id('guestProfiles'),
@@ -25,7 +26,7 @@ function normalizeEmail(value?: string): string | undefined {
   return normalized.length > 0 ? normalized : undefined
 }
 
-async function requireHotelStaffOrAdmin(ctx: any) {
+async function requireHotelStaffOrAdmin(ctx: QueryCtx | MutationCtx) {
   const user = await requireUser(ctx)
   if (user.role === 'room_admin') {
     return user
@@ -60,7 +61,7 @@ export const findOrCreate = mutation({
   handler: async (ctx, args) => {
     const actor = await requireHotelStaffOrAdmin(ctx)
 
-    const name = args.name.trim()
+    const name = args.name.trim().slice(0, 100)
     if (!name) {
       throw new ConvexError({
         code: 'INVALID_INPUT',
@@ -68,8 +69,8 @@ export const findOrCreate = mutation({
       })
     }
 
-    const normalizedPhone = normalizePhone(args.phone)
-    const normalizedEmail = normalizeEmail(args.email)
+    const normalizedPhone = normalizePhone(args.phone)?.slice(0, 30)
+    const normalizedEmail = normalizeEmail(args.email)?.slice(0, 254)
 
     if (!normalizedPhone && !normalizedEmail) {
       throw new ConvexError({
@@ -126,13 +127,13 @@ export const search = query({
   handler: async (ctx, args) => {
     await requireHotelStaffOrAdmin(ctx)
 
-    const rawTerm = args.searchTerm.trim()
+    const rawTerm = args.searchTerm.trim().slice(0, 100)
     if (rawTerm.length < 2) {
       return []
     }
 
     const phoneTerm = normalizePhone(rawTerm)
-    const emailTerm = rawTerm.toLowerCase()
+    const emailTerm = rawTerm.toLowerCase().slice(0, 254)
     const matchedById = new Map<string, any>()
 
     if (phoneTerm) {
@@ -163,12 +164,14 @@ export const search = query({
 
     return await Promise.all(
       matchedProfiles.map(async (profile) => {
+        // Bounded read: no real guest approaches 1000 bookings, so the count
+        // matches the old full collect() while staying capped.
         const bookings = await ctx.db
           .query('bookings')
           .withIndex('by_guest_profile', (q: any) =>
             q.eq('guestProfileId', profile._id),
           )
-          .collect()
+          .take(1000)
 
         return {
           profile,

@@ -105,6 +105,8 @@ export default defineSchema({
     .index('by_is_deleted', ['isDeleted'])
     .index('by_category', ['category'])
     .index('by_external_id', ['externalId'])
+    .index('by_image_storage', ['imageStorageId'])
+    .index('by_image_r2', ['imageR2Key'])
     .searchIndex('search_name', {
       searchField: 'name',
       filterFields: ['city', 'isDeleted', 'category'],
@@ -143,7 +145,9 @@ export default defineSchema({
     .index('by_hotel_and_status', ['hotelId', 'operationalStatus'])
     .index('by_hotel_and_room_number', ['hotelId', 'roomNumber'])
     .index('by_hotel_and_is_deleted', ['hotelId', 'isDeleted'])
-    .index('by_hotel_and_type', ['hotelId', 'type']),
+    .index('by_hotel_and_type', ['hotelId', 'type'])
+    .index('by_image_storage', ['imageStorageId'])
+    .index('by_image_r2', ['imageR2Key']),
 
   fileUploads: defineTable({
     storageId: v.optional(v.id('_storage')),
@@ -369,6 +373,8 @@ export default defineSchema({
     .index('by_hotel_and_payment_status', ['hotelId', 'paymentStatus'])
     .index('by_hotel_and_refund_status', ['hotelId', 'refundStatus'])
     .index('by_refund_action_required', ['refundActionRequired'])
+    .index('by_national_id_storage', ['nationalIdStorageId'])
+    .index('by_national_id_r2', ['nationalIdR2Key'])
     .index('by_hotel_and_refund_action_required', [
       'hotelId',
       'refundActionRequired',
@@ -377,7 +383,8 @@ export default defineSchema({
       'hotelId',
       'status',
       'paymentStatus',
-    ]),
+    ])
+    .index('by_hotel_and_guest_profile', ['hotelId', 'guestProfileId']),
 
   // Hotel ratings table
   hotelRatings: defineTable({

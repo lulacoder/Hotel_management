@@ -233,33 +233,54 @@ function verifyWebhookSignature(args: {
 
 // Re-fetches a transaction from Chapa before trusting provider input
 async function verifyTransactionWithChapa(txRef: string) {
-  const secretKey = getEnv('CHAPA_SECRET_KEY')
-
-  const response = await fetch(
-    `${CHAPA_API_BASE}/transaction/verify/${txRef}`,
-    {
-      headers: {
-        Authorization: `Bearer ${secretKey}`,
-      },
-      method: 'GET',
-    },
-  )
-
-  const data = (await response.json()) as ChapaVerifyResponse
-
-  if (!response.ok || data.status !== 'success' || !data.data) {
+  const trimmedRef = txRef.trim()
+  if (
+    trimmedRef.length < 6 ||
+    trimmedRef.length > 100 ||
+    !/^[A-Za-z0-9_-]+$/.test(trimmedRef)
+  ) {
+    console.error('Skipping Chapa verify with invalid txRef shape')
     return null
   }
+  const secretKey = getEnv('CHAPA_SECRET_KEY')
 
-  return {
-    amountMinor: parseMinorAmount(data.data.amount),
-    chapaReference: data.data.reference ?? undefined,
-    currency: data.data.currency ?? undefined,
-    mode: data.data.mode ?? undefined,
-    paymentMethod: data.data.payment_method ?? data.data.method ?? undefined,
-    status: data.data.status ?? undefined,
-    txRef: data.data.tx_ref ?? undefined,
-  } satisfies VerifiedTransaction
+  try {
+    const response = await fetch(
+      `${CHAPA_API_BASE}/transaction/verify/${trimmedRef}`,
+      {
+        headers: {
+          Authorization: `Bearer ${secretKey}`,
+        },
+        method: 'GET',
+        signal: AbortSignal.timeout(30_000),
+      },
+    )
+
+    let data: ChapaVerifyResponse
+    try {
+      data = (await response.json()) as ChapaVerifyResponse
+    } catch (error) {
+      console.error('Chapa verify returned non-JSON payload', error)
+      return null
+    }
+
+    if (!response.ok || data.status !== 'success' || !data.data) {
+      return null
+    }
+
+    return {
+      amountMinor: parseMinorAmount(data.data.amount),
+      chapaReference: data.data.reference ?? undefined,
+      currency: data.data.currency ?? undefined,
+      mode: data.data.mode ?? undefined,
+      paymentMethod: data.data.payment_method ?? data.data.method ?? undefined,
+      status: data.data.status ?? undefined,
+      txRef: data.data.tx_ref ?? undefined,
+    } satisfies VerifiedTransaction
+  } catch (error) {
+    console.error('Chapa verify request failed', error)
+    return null
+  }
 }
 
 // Maps a Chapa event name to its local payment status

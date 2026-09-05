@@ -32,6 +32,12 @@ import {
 } from './lib/bookingLifecycle'
 import { transitionBooking } from './lib/bookingTransitions'
 import { transitionRefund } from './lib/refunds'
+import {
+  validateGuestEmail,
+  validateGuestName,
+  validateSpecialRequests,
+  validateTransactionId,
+} from './lib/validation'
 import * as fileTracking from './fileTracking'
 import { r2 } from './r2'
 
@@ -541,6 +547,11 @@ export const holdRoom = mutation({
   handler: async (ctx, args) => {
     const customer = await requireCustomer(ctx)
 
+    // Validate and cap guest-controlled text before storing it
+    const guestName = validateGuestName(args.guestName)
+    const guestEmail = validateGuestEmail(args.guestEmail)
+    const specialRequests = validateSpecialRequests(args.specialRequests)
+
     // Validate dates
     const { nights } = validateBookingDates(args.checkIn, args.checkOut)
 
@@ -605,9 +616,9 @@ export const holdRoom = mutation({
       packageType,
       packageAddOn,
       totalPrice,
-      guestName: args.guestName,
-      guestEmail: args.guestEmail,
-      specialRequests: args.specialRequests,
+      guestName,
+      guestEmail,
+      specialRequests,
       createdAt: now,
       updatedAt: now,
     })
@@ -673,6 +684,7 @@ export const walkInBooking = mutation({
     }
 
     const { nights } = validateBookingDates(args.checkIn, args.checkOut)
+    const specialRequests = validateSpecialRequests(args.specialRequests)
 
     const room = await ctx.db.get(args.roomId)
     if (!room || room.isDeleted) {
@@ -734,7 +746,7 @@ export const walkInBooking = mutation({
       totalPrice,
       guestName: guestProfile.name,
       guestEmail: guestProfile.email,
-      specialRequests: args.specialRequests,
+      specialRequests,
       createdAt: now,
       updatedAt: now,
       updatedBy: user._id,
@@ -797,13 +809,7 @@ export const submitPaymentProof = mutation({
       })
     }
 
-    const trimmedTransactionId = args.transactionId.trim()
-    if (!trimmedTransactionId) {
-      throw new ConvexError({
-        code: 'INVALID_INPUT',
-        message: 'Transaction ID is required.',
-      })
-    }
+    const trimmedTransactionId = validateTransactionId(args.transactionId)
 
     const previousStorageId = booking.nationalIdStorageId
     const previousR2Key = booking.nationalIdR2Key
@@ -887,6 +893,7 @@ export const cancelBooking = mutation({
   returns: v.null(),
   handler: async (ctx, args) => {
     const user = await requireUser(ctx)
+    const reason = args.reason?.trim().slice(0, 500) || undefined
 
     const booking = await ctx.db.get(args.bookingId)
     if (!booking) {
@@ -921,7 +928,7 @@ export const cancelBooking = mutation({
       to: 'cancelled',
       actor: { kind: 'user', userId: user._id },
       changes: { proofReviewDeadline: undefined },
-      metadata: args.reason ? { reason: args.reason } : undefined,
+      metadata: reason ? { reason } : undefined,
     })
 
     // Notify the booking owner only when a staff member / admin cancels on
@@ -933,7 +940,7 @@ export const cancelBooking = mutation({
         type: 'booking_cancelled',
         bookingId: args.bookingId,
         hotelId: booking.hotelId,
-        message: `Your booking #${args.bookingId.slice(-6).toUpperCase()} has been cancelled${args.reason ? `: ${args.reason}` : '.'}`,
+        message: `Your booking #${args.bookingId.slice(-6).toUpperCase()} has been cancelled${reason ? `: ${reason}` : '.'}`,
       })
     }
 
@@ -950,6 +957,7 @@ export const cancelPaidBooking = mutation({
   returns: v.null(),
   handler: async (ctx, args) => {
     const user = await requireUser(ctx)
+    const reason = args.reason?.trim().slice(0, 500) || undefined
     const booking = await ctx.db.get(args.bookingId)
 
     if (!booking) {
@@ -998,7 +1006,7 @@ export const cancelPaidBooking = mutation({
         refundActionRequired: true,
         refundRequiredAt: now,
       },
-      metadata: args.reason ? { reason: args.reason } : undefined,
+      metadata: reason ? { reason } : undefined,
       now,
     })
 
@@ -1025,7 +1033,7 @@ export const cancelPaidBooking = mutation({
         type: 'booking_cancelled',
         bookingId: booking._id,
         hotelId: booking.hotelId,
-        message: `Your paid booking #${booking._id.slice(-6).toUpperCase()} was cancelled by the hotel. Your refund will follow${args.reason ? `: ${args.reason}` : '.'}`,
+        message: `Your paid booking #${booking._id.slice(-6).toUpperCase()} was cancelled by the hotel. Your refund will follow${reason ? `: ${reason}` : '.'}`,
       })
     }
 

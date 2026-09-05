@@ -85,11 +85,20 @@ export const sendExpoPush = internalAction({
         })
 
         if (!response.ok) {
-          // Whole-request failure (rate limit, server error). Skip this batch.
+          // Whole-request failure (rate limit, server error). Log and skip this batch.
+          console.error(
+            `Expo push batch failed with status ${response.status} for ${batch.length} messages`,
+          )
           continue
         }
 
-        const json = (await response.json()) as ExpoPushResponse
+        let json: ExpoPushResponse
+        try {
+          json = (await response.json()) as ExpoPushResponse
+        } catch (error) {
+          console.error('Expo push returned non-JSON payload', error)
+          continue
+        }
         const tickets = json.data ?? []
 
         for (let i = 0; i < tickets.length; i += 1) {
@@ -104,9 +113,9 @@ export const sendExpoPush = internalAction({
             })
           }
         }
-      } catch {
-        // Network / parse errors are non-fatal — the in-app notification was
-        // still inserted, so the user will see it on next app open.
+      } catch (error) {
+        // Network errors stay non-fatal but get logged so delivery drops are visible
+        console.error('Expo push batch threw', error)
         continue
       }
     }

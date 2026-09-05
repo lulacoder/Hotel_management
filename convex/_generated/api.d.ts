@@ -39,6 +39,7 @@ import type * as lib_bookingTransitions from "../lib/bookingTransitions.js";
 import type * as lib_dates from "../lib/dates.js";
 import type * as lib_refundDeadline from "../lib/refundDeadline.js";
 import type * as lib_refunds from "../lib/refunds.js";
+import type * as lib_validation from "../lib/validation.js";
 import type * as notifications from "../notifications.js";
 import type * as notificationsInternal from "../notificationsInternal.js";
 import type * as paymentEmails from "../paymentEmails.js";
@@ -93,6 +94,7 @@ declare const fullApi: ApiFromModules<{
   "lib/dates": typeof lib_dates;
   "lib/refundDeadline": typeof lib_refundDeadline;
   "lib/refunds": typeof lib_refunds;
+  "lib/validation": typeof lib_validation;
   notifications: typeof notifications;
   notificationsInternal: typeof notificationsInternal;
   paymentEmails: typeof paymentEmails;
