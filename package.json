@@ -5,6 +5,7 @@
   "scripts": {
     "dev": "vite dev --port 3000",
     "build": "vite build",
+    "images:generate": "node scripts/generate-responsive-images.mjs",
     "preview": "vite preview",
     "test": "vitest run",
     "typecheck": "tsgo --noEmit",
@@ -60,6 +61,7 @@
     "convex-test": "^0.0.54",
     "jsdom": "^27.0.0",
     "prettier": "^3.5.3",
+    "sharp": "^0.35.4",
     "typescript": "~6.0.3",
     "vite": "^8.0.8",
     "vitest": "^4.1.4"

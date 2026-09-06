@@ -1,6 +1,6 @@
 // Booking path: oversized display numerals in a vertical sequence beside a tall image.
 import { useI18n } from '../../../lib/i18n/provider'
-import { staticAssets } from '../../../lib/staticAssets'
+import { staticPhotos } from '../../../lib/staticPhotos'
 import { Reveal } from './-Reveal'
 
 export function BookingPath() {
@@ -55,7 +55,8 @@ export function BookingPath() {
         <Reveal delay={0.15} className="hidden lg:block">
           <div className="sticky top-28 overflow-hidden rounded-2xl">
             <img
-              src={staticAssets.hotelLobby}
+              {...staticPhotos.hotelLobby}
+              sizes="(min-width: 1400px) 520px, 40vw"
               alt="Hotel lobby with warm evening lighting"
               width={440}
               height={550}

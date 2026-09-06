@@ -16,14 +16,18 @@ import type { Id } from '../../../../convex/_generated/dataModel'
 import { Button } from '@/components/ui/button'
 import { DatePicker } from '@/components/ui/date-picker'
 import { GuestStepper } from '@/components/GuestStepper'
-import { staticAssets } from '@/lib/staticAssets'
+import { staticPhotos } from '@/lib/staticPhotos'
 
 export function Hero() {
   const { t } = useI18n()
   const navigate = useNavigate()
   const [destination, setDestination] = useState('')
-  const [selectedHotelId, setSelectedHotelId] = useState<Id<'hotels'> | null>(null)
-  const [selectedHotelName, setSelectedHotelName] = useState<string | null>(null)
+  const [selectedHotelId, setSelectedHotelId] = useState<Id<'hotels'> | null>(
+    null,
+  )
+  const [selectedHotelName, setSelectedHotelName] = useState<string | null>(
+    null,
+  )
   const [checkIn, setCheckIn] = useState('')
   const [checkOut, setCheckOut] = useState('')
   const [guests, setGuests] = useState(1)
@@ -69,7 +73,6 @@ export function Hero() {
     <section className="mx-auto w-full max-w-[1400px] px-6 pt-12 pb-20 sm:px-10 lg:pt-20 lg:pb-28">
       <div className="grid items-center gap-12 lg:grid-cols-[1.15fr_0.85fr] lg:gap-16">
         <Reveal>
-
           <h1 className="text-[2.75rem] leading-[1.02] font-extrabold tracking-tighter text-slate-900 sm:text-6xl lg:text-7xl dark:text-white [font-family:var(--font-heading)]">
             {t('landing.titleLine1')}
             <br />
@@ -145,7 +148,10 @@ export function Hero() {
                 setCheckIn(nextCheckIn)
 
                 const nextMinCheckOut = getMinimumCheckoutDate(nextCheckIn)
-                if (nextMinCheckOut && (!checkOut || checkOut < nextMinCheckOut)) {
+                if (
+                  nextMinCheckOut &&
+                  (!checkOut || checkOut < nextMinCheckOut)
+                ) {
                   setCheckOut(nextMinCheckOut)
                 }
               }}
@@ -235,7 +241,8 @@ export function Hero() {
           <figure className="mx-auto w-full max-w-[460px]">
             <div className="overflow-hidden rounded-2xl">
               <img
-                src={staticAssets.infinityPool}
+                {...staticPhotos.infinityPool}
+                sizes="(min-width: 640px) 460px, calc(100vw - 48px)"
                 alt="Infinity pool overlooking mountains at sunset"
                 width={460}
                 height={575}

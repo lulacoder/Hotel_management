@@ -3,7 +3,7 @@ import { Link } from '@tanstack/react-router'
 import { ArrowRight } from 'lucide-react'
 import { useI18n } from '../../../lib/i18n/provider'
 import { DEFAULT_SELECT_LOCATION_SEARCH } from '../../../lib/navigationSearch'
-import { staticAssets } from '../../../lib/staticAssets'
+import { staticPhotos } from '../../../lib/staticPhotos'
 import { Reveal } from './-Reveal'
 
 export function StayMoods() {
@@ -11,17 +11,17 @@ export function StayMoods() {
 
   const stays = [
     {
-      image: staticAssets.mountainLodge,
+      image: staticPhotos.mountainLodge,
       title: t('landing.stayPoolTitle'),
       desc: t('landing.stayPoolDesc'),
     },
     {
-      image: staticAssets.rusticSuite,
+      image: staticPhotos.rusticSuite,
       title: t('landing.stayBoutiqueTitle'),
       desc: t('landing.stayBoutiqueDesc'),
     },
     {
-      image: staticAssets.adventureLodge,
+      image: staticPhotos.adventureLodge,
       title: t('landing.stayServiceTitle'),
       desc: t('landing.stayServiceDesc'),
     },
@@ -52,7 +52,8 @@ export function StayMoods() {
             >
               <div className="overflow-hidden rounded-2xl">
                 <img
-                  src={stay.image}
+                  {...stay.image}
+                  sizes="(min-width: 1400px) 648px, (min-width: 768px) calc(50vw - 52px), calc(100vw - 48px)"
                   alt={stay.title}
                   width={640}
                   height={index === 0 ? 800 : 400}
