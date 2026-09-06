@@ -3,13 +3,14 @@ import { Loader2, Navigation, Search } from 'lucide-react'
 import { getGeolocationErrorMessage } from '../../../hooks/useGeolocation'
 import { useI18n } from '../../../lib/i18n/provider'
 import { useTheme } from '../../../lib/theme'
-import { staticAssets } from '../../../lib/staticAssets'
+import { staticPhotos } from '../../../lib/staticPhotos'
 import {
   getMinimumCheckoutDate,
   getTodayDateString,
 } from '../../../lib/navigationSearch'
 import type { ReactNode } from 'react'
 import { DatePicker } from '@/components/ui/date-picker'
+import { SearchInput } from '@/components/SearchInput'
 import { GuestStepper } from '@/components/GuestStepper'
 
 interface HeroSectionProps {
@@ -64,7 +65,8 @@ export function HeroSection({
   return (
     <div className="relative overflow-hidden px-4 py-6 sm:py-8 md:py-10">
       <img
-        src={staticAssets.trifwaysLakesideHotel}
+        {...staticPhotos.trifwaysLakesideHotel}
+        sizes="100vw"
         alt=""
         aria-hidden="true"
         fetchPriority="high"
@@ -139,12 +141,12 @@ export function HeroSection({
                 isDark ? 'text-slate-500' : 'text-slate-400'
               }`}
             />
-            <input
+            <SearchInput
               aria-label={t('select.searchPlaceholder')}
               type="text"
               placeholder={t('select.searchPlaceholder')}
               value={searchTerm}
-              onChange={(event) => onSearchTermChange(event.target.value)}
+              onValueChange={onSearchTermChange}
               className={`w-full rounded-xl sm:rounded-[1.75rem] border py-2.5 sm:py-3 pl-10 sm:pl-12 pr-4 text-sm sm:text-base transition-all focus:border-violet-500/50 focus:outline-none focus:ring-2 focus:ring-violet-500/20 ${
                 isDark
                   ? 'border-slate-700/40 sm:border-slate-700/50 bg-slate-800/40 sm:bg-slate-800/50 text-slate-200 placeholder-slate-500'

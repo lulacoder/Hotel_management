@@ -2,7 +2,7 @@
 import { Link } from '@tanstack/react-router'
 import { useI18n } from '../../../lib/i18n/provider'
 import { DEFAULT_SELECT_LOCATION_SEARCH } from '../../../lib/navigationSearch'
-import { staticAssets } from '../../../lib/staticAssets'
+import { staticPhotos } from '../../../lib/staticPhotos'
 import { Reveal } from './-Reveal'
 
 const RATING_SEARCH = {
@@ -50,7 +50,8 @@ export function Marketplace() {
           <figure>
             <div className="overflow-hidden rounded-2xl">
               <img
-                src={staticAssets.trifwaysLakesideHotel}
+                {...staticPhotos.trifwaysLakesideHotel}
+                sizes="(min-width: 1400px) 691px, (min-width: 1024px) 52vw, calc(100vw - 48px)"
                 alt="Lakeside hotel at dusk"
                 width={760}
                 height={428}

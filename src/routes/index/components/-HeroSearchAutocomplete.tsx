@@ -1,5 +1,12 @@
 import { useEffect, useMemo, useRef, useState } from 'react'
-import { Building2, ChevronRight, Compass, MapPin, Search, Star } from 'lucide-react'
+import {
+  Building2,
+  ChevronRight,
+  Compass,
+  MapPin,
+  Search,
+  Star,
+} from 'lucide-react'
 
 import { api } from '../../../../convex/_generated/api'
 import { useQuery } from '../../../integrations/convex/hooks'
@@ -32,6 +39,7 @@ type AutocompleteItem =
     }
   | { type: 'view_all'; query: string }
 
+// Suggest cities and hotels without rebuilding the hotel index on each keystroke
 export function HeroSearchAutocomplete({
   searchTerm,
   isOpen,
@@ -49,71 +57,65 @@ export function HeroSearchAutocomplete({
   const hotels = useQuery(api.hotels.list, {})
   const trimmed = searchTerm.trim().toLowerCase()
 
-  // Build structured autocomplete recommendations
+  // Aggregate destinations and rank popular hotels only when hotel data changes
+  const searchIndex = useMemo(() => {
+    const cityCounts = new Map<string, number>()
+    for (const hotel of hotels ?? []) {
+      if (hotel.city)
+        cityCounts.set(hotel.city, (cityCounts.get(hotel.city) ?? 0) + 1)
+    }
+    // Cache the searchable fields instead of lowercasing every hotel on every keypress
+    const searchableHotels = (hotels ?? []).map((hotel) => ({
+      hotel,
+      fields: [
+        hotel.name,
+        hotel.city,
+        hotel.category ?? '',
+        hotel.address,
+        ...(hotel.tags ?? []),
+      ]
+        // Normalize each field once while retaining the existing matching behavior
+        .map((field) => field.toLowerCase()),
+    }))
+    // Rank cities once so filtering retains their popularity order
+    const cities = Array.from(cityCounts, ([city, count]) => ({
+      city,
+      count,
+    })).sort((a, b) => b.count - a.count)
+    // Cache the small default suggestion list independently of the entered text
+    const popularHotels = [...(hotels ?? [])]
+      .sort((a, b) => (b.rating ?? 0) - (a.rating ?? 0))
+      .slice(0, 3)
+    return { cities, searchableHotels, popularHotels }
+  }, [hotels])
+
+  // Stop searching once the visible suggestion slots are filled
   const { cityMatches, hotelMatches, isZeroState } = useMemo(() => {
-    if (!hotels) {
-      return { cityMatches: [], hotelMatches: [], isZeroState: true }
-    }
-
-    // City aggregation
-    const cityCounts: Record<string, number> = {}
-    for (const hotel of hotels) {
-      if (hotel.city) {
-        cityCounts[hotel.city] = (cityCounts[hotel.city] || 0) + 1
-      }
-    }
-
     if (!trimmed) {
-      // Zero-state: Show popular unique cities and top-rated hotels
-      const popularCities = Object.entries(cityCounts)
-        .map(([city, count]) => ({ city, count }))
-        .sort((a, b) => b.count - a.count)
-        .slice(0, 4)
-
-      const topHotels = [...hotels]
-        .sort((a, b) => (b.rating ?? 0) - (a.rating ?? 0))
-        .slice(0, 3)
-
       return {
-        cityMatches: popularCities,
-        hotelMatches: topHotels,
+        cityMatches: searchIndex.cities.slice(0, 4),
+        hotelMatches: searchIndex.popularHotels,
         isZeroState: true,
       }
     }
-
-    // Filter cities matching search term
-    const matchedCities = Object.entries(cityCounts)
-      .filter(([city]) => city.toLowerCase().includes(trimmed))
-      .map(([city, count]) => ({ city, count }))
-      .sort((a, b) => b.count - a.count)
-      .slice(0, 3)
-
-    // Filter hotels matching name, city, tags, address, or category
-    const matchedHotels = hotels
-      .filter((hotel) => {
-        const nameMatch = hotel.name.toLowerCase().includes(trimmed)
-        const cityMatch = hotel.city.toLowerCase().includes(trimmed)
-        const categoryMatch = hotel.category?.toLowerCase().includes(trimmed)
-        const tagsMatch = hotel.tags?.some((tag) =>
-          tag.toLowerCase().includes(trimmed),
-        )
-        const addressMatch = hotel.address.toLowerCase().includes(trimmed)
-        return (
-          nameMatch ||
-          cityMatch ||
-          categoryMatch ||
-          tagsMatch ||
-          addressMatch
-        )
-      })
-      .slice(0, 4)
-
+    const matchedCities = []
+    for (const city of searchIndex.cities) {
+      if (city.city.toLowerCase().includes(trimmed)) matchedCities.push(city)
+      if (matchedCities.length === 3) break
+    }
+    const matchedHotels = []
+    for (const { hotel, fields } of searchIndex.searchableHotels) {
+      // Match any individual field, then stop after four matching hotels
+      if (fields.some((field) => field.includes(trimmed)))
+        matchedHotels.push(hotel)
+      if (matchedHotels.length === 4) break
+    }
     return {
       cityMatches: matchedCities,
       hotelMatches: matchedHotels,
       isZeroState: false,
     }
-  }, [hotels, trimmed])
+  }, [searchIndex, trimmed])
 
   // Flatten items for linear keyboard navigation
   const flatItems = useMemo<Array<AutocompleteItem>>(() => {
@@ -194,14 +196,10 @@ export function HeroSearchAutocomplete({
     const handleKeyDown = (event: KeyboardEvent) => {
       if (event.key === 'ArrowDown') {
         event.preventDefault()
-        setSelectedIndex((prev) =>
-          prev < flatItems.length - 1 ? prev + 1 : 0,
-        )
+        setSelectedIndex((prev) => (prev < flatItems.length - 1 ? prev + 1 : 0))
       } else if (event.key === 'ArrowUp') {
         event.preventDefault()
-        setSelectedIndex((prev) =>
-          prev > 0 ? prev - 1 : flatItems.length - 1,
-        )
+        setSelectedIndex((prev) => (prev > 0 ? prev - 1 : flatItems.length - 1))
       } else if (event.key === 'Escape') {
         event.preventDefault()
         onClose()
@@ -222,13 +220,7 @@ export function HeroSearchAutocomplete({
 
     input.addEventListener('keydown', handleKeyDown)
     return () => input.removeEventListener('keydown', handleKeyDown)
-  }, [
-    isOpen,
-    selectedIndex,
-    flatItems,
-    onClose,
-    inputRef,
-  ])
+  }, [isOpen, selectedIndex, flatItems, onClose, inputRef])
 
   if (!isOpen) return null
 
@@ -337,7 +329,9 @@ export function HeroSearchAutocomplete({
       {hotelMatches.length > 0 && (
         <div className="mb-2">
           <p className="px-3 py-1 text-xs font-bold tracking-wider text-slate-400 uppercase dark:text-slate-500">
-            {isZeroState ? t('landing.hotelCarouselKicker') : t('landing.matchingHotels')}
+            {isZeroState
+              ? t('landing.hotelCarouselKicker')
+              : t('landing.matchingHotels')}
           </p>
           <div className="mt-1 space-y-1">
             {hotelMatches.map((hotel) => {
@@ -419,7 +413,8 @@ export function HeroSearchAutocomplete({
             type="button"
             role="option"
             aria-selected={
-              selectedIndex === flatItems.findIndex((fi) => fi.type === 'view_all')
+              selectedIndex ===
+              flatItems.findIndex((fi) => fi.type === 'view_all')
             }
             onClick={() => handleSelectViewAll(searchTerm.trim())}
             className="flex w-full cursor-pointer items-center justify-between rounded-xl px-3 py-2 text-sm font-semibold text-violet-600 transition-colors hover:bg-violet-50 dark:text-violet-400 dark:hover:bg-violet-500/15"

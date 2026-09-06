@@ -325,6 +325,7 @@ function SelectLocationPage() {
     }))
   }, [myBookingsPage.results, myBookingsPage.status, showComplaintModal])
 
+  // Preserve the viewport while search controls update the current results
   const updateSearch = (
     nextSearch: Partial<{
       category: string
@@ -338,6 +339,8 @@ function SelectLocationPage() {
   ) => {
     navigate({
       replace: true,
+      resetScroll: false,
+      // Keep dates and other filters when changing one control
       search: (prev) => ({
         ...DEFAULT_SELECT_LOCATION_SEARCH,
         ...prev,
@@ -447,12 +450,14 @@ function SelectLocationPage() {
   }, [selectedCity, selectedCategory, searchTerm])
 
   const selectLocationJsonLd = useMemo(() => {
-    const itemListElements = filteredHotels.slice(0, 10).map((hotel, index) => ({
-      '@type': 'ListItem',
-      position: index + 1,
-      name: hotel.name,
-      url: `https://Tripways.com/hotels/${hotel._id}`,
-    }))
+    const itemListElements = filteredHotels
+      .slice(0, 10)
+      .map((hotel, index) => ({
+        '@type': 'ListItem',
+        position: index + 1,
+        name: hotel.name,
+        url: `https://Tripways.com/hotels/${hotel._id}`,
+      }))
 
     return [
       {
