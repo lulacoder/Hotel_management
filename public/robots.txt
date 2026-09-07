@@ -15,4 +15,4 @@ Disallow: /sign-up
 Disallow: /staff-invitations/
 
 # Sitemaps
-Sitemap: https://Tripways.com/sitemap.xml
+Sitemap: https://www.tripwayshotel.site/sitemap.xml

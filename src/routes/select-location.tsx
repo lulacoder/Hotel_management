@@ -456,7 +456,7 @@ function SelectLocationPage() {
         '@type': 'ListItem',
         position: index + 1,
         name: hotel.name,
-        url: `https://Tripways.com/hotels/${hotel._id}`,
+        url: `https://www.tripwayshotel.site/hotels/${hotel._id}`,
       }))
 
     return [
@@ -467,13 +467,13 @@ function SelectLocationPage() {
             '@type': 'ListItem',
             position: 1,
             name: 'Home',
-            item: 'https://Tripways.com',
+            item: 'https://www.tripwayshotel.site',
           },
           {
             '@type': 'ListItem',
             position: 2,
             name: 'Browse Hotels',
-            item: 'https://Tripways.com/select-location',
+            item: 'https://www.tripwayshotel.site/select-location',
           },
         ],
       },

@@ -30,17 +30,17 @@ function LandingPage() {
     {
       '@type': 'WebSite',
       name: 'Tripways Hotels',
-      url: 'https://Tripways.com',
+      url: 'https://www.tripwayshotel.site',
       potentialAction: {
         '@type': 'SearchAction',
-        target: 'https://Tripways.com/select-location?q={search_term_string}',
+        target: 'https://www.tripwayshotel.site/select-location?q={search_term_string}',
         'query-input': 'required name=search_term_string',
       },
     },
     {
       '@type': 'Organization',
       name: 'Tripways Hotels',
-      url: 'https://Tripways.com',
+      url: 'https://www.tripwayshotel.site',
       logo: staticAssets.logo,
       description:
         'Tripways brings together handpicked luxury hotels, boutique rooms, and resort suites with seamless booking and instant confirmation.',

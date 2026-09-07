@@ -35,7 +35,7 @@ const DEFAULT_KEYWORDS = [
   'Addis Ababa hotels',
 ]
 const SITE_NAME = 'Tripways Hotels'
-const SITE_URL = 'https://Tripways.com'
+const SITE_URL = 'https://www.tripwayshotel.site'
 const DEFAULT_OG_IMAGE = staticAssets.infinityPool
 
 /**
