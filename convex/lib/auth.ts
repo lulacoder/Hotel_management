@@ -29,16 +29,121 @@ export async function requireAuth(
 
 /**
  * Get the current user from the database using their verified JWT identity.
- * Returns null if user record not found.
+ * If the caller is a room_admin and currently has an active, unexpired impersonation
+ * session, returns the target user document so all downstream actions execute in
+ * the context of that target user.
+ * Returns null if user record not found or unauthenticated.
  */
 export async function getCurrentUser(
   ctx: QueryCtx | MutationCtx,
 ): Promise<Doc<'users'> | null> {
+  const identity = await ctx.auth.getUserIdentity()
+  if (!identity) {
+    return null
+  }
+
+  const callerUser = await ctx.db
+    .query('users')
+    .withIndex('by_clerk_user_id', (q) => q.eq('clerkUserId', identity.subject))
+    .unique()
+
+  if (!callerUser) {
+    return null
+  }
+
+  // If caller is a room_admin, check for active impersonation delegation
+  if (callerUser.role === 'room_admin') {
+    const active = await ctx.db
+      .query('activeImpersonations')
+      .withIndex('by_admin', (q) => q.eq('adminUserId', callerUser._id))
+      .first()
+
+    if (active && active.expiresAt > Date.now()) {
+      const targetUser = await ctx.db.get(active.targetUserId)
+      if (targetUser) {
+        return targetUser
+      }
+    }
+  }
+
+  return callerUser
+}
+
+/**
+ * Always returns the true calling room_admin (bypassing impersonation).
+ * Throws ConvexError if caller is not authenticated or not a room_admin.
+ */
+export async function getRealAdminUser(
+  ctx: QueryCtx | MutationCtx,
+): Promise<Doc<'users'>> {
   const clerkUserId = await requireAuth(ctx)
-  return await ctx.db
+  const callerUser = await ctx.db
     .query('users')
     .withIndex('by_clerk_user_id', (q) => q.eq('clerkUserId', clerkUserId))
     .unique()
+
+  if (!callerUser || callerUser.role !== 'room_admin') {
+    throw new ConvexError({
+      code: 'FORBIDDEN',
+      message:
+        'Admin access required. You do not have permission to perform this action.',
+    })
+  }
+
+  return callerUser
+}
+
+export type ImpersonationState = {
+  isImpersonating: boolean
+  adminUser?: Doc<'users'>
+  targetUser?: Doc<'users'>
+  reason?: string
+  startedAt?: number
+  expiresAt?: number
+}
+
+/**
+ * Returns the current caller's impersonation state.
+ */
+export async function getImpersonationState(
+  ctx: QueryCtx | MutationCtx,
+): Promise<ImpersonationState> {
+  const identity = await ctx.auth.getUserIdentity()
+  if (!identity) {
+    return { isImpersonating: false }
+  }
+
+  const callerUser = await ctx.db
+    .query('users')
+    .withIndex('by_clerk_user_id', (q) => q.eq('clerkUserId', identity.subject))
+    .unique()
+
+  if (!callerUser || callerUser.role !== 'room_admin') {
+    return { isImpersonating: false }
+  }
+
+  const active = await ctx.db
+    .query('activeImpersonations')
+    .withIndex('by_admin', (q) => q.eq('adminUserId', callerUser._id))
+    .first()
+
+  if (!active || active.expiresAt <= Date.now()) {
+    return { isImpersonating: false, adminUser: callerUser }
+  }
+
+  const targetUser = await ctx.db.get(active.targetUserId)
+  if (!targetUser) {
+    return { isImpersonating: false, adminUser: callerUser }
+  }
+
+  return {
+    isImpersonating: true,
+    adminUser: callerUser,
+    targetUser,
+    reason: active.reason,
+    startedAt: active.startedAt,
+    expiresAt: active.expiresAt,
+  }
 }
 
 // ---------------------------------------------------------------------------
@@ -102,12 +207,7 @@ export async function requireCustomer(
  * Returns false if not authenticated or user not found.
  */
 export async function isAdmin(ctx: QueryCtx | MutationCtx): Promise<boolean> {
-  const identity = await ctx.auth.getUserIdentity()
-  if (!identity) return false
-  const user = await ctx.db
-    .query('users')
-    .withIndex('by_clerk_user_id', (q) => q.eq('clerkUserId', identity.subject))
-    .unique()
+  const user = await getCurrentUser(ctx)
   return user?.role === 'room_admin'
 }
 
@@ -118,12 +218,7 @@ export async function isAdmin(ctx: QueryCtx | MutationCtx): Promise<boolean> {
 export async function isCustomer(
   ctx: QueryCtx | MutationCtx,
 ): Promise<boolean> {
-  const identity = await ctx.auth.getUserIdentity()
-  if (!identity) return false
-  const user = await ctx.db
-    .query('users')
-    .withIndex('by_clerk_user_id', (q) => q.eq('clerkUserId', identity.subject))
-    .unique()
+  const user = await getCurrentUser(ctx)
   return user?.role === 'customer'
 }
 
@@ -167,13 +262,7 @@ export async function canAccessHotel(
   ctx: QueryCtx | MutationCtx,
   hotelId: Id<'hotels'>,
 ): Promise<boolean> {
-  const identity = await ctx.auth.getUserIdentity()
-  if (!identity) return false
-
-  const user = await ctx.db
-    .query('users')
-    .withIndex('by_clerk_user_id', (q) => q.eq('clerkUserId', identity.subject))
-    .unique()
+  const user = await getCurrentUser(ctx)
   if (!user) return false
 
   if (user.role === 'room_admin') return true
@@ -216,13 +305,7 @@ export async function canManageHotel(
   ctx: QueryCtx | MutationCtx,
   hotelId: Id<'hotels'>,
 ): Promise<boolean> {
-  const identity = await ctx.auth.getUserIdentity()
-  if (!identity) return false
-
-  const user = await ctx.db
-    .query('users')
-    .withIndex('by_clerk_user_id', (q) => q.eq('clerkUserId', identity.subject))
-    .unique()
+  const user = await getCurrentUser(ctx)
   if (!user) return false
 
   if (user.role === 'room_admin') return true

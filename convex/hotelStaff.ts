@@ -2,6 +2,7 @@ import { ConvexError, v } from 'convex/values'
 import { mutation, query } from './_generated/server'
 import { createAuditLog } from './audit'
 import {
+  getCurrentUser,
   getHotelAssignment,
   requireAdmin,
   requireHotelAccess,
@@ -23,6 +24,8 @@ const hotelAssignmentValidator = v.object({
   role: hotelStaffRoleValidator,
   assignedAt: v.number(),
   assignedBy: v.id('users'),
+  hotelName: v.optional(v.string()),
+  hotelCity: v.optional(v.string()),
 })
 
 // Returns the authenticated user's own hotel staff assignment, if any.
@@ -32,16 +35,7 @@ export const getMyAssignment = query({
   args: {},
   returns: v.union(hotelAssignmentValidator, v.null()),
   handler: async (ctx) => {
-    const identity = await ctx.auth.getUserIdentity()
-    if (!identity) {
-      return null
-    }
-    const user = await ctx.db
-      .query('users')
-      .withIndex('by_clerk_user_id', (q) =>
-        q.eq('clerkUserId', identity.subject),
-      )
-      .unique()
+    const user = await getCurrentUser(ctx)
     if (!user) {
       return null
     }

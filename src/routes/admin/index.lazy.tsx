@@ -183,6 +183,7 @@ function AdminDashboard() {
       room_admin: t('admin.role.roomAdmin'),
       hotel_admin: t('admin.role.hotelAdmin'),
       hotel_cashier: t('admin.role.hotelCashier'),
+      customer: t('admin.role.customer'),
     }),
     [t],
   )
@@ -230,9 +231,7 @@ function AdminDashboard() {
       totalBookings: t('admin.analytics.totalBookings'),
       activeStays: t('admin.analytics.activeStays'),
       occupancyRate: t('admin.analytics.occupancy'),
-      pendingPaymentBookings: t(
-        'admin.analytics.pendingPaymentBookings',
-      ),
+      pendingPaymentBookings: t('admin.analytics.pendingPaymentBookings'),
       arrivalsToday: t('admin.analytics.arrivalsToday'),
       held: t('booking.status.held'),
       pending_payment: t('booking.status.pendingPayment'),
@@ -313,7 +312,7 @@ function AdminDashboard() {
           {getGreeting()}
         </p>
         <h1
-          className={`text-4xl font-bold tracking-tight ${isDark ? 'text-slate-100' : 'text-slate-900'}`}
+          className={`break-words text-3xl font-bold tracking-tight sm:text-4xl ${isDark ? 'text-slate-100' : 'text-slate-900'}`}
           style={{ fontFamily: 'var(--font-heading)' }}
         >
           {t('admin.welcomeBack', {
@@ -438,12 +437,8 @@ function AdminDashboard() {
               emptyTitle={t('admin.analytics.noData')}
               emptyDescription={t('admin.analytics.noDataDescription')}
               bookingTrendTitle={t('admin.analytics.bookingTrend')}
-              paymentBreakdownTitle={t(
-                'admin.analytics.paymentBreakdown',
-              )}
-              bookingBreakdownTitle={t(
-                'admin.analytics.bookingBreakdown',
-              )}
+              paymentBreakdownTitle={t('admin.analytics.paymentBreakdown')}
+              bookingBreakdownTitle={t('admin.analytics.bookingBreakdown')}
             />
           </Suspense>
         </m.div>
@@ -524,9 +519,7 @@ function AdminDashboard() {
                   format="count"
                   onPointClick={() => navigateToBookings({})}
                   emptyTitle={t('admin.analytics.noData')}
-                  emptyDescription={t(
-                    'admin.analytics.noDataDescription',
-                  )}
+                  emptyDescription={t('admin.analytics.noDataDescription')}
                 />
               </Suspense>
             </m.div>
@@ -542,9 +535,7 @@ function AdminDashboard() {
                   locale={locale}
                   format="currency"
                   emptyTitle={t('admin.analytics.noData')}
-                  emptyDescription={t(
-                    'admin.analytics.noDataDescription',
-                  )}
+                  emptyDescription={t('admin.analytics.noDataDescription')}
                 />
               </Suspense>
             </m.div>
@@ -574,9 +565,7 @@ function AdminDashboard() {
                     navigateToBookings({ status: item.key })
                   }
                   emptyTitle={t('admin.analytics.noData')}
-                  emptyDescription={t(
-                    'admin.analytics.noDataDescription',
-                  )}
+                  emptyDescription={t('admin.analytics.noDataDescription')}
                 />
               </Suspense>
             </m.div>
@@ -594,9 +583,7 @@ function AdminDashboard() {
                     navigateToBookings({ paymentStatus: item.key })
                   }
                   emptyTitle={t('admin.analytics.noData')}
-                  emptyDescription={t(
-                    'admin.analytics.noDataDescription',
-                  )}
+                  emptyDescription={t('admin.analytics.noDataDescription')}
                 />
               </Suspense>
             </m.div>
@@ -612,9 +599,7 @@ function AdminDashboard() {
                   labels={metricLabels}
                   onItemClick={(item) => navigateToRooms(item.key)}
                   emptyTitle={t('admin.analytics.noData')}
-                  emptyDescription={t(
-                    'admin.analytics.noDataDescription',
-                  )}
+                  emptyDescription={t('admin.analytics.noDataDescription')}
                 />
               </Suspense>
             </m.div>
@@ -640,9 +625,7 @@ function AdminDashboard() {
                   title={t('admin.analytics.occupancyTrend')}
                   points={occupancyTrend?.points}
                   emptyTitle={t('admin.analytics.noData')}
-                  emptyDescription={t(
-                    'admin.analytics.noDataDescription',
-                  )}
+                  emptyDescription={t('admin.analytics.noDataDescription')}
                 />
               </Suspense>
             </m.div>
@@ -663,22 +646,16 @@ function AdminDashboard() {
                   }}
                   title={t('admin.analytics.topHotels')}
                   emptyTitle={t('admin.analytics.noData')}
-                  emptyDescription={t(
-                    'admin.analytics.noDataDescription',
-                  )}
+                  emptyDescription={t('admin.analytics.noDataDescription')}
                   hotelLabel={t('admin.analytics.columns.hotel')}
                   revenueLabel={t('admin.analytics.columns.revenue')}
                   bookingsLabel={t('admin.analytics.columns.bookings')}
-                  occupancyLabel={t(
-                    'admin.analytics.columns.occupancy',
-                  )}
+                  occupancyLabel={t('admin.analytics.columns.occupancy')}
                 />
               ) : (
                 <AnalyticsEmptyState
                   title={t('admin.analytics.hotelScopeOnly')}
-                  description={t(
-                    'admin.analytics.hotelScopeOnlyDescription',
-                  )}
+                  description={t('admin.analytics.hotelScopeOnlyDescription')}
                 />
               )}
             </m.div>
@@ -781,7 +758,10 @@ function AdminDashboard() {
             >
               {t('admin.dashboard.roleAccessDescription', {
                 email: profile.email || t('admin.bookings.na'),
-                role: roleLabelByCode[profile.role] || profile.role,
+                role:
+                  roleLabelByCode[hotelAssignment?.role ?? profile.role] ||
+                  hotelAssignment?.role ||
+                  profile.role,
               })}
             </p>
           </div>

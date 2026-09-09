@@ -102,11 +102,13 @@ export function NotificationBell({
 }: NotificationBellProps) {
   const { isSignedIn } = useAuth()
   const [open, setOpen] = useState(false)
+  const ownerIdRef = useRef<Id<'users'> | undefined>(undefined)
   const prevCountRef = useRef<number | undefined>(undefined)
 
+  const notificationOwner = useQuery(api.users.getMe, isSignedIn ? {} : 'skip')
   const notificationsPage = usePaginatedQuery(
     api.notifications.getMyNotifications,
-    isSignedIn ? {} : 'skip',
+    isSignedIn && open ? {} : 'skip',
     { initialNumItems: 20 },
   )
   const notifications = notificationsPage.results
@@ -134,7 +136,14 @@ export function NotificationBell({
   }
 
   useEffect(() => {
-    if (unreadCount === undefined) return
+    const ownerId = notificationOwner?._id
+    if (unreadCount === undefined || !ownerId) return
+
+    if (ownerIdRef.current !== ownerId) {
+      ownerIdRef.current = ownerId
+      prevCountRef.current = unreadCount.count
+      return
+    }
 
     if (
       prevCountRef.current !== undefined &&
@@ -150,7 +159,7 @@ export function NotificationBell({
     }
 
     prevCountRef.current = unreadCount.count
-  }, [unreadCount])
+  }, [notificationOwner?._id, unreadCount])
 
   if (!isSignedIn) return null
 

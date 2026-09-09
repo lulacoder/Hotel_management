@@ -34,7 +34,7 @@ describe('customer experience queries', () => {
           role: 'room_admin',
           createdAt: now,
         })
-        const hotelId = await ctx.db.insert('hotels', {
+        const createdHotelId = await ctx.db.insert('hotels', {
           name: 'Atlas Hotel',
           address: '1 Main Street',
           city: 'Addis Ababa',
@@ -44,7 +44,7 @@ describe('customer experience queries', () => {
           updatedAt: now,
         })
         const roomId = await ctx.db.insert('rooms', {
-          hotelId,
+          hotelId: createdHotelId,
           roomNumber: '101',
           type: 'standard',
           basePrice: 10000,
@@ -58,7 +58,7 @@ describe('customer experience queries', () => {
         for (let index = 0; index < 5; index += 1) {
           await ctx.db.insert('bookings', {
             roomId,
-            hotelId,
+            hotelId: createdHotelId,
             checkIn: futureDate(index + 2),
             checkOut: futureDate(index + 3),
             status: 'confirmed',
@@ -71,7 +71,7 @@ describe('customer experience queries', () => {
           })
         }
 
-        return { hotelId }
+        return { hotelId: createdHotelId }
       })
       const admin = asUser(t, 'admin', 'admin@example.com')
 
@@ -217,7 +217,7 @@ describe('customer experience queries', () => {
         createdAt: now,
         updatedAt: now,
       })
-      const bookingId = await ctx.db.insert('bookings', {
+      const createdBookingId = await ctx.db.insert('bookings', {
         userId,
         roomId,
         hotelId,
@@ -232,7 +232,7 @@ describe('customer experience queries', () => {
         updatedAt: now,
       })
       await ctx.db.insert('chapaPayments', {
-        bookingId,
+        bookingId: createdBookingId,
         txRef: 'trip-command-center-test',
         bookingAmountCents: 50000,
         bookingCurrency: 'USD',
@@ -244,7 +244,7 @@ describe('customer experience queries', () => {
         createdAt: now,
         updatedAt: now,
       })
-      return { bookingId }
+      return { bookingId: createdBookingId }
     })
 
     const traveler = asUser(t, 'traveler', 'traveler@example.com')

@@ -27,6 +27,7 @@ import type * as hotelBankAccounts from "../hotelBankAccounts.js";
 import type * as hotelStaff from "../hotelStaff.js";
 import type * as hotels from "../hotels.js";
 import type * as http from "../http.js";
+import type * as impersonation from "../impersonation.js";
 import type * as lib_adminAnalyticsMetrics from "../lib/adminAnalyticsMetrics.js";
 import type * as lib_adminAnalyticsQueryBuilders from "../lib/adminAnalyticsQueryBuilders.js";
 import type * as lib_adminAnalyticsScope from "../lib/adminAnalyticsScope.js";
@@ -82,6 +83,7 @@ declare const fullApi: ApiFromModules<{
   hotelStaff: typeof hotelStaff;
   hotels: typeof hotels;
   http: typeof http;
+  impersonation: typeof impersonation;
   "lib/adminAnalyticsMetrics": typeof lib_adminAnalyticsMetrics;
   "lib/adminAnalyticsQueryBuilders": typeof lib_adminAnalyticsQueryBuilders;
   "lib/adminAnalyticsScope": typeof lib_adminAnalyticsScope;

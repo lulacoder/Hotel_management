@@ -1,5 +1,6 @@
 import { v } from 'convex/values'
 import { internalMutation, internalQuery, query } from './_generated/server'
+import { getCurrentUser } from './lib/auth'
 
 const userValidator = v.object({
   _id: v.id('users'),
@@ -11,23 +12,13 @@ const userValidator = v.object({
 })
 
 // Authenticated query returning the current user's own record.
-// Identity is derived from the Clerk JWT token — no arguments needed.
-// Returns null while the token is loading or if the user record hasn't been
-// synced from Clerk yet.
+// Identity is derived from the Clerk JWT token (or delegated target user if impersonating).
+// Returns null while the token is loading or if the user record hasn't been synced yet.
 export const getMe = query({
   args: {},
   returns: v.union(userValidator, v.null()),
   handler: async (ctx) => {
-    const identity = await ctx.auth.getUserIdentity()
-    if (!identity) {
-      return null
-    }
-    return await ctx.db
-      .query('users')
-      .withIndex('by_clerk_user_id', (q) =>
-        q.eq('clerkUserId', identity.subject),
-      )
-      .unique()
+    return await getCurrentUser(ctx)
   },
 })
 

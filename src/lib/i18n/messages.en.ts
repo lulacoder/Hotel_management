@@ -652,6 +652,27 @@ export const enMessages = {
     'Can view bookings, check-in/out guests, and process refunds.',
   'admin.users.assignModal.assigning': 'Assigning...',
   'admin.users.assignModal.assignUser': 'Assign User',
+  'admin.users.impersonate': 'Impersonate',
+  'admin.users.impersonateModal.title': 'Impersonate user',
+  'admin.users.impersonateModal.description':
+    "Temporarily use this user's access to diagnose an issue.",
+  'admin.users.impersonateModal.targetUser': 'User',
+  'admin.users.impersonateModal.reason': 'Reason',
+  'admin.users.impersonateModal.reasonPlaceholder':
+    'Describe the issue you are investigating...',
+  'admin.users.impersonateModal.reasonRequired':
+    'A reason of at least 3 characters is required.',
+  'admin.users.impersonateModal.start': 'Impersonate user',
+  'admin.users.impersonateModal.starting': 'Starting...',
+  'admin.users.impersonateModal.startFailed':
+    'Failed to start impersonation. Please try again.',
+  'admin.users.impersonateModal.switching': "Opening {email}'s workspace...",
+  'admin.users.impersonateModal.duration':
+    'This session ends automatically after 30 minutes.',
+  'admin.impersonation.activeSession': 'Active impersonation session',
+  'admin.impersonation.actingAs': 'Impersonating',
+  'admin.impersonation.exit': 'Stop impersonating',
+  'admin.impersonation.restoring': 'Restoring administrator workspace...',
   'admin.invitations.eyebrow': 'Staff access',
   'admin.invitations.title': 'Invite the right people into hotel operations',
   'admin.invitations.description':
@@ -774,12 +795,13 @@ export const enMessages = {
   'admin.role.roomAdmin': 'Room Administrator',
   'admin.role.hotelAdmin': 'Hotel Administrator',
   'admin.role.hotelCashier': 'Hotel Cashier',
+  'admin.role.customer': 'Customer',
   'admin.role.user': 'User',
   'admin.dashboard.assignmentSummary':
     'You are assigned to {hotelName} in {city} as {role}.',
-  'admin.dashboard.roleAccessTitle': 'Role-Based Access Active',
+  'admin.dashboard.roleAccessTitle': 'Current access',
   'admin.dashboard.roleAccessDescription':
-    "You're signed in as {email} with {role} privileges. Only administrators can access this dashboard.",
+    "You're viewing {email}'s workspace with {role} access.",
   'admin.analytics.window.today': 'Today',
   'admin.analytics.window.7d': '7 days',
   'admin.analytics.window.30d': '30 days',
@@ -917,6 +939,7 @@ export const enMessages = {
   'grid.fromPrice': 'From per night',
   'grid.matchingRooms': '{count} matching rooms',
   'hotel.searchGuests': 'Showing rooms for {count} guests',
+  'admin.loadingWorkspace': 'Loading your workspace...',
   'admin.profileMissingTitle': 'Your admin profile is not ready',
   'admin.profileMissingDescription':
     'We could not find the application profile linked to this signed-in account. Retry, or return to hotel search while an administrator checks your access.',

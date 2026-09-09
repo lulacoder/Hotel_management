@@ -46,4 +46,13 @@ crons.interval(
   {},
 )
 
+// Runs every 15 minutes to clean up expired impersonation sessions
+crons.interval(
+  'cleanup expired impersonation sessions',
+  { minutes: 15 },
+  internal.impersonation.cleanupExpiredSessions,
+  {},
+)
+
 export default crons
+

@@ -24,6 +24,7 @@ import {
 } from 'lucide-react'
 import { staticAssets } from '../lib/staticAssets'
 import { api } from '../../convex/_generated/api'
+import { AdminSpinner } from '../components/AdminSpinner'
 import { LanguageSwitcher } from '../components/LanguageSwitcher'
 import { MobileAccountActions } from '../components/MobileAccountActions'
 import { ThemeToggle } from '../components/ThemeToggle'
@@ -139,35 +140,21 @@ function AdminLayout() {
   const hotelAssignmentRole = hotelAssignment?.role ?? null
 
   if (!isLoaded) {
-    return (
-      <div
-        className={`flex min-h-screen items-center justify-center ${isDark ? 'bg-slate-950' : 'bg-slate-50'}`}
-      >
-        <div className="relative">
-          <div className="animate-spin rounded-full size-12 border-2 border-violet-500/20 border-t-violet-500"></div>
-          <div className="absolute inset-0 animate-ping rounded-full size-12 border border-violet-500/10"></div>
-        </div>
-      </div>
-    )
+    return <AdminSpinner fullScreen label={t('admin.loadingWorkspace')} />
   }
 
   if (!isSignedIn) {
     return (
-      <Navigate to="/sign-in" search={buildRedirectSearch(location.href)} />
+      <Navigate
+        to="/sign-in"
+        search={buildRedirectSearch(location.href)}
+        replace
+      />
     )
   }
 
   if (profile === undefined) {
-    return (
-      <div
-        className={`flex min-h-screen items-center justify-center ${isDark ? 'bg-slate-950' : 'bg-slate-50'}`}
-      >
-        <div className="relative">
-          <div className="animate-spin rounded-full size-12 border-2 border-violet-500/20 border-t-violet-500"></div>
-          <div className="absolute inset-0 animate-ping rounded-full size-12 border border-violet-500/10"></div>
-        </div>
-      </div>
-    )
+    return <AdminSpinner fullScreen label={t('admin.loadingWorkspace')} />
   }
 
   if (profile === null) {
@@ -207,20 +194,21 @@ function AdminLayout() {
   }
 
   if (!isRoomAdmin && hotelAssignment === undefined) {
-    return (
-      <div
-        className={`flex min-h-screen items-center justify-center ${isDark ? 'bg-slate-950' : 'bg-slate-50'}`}
-      >
-        <div className="relative">
-          <div className="animate-spin rounded-full size-12 border-2 border-violet-500/20 border-t-violet-500"></div>
-          <div className="absolute inset-0 animate-ping rounded-full size-12 border border-violet-500/10"></div>
-        </div>
-      </div>
-    )
+    return <AdminSpinner fullScreen label={t('admin.loadingWorkspace')} />
   }
 
   // Access denied for users without admin role or hotel staff assignment
   if (!isRoomAdmin && !hotelAssignment) {
+    if (profile.role === 'customer') {
+      return (
+        <Navigate
+          to="/select-location"
+          search={DEFAULT_SELECT_LOCATION_SEARCH}
+          replace
+        />
+      )
+    }
+
     return (
       <div
         className={`flex min-h-screen items-center justify-center ${isDark ? 'bg-slate-950' : 'bg-slate-50'}`}
@@ -552,9 +540,11 @@ function AdminLayout() {
           <AdminSessionProvider
             value={{
               displayName:
-                user.firstName ||
-                user.emailAddresses[0]?.emailAddress ||
-                t('admin.defaultUserName'),
+                profile.clerkUserId !== user.id
+                  ? profile.email
+                  : user.firstName ||
+                    user.emailAddresses[0]?.emailAddress ||
+                    t('admin.defaultUserName'),
               hotelAssignment: hotelAssignment ?? null,
               hotelAssignmentRole,
               isRoomAdmin,

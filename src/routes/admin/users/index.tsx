@@ -1,4 +1,3 @@
-// User administration route for assigning and managing staff access.
 import { createFileRoute } from '@tanstack/react-router'
 import { Building2, Search } from 'lucide-react'
 import { useMemo, useState } from 'react'
@@ -7,9 +6,10 @@ import { api } from '../../../../convex/_generated/api'
 import { useI18n } from '../../../lib/i18n/provider'
 import { useTheme } from '../../../lib/theme'
 import { AssignModal } from './components/-AssignModal'
+import { ImpersonateModal } from './components/-ImpersonateModal'
+import { UserActionsMenu } from './components/-UserActionsMenu'
 import type { Id } from '../../../../convex/_generated/dataModel'
 import { useMutation, useQuery } from '@/integrations/convex/hooks'
-import { Button } from '@/components/ui/button'
 import { useConfirm } from '@/components/ui/confirm-dialog'
 import { useAdminSession } from '@/lib/adminSession'
 
@@ -26,6 +26,8 @@ function AdminUsersPage() {
   const isDark = theme === 'dark'
   const [searchQuery, setSearchQuery] = useState('')
   const [selectedUserId, setSelectedUserId] = useState<Id<'users'> | null>(null)
+  const [impersonatingUserId, setImpersonatingUserId] =
+    useState<Id<'users'> | null>(null)
   const [error, setError] = useState<string | null>(null)
 
   const { profile } = useAdminSession()
@@ -41,6 +43,7 @@ function AdminUsersPage() {
     room_admin: t('admin.role.roomAdmin'),
     hotel_admin: t('admin.role.hotelAdmin'),
     hotel_cashier: t('admin.role.hotelCashier'),
+    customer: t('admin.role.customer'),
   }
 
   // Filter users based on search query for responsive client-side searching.
@@ -50,6 +53,11 @@ function AdminUsersPage() {
       u.email.toLowerCase().includes(searchQuery.toLowerCase()),
     )
   }, [users, searchQuery])
+
+  const impersonatingUser = useMemo(
+    () => users?.find((listedUser) => listedUser._id === impersonatingUserId),
+    [impersonatingUserId, users],
+  )
 
   const handleUnassign = async (targetUserId: Id<'users'>) => {
     // Remove hotel assignment after user confirmation.
@@ -267,27 +275,18 @@ function AdminUsersPage() {
                       )}
                     </td>
                     <td className="px-6 py-4">
-                      {listedUser.assignment ? (
-                        <Button
-                          type="button"
-                          variant="destructive"
-                          size="lg"
-                          onClick={() => handleUnassign(listedUser._id)}
-                          className="px-4"
-                        >
-                          {t('admin.users.unassign')}
-                        </Button>
-                      ) : (
-                        <Button
-                          type="button"
-                          variant="secondary"
-                          size="lg"
-                          onClick={() => setSelectedUserId(listedUser._id)}
-                          className="px-4"
-                        >
-                          {t('admin.users.assign')}
-                        </Button>
-                      )}
+                      <UserActionsMenu
+                        canImpersonate={listedUser.role !== 'room_admin'}
+                        isAssigned={Boolean(listedUser.assignment)}
+                        userEmail={listedUser.email}
+                        onAssign={() => setSelectedUserId(listedUser._id)}
+                        onUnassign={() => {
+                          void handleUnassign(listedUser._id)
+                        }}
+                        onImpersonate={() =>
+                          setImpersonatingUserId(listedUser._id)
+                        }
+                      />
                     </td>
                   </tr>
                 ))
@@ -301,6 +300,13 @@ function AdminUsersPage() {
         <AssignModal
           userId={selectedUserId}
           onClose={() => setSelectedUserId(null)}
+        />
+      )}
+
+      {impersonatingUser && (
+        <ImpersonateModal
+          user={impersonatingUser}
+          onClose={() => setImpersonatingUserId(null)}
         />
       )}
     </div>

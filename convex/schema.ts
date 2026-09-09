@@ -492,4 +492,32 @@ export default defineSchema({
     .index('by_hotel', ['hotelId'])
     .index('by_hotel_and_is_active', ['hotelId', 'isActive'])
     .index('by_hotel_and_created_at', ['hotelId', 'createdAt']),
+
+  // Active impersonations for room admins acting as other users
+  activeImpersonations: defineTable({
+    adminUserId: v.id('users'),
+    targetUserId: v.id('users'),
+    reason: v.string(),
+    startedAt: v.number(),
+    expiresAt: v.number(),
+  }).index('by_admin', ['adminUserId']),
+
+  // Impersonation audit logs
+  impersonationLogs: defineTable({
+    adminUserId: v.id('users'),
+    targetUserId: v.id('users'),
+    reason: v.string(),
+    status: v.union(
+      v.literal('active'),
+      v.literal('ended'),
+      v.literal('expired'),
+    ),
+    startedAt: v.number(),
+    endedAt: v.optional(v.number()),
+    expiresAt: v.number(),
+  })
+    .index('by_admin', ['adminUserId', 'startedAt'])
+    .index('by_target', ['targetUserId', 'startedAt'])
+    .index('by_started_at', ['startedAt']),
 })
+

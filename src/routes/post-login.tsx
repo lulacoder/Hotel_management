@@ -1,12 +1,11 @@
 // Post-auth route that resolves user role and redirects to the correct destination.
-import { Navigate, createFileRoute } from '@tanstack/react-router'
+import { createFileRoute } from '@tanstack/react-router'
 import { useUser } from '@clerk/clerk-react'
-import { useState } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import { api } from '../../convex/_generated/api'
 import { sanitizeRedirect } from '../lib/authRouting'
 import { Card, CardContent } from '../components/ui/card'
 import { useI18n } from '../lib/i18n/provider'
-import { DEFAULT_ADMIN_DASHBOARD_SEARCH } from '../lib/navigationSearch'
 import {
   getStaffInvitationContinuation,
   isStaffInvitationRedirect,
@@ -39,32 +38,47 @@ function PostLoginPage() {
     profile ? {} : 'skip',
   )
 
-  if (isClerkLoaded && !user) {
-    return <Navigate to="/sign-in" search={search} />
-  }
+  const redirectedRef = useRef(false)
 
-  // Invitation intent is the only flow allowed to override the existing
-  // role-based post-login destination.
-  if (isClerkLoaded && profile && isStaffInvitationRedirect(resolvedRedirect)) {
-    return <Navigate to={resolvedRedirect} />
-  }
+  useEffect(() => {
+    if (redirectedRef.current) return
+    if (!isClerkLoaded) return
 
-  if (
-    isClerkLoaded &&
-    profile &&
-    (profile.role === 'room_admin' || hotelAssignment)
-  ) {
-    return <Navigate to="/admin" search={DEFAULT_ADMIN_DASHBOARD_SEARCH} />
-  }
+    if (!user) {
+      redirectedRef.current = true
+      const searchParam = search.redirect
+        ? `?redirect=${encodeURIComponent(search.redirect)}`
+        : ''
+      window.location.replace(`/sign-in${searchParam}`)
+      return
+    }
 
-  if (
-    isClerkLoaded &&
-    profile &&
-    hotelAssignment === null &&
-    profile.role !== 'room_admin'
-  ) {
-    return <Navigate to={resolvedRedirect ?? '/select-location'} />
-  }
+    if (profile === undefined) return
+
+    if (isStaffInvitationRedirect(resolvedRedirect)) {
+      redirectedRef.current = true
+      window.location.replace(resolvedRedirect)
+      return
+    }
+
+    if (profile && (profile.role === 'room_admin' || hotelAssignment)) {
+      redirectedRef.current = true
+      window.location.replace('/admin')
+      return
+    }
+
+    if (profile && hotelAssignment === null && profile.role !== 'room_admin') {
+      redirectedRef.current = true
+      window.location.replace(search.redirect || '/select-location')
+    }
+  }, [
+    isClerkLoaded,
+    user,
+    profile,
+    hotelAssignment,
+    resolvedRedirect,
+    search.redirect,
+  ])
 
   return (
     <div className="flex min-h-screen items-center justify-center bg-slate-950 px-4">

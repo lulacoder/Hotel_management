@@ -8,6 +8,7 @@ import { LazyMotion, domAnimation } from 'motion/react'
 import { Suspense, lazy } from 'react'
 
 import Header from '../components/Header'
+import { ImpersonationBanner } from '../components/ImpersonationBanner'
 import { Button } from '../components/ui/button'
 import { ConfirmProvider } from '../components/ui/confirm-dialog'
 import { Toaster } from '../components/ui/sonner'
@@ -66,6 +67,7 @@ export function RootAppShell() {
             <ConvexProvider>
               <LazyMotion features={domAnimation}>
                 <TooltipProvider>
+                  <ImpersonationBanner />
                   <Header />
                   <Outlet />
                   <Toaster

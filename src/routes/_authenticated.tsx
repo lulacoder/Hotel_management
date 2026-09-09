@@ -8,7 +8,9 @@ import {
 } from '@tanstack/react-router'
 import { useUser } from '@clerk/clerk-react'
 import { api } from '../../convex/_generated/api'
+import { AdminSpinner } from '../components/AdminSpinner'
 import { buildRedirectSearch } from '../lib/authRouting'
+import { useI18n } from '../lib/i18n/provider'
 import { DEFAULT_ADMIN_DASHBOARD_SEARCH } from '../lib/navigationSearch'
 import { useQuery } from '@/integrations/convex/hooks'
 
@@ -23,7 +25,7 @@ export const Route = createFileRoute('/_authenticated')({
       })
     }
 
-    if (auth.globalRole === 'room_admin') {
+    if (auth.globalRole === 'room_admin' && !auth.isImpersonating) {
       throw redirect({ to: '/admin', search: DEFAULT_ADMIN_DASHBOARD_SEARCH })
     }
   },
@@ -37,6 +39,7 @@ export function AuthenticatedLayout() {
   // Gather auth state and profile data used for redirect decisions.
   const { user, isLoaded, isSignedIn } = useUser()
   const location = useLocation()
+  const { t } = useI18n()
 
   // Load app user profile mapped from the Clerk user id.
   const profile = useQuery(api.users.getMe, user?.id ? {} : 'skip')
@@ -47,19 +50,22 @@ export function AuthenticatedLayout() {
     profile ? {} : 'skip',
   )
 
-  // Keep a neutral loader while profile query resolves.
-  if (!isLoaded || profile === undefined) {
-    return (
-      <div className="flex min-h-screen items-center justify-center">
-        <div className="animate-spin rounded-full size-8 border-b-2 border-blue-600"></div>
-      </div>
-    )
+  if (!isLoaded) {
+    return <AdminSpinner fullScreen label={t('admin.loadingWorkspace')} />
   }
 
   if (!isSignedIn) {
     return (
-      <Navigate to="/sign-in" search={buildRedirectSearch(location.href)} />
+      <Navigate
+        to="/sign-in"
+        search={buildRedirectSearch(location.href)}
+        replace
+      />
     )
+  }
+
+  if (profile === undefined) {
+    return <AdminSpinner fullScreen label={t('admin.loadingWorkspace')} />
   }
 
   if (profile === null) {
@@ -82,7 +88,9 @@ export function AuthenticatedLayout() {
   }
 
   if (profile.role === 'room_admin' || hotelAssignment) {
-    return <Navigate to="/admin" search={DEFAULT_ADMIN_DASHBOARD_SEARCH} />
+    return (
+      <Navigate to="/admin" search={DEFAULT_ADMIN_DASHBOARD_SEARCH} replace />
+    )
   }
 
   return <Outlet />
