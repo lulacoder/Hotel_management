@@ -778,6 +778,8 @@ export const enMessages = {
   'admin.walkIn.step1': 'Step 1 — Guest Lookup',
   'admin.walkIn.searchPlaceholder': 'Search by phone or email',
   'admin.walkIn.search': 'Search',
+  'admin.walkIn.noGuestFound':
+    'No guest found. You can create a new guest profile below.',
   'admin.walkIn.pastBookings': 'Past bookings: {count}',
   'admin.walkIn.guestName': 'Guest name',
   'admin.walkIn.phone': 'Phone',

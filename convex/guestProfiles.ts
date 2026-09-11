@@ -113,7 +113,7 @@ export const findOrCreate = mutation({
   },
 })
 
-// Searches guest profiles by a search term, matching on either phone (digits) or email (lowercase).
+// Searches guest profiles by text contained anywhere in a phone number or email address.
 // Requires hotel staff (admin or cashier) or room admin privileges.
 // Returns the top 10 matching guest profiles, along with the total count of their associated bookings.
 export const search = query({
@@ -136,33 +136,22 @@ export const search = query({
 
     const phoneTerm = normalizePhone(rawTerm)
     const emailTerm = rawTerm.toLowerCase().slice(0, 254)
-    const matchedById = new Map<string, any>()
 
-    if (phoneTerm) {
-      const byPhone = await ctx.db
-        .query('guestProfiles')
-        .withIndex('by_phone', (q: any) =>
-          q.gte('phone', phoneTerm).lt('phone', `${phoneTerm}\uffff`),
-        )
-        .take(10)
+    // Staff often search with the memorable tail of a phone number or an email
+    // fragment, so prefix-only index ranges do not satisfy the lookup contract.
+    const profiles = await ctx.db.query('guestProfiles').collect()
+    const matchedProfiles = profiles
+      .filter((profile) => {
+        const matchesPhone = phoneTerm
+          ? (profile.phone ?? '').includes(phoneTerm)
+          : false
+        const matchesEmail = (profile.email ?? '')
+          .toLowerCase()
+          .includes(emailTerm)
 
-      for (const profile of byPhone) {
-        matchedById.set(String(profile._id), profile)
-      }
-    }
-
-    const byEmail = await ctx.db
-      .query('guestProfiles')
-      .withIndex('by_email', (q: any) =>
-        q.gte('email', emailTerm).lt('email', `${emailTerm}\uffff`),
-      )
-      .take(10)
-
-    for (const profile of byEmail) {
-      matchedById.set(String(profile._id), profile)
-    }
-
-    const matchedProfiles = Array.from(matchedById.values()).slice(0, 10)
+        return matchesPhone || matchesEmail
+      })
+      .slice(0, 10)
 
     return await Promise.all(
       matchedProfiles.map(async (profile) => {

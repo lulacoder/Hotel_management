@@ -733,6 +733,7 @@ export const amMessages = {
   'admin.walkIn.step1': 'Step 1 — Guest Lookup',
   'admin.walkIn.searchPlaceholder': 'Search by phone or email',
   'admin.walkIn.search': 'Search',
+  'admin.walkIn.noGuestFound': 'ምንም እንግዳ አልተገኘም። ከታች አዲስ የእንግዳ መገለጫ መፍጠር ይችላሉ።',
   'admin.walkIn.pastBookings': 'Past bookings: {count}',
   'admin.walkIn.guestName': 'Guest name',
   'admin.walkIn.phone': 'Phone',

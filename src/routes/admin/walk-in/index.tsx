@@ -320,6 +320,12 @@ function WalkInBookingPage() {
           </div>
         )}
 
+        {submittedTerm.trim().length >= 2 && searchResults?.length === 0 && (
+          <p className="admin-empty-state mb-4 px-4 py-3 text-sm">
+            {t('admin.walkIn.noGuestFound')}
+          </p>
+        )}
+
         {!selectedGuest && (
           <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
             <input
