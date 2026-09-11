@@ -150,7 +150,7 @@ export const createPaidNoShowRefundTasks = internalMutation({
           type: 'booking_refund_required',
           bookingId: booking._id,
           hotelId: booking.hotelId,
-          message: `Booking #${booking._id.slice(-6).toUpperCase()} was closed after the check-in deadline. The hotel has been asked to issue a full refund.`,
+          message: `Booking #${booking._id.slice(-6).toUpperCase()} was cancelled after the check-in deadline. A full refund is pending.`,
         })
       }
     }

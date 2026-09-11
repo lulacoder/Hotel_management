@@ -1034,7 +1034,7 @@ export const cancelPaidBooking = mutation({
         type: 'booking_cancelled',
         bookingId: booking._id,
         hotelId: booking.hotelId,
-        message: `Your paid booking #${booking._id.slice(-6).toUpperCase()} was cancelled by the hotel. Your refund will follow${reason ? `: ${reason}` : '.'}`,
+        message: `The hotel cancelled booking #${booking._id.slice(-6).toUpperCase()}. A full refund is pending.${reason ? ` Reason: ${reason}` : ''}`,
       })
     }
 
@@ -1577,7 +1577,7 @@ export const markChapaRefundRequired = internalMutation({
         type: 'booking_refund_required',
         bookingId: booking._id,
         hotelId: booking.hotelId,
-        message: `Your payment for booking #${booking._id.slice(-6).toUpperCase()} arrived after the room was released. The hotel has been asked to issue a full refund.`,
+        message: `We received your payment, but could not confirm booking #${booking._id.slice(-6).toUpperCase()}. A full refund is pending.`,
       })
     }
 
@@ -1636,7 +1636,7 @@ export const completeManualRefund = mutation({
         type: 'booking_refunded',
         bookingId: booking._id,
         hotelId: booking.hotelId,
-        message: `The full refund for booking #${booking._id.slice(-6).toUpperCase()} has been processed. Please allow 2–3 business days for the funds to reflect in your account.`,
+        message: `The hotel recorded a full refund for booking #${booking._id.slice(-6).toUpperCase()}.`,
       })
     }
 
@@ -1698,7 +1698,7 @@ export const applyChapaRefundOutcome = internalMutation({
         message:
           args.outcome === 'verification_required'
             ? `Refund response for booking #${booking._id.slice(-6).toUpperCase()} is uncertain. Check Chapa before taking any further action.`
-            : `Refund for booking #${booking._id.slice(-6).toUpperCase()} needs administrator attention.`,
+            : `Refund for booking #${booking._id.slice(-6).toUpperCase()} could not be completed. Review the refund details before retrying.`,
       })
     }
 
@@ -1720,8 +1720,8 @@ export const applyChapaRefundOutcome = internalMutation({
           hotelId: booking.hotelId,
           message:
             args.outcome === 'refunded'
-              ? `The full refund for booking #${booking._id.slice(-6).toUpperCase()} has been processed. Please allow 2–3 business days for the funds to reflect in your account.`
-              : `The refund for booking #${booking._id.slice(-6).toUpperCase()} did not complete. The hotel has been alerted.`,
+              ? `Your full refund for booking #${booking._id.slice(-6).toUpperCase()} has been processed. Please allow 2–3 business days for the funds to reflect in your account.`
+              : `Your refund for booking #${booking._id.slice(-6).toUpperCase()} could not be completed. The hotel has been notified.`,
         })
       }
     }

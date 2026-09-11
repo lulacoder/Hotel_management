@@ -287,7 +287,14 @@ function BookingCommandCenter() {
                 <p className="font-semibold">
                   {t(`refund.customer.label.${refundView}`)}
                 </p>
-                <p className="mt-1">{t(`refund.customer.${refundView}`)}</p>
+                <p className="mt-1">
+                  {t(
+                    refundView === 'refunded' &&
+                      booking.refundMethod === 'chapa'
+                      ? 'refund.customer.refundedChapa'
+                      : `refund.customer.${refundView}`,
+                  )}
+                </p>
               </div>
             )}
           </section>

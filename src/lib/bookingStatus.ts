@@ -35,12 +35,12 @@ export function getRefundStatusLabelKey(
   return REFUND_STATUS_LABEL_KEYS[refundStatus as BookingRefundStatus]
 }
 
-// Collapses the internal refund states into the three outcomes a guest cares
+// Collapses the internal refund states into the statuses a guest cares
 // about, so operational steps like provider verification never reach them
 const CUSTOMER_REFUND_VIEW = {
-  required: 'inProgress',
+  required: 'pending',
   processing: 'inProgress',
-  verification_required: 'inProgress',
+  verification_required: 'pending',
   refunded: 'refunded',
   reversed: 'reversed',
 } as const

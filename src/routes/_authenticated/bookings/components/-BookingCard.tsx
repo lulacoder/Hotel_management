@@ -41,6 +41,7 @@ interface BookingCardProps {
     status: string
     paymentStatus?: string | undefined
     refundStatus?: string | undefined
+    refundMethod?: 'chapa' | 'manual' | undefined
     holdExpiresAt?: number | undefined
     packageType?: PackageType | undefined
     packageAddOn?: number | undefined
@@ -234,7 +235,11 @@ export function BookingCard({
                       : 'border-blue-500/30 bg-blue-500/10 text-blue-500'
                 }`}
               >
-                {t(`refund.customer.${refundView}`)}
+                {t(
+                  refundView === 'refunded' && booking.refundMethod === 'chapa'
+                    ? 'refund.customer.refundedChapa'
+                    : `refund.customer.${refundView}`,
+                )}
               </div>
             )}
           </div>

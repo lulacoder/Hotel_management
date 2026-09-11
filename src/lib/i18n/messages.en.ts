@@ -403,15 +403,18 @@ export const enMessages = {
   'admin.bookings.refundVerificationWarning':
     'Chapa may have accepted this refund. Check the Chapa dashboard before taking another action.',
   'admin.bookings.refundActionFailed': 'The refund action failed.',
+  'refund.customer.pending': 'Your full refund is pending.',
+  'refund.customer.label.pending': 'Refund pending',
   'refund.customer.inProgress':
-    'Your full refund is being processed. We will let you know once it lands.',
-  'refund.customer.refunded':
+    'Your full refund is being processed. We will notify you when it is complete.',
+  'refund.customer.refunded': 'Your full refund is complete.',
+  'refund.customer.refundedChapa':
     'Your full refund has been processed. Please allow 2–3 business days for the funds to reflect in your account.',
   'refund.customer.reversed':
-    'The refund did not complete. The hotel has been alerted to resolve it.',
-  'refund.customer.label.inProgress': 'Refund in progress',
+    'Your refund could not be completed. The hotel has been notified.',
+  'refund.customer.label.inProgress': 'Refund processing',
   'refund.customer.label.refunded': 'Refund completed',
-  'refund.customer.label.reversed': 'Refund needs attention',
+  'refund.customer.label.reversed': 'Refund delayed',
   'admin.bookings.viewDetail': 'View Detail',
   'admin.bookings.openPage': 'Open Page',
   'admin.bookings.acceptCash': 'Accept Cash',

@@ -62,14 +62,14 @@ function mapNotificationToPush(
     case 'booking_payment_proof_submitted':
       return null
     case 'booking_refund_required':
-      return { title: 'Refund required', body: message }
+      return { title: 'Refund pending', body: message }
     // Legacy only, nothing creates this type any more, but stored rows still render
     case 'booking_refund_processing':
-      return { title: 'Refund in progress', body: message }
+      return { title: 'Refund processing', body: message }
     case 'booking_refunded':
       return { title: 'Refund completed', body: message }
     case 'booking_refund_reversed':
-      return { title: 'Refund needs attention', body: message }
+      return { title: 'Refund delayed', body: message }
     default:
       return null
   }

@@ -426,13 +426,16 @@ export const amMessages = {
   'admin.bookings.refundVerificationWarning':
     'Chapa ተመላሽ ክፍያውን ተቀብሎት ሊሆን ይችላል። ሌላ እርምጃ ከመውሰድዎ በፊት የChapa ዳሽቦርድን ያረጋግጡ።',
   'admin.bookings.refundActionFailed': 'የተመላሽ ክፍያ እርምጃው አልተሳካም።',
+  'refund.customer.pending': 'ሙሉ ተመላሽ ክፍያዎ በመጠባበቅ ላይ ነው።',
+  'refund.customer.label.pending': 'ተመላሽ ክፍያ በመጠባበቅ ላይ',
   'refund.customer.inProgress': 'ሙሉ ተመላሽ ክፍያዎ በሂደት ላይ ነው። እንደተጠናቀቀ እናሳውቅዎታለን።',
-  'refund.customer.refunded':
+  'refund.customer.refunded': 'ሙሉ ተመላሽ ክፍያዎ ተጠናቋል።',
+  'refund.customer.refundedChapa':
     'ሙሉ ተመላሽ ክፍያዎ ተፈፅሟል። ገንዘቡ በሂሳብዎ ላይ ለመድረስ እባክዎ ከ2-3 የስራ ቀናትን ይጠብቁ።',
   'refund.customer.reversed': 'ተመላሽ ክፍያው አልተጠናቀቀም። ሆቴሉ እንዲፈታው ማሳወቂያ ደርሶታል።',
   'refund.customer.label.inProgress': 'ተመላሽ ክፍያ በሂደት ላይ',
   'refund.customer.label.refunded': 'ተመላሽ ክፍያ ተጠናቋል',
-  'refund.customer.label.reversed': 'ተመላሽ ክፍያ ትኩረት ይፈልጋል',
+  'refund.customer.label.reversed': 'ተመላሽ ክፍያ ዘግይቷል',
   'admin.bookings.viewDetail': 'View Detail',
   'admin.bookings.openPage': 'Open Page',
   'admin.bookings.acceptCash': 'Accept Cash',
