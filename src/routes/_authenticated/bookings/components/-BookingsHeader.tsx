@@ -1,8 +1,7 @@
-import { Link } from '@tanstack/react-router'
 import { UserButton } from '@clerk/clerk-react'
+import { Link } from '@tanstack/react-router'
 import { ArrowLeft, Home, MapPin, Menu } from 'lucide-react'
 import { useState } from 'react'
-import { staticAssets } from '../../../../lib/staticAssets'
 
 import { LanguageSwitcher } from '../../../../components/LanguageSwitcher'
 import { MobileAccountActions } from '../../../../components/MobileAccountActions'
@@ -19,6 +18,7 @@ import {
 } from '../../../../components/ui/sheet'
 import { useI18n } from '../../../../lib/i18n/provider'
 import { DEFAULT_SELECT_LOCATION_SEARCH } from '../../../../lib/navigationSearch'
+import { staticAssets } from '../../../../lib/staticAssets'
 
 interface BookingsHeaderProps {
   userName: string

@@ -2,9 +2,9 @@ import { useClerk, useUser } from '@clerk/clerk-react'
 import { useNavigate } from '@tanstack/react-router'
 import { LogOut, Settings } from 'lucide-react'
 
-import { cn } from '../lib/utils'
 import { useI18n } from '../lib/i18n/provider'
 import { useTheme } from '../lib/theme'
+import { cn } from '../lib/utils'
 import { NotificationBell } from './NotificationBell'
 import { useConfirm } from './ui/confirm-dialog'
 

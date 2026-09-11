@@ -1,8 +1,8 @@
 import { createRouter } from '@tanstack/react-router'
 
+import { createRouterContext } from './lib/routerContext'
 // Generated from file-based routes in `src/routes`.
 import { routeTree } from './routeTree.gen'
-import { createRouterContext } from './lib/routerContext'
 
 // Factory keeps router creation SSR-safe and test-friendly.
 export const getRouter = () => {

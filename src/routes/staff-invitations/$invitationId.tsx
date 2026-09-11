@@ -1,3 +1,4 @@
+import { useUser } from '@clerk/clerk-react'
 // Public invitation handoff that preserves auth redirects and activates staff access.
 import {
   Link,
@@ -5,7 +6,6 @@ import {
   useLocation,
   useNavigate,
 } from '@tanstack/react-router'
-import { useUser } from '@clerk/clerk-react'
 import {
   ArrowRight,
   Building2,
@@ -18,19 +18,21 @@ import {
 } from 'lucide-react'
 import { useEffect, useState } from 'react'
 
+import { useAction, useQuery } from '@/integrations/convex/hooks'
+
 import { api } from '../../../convex/_generated/api'
-import { staticAssets } from '../../lib/staticAssets'
-import { Button } from '../../components/ui/button'
 import { ThemeToggle } from '../../components/ThemeToggle'
+import { Button } from '../../components/ui/button'
 import { useI18n } from '../../lib/i18n/provider'
 import { DEFAULT_ADMIN_DASHBOARD_SEARCH } from '../../lib/navigationSearch'
 import {
   clearStaffInvitationContinuation,
   rememberStaffInvitationContinuation,
 } from '../../lib/staffInvitationContinuation'
+import { staticAssets } from '../../lib/staticAssets'
 import { useTheme } from '../../lib/theme'
+
 import type { Id } from '../../../convex/_generated/dataModel'
-import { useAction, useQuery } from '@/integrations/convex/hooks'
 
 export const Route = createFileRoute('/staff-invitations/$invitationId')({
   validateSearch: (search: Record<string, unknown>) => ({

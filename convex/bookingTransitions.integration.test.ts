@@ -4,8 +4,9 @@ import { convexTest } from 'convex-test'
 import { describe, expect, it } from 'vitest'
 
 import { api, internal } from './_generated/api'
-import schema from './schema'
 import { transitionBooking } from './lib/bookingTransitions'
+import schema from './schema'
+
 import type { Id } from './_generated/dataModel'
 
 const modules = import.meta.glob('./**/*.ts')

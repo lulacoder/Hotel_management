@@ -1,17 +1,20 @@
 import { createFileRoute } from '@tanstack/react-router'
 import { Building2, Search } from 'lucide-react'
-import { useMemo, useState } from 'react'
 import { m } from 'motion/react'
+import { useMemo, useState } from 'react'
+
+import { useConfirm } from '@/components/ui/confirm-dialog'
+import { useMutation, useQuery } from '@/integrations/convex/hooks'
+import { useAdminSession } from '@/lib/adminSession'
+
 import { api } from '../../../../convex/_generated/api'
 import { useI18n } from '../../../lib/i18n/provider'
 import { useTheme } from '../../../lib/theme'
 import { AssignModal } from './components/-AssignModal'
 import { ImpersonateModal } from './components/-ImpersonateModal'
 import { UserActionsMenu } from './components/-UserActionsMenu'
+
 import type { Id } from '../../../../convex/_generated/dataModel'
-import { useMutation, useQuery } from '@/integrations/convex/hooks'
-import { useConfirm } from '@/components/ui/confirm-dialog'
-import { useAdminSession } from '@/lib/adminSession'
 
 export const Route = createFileRoute('/admin/users/')({
   // Register staff/user assignment route (room_admin only).

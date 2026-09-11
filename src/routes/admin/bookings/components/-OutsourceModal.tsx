@@ -1,13 +1,8 @@
+import { Loader2, X } from 'lucide-react'
 // Modal used to outsource a booking to another hotel when capacity is unavailable.
 import { useMemo, useState } from 'react'
-import { Loader2, X } from 'lucide-react'
 
-import { api } from '../../../../../convex/_generated/api'
-import { useI18n } from '../../../../lib/i18n/provider'
-import { useTheme } from '../../../../lib/theme'
-import type { Id } from '../../../../../convex/_generated/dataModel'
 import { Button } from '@/components/ui/button'
-import { useMutation, useQuery } from '@/integrations/convex/hooks'
 import {
   Select,
   SelectContent,
@@ -15,8 +10,15 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select'
+import { useMutation, useQuery } from '@/integrations/convex/hooks'
 import { formatUsdAmount } from '@/lib/currency'
 import { getErrorMessage } from '@/lib/errors'
+
+import { api } from '../../../../../convex/_generated/api'
+import { useI18n } from '../../../../lib/i18n/provider'
+import { useTheme } from '../../../../lib/theme'
+
+import type { Id } from '../../../../../convex/_generated/dataModel'
 
 interface EnrichedBooking {
   booking: {
@@ -201,7 +203,9 @@ export function OutsourceModal({
               disabled={isSubmitting || isSuccess}
             >
               <SelectTrigger className="admin-select">
-                <SelectValue placeholder={t('admin.bookings.outsourceModal.selectHotel')} />
+                <SelectValue
+                  placeholder={t('admin.bookings.outsourceModal.selectHotel')}
+                />
               </SelectTrigger>
               <SelectContent>
                 {destinationHotels?.map((hotel) => (

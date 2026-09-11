@@ -1,6 +1,5 @@
 // Admin dashboard landing page with role-aware analytics and quick actions.
 import { Link, createLazyFileRoute, useNavigate } from '@tanstack/react-router'
-import { Suspense, lazy, useCallback, useMemo } from 'react'
 import {
   ArrowUpRight,
   BarChart3,
@@ -14,21 +13,25 @@ import {
   Zap,
 } from 'lucide-react'
 import { m } from 'motion/react'
+import { Suspense, lazy, useCallback, useMemo } from 'react'
+
+import { AnalyticsEmptyState } from '@/components/admin-analytics/AnalyticsEmptyState'
+import { AnalyticsMetricCard } from '@/components/admin-analytics/AnalyticsMetricCard'
+import { AnalyticsTimeWindowTabs } from '@/components/admin-analytics/AnalyticsTimeWindowTabs'
+import { AnalyticsTopHotelsTable } from '@/components/admin-analytics/AnalyticsTopHotelsTable'
+import { useQuery } from '@/integrations/convex/hooks'
+import { useAdminSession } from '@/lib/adminSession'
+import { useI18n } from '@/lib/i18n'
+import { useTheme } from '@/lib/theme'
+
 import { api } from '../../../convex/_generated/api'
+
 import type {
   AnalyticsWindow,
   BookingStatusFilter,
   PaymentStatusFilter,
   RoomOperationalStatusFilter,
 } from '@/lib/adminAnalytics'
-import { useAdminSession } from '@/lib/adminSession'
-import { useI18n } from '@/lib/i18n'
-import { useTheme } from '@/lib/theme'
-import { useQuery } from '@/integrations/convex/hooks'
-import { AnalyticsMetricCard } from '@/components/admin-analytics/AnalyticsMetricCard'
-import { AnalyticsTimeWindowTabs } from '@/components/admin-analytics/AnalyticsTimeWindowTabs'
-import { AnalyticsTopHotelsTable } from '@/components/admin-analytics/AnalyticsTopHotelsTable'
-import { AnalyticsEmptyState } from '@/components/admin-analytics/AnalyticsEmptyState'
 
 const LazyAnalyticsTrendChart = lazy(() =>
   import('@/components/admin-analytics/AnalyticsTrendChart').then((module) => ({

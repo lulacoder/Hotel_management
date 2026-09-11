@@ -1,5 +1,6 @@
 // Scroll-triggered entrance wrapper shared by the landing page sections.
 import { motion, useReducedMotion } from 'motion/react'
+
 import type { ReactNode } from 'react'
 
 type RevealProps = {
@@ -10,7 +11,12 @@ type RevealProps = {
   as?: 'div' | 'li'
 }
 
-export function Reveal({ children, className, delay = 0, as = 'div' }: RevealProps) {
+export function Reveal({
+  children,
+  className,
+  delay = 0,
+  as = 'div',
+}: RevealProps) {
   const prefersReducedMotion = useReducedMotion()
 
   if (prefersReducedMotion) {

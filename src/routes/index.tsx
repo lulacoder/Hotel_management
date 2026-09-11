@@ -2,17 +2,18 @@
 import { useAuth } from '@clerk/clerk-react'
 import { createFileRoute } from '@tanstack/react-router'
 import { useEffect, useRef } from 'react'
+
+import { Footer } from '../components/Footer'
+import { Seo } from '../components/Seo'
 import { useI18n } from '../lib/i18n/provider'
 import { staticAssets } from '../lib/staticAssets'
-import { Seo } from '../components/Seo'
-import { Footer } from '../components/Footer'
+import { BookingPath } from './index/components/-BookingPath'
+import { CapabilityIndex } from './index/components/-CapabilityIndex'
+import { ClosingCta } from './index/components/-ClosingCta'
 import { Hero } from './index/components/-Hero'
 import { HotelCarousel } from './index/components/-HotelCarousel'
-import { CapabilityIndex } from './index/components/-CapabilityIndex'
 import { Marketplace } from './index/components/-Marketplace'
 import { StayMoods } from './index/components/-StayMoods'
-import { BookingPath } from './index/components/-BookingPath'
-import { ClosingCta } from './index/components/-ClosingCta'
 
 export const Route = createFileRoute('/')({
   // Route definition for public landing experience.
@@ -42,7 +43,8 @@ function LandingPage() {
       url: 'https://www.tripwayshotel.site',
       potentialAction: {
         '@type': 'SearchAction',
-        target: 'https://www.tripwayshotel.site/select-location?q={search_term_string}',
+        target:
+          'https://www.tripwayshotel.site/select-location?q={search_term_string}',
         'query-input': 'required name=search_term_string',
       },
     },

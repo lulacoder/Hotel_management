@@ -11,8 +11,19 @@ import {
   RotateCcw,
   XCircle,
 } from 'lucide-react'
-import { useState } from 'react'
 import { m } from 'motion/react'
+import { useState } from 'react'
+
+import { AdminSpinner } from '@/components/AdminSpinner'
+import { Button } from '@/components/ui/button'
+import { useConfirm } from '@/components/ui/confirm-dialog'
+import { useAction, useMutation, useQuery } from '@/integrations/convex/hooks'
+import {
+  getRefundStatusLabelKey,
+  useBookingStatusConfig,
+} from '@/lib/bookingStatus'
+import { formatEtbAmount, formatUsdAmount } from '@/lib/currency'
+import { useTheme } from '@/lib/theme'
 
 import { api } from '../../../../convex/_generated/api'
 import { getAllowedBookingTransitions } from '../../../../convex/lib/bookingLifecycle'
@@ -22,20 +33,11 @@ import {
   formatPackageAddOn,
   getPackageLabelOrDefault,
 } from '../../../lib/packages'
-import { OutsourceModal } from './components/-OutsourceModal'
 import { BookingStatusBadge } from './components/-BookingStatusBadge'
-import type { ManualBookingTransitionStatus } from '../../../../convex/lib/bookingLifecycle'
+import { OutsourceModal } from './components/-OutsourceModal'
+
 import type { Id } from '../../../../convex/_generated/dataModel'
-import { useTheme } from '@/lib/theme'
-import { useConfirm } from '@/components/ui/confirm-dialog'
-import { Button } from '@/components/ui/button'
-import { useAction, useMutation, useQuery } from '@/integrations/convex/hooks'
-import { AdminSpinner } from '@/components/AdminSpinner'
-import { formatEtbAmount, formatUsdAmount } from '@/lib/currency'
-import {
-  getRefundStatusLabelKey,
-  useBookingStatusConfig,
-} from '@/lib/bookingStatus'
+import type { ManualBookingTransitionStatus } from '../../../../convex/lib/bookingLifecycle'
 
 export const Route = createFileRoute('/admin/bookings/$bookingId')({
   // Register admin booking detail route for status/payment operations.

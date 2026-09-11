@@ -34,8 +34,11 @@ npm run lint
 # Typecheck with the Go-native TypeScript 7 compiler
 npm run typecheck
 
-# Format (Prettier)
+# Format with Oxfmt
 npm run format
+
+# Check formatting without writing files
+npm run format:check
 
 # Format, lint-fix, and typecheck (recommended before commits)
 npm run check
@@ -61,6 +64,8 @@ This repository uses stable TypeScript 7. Its Go-native compiler is invoked as
 `tsc`; do not add `@typescript/native-preview`, `tsgo`, or a TypeScript 6
 fallback. Oxlint is the only linter; do not add ESLint or ESLint compatibility
 plugins.
+
+Oxfmt is the only formatter. Do not add Prettier or Prettier plugins.
 
 ### Convex Codegen Rule
 
@@ -226,11 +231,11 @@ throw new ConvexError({
 
 ### Formatting
 
-- Prettier handles all formatting (run `npm run format`)
-- No trailing commas in function arguments
+- Oxfmt handles all formatting and import sorting (run `npm run format`)
+- Use trailing commas wherever the formatter supports them
 - 2-space indentation
 - Single quotes for strings
-- No semicolons (Prettier default)
+- No semicolons
 
 ### Developer Experience Comments
 
@@ -389,7 +394,8 @@ skills:
   load: "node_modules/@tanstack/start-client-core/skills/start-core/server-routes/SKILL.md"
 
 - task: "understanding the overall TanStack Start app structure"
-load: "node_modules/@tanstack/start-client-core/skills/start-core/SKILL.md"
+  load: "node_modules/@tanstack/start-client-core/skills/start-core/SKILL.md"
+
 <!-- intent-skills:end -->
 
 <!-- convex-ai-start -->

@@ -51,9 +51,7 @@ export function Seo({
   noIndex = false,
   jsonLd,
 }: SeoProps) {
-  const fullTitle = title
-    ? `${title} | ${SITE_NAME}`
-    : DEFAULT_TITLE
+  const fullTitle = title ? `${title} | ${SITE_NAME}` : DEFAULT_TITLE
 
   const canonicalHref = canonicalUrl
     ? canonicalUrl.startsWith('http')

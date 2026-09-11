@@ -1,13 +1,14 @@
 'use client'
 
-import * as React from 'react'
 import {
   AlertCircle,
   AlertTriangle,
   CheckCircle2,
   HelpCircle,
 } from 'lucide-react'
-import type { LucideIcon } from 'lucide-react'
+import * as React from 'react'
+
+import { Button } from '@/components/ui/button'
 import {
   Dialog,
   DialogContent,
@@ -15,8 +16,9 @@ import {
   DialogFooter,
   DialogTitle,
 } from '@/components/ui/dialog'
-import { Button } from '@/components/ui/button'
 import { cn } from '@/lib/utils'
+
+import type { LucideIcon } from 'lucide-react'
 
 export type ConfirmVariant =
   | 'default'

@@ -1,17 +1,11 @@
-import { useMemo, useState } from 'react'
-import { useForm, useStore } from '@tanstack/react-form'
-import { z } from 'zod'
 import { useUser } from '@clerk/clerk-react'
+import { useForm, useStore } from '@tanstack/react-form'
+import { useMemo, useState } from 'react'
+import { z } from 'zod'
 
-import { api } from '../../../../../../convex/_generated/api'
-import { useI18n } from '../../../../../lib/i18n/provider'
-import { getHotelCategoryLabel } from '../../../../../lib/hotelCategories'
-import { useTheme } from '../../../../../lib/theme'
-import type { Id } from '../../../../../../convex/_generated/dataModel'
-import { useMutation, useQuery } from '@/integrations/convex/hooks'
-import { Button } from '@/components/ui/button'
 import { ImageField } from '@/components/form/ImageField'
 import { TextAreaField, TextField } from '@/components/form/TextField'
+import { Button } from '@/components/ui/button'
 import {
   Select,
   SelectContent,
@@ -19,8 +13,16 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select'
-import { getFirstErrorMessage } from '@/lib/forms'
 import { useImageUpload } from '@/hooks/useImageUpload'
+import { useMutation, useQuery } from '@/integrations/convex/hooks'
+import { getFirstErrorMessage } from '@/lib/forms'
+
+import { api } from '../../../../../../convex/_generated/api'
+import { getHotelCategoryLabel } from '../../../../../lib/hotelCategories'
+import { useI18n } from '../../../../../lib/i18n/provider'
+import { useTheme } from '../../../../../lib/theme'
+
+import type { Id } from '../../../../../../convex/_generated/dataModel'
 
 interface HotelModalProps {
   hotelId: Id<'hotels'> | null
@@ -332,8 +334,7 @@ function HotelModalContent({
         }
 
         if (hotelId) {
-          const imagePayload =
-            imageUpload.buildUpdatePayload(nextImageR2Key)
+          const imagePayload = imageUpload.buildUpdatePayload(nextImageR2Key)
 
           await updateHotel({
             hotelId,
@@ -614,8 +615,13 @@ function HotelModalContent({
                       field.handleChange(value as HotelCategory | '')
                     }
                   >
-                    <SelectTrigger className="admin-select" onBlur={field.handleBlur}>
-                      <SelectValue placeholder={t('admin.hotels.modal.selectCategory')} />
+                    <SelectTrigger
+                      className="admin-select"
+                      onBlur={field.handleBlur}
+                    >
+                      <SelectValue
+                        placeholder={t('admin.hotels.modal.selectCategory')}
+                      />
                     </SelectTrigger>
                     <SelectContent>
                       {categories.map((category) => (
@@ -738,11 +744,7 @@ function HotelModalContent({
           </form.Field>
 
           <div className="admin-modal-footer">
-            <Button
-              type="button"
-              variant="outline"
-              onClick={onClose}
-            >
+            <Button type="button" variant="outline" onClick={onClose}>
               {t('common.cancel')}
             </Button>
             <form.Subscribe

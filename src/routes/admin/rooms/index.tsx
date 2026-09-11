@@ -8,17 +8,19 @@ import {
   Search,
   SlidersHorizontal,
 } from 'lucide-react'
-import { useState } from 'react'
 import { m } from 'motion/react'
-import { api } from '../../../../convex/_generated/api'
+import { useState } from 'react'
+
 import { useQuery } from '@/integrations/convex/hooks'
-import { useI18n } from '@/lib/i18n'
-import { useTheme } from '@/lib/theme'
 import {
   normalizeAnalyticsWindow,
   normalizeRoomOperationalStatusFilter,
 } from '@/lib/adminAnalytics'
 import { useAdminSession } from '@/lib/adminSession'
+import { useI18n } from '@/lib/i18n'
+import { useTheme } from '@/lib/theme'
+
+import { api } from '../../../../convex/_generated/api'
 
 export const Route = createFileRoute('/admin/rooms/')({
   validateSearch: (search: Record<string, unknown>) => ({

@@ -1,5 +1,5 @@
-import resend from '@convex-dev/resend/convex.config'
 import r2 from '@convex-dev/r2/convex.config.js'
+import resend from '@convex-dev/resend/convex.config'
 import { defineApp } from 'convex/server'
 
 const app = defineApp()

@@ -1,10 +1,13 @@
-import { m } from 'motion/react'
 import { Wallet } from 'lucide-react'
+import { m } from 'motion/react'
+
+import { useTheme } from '@/lib/theme'
+
 import { AnalyticsMetricCard } from './AnalyticsMetricCard'
 import { AnalyticsStatusBreakdown } from './AnalyticsStatusBreakdown'
 import { AnalyticsTrendChart } from './AnalyticsTrendChart'
+
 import type { Locale } from '@/lib/i18n'
-import { useTheme } from '@/lib/theme'
 
 interface Metric {
   key:

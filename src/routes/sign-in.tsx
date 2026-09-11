@@ -1,16 +1,17 @@
+import { SignIn } from '@clerk/clerk-react'
 // Canonical sign-in route with redirect handling for protected destinations.
 import { Link, createFileRoute, redirect } from '@tanstack/react-router'
-import { SignIn } from '@clerk/clerk-react'
 import { ArrowLeft } from 'lucide-react'
-import { CURRENT_YEAR } from '../lib/currentYear'
-import { Button } from '../components/ui/button'
-import { ThemeToggle } from '../components/ThemeToggle'
-import { buildRedirectSearch, sanitizeRedirect } from '../lib/authRouting'
-import { useI18n } from '../lib/i18n/provider'
-import { getClerkAuthAppearance } from '../lib/clerkAppearance'
-import { useTheme } from '../lib/theme'
-import { staticAssets } from '../lib/staticAssets'
+
 import { Seo } from '../components/Seo'
+import { ThemeToggle } from '../components/ThemeToggle'
+import { Button } from '../components/ui/button'
+import { buildRedirectSearch, sanitizeRedirect } from '../lib/authRouting'
+import { getClerkAuthAppearance } from '../lib/clerkAppearance'
+import { CURRENT_YEAR } from '../lib/currentYear'
+import { useI18n } from '../lib/i18n/provider'
+import { staticAssets } from '../lib/staticAssets'
+import { useTheme } from '../lib/theme'
 
 export const Route = createFileRoute('/sign-in')({
   beforeLoad: ({ context, search }) => {
@@ -128,7 +129,9 @@ function SignInPage() {
               <h1 className="text-2xl font-bold text-slate-900 dark:text-white mb-2">
                 {t('signIn.welcomeBack')}
               </h1>
-              <p className="text-slate-600 dark:text-slate-400">{t('signIn.continue')}</p>
+              <p className="text-slate-600 dark:text-slate-400">
+                {t('signIn.continue')}
+              </p>
             </div>
 
             <SignIn

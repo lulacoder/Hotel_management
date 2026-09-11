@@ -1,5 +1,5 @@
-import { Link, createFileRoute } from '@tanstack/react-router'
 import { UserButton, useUser } from '@clerk/clerk-react'
+import { Link, createFileRoute } from '@tanstack/react-router'
 import {
   AlertCircle,
   AlertTriangle,
@@ -13,11 +13,13 @@ import {
   X,
 } from 'lucide-react'
 import { useState } from 'react'
-import { staticAssets } from '../../lib/staticAssets'
+
+import { AdminSpinner } from '@/components/AdminSpinner'
+import { usePaginatedQuery, useQuery } from '@/integrations/convex/hooks'
 
 import { api } from '../../../convex/_generated/api'
-import { LoadMoreButton } from '../../components/LoadMoreButton'
 import { LanguageSwitcher } from '../../components/LanguageSwitcher'
+import { LoadMoreButton } from '../../components/LoadMoreButton'
 import { MobileAccountActions } from '../../components/MobileAccountActions'
 import { ThemeToggle } from '../../components/ThemeToggle'
 import { useI18n } from '../../lib/i18n/provider'
@@ -25,10 +27,10 @@ import {
   DEFAULT_AUTH_SEARCH,
   DEFAULT_SELECT_LOCATION_SEARCH,
 } from '../../lib/navigationSearch'
+import { staticAssets } from '../../lib/staticAssets'
 import { useTheme } from '../../lib/theme'
+
 import type { Id } from '../../../convex/_generated/dataModel'
-import { usePaginatedQuery, useQuery } from '@/integrations/convex/hooks'
-import { AdminSpinner } from '@/components/AdminSpinner'
 
 // ---------------------------------------------------------------------------
 // Route

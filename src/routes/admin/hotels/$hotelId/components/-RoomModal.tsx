@@ -1,16 +1,11 @@
-import { useMemo, useState } from 'react'
-import { useForm, useStore } from '@tanstack/react-form'
-import { z } from 'zod'
 import { useUser } from '@clerk/clerk-react'
+import { useForm, useStore } from '@tanstack/react-form'
+import { useMemo, useState } from 'react'
+import { z } from 'zod'
 
-import { api } from '../../../../../../convex/_generated/api'
-import { useI18n } from '../../../../../lib/i18n/provider'
-import { useTheme } from '../../../../../lib/theme'
-import type { Id } from '../../../../../../convex/_generated/dataModel'
-import { useMutation, useQuery } from '@/integrations/convex/hooks'
-import { Button } from '@/components/ui/button'
 import { ImageField } from '@/components/form/ImageField'
 import { TextAreaField, TextField } from '@/components/form/TextField'
+import { Button } from '@/components/ui/button'
 import {
   Select,
   SelectContent,
@@ -18,8 +13,15 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select'
-import { getFirstErrorMessage } from '@/lib/forms'
 import { useImageUpload } from '@/hooks/useImageUpload'
+import { useMutation, useQuery } from '@/integrations/convex/hooks'
+import { getFirstErrorMessage } from '@/lib/forms'
+
+import { api } from '../../../../../../convex/_generated/api'
+import { useI18n } from '../../../../../lib/i18n/provider'
+import { useTheme } from '../../../../../lib/theme'
+
+import type { Id } from '../../../../../../convex/_generated/dataModel'
 
 interface RoomModalProps {
   hotelId: Id<'hotels'>
@@ -182,8 +184,7 @@ function RoomModalContent({
         }
 
         if (roomId) {
-          const imagePayload =
-            imageUpload.buildUpdatePayload(nextImageR2Key)
+          const imagePayload = imageUpload.buildUpdatePayload(nextImageR2Key)
 
           await updateRoom({
             roomId,
@@ -334,14 +335,25 @@ function RoomModalContent({
                       field.handleChange(value as RoomType)
                     }
                   >
-                    <SelectTrigger className="admin-select" onBlur={field.handleBlur}>
+                    <SelectTrigger
+                      className="admin-select"
+                      onBlur={field.handleBlur}
+                    >
                       <SelectValue />
                     </SelectTrigger>
                     <SelectContent>
-                      <SelectItem value="budget">{t('hotel.budgetRoom')}</SelectItem>
-                      <SelectItem value="standard">{t('hotel.standardRoom')}</SelectItem>
-                      <SelectItem value="suite">{t('hotel.suiteRoom')}</SelectItem>
-                      <SelectItem value="deluxe">{t('hotel.deluxeRoom')}</SelectItem>
+                      <SelectItem value="budget">
+                        {t('hotel.budgetRoom')}
+                      </SelectItem>
+                      <SelectItem value="standard">
+                        {t('hotel.standardRoom')}
+                      </SelectItem>
+                      <SelectItem value="suite">
+                        {t('hotel.suiteRoom')}
+                      </SelectItem>
+                      <SelectItem value="deluxe">
+                        {t('hotel.deluxeRoom')}
+                      </SelectItem>
                     </SelectContent>
                   </Select>
                 </div>
@@ -471,11 +483,7 @@ function RoomModalContent({
           </div>
 
           <div className="admin-modal-footer">
-            <Button
-              type="button"
-              variant="outline"
-              onClick={onClose}
-            >
+            <Button type="button" variant="outline" onClick={onClose}>
               {t('common.cancel')}
             </Button>
             <form.Subscribe

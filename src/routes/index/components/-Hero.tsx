@@ -2,6 +2,12 @@
 import { Link, useNavigate } from '@tanstack/react-router'
 import { ArrowRight, MapPin, Search } from 'lucide-react'
 import { useId, useRef, useState } from 'react'
+
+import { GuestStepper } from '@/components/GuestStepper'
+import { Button } from '@/components/ui/button'
+import { DatePicker } from '@/components/ui/date-picker'
+import { staticPhotos } from '@/lib/staticPhotos'
+
 import { useI18n } from '../../../lib/i18n/provider'
 import {
   DEFAULT_AUTH_SEARCH,
@@ -10,13 +16,10 @@ import {
   getMinimumCheckoutDate,
   getTodayDateString,
 } from '../../../lib/navigationSearch'
-import { Reveal } from './-Reveal'
 import { HeroSearchAutocomplete } from './-HeroSearchAutocomplete'
+import { Reveal } from './-Reveal'
+
 import type { Id } from '../../../../convex/_generated/dataModel'
-import { Button } from '@/components/ui/button'
-import { DatePicker } from '@/components/ui/date-picker'
-import { GuestStepper } from '@/components/GuestStepper'
-import { staticPhotos } from '@/lib/staticPhotos'
 
 export function Hero() {
   const { t } = useI18n()

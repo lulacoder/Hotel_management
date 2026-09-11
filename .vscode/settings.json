@@ -1,9 +1,12 @@
 {
   "oxc.enable.oxlint": true,
-  "oxc.enable.oxfmt": false,
+  "oxc.enable.oxfmt": true,
   "oxc.requireConfig": true,
   "oxc.typeAware": true,
+  "editor.defaultFormatter": "oxc.oxc-vscode",
+  "editor.formatOnSave": false,
   "editor.codeActionsOnSave": {
+    "source.format.oxc": "explicit",
     "source.fixAll.oxc": "explicit"
   },
   "js/ts.experimental.useTsgo": true,

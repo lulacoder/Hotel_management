@@ -43,7 +43,9 @@ export function getClerkAuthAppearance(theme: Theme) {
         ? '!text-violet-600 hover:!text-violet-500'
         : '!text-violet-400 hover:!text-violet-300',
       identityPreviewText: isLight ? '!text-slate-700' : '!text-slate-300',
-      identityPreviewEditButton: isLight ? '!text-violet-600' : '!text-violet-400',
+      identityPreviewEditButton: isLight
+        ? '!text-violet-600'
+        : '!text-violet-400',
       formFieldInputShowPasswordButton: isLight
         ? '!text-slate-500'
         : '!text-slate-400',
@@ -51,5 +53,3 @@ export function getClerkAuthAppearance(theme: Theme) {
     },
   }
 }
-
-

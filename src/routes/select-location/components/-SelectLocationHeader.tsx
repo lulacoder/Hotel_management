@@ -1,8 +1,7 @@
-import { Link } from '@tanstack/react-router'
 import { UserButton } from '@clerk/clerk-react'
+import { Link } from '@tanstack/react-router'
 import { Home, MapPin, Menu } from 'lucide-react'
 import { useState } from 'react'
-import { staticAssets } from '../../../lib/staticAssets'
 
 import { LanguageSwitcher } from '../../../components/LanguageSwitcher'
 import { MobileAccountActions } from '../../../components/MobileAccountActions'
@@ -22,6 +21,7 @@ import {
   DEFAULT_AUTH_SEARCH,
   DEFAULT_SELECT_LOCATION_SEARCH,
 } from '../../../lib/navigationSearch'
+import { staticAssets } from '../../../lib/staticAssets'
 
 interface SelectLocationHeaderProps {
   isSignedIn: boolean

@@ -10,9 +10,11 @@ import {
   Wind,
 } from 'lucide-react'
 
-import { useI18n } from '../../../lib/i18n/provider'
-import type { Id } from '../../../../convex/_generated/dataModel'
 import { formatUsdAmount, formatUsdWholeAmount } from '@/lib/currency'
+
+import { useI18n } from '../../../lib/i18n/provider'
+
+import type { Id } from '../../../../convex/_generated/dataModel'
 
 interface RoomSummary {
   _id: Id<'rooms'>

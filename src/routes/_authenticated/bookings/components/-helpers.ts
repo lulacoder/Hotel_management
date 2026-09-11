@@ -1,5 +1,6 @@
-import type { Locale } from '../../../../lib/i18n'
 import { formatUsdAmount } from '@/lib/currency'
+
+import type { Locale } from '../../../../lib/i18n'
 
 const localeMap: Record<Locale, string> = {
   en: 'en-US',

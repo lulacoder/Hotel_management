@@ -1,13 +1,15 @@
-import { m } from 'motion/react'
 import { ArrowRight } from 'lucide-react'
-import type { Locale } from '@/lib/i18n'
+import { m } from 'motion/react'
+
 import { Card, CardContent } from '@/components/ui/card'
-import { useTheme } from '@/lib/theme'
 import {
   formatAnalyticsCount,
   formatAnalyticsCurrency,
   formatAnalyticsPercent,
 } from '@/lib/adminAnalytics'
+import { useTheme } from '@/lib/theme'
+
+import type { Locale } from '@/lib/i18n'
 
 interface Props {
   label: string

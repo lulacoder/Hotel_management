@@ -98,7 +98,8 @@ npm run seed-hotels
 
 This project uses [Oxlint](https://oxc.rs/docs/guide/usage/linter) for linting,
 the Go-native TypeScript 7 compiler for typechecking, and
-[Prettier](https://prettier.io/) for formatting. The following scripts are
+[Oxfmt](https://oxc.rs/docs/guide/usage/formatter) for formatting and import
+sorting. The following scripts are
 available:
 
 ```bash
@@ -106,6 +107,7 @@ npm run lint
 npm run lint:fix
 npm run typecheck
 npm run format
+npm run format:check
 npm run check
 npm run check:ci
 ```

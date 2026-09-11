@@ -2,8 +2,9 @@
 
 import { v } from 'convex/values'
 import { Webhook } from 'svix'
-import { internalAction } from './_generated/server'
+
 import { internal } from './_generated/api'
+import { internalAction } from './_generated/server'
 
 interface ClerkWebhookEvent {
   type: string

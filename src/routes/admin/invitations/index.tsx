@@ -15,8 +15,11 @@ import {
 import { useMemo, useState } from 'react'
 import { toast } from 'sonner'
 
+import { useAction, useMutation, useQuery } from '@/integrations/convex/hooks'
+
 import { api } from '../../../../convex/_generated/api'
 import { Button } from '../../../components/ui/button'
+import { useConfirm } from '../../../components/ui/confirm-dialog'
 import {
   Select,
   SelectContent,
@@ -24,13 +27,12 @@ import {
   SelectTrigger,
   SelectValue,
 } from '../../../components/ui/select'
-import { useConfirm } from '../../../components/ui/confirm-dialog'
 import { useAdminSession } from '../../../lib/adminSession'
 import { useI18n } from '../../../lib/i18n/provider'
 import { useTheme } from '../../../lib/theme'
+
 import type { Id } from '../../../../convex/_generated/dataModel'
 import type { TranslationKey } from '../../../lib/i18n/messages'
-import { useAction, useMutation, useQuery } from '@/integrations/convex/hooks'
 
 export const Route = createFileRoute('/admin/invitations/')({
   component: AdminInvitationsPage,
@@ -255,20 +257,28 @@ function AdminInvitationsPage() {
 
   return (
     <div className="mx-auto max-w-7xl space-y-7">
-      <section className={`relative overflow-hidden rounded-3xl border px-6 py-8 shadow-2xl sm:px-8 ${
-        isDark
-          ? 'border-violet-500/20 bg-slate-950 shadow-violet-950/20'
-          : 'border-violet-200/60 bg-gradient-to-br from-white via-violet-50/60 to-slate-50 shadow-slate-200/40'
-      }`}>
-        <div className={`absolute -right-16 -top-20 size-64 rounded-full blur-3xl ${isDark ? 'bg-violet-500/15' : 'bg-violet-300/20'}`} />
-        <div className={`absolute bottom-0 right-24 size-32 rounded-full blur-2xl ${isDark ? 'bg-indigo-400/10' : 'bg-indigo-300/15'}`} />
+      <section
+        className={`relative overflow-hidden rounded-3xl border px-6 py-8 shadow-2xl sm:px-8 ${
+          isDark
+            ? 'border-violet-500/20 bg-slate-950 shadow-violet-950/20'
+            : 'border-violet-200/60 bg-gradient-to-br from-white via-violet-50/60 to-slate-50 shadow-slate-200/40'
+        }`}
+      >
+        <div
+          className={`absolute -right-16 -top-20 size-64 rounded-full blur-3xl ${isDark ? 'bg-violet-500/15' : 'bg-violet-300/20'}`}
+        />
+        <div
+          className={`absolute bottom-0 right-24 size-32 rounded-full blur-2xl ${isDark ? 'bg-indigo-400/10' : 'bg-indigo-300/15'}`}
+        />
         <div className="relative grid gap-8 lg:grid-cols-[1.2fr_1fr] lg:items-end">
           <div>
-            <div className={`mb-4 inline-flex items-center gap-2 rounded-full border px-3 py-1.5 text-xs font-semibold uppercase tracking-[0.16em] ${
-              isDark
-                ? 'border-violet-400/20 bg-violet-400/10 text-violet-300'
-                : 'border-violet-300/40 bg-violet-100/60 text-violet-600'
-            }`}>
+            <div
+              className={`mb-4 inline-flex items-center gap-2 rounded-full border px-3 py-1.5 text-xs font-semibold uppercase tracking-[0.16em] ${
+                isDark
+                  ? 'border-violet-400/20 bg-violet-400/10 text-violet-300'
+                  : 'border-violet-300/40 bg-violet-100/60 text-violet-600'
+              }`}
+            >
               <MailPlus className="size-3.5" />
               {t('admin.invitations.eyebrow')}
             </div>
@@ -278,7 +288,9 @@ function AdminInvitationsPage() {
             >
               {t('admin.invitations.title')}
             </h1>
-            <p className={`mt-3 max-w-2xl text-sm leading-7 sm:text-base ${isDark ? 'text-slate-400' : 'text-slate-600'}`}>
+            <p
+              className={`mt-3 max-w-2xl text-sm leading-7 sm:text-base ${isDark ? 'text-slate-400' : 'text-slate-600'}`}
+            >
               {t('admin.invitations.description')}
             </p>
           </div>
@@ -293,8 +305,14 @@ function AdminInvitationsPage() {
                 }`}
               >
                 <Icon className={`mb-3 size-4 ${color}`} />
-                <p className={`text-2xl font-semibold ${isDark ? 'text-white' : 'text-slate-900'}`}>{value}</p>
-                <p className={`mt-1 text-[11px] uppercase tracking-wider ${isDark ? 'text-slate-500' : 'text-slate-400'}`}>
+                <p
+                  className={`text-2xl font-semibold ${isDark ? 'text-white' : 'text-slate-900'}`}
+                >
+                  {value}
+                </p>
+                <p
+                  className={`mt-1 text-[11px] uppercase tracking-wider ${isDark ? 'text-slate-500' : 'text-slate-400'}`}
+                >
                   {t(label)}
                 </p>
               </div>
@@ -354,7 +372,9 @@ function AdminInvitationsPage() {
                   onValueChange={setSelectedHotelId}
                 >
                   <SelectTrigger className="admin-select w-full">
-                    <SelectValue placeholder={t('admin.invitations.chooseHotel')} />
+                    <SelectValue
+                      placeholder={t('admin.invitations.chooseHotel')}
+                    />
                   </SelectTrigger>
                   <SelectContent>
                     {hotels?.map((hotel) => (
@@ -471,7 +491,9 @@ function AdminInvitationsPage() {
                   <SelectValue />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="all">{t('admin.invitations.status.all')}</SelectItem>
+                  <SelectItem value="all">
+                    {t('admin.invitations.status.all')}
+                  </SelectItem>
                   <SelectItem value="pending">
                     {t('admin.invitations.status.pending')}
                   </SelectItem>

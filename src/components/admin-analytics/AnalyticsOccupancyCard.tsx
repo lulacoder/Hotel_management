@@ -9,10 +9,12 @@ import {
   XAxis,
   YAxis,
 } from 'recharts'
+
+import { formatAnalyticsPercent } from '@/lib/adminAnalytics'
+import { useTheme } from '@/lib/theme'
+
 import { AnalyticsEmptyState } from './AnalyticsEmptyState'
 import { AnalyticsTooltip } from './AnalyticsTooltip'
-import { useTheme } from '@/lib/theme'
-import { formatAnalyticsPercent } from '@/lib/adminAnalytics'
 
 interface Point {
   key: string

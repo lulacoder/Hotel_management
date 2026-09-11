@@ -1,4 +1,5 @@
 import { useEffect, useEffectEvent, useState } from 'react'
+
 import type { ComponentProps } from 'react'
 
 interface SearchInputProps extends Omit<

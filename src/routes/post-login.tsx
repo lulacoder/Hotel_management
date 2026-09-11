@@ -1,16 +1,18 @@
+import { useUser } from '@clerk/clerk-react'
 // Post-auth route that resolves user role and redirects to the correct destination.
 import { createFileRoute } from '@tanstack/react-router'
-import { useUser } from '@clerk/clerk-react'
 import { useEffect, useRef, useState } from 'react'
+
+import { useQuery } from '@/integrations/convex/hooks'
+
 import { api } from '../../convex/_generated/api'
-import { sanitizeRedirect } from '../lib/authRouting'
 import { Card, CardContent } from '../components/ui/card'
+import { sanitizeRedirect } from '../lib/authRouting'
 import { useI18n } from '../lib/i18n/provider'
 import {
   getStaffInvitationContinuation,
   isStaffInvitationRedirect,
 } from '../lib/staffInvitationContinuation'
-import { useQuery } from '@/integrations/convex/hooks'
 
 export const Route = createFileRoute('/post-login')({
   validateSearch: (search: Record<string, unknown>) => ({

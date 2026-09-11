@@ -1,12 +1,13 @@
 import { Link, createFileRoute } from '@tanstack/react-router'
 import { AlertTriangle, MessageSquareText } from 'lucide-react'
 
+import { AdminSpinner } from '@/components/AdminSpinner'
+import { useQuery } from '@/integrations/convex/hooks'
+
 import { api } from '../../../../convex/_generated/api'
 import { useAdminSession } from '../../../lib/adminSession'
 import { useI18n } from '../../../lib/i18n/provider'
 import { useTheme } from '../../../lib/theme'
-import { useQuery } from '@/integrations/convex/hooks'
-import { AdminSpinner } from '@/components/AdminSpinner'
 
 export const Route = createFileRoute('/admin/complaints/')({
   component: AdminComplaintsPage,

@@ -1,5 +1,6 @@
-import { useI18n } from '../../../lib/i18n/provider'
 import { DatePicker } from '@/components/ui/date-picker'
+
+import { useI18n } from '../../../lib/i18n/provider'
 
 interface HotelDateSelectionProps {
   checkIn: string

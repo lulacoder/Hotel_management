@@ -1,7 +1,3 @@
-// Search and filter controls for city/category selection and sorting.
-import { useI18n } from '../../../lib/i18n/provider'
-import { getHotelCategoryLabel } from '../../../lib/hotelCategories'
-import { useTheme } from '../../../lib/theme'
 import {
   Select,
   SelectContent,
@@ -9,6 +5,11 @@ import {
   SelectTrigger,
   SelectValue,
 } from '../../../components/ui/select'
+import { getHotelCategoryLabel } from '../../../lib/hotelCategories'
+// Search and filter controls for city/category selection and sorting.
+import { useI18n } from '../../../lib/i18n/provider'
+import { useTheme } from '../../../lib/theme'
+
 import type { SortOption } from './-helpers'
 
 interface SearchFiltersProps {

@@ -1,3 +1,4 @@
+import { UserButton, useUser } from '@clerk/clerk-react'
 import {
   Link,
   Navigate,
@@ -6,8 +7,6 @@ import {
   redirect,
   useLocation,
 } from '@tanstack/react-router'
-import { UserButton, useUser } from '@clerk/clerk-react'
-import { useState } from 'react'
 import {
   Building2,
   Calendar,
@@ -22,23 +21,26 @@ import {
   Users,
   X,
 } from 'lucide-react'
-import { staticAssets } from '../lib/staticAssets'
+import { useState } from 'react'
+
+import { useQuery } from '@/integrations/convex/hooks'
+
 import { api } from '../../convex/_generated/api'
 import { AdminSpinner } from '../components/AdminSpinner'
 import { LanguageSwitcher } from '../components/LanguageSwitcher'
 import { MobileAccountActions } from '../components/MobileAccountActions'
-import { ThemeToggle } from '../components/ThemeToggle'
 import { NotificationBell } from '../components/NotificationBell'
 import { Seo } from '../components/Seo'
+import { ThemeToggle } from '../components/ThemeToggle'
 import { AdminSessionProvider } from '../lib/adminSession'
-import { useI18n } from '../lib/i18n/provider'
-import { useTheme } from '../lib/theme'
 import { buildRedirectSearch } from '../lib/authRouting'
+import { useI18n } from '../lib/i18n/provider'
 import {
   DEFAULT_ADMIN_DASHBOARD_SEARCH,
   DEFAULT_SELECT_LOCATION_SEARCH,
 } from '../lib/navigationSearch'
-import { useQuery } from '@/integrations/convex/hooks'
+import { staticAssets } from '../lib/staticAssets'
+import { useTheme } from '../lib/theme'
 
 export const Route = createFileRoute('/admin')({
   beforeLoad: ({ context, location }) => {

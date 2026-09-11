@@ -1,17 +1,19 @@
 import { Loader2, Navigation, Search } from 'lucide-react'
 
+import { GuestStepper } from '@/components/GuestStepper'
+import { SearchInput } from '@/components/SearchInput'
+import { DatePicker } from '@/components/ui/date-picker'
+
 import { getGeolocationErrorMessage } from '../../../hooks/useGeolocation'
 import { useI18n } from '../../../lib/i18n/provider'
-import { useTheme } from '../../../lib/theme'
-import { staticPhotos } from '../../../lib/staticPhotos'
 import {
   getMinimumCheckoutDate,
   getTodayDateString,
 } from '../../../lib/navigationSearch'
+import { staticPhotos } from '../../../lib/staticPhotos'
+import { useTheme } from '../../../lib/theme'
+
 import type { ReactNode } from 'react'
-import { DatePicker } from '@/components/ui/date-picker'
-import { SearchInput } from '@/components/SearchInput'
-import { GuestStepper } from '@/components/GuestStepper'
 
 interface HeroSectionProps {
   locationSupported: boolean

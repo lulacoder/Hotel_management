@@ -1,16 +1,17 @@
+import { SignUp } from '@clerk/clerk-react'
 // Canonical sign-up route with optional post-registration redirect support.
 import { Link, createFileRoute, redirect } from '@tanstack/react-router'
-import { SignUp } from '@clerk/clerk-react'
 import { ArrowLeft } from 'lucide-react'
-import { CURRENT_YEAR } from '../lib/currentYear'
-import { Button } from '../components/ui/button'
-import { ThemeToggle } from '../components/ThemeToggle'
-import { buildRedirectSearch, sanitizeRedirect } from '../lib/authRouting'
-import { useI18n } from '../lib/i18n/provider'
-import { getClerkAuthAppearance } from '../lib/clerkAppearance'
-import { useTheme } from '../lib/theme'
-import { staticAssets } from '../lib/staticAssets'
+
 import { Seo } from '../components/Seo'
+import { ThemeToggle } from '../components/ThemeToggle'
+import { Button } from '../components/ui/button'
+import { buildRedirectSearch, sanitizeRedirect } from '../lib/authRouting'
+import { getClerkAuthAppearance } from '../lib/clerkAppearance'
+import { CURRENT_YEAR } from '../lib/currentYear'
+import { useI18n } from '../lib/i18n/provider'
+import { staticAssets } from '../lib/staticAssets'
+import { useTheme } from '../lib/theme'
 
 export const Route = createFileRoute('/sign-up')({
   beforeLoad: ({ context, search }) => {
@@ -93,7 +94,9 @@ function SignUpPage() {
                   <div className="size-5 rounded-full bg-violet-500/20 flex items-center justify-center">
                     <div className="size-2 rounded-full bg-violet-400" />
                   </div>
-                  <span className="text-slate-700 dark:text-slate-300 font-medium">{feature}</span>
+                  <span className="text-slate-700 dark:text-slate-300 font-medium">
+                    {feature}
+                  </span>
                 </div>
               ))}
             </div>
@@ -144,7 +147,9 @@ function SignUpPage() {
               <h1 className="text-2xl font-bold text-slate-900 dark:text-white mb-2">
                 {t('signUp.createAccountTitle')}
               </h1>
-              <p className="text-slate-600 dark:text-slate-400">{t('signUp.mobileSubtitle')}</p>
+              <p className="text-slate-600 dark:text-slate-400">
+                {t('signUp.mobileSubtitle')}
+              </p>
             </div>
 
             <SignUp

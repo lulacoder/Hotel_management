@@ -1,5 +1,6 @@
-import { Link } from '@tanstack/react-router'
 import { useUser } from '@clerk/clerk-react'
+import { useForm, useStore } from '@tanstack/react-form'
+import { Link } from '@tanstack/react-router'
 import {
   Building2,
   Check,
@@ -9,10 +10,23 @@ import {
   Landmark,
 } from 'lucide-react'
 import { useMemo, useState } from 'react'
-import { useForm, useStore } from '@tanstack/react-form'
 import { z } from 'zod'
 
+import { TextAreaField, TextField } from '@/components/form/TextField'
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '@/components/ui/select'
+import { useAction, useMutation, useQuery } from '@/integrations/convex/hooks'
+import { formatUsdAmount } from '@/lib/currency'
+import { getErrorMessage, hasErrorCode } from '@/lib/errors'
+import { getFirstErrorMessage } from '@/lib/forms'
+
 import { api } from '../../../../convex/_generated/api'
+import { useI18n } from '../../../lib/i18n/provider'
 import { uploadImageToR2, validateImageFile } from '../../../lib/imageUpload'
 import {
   PACKAGES,
@@ -22,21 +36,9 @@ import {
   getPackageInclusions,
   getPackageLabel,
 } from '../../../lib/packages'
-import { useI18n } from '../../../lib/i18n/provider'
+
 import type { Id } from '../../../../convex/_generated/dataModel'
 import type { PackageType } from '../../../lib/packages'
-import { useAction, useMutation, useQuery } from '@/integrations/convex/hooks'
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from '@/components/ui/select'
-import { getErrorMessage, hasErrorCode } from '@/lib/errors'
-import { getFirstErrorMessage } from '@/lib/forms'
-import { formatUsdAmount } from '@/lib/currency'
-import { TextAreaField, TextField } from '@/components/form/TextField'
 
 interface BookingModalProps {
   roomId: Id<'rooms'>
@@ -745,9 +747,7 @@ export function BookingModal({
                       </label>
                       <Select
                         value={effectiveSelectedBankAccountId}
-                        onValueChange={(value) =>
-                          field.handleChange(value)
-                        }
+                        onValueChange={(value) => field.handleChange(value)}
                         disabled={!bankAccounts || bankAccounts.length === 0}
                       >
                         <SelectTrigger
@@ -758,16 +758,21 @@ export function BookingModal({
                           }`}
                           onBlur={field.handleBlur}
                         >
-                          <SelectValue placeholder={t('bookingModal.paymentNotConfigured')} />
+                          <SelectValue
+                            placeholder={t('bookingModal.paymentNotConfigured')}
+                          />
                         </SelectTrigger>
                         <SelectContent>
-                          {bankAccounts && bankAccounts.length > 0 ? (
-                            bankAccounts.map((account) => (
-                              <SelectItem key={account._id} value={account._id}>
-                                {account.bankName} - {account.accountNumber}
-                              </SelectItem>
-                            ))
-                          ) : null}
+                          {bankAccounts && bankAccounts.length > 0
+                            ? bankAccounts.map((account) => (
+                                <SelectItem
+                                  key={account._id}
+                                  value={account._id}
+                                >
+                                  {account.bankName} - {account.accountNumber}
+                                </SelectItem>
+                              ))
+                            : null}
                         </SelectContent>
                       </Select>
                       {fieldError ? (

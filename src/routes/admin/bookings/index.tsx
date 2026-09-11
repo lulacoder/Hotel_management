@@ -10,38 +10,13 @@ import {
   X,
   XCircle,
 } from 'lucide-react'
-import { useEffect, useState } from 'react'
 import { m } from 'motion/react'
-import { api } from '../../../../convex/_generated/api'
-import {
-  getAllowedBookingTransitions,
-  isBookingStatus,
-} from '../../../../convex/lib/bookingLifecycle'
-import { useI18n } from '../../../lib/i18n/provider'
-import { useAdminSession } from '../../../lib/adminSession'
-import {
-  normalizeAnalyticsWindow,
-  normalizeBookingStatusFilter,
-  normalizePaymentStatusFilter,
-} from '../../../lib/adminAnalytics'
-import {
-  formatPackageAddOn,
-  getPackageLabelOrDefault,
-} from '../../../lib/packages'
-import { OutsourceModal } from './components/-OutsourceModal'
-import { BookingStatusBadge } from './components/-BookingStatusBadge'
-import type {
-  BookingStatus,
-  ManualBookingTransitionStatus,
-} from '../../../../convex/lib/bookingLifecycle'
-import type { Id } from '../../../../convex/_generated/dataModel'
-import { useTheme } from '@/lib/theme'
-import {
-  useMutation,
-  usePaginatedQuery,
-  useQuery,
-} from '@/integrations/convex/hooks'
+import { useEffect, useState } from 'react'
+
+import { AdminSpinner } from '@/components/AdminSpinner'
+import { LoadMoreButton } from '@/components/LoadMoreButton'
 import { Button } from '@/components/ui/button'
+import { useConfirm } from '@/components/ui/confirm-dialog'
 import {
   Select,
   SelectContent,
@@ -49,14 +24,42 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select'
-import { useConfirm } from '@/components/ui/confirm-dialog'
-import { LoadMoreButton } from '@/components/LoadMoreButton'
-import { AdminSpinner } from '@/components/AdminSpinner'
-import { formatEtbAmount, formatUsdAmount } from '@/lib/currency'
+import {
+  useMutation,
+  usePaginatedQuery,
+  useQuery,
+} from '@/integrations/convex/hooks'
 import {
   getRefundStatusLabelKey,
   useBookingStatusConfig,
 } from '@/lib/bookingStatus'
+import { formatEtbAmount, formatUsdAmount } from '@/lib/currency'
+import { useTheme } from '@/lib/theme'
+
+import { api } from '../../../../convex/_generated/api'
+import {
+  getAllowedBookingTransitions,
+  isBookingStatus,
+} from '../../../../convex/lib/bookingLifecycle'
+import {
+  normalizeAnalyticsWindow,
+  normalizeBookingStatusFilter,
+  normalizePaymentStatusFilter,
+} from '../../../lib/adminAnalytics'
+import { useAdminSession } from '../../../lib/adminSession'
+import { useI18n } from '../../../lib/i18n/provider'
+import {
+  formatPackageAddOn,
+  getPackageLabelOrDefault,
+} from '../../../lib/packages'
+import { BookingStatusBadge } from './components/-BookingStatusBadge'
+import { OutsourceModal } from './components/-OutsourceModal'
+
+import type { Id } from '../../../../convex/_generated/dataModel'
+import type {
+  BookingStatus,
+  ManualBookingTransitionStatus,
+} from '../../../../convex/lib/bookingLifecycle'
 
 export const Route = createFileRoute('/admin/bookings/')({
   validateSearch: (search: Record<string, unknown>) => ({
@@ -345,7 +348,9 @@ function BookingsPage() {
             </SelectTrigger>
             <SelectContent>
               {isRoomAdmin && (
-                <SelectItem value="all">{t('admin.bookings.selectHotel')}</SelectItem>
+                <SelectItem value="all">
+                  {t('admin.bookings.selectHotel')}
+                </SelectItem>
               )}
               {visibleHotels?.map((hotel) => (
                 <SelectItem key={hotel._id} value={hotel._id}>
@@ -369,19 +374,31 @@ function BookingsPage() {
               <SelectValue />
             </SelectTrigger>
             <SelectContent>
-              <SelectItem value="all">{t('admin.bookings.allStatuses')}</SelectItem>
+              <SelectItem value="all">
+                {t('admin.bookings.allStatuses')}
+              </SelectItem>
               <SelectItem value="held">{t('booking.status.held')}</SelectItem>
               <SelectItem value="pending_payment">
                 {t('booking.status.pendingPayment')}
               </SelectItem>
-              <SelectItem value="confirmed">{t('booking.status.confirmed')}</SelectItem>
-              <SelectItem value="checked_in">{t('booking.status.checkedIn')}</SelectItem>
+              <SelectItem value="confirmed">
+                {t('booking.status.confirmed')}
+              </SelectItem>
+              <SelectItem value="checked_in">
+                {t('booking.status.checkedIn')}
+              </SelectItem>
               <SelectItem value="checked_out">
                 {t('booking.status.checkedOut')}
               </SelectItem>
-              <SelectItem value="cancelled">{t('booking.status.cancelled')}</SelectItem>
-              <SelectItem value="expired">{t('booking.status.expired')}</SelectItem>
-              <SelectItem value="outsourced">{t('booking.status.outsourced')}</SelectItem>
+              <SelectItem value="cancelled">
+                {t('booking.status.cancelled')}
+              </SelectItem>
+              <SelectItem value="expired">
+                {t('booking.status.expired')}
+              </SelectItem>
+              <SelectItem value="outsourced">
+                {t('booking.status.outsourced')}
+              </SelectItem>
             </SelectContent>
           </Select>
         </div>
@@ -398,9 +415,15 @@ function BookingsPage() {
               <SelectValue />
             </SelectTrigger>
             <SelectContent>
-              <SelectItem value="all">{t('admin.analytics.payment.all')}</SelectItem>
-              <SelectItem value="pending">{t('admin.bookings.pending')}</SelectItem>
-              <SelectItem value="paid">{t('admin.analytics.payment.paid')}</SelectItem>
+              <SelectItem value="all">
+                {t('admin.analytics.payment.all')}
+              </SelectItem>
+              <SelectItem value="pending">
+                {t('admin.bookings.pending')}
+              </SelectItem>
+              <SelectItem value="paid">
+                {t('admin.analytics.payment.paid')}
+              </SelectItem>
               <SelectItem value="failed">
                 {t('admin.analytics.payment.failed')}
               </SelectItem>

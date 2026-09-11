@@ -1,16 +1,17 @@
-import { useEffect, useState } from 'react'
 import { useNavigate } from '@tanstack/react-router'
 import { LogOut, ShieldAlert } from 'lucide-react'
+import { useEffect, useState } from 'react'
 import { toast } from 'sonner'
 
-import { api } from '../../convex/_generated/api'
-import { AdminSpinner } from './AdminSpinner'
 import { useMutation, useQuery } from '@/integrations/convex/hooks'
 import {
   clearClientImpersonation,
   setClientImpersonation,
 } from '@/lib/authRouting'
 import { useI18n } from '@/lib/i18n/provider'
+
+import { api } from '../../convex/_generated/api'
+import { AdminSpinner } from './AdminSpinner'
 
 // Keeps the active impersonation state visible and lets the administrator exit it
 export function ImpersonationBanner() {

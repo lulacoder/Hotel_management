@@ -5,6 +5,7 @@ import { describe, expect, it } from 'vitest'
 
 import { api, internal } from './_generated/api'
 import schema from './schema'
+
 import type { Doc } from './_generated/dataModel'
 
 const modules = import.meta.glob('./**/*.ts')

@@ -17,14 +17,15 @@ import { api } from '../../../convex/_generated/api'
 import { Button } from '../../components/ui/button'
 import { useConfirm } from '../../components/ui/confirm-dialog'
 import { useMutation, useQuery } from '../../integrations/convex/hooks'
+import { getCustomerRefundView } from '../../lib/bookingStatus'
 import { formatUsdAmount } from '../../lib/currency'
 import { useI18n } from '../../lib/i18n/provider'
-import { getCustomerRefundView } from '../../lib/bookingStatus'
 import {
   DEFAULT_HOTEL_DETAIL_SEARCH,
   DEFAULT_SELECT_LOCATION_SEARCH,
 } from '../../lib/navigationSearch'
 import { canCustomerCancelBooking } from './bookings/components/-helpers'
+
 import type { Id } from '../../../convex/_generated/dataModel'
 
 export const Route = createFileRoute('/_authenticated/bookings_/$bookingId')({

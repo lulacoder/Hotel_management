@@ -2,7 +2,6 @@ import { Link } from '@tanstack/react-router'
 import AutoScroll from 'embla-carousel-auto-scroll'
 import useEmblaCarousel from 'embla-carousel-react'
 import { WheelGesturesPlugin } from 'embla-carousel-wheel-gestures'
-import { useReducedMotion } from 'motion/react'
 import {
   ArrowLeftRight,
   ArrowUpRight,
@@ -10,14 +9,17 @@ import {
   MapPin,
   Star,
 } from 'lucide-react'
+import { useReducedMotion } from 'motion/react'
 import { useMemo } from 'react'
+
+import { useQuery } from '@/integrations/convex/hooks'
 
 import { api } from '../../../../convex/_generated/api'
 import { getHotelCategoryLabel } from '../../../lib/hotelCategories'
 import { useI18n } from '../../../lib/i18n/provider'
 import { DEFAULT_HOTEL_DETAIL_SEARCH } from '../../../lib/navigationSearch'
+
 import type { Doc } from '../../../../convex/_generated/dataModel'
-import { useQuery } from '@/integrations/convex/hooks'
 
 type Hotel = Doc<'hotels'> & { imageUrl?: string }
 

@@ -10,23 +10,26 @@ import {
   Search,
   Trash2,
 } from 'lucide-react'
-import { useCallback, useEffect, useRef, useState } from 'react'
 import { m } from 'motion/react'
-import { api } from '../../../../convex/_generated/api'
-import { useAdminSession } from '../../../lib/adminSession'
-import { useI18n } from '../../../lib/i18n/provider'
-import { useTheme } from '../../../lib/theme'
-import { HotelModal } from './index/components/-HotelModal'
-import type { RequestForQueries } from 'convex/react'
-import type { Id } from '../../../../convex/_generated/dataModel'
+import { useCallback, useEffect, useRef, useState } from 'react'
+
+import { AdminSpinner } from '@/components/AdminSpinner'
+import { Button } from '@/components/ui/button'
+import { useConfirm } from '@/components/ui/confirm-dialog'
 import { useMutation, useQuery } from '@/integrations/convex/hooks'
 import {
   ConvexPreloader,
   useIntentPreloadTarget,
 } from '@/integrations/convex/preload'
-import { Button } from '@/components/ui/button'
-import { useConfirm } from '@/components/ui/confirm-dialog'
-import { AdminSpinner } from '@/components/AdminSpinner'
+
+import { api } from '../../../../convex/_generated/api'
+import { useAdminSession } from '../../../lib/adminSession'
+import { useI18n } from '../../../lib/i18n/provider'
+import { useTheme } from '../../../lib/theme'
+import { HotelModal } from './index/components/-HotelModal'
+
+import type { Id } from '../../../../convex/_generated/dataModel'
+import type { RequestForQueries } from 'convex/react'
 
 export const Route = createFileRoute('/admin/hotels/')({
   // Register hotels management route in admin section.

@@ -1,4 +1,5 @@
 import { v } from 'convex/values'
+
 import { internalMutation } from './_generated/server'
 
 // Deletes all notifications older than 10 days.

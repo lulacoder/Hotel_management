@@ -11,9 +11,10 @@
     "typecheck": "tsc --noEmit",
     "lint": "oxlint . --report-unused-disable-directives",
     "lint:fix": "oxlint . --fix --report-unused-disable-directives",
-    "format": "prettier --write .",
-    "check": "prettier --write . && oxlint . --fix --report-unused-disable-directives && tsc --noEmit",
-    "check:ci": "oxlint . --report-unused-disable-directives && tsc --noEmit"
+    "format": "oxfmt .",
+    "format:check": "oxfmt . --check",
+    "check": "oxfmt . && oxlint . --fix --report-unused-disable-directives && tsc --noEmit",
+    "check:ci": "oxfmt . --check && oxlint . --report-unused-disable-directives && tsc --noEmit"
   },
   "dependencies": {
     "@clerk/clerk-react": "^5.49.0",
@@ -59,9 +60,9 @@
     "@vitejs/plugin-react": "^6.0.1",
     "convex-test": "^0.0.54",
     "jsdom": "^27.0.0",
+    "oxfmt": "^0.67.0",
     "oxlint": "^1.82.0",
     "oxlint-tsgolint": "^7.0.2001",
-    "prettier": "^3.5.3",
     "sharp": "^0.35.4",
     "typescript": "^7.0.2",
     "vite": "^8.0.8",

@@ -1,6 +1,6 @@
+import { useUser } from '@clerk/clerk-react'
 // Customer bookings route with filtering and list rendering.
 import { Link, createFileRoute, useNavigate } from '@tanstack/react-router'
-import { useUser } from '@clerk/clerk-react'
 import {
   AlertTriangle,
   Calendar,
@@ -12,23 +12,24 @@ import {
 import { useEffect, useMemo, useState } from 'react'
 import { toast } from 'sonner'
 
-import { api } from '../../../convex/_generated/api'
-import { isBookingStatus } from '../../../convex/lib/bookingLifecycle'
-import { LoadMoreButton } from '../../components/LoadMoreButton'
-import { useConfirm } from '../../components/ui/confirm-dialog'
-import { useI18n } from '../../lib/i18n/provider'
-import { DEFAULT_SELECT_LOCATION_SEARCH } from '../../lib/navigationSearch'
-import { Seo } from '../../components/Seo'
-
-import { BookingsHeader } from './bookings/components/-BookingsHeader'
-import { BookingsFilters } from './bookings/components/-BookingsFilters'
-import { BookingsList } from './bookings/components/-BookingsList'
-import type { Id } from '../../../convex/_generated/dataModel'
 import {
   useMutation,
   usePaginatedQuery,
   useQuery,
 } from '@/integrations/convex/hooks'
+
+import { api } from '../../../convex/_generated/api'
+import { isBookingStatus } from '../../../convex/lib/bookingLifecycle'
+import { LoadMoreButton } from '../../components/LoadMoreButton'
+import { Seo } from '../../components/Seo'
+import { useConfirm } from '../../components/ui/confirm-dialog'
+import { useI18n } from '../../lib/i18n/provider'
+import { DEFAULT_SELECT_LOCATION_SEARCH } from '../../lib/navigationSearch'
+import { BookingsFilters } from './bookings/components/-BookingsFilters'
+import { BookingsHeader } from './bookings/components/-BookingsHeader'
+import { BookingsList } from './bookings/components/-BookingsList'
+
+import type { Id } from '../../../convex/_generated/dataModel'
 
 export const Route = createFileRoute('/_authenticated/bookings')({
   validateSearch: (

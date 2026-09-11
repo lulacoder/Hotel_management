@@ -1,0 +1,40 @@
+{
+  "$schema": "./node_modules/oxfmt/configuration_schema.json",
+  "printWidth": 80,
+  "tabWidth": 2,
+  "useTabs": false,
+  "semi": false,
+  "singleQuote": true,
+  "trailingComma": "all",
+  "sortPackageJson": false,
+  "sortImports": {
+    "groups": [
+      ["value-builtin", "value-external"],
+      "value-internal",
+      ["value-parent", "value-sibling", "value-index"],
+      "type-import",
+      "unknown"
+    ],
+    "internalPattern": ["@/"],
+    "newlinesBetween": true,
+    "sortSideEffects": false
+  },
+  "ignorePatterns": [
+    ".agent/**",
+    ".agents/**",
+    ".claude/**",
+    ".codex-logs/**",
+    ".github/skills/**",
+    ".opencode/**",
+    ".output/**",
+    ".tanstack/**",
+    "coverage/**",
+    "dist/**",
+    "Hotel_data/**",
+    "convex/_generated/**",
+    "src/routeTree.gen.ts",
+    "package-lock.json",
+    "pnpm-lock.yaml",
+    "yarn.lock"
+  ]
+}

@@ -1,4 +1,5 @@
 import { enMessages } from './messages.en'
+
 import type { LocaleMessages, TranslationKey } from './messages.en'
 
 /**

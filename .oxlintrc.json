@@ -20,8 +20,7 @@
     "dist-ssr/**",
     "coverage/**",
     "convex/_generated/**",
-    "src/routeTree.gen.ts",
-    "prettier.config.js"
+    "src/routeTree.gen.ts"
   ],
   "rules": {
     "for-direction": "error",

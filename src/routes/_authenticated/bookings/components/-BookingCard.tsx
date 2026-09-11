@@ -14,19 +14,20 @@ import {
 import { Badge } from '../../../../components/ui/badge'
 import { Button } from '../../../../components/ui/button'
 import { Card, CardContent } from '../../../../components/ui/card'
+import { getCustomerRefundView } from '../../../../lib/bookingStatus'
+import { useI18n } from '../../../../lib/i18n/provider'
+import { DEFAULT_HOTEL_DETAIL_SEARCH } from '../../../../lib/navigationSearch'
 import {
   formatPackageAddOn,
   getPackageLabelOrDefault,
 } from '../../../../lib/packages'
-import { useI18n } from '../../../../lib/i18n/provider'
-import { getCustomerRefundView } from '../../../../lib/bookingStatus'
-import { DEFAULT_HOTEL_DETAIL_SEARCH } from '../../../../lib/navigationSearch'
 import {
   canCustomerCancelBooking,
   formatDate,
   formatPrice,
   formatTime,
 } from './-helpers'
+
 import type { Id } from '../../../../../convex/_generated/dataModel'
 import type { PackageType } from '../../../../lib/packages'
 

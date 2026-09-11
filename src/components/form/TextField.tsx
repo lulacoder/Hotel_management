@@ -1,7 +1,7 @@
-import type { ComponentPropsWithoutRef, ReactNode } from 'react'
-
 import { getFirstErrorMessage } from '@/lib/forms'
 import { cn } from '@/lib/utils'
+
+import type { ComponentPropsWithoutRef, ReactNode } from 'react'
 
 interface StringFieldApi<TValue extends string = string> {
   state: {

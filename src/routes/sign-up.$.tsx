@@ -1,14 +1,15 @@
+import { SignUp } from '@clerk/clerk-react'
 // Catch-all sign-up route variant for Clerk callback/path compatibility.
 import { Link, createFileRoute, redirect } from '@tanstack/react-router'
-import { SignUp } from '@clerk/clerk-react'
 import { ArrowLeft } from 'lucide-react'
-import { CURRENT_YEAR } from '../lib/currentYear'
+
 import { ThemeToggle } from '../components/ThemeToggle'
 import { buildRedirectSearch, sanitizeRedirect } from '../lib/authRouting'
-import { useI18n } from '../lib/i18n/provider'
 import { getClerkAuthAppearance } from '../lib/clerkAppearance'
-import { useTheme } from '../lib/theme'
+import { CURRENT_YEAR } from '../lib/currentYear'
+import { useI18n } from '../lib/i18n/provider'
 import { staticAssets } from '../lib/staticAssets'
+import { useTheme } from '../lib/theme'
 
 export const Route = createFileRoute('/sign-up/$')({
   beforeLoad: ({ context, search }) => {
@@ -81,7 +82,10 @@ function SignUpCatchAll() {
       <div className="flex-1 flex flex-col">
         <div className="lg:hidden p-4 flex items-center justify-between">
           <Link to="/" className="flex items-center gap-2">
-            <ArrowLeft size={20} className="text-slate-600 dark:text-slate-400" />
+            <ArrowLeft
+              size={20}
+              className="text-slate-600 dark:text-slate-400"
+            />
             <span className="text-slate-600 dark:text-slate-400 font-medium">
               {t('signIn.back')}
             </span>

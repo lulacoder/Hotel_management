@@ -227,7 +227,8 @@ export function Footer() {
         {/* Bottom Utility Bar */}
         <div className="mt-12 flex flex-col items-center justify-between gap-4 border-t border-slate-200/80 pt-8 sm:flex-row dark:border-slate-800/80">
           <p className="text-xs text-slate-500 dark:text-slate-400">
-            &copy; {CURRENT_YEAR} Tripways Hotels. {t('common.allRightsReserved')}
+            &copy; {CURRENT_YEAR} Tripways Hotels.{' '}
+            {t('common.allRightsReserved')}
           </p>
         </div>
       </div>

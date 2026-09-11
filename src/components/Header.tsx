@@ -1,6 +1,5 @@
-import { Link, useLocation, useNavigate } from '@tanstack/react-router'
 import { useAuth, useClerk, useUser } from '@clerk/clerk-react'
-import { useEffect, useState } from 'react'
+import { Link, useLocation, useNavigate } from '@tanstack/react-router'
 import {
   CalendarCheck,
   Home,
@@ -9,14 +8,15 @@ import {
   Menu,
   Settings,
 } from 'lucide-react'
+import { useEffect, useState } from 'react'
 
 import ClerkHeader from '../integrations/clerk/header-user'
-import { staticAssets } from '../lib/staticAssets'
 import { useI18n } from '../lib/i18n/provider'
 import {
   DEFAULT_AUTH_SEARCH,
   DEFAULT_SELECT_LOCATION_SEARCH,
 } from '../lib/navigationSearch'
+import { staticAssets } from '../lib/staticAssets'
 import { cn } from '../lib/utils'
 import { LanguageSwitcher } from './LanguageSwitcher'
 import { NotificationBell } from './NotificationBell'

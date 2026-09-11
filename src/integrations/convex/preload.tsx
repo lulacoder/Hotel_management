@@ -1,8 +1,9 @@
 import { useCallback, useEffect, useRef, useSyncExternalStore } from 'react'
 
 import { useQueries } from './hooks'
-import type { FocusEventHandler, MouseEventHandler } from 'react'
+
 import type { RequestForQueries } from 'convex/react'
+import type { FocusEventHandler, MouseEventHandler } from 'react'
 
 const DEFAULT_INTENT_PRELOAD_DELAY = 50
 

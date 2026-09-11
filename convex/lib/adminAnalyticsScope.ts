@@ -1,4 +1,5 @@
 import { ConvexError } from 'convex/values'
+
 import type { Id } from '../_generated/dataModel'
 
 export type AnalyticsScope =

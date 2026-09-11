@@ -1,36 +1,38 @@
+import { useUser } from '@clerk/clerk-react'
 // Hotel discovery route with geolocation, search filters, sorting, and rating workflow.
 import { createFileRoute, useNavigate } from '@tanstack/react-router'
-import { useUser } from '@clerk/clerk-react'
-import { useEffect, useMemo, useRef, useState } from 'react'
 import { MessageSquarePlus } from 'lucide-react'
+import { useEffect, useMemo, useRef, useState } from 'react'
+
+import {
+  useMutation,
+  usePaginatedQuery,
+  useQuery,
+} from '@/integrations/convex/hooks'
 
 import { api } from '../../convex/_generated/api'
+import { Footer } from '../components/Footer'
+import { Seo } from '../components/Seo'
 import { useGeolocation } from '../hooks/useGeolocation'
 import { calculateDistance } from '../lib/distance'
 import { useI18n } from '../lib/i18n/provider'
 import { DEFAULT_SELECT_LOCATION_SEARCH } from '../lib/navigationSearch'
-import { Seo } from '../components/Seo'
-import { Footer } from '../components/Footer'
-import { SelectLocationHeader } from './select-location/components/-SelectLocationHeader'
-import { HeroSection } from './select-location/components/-HeroSection'
-import { SearchFilters } from './select-location/components/-SearchFilters'
-import { HotelGrid } from './select-location/components/-HotelGrid'
-import { RatingModal } from './select-location/components/-RatingModal'
 import { ComplaintModal } from './select-location/components/-ComplaintModal'
 import {
   normalizeFilterValue,
   normalizeSearchTerm,
   normalizeSortOption,
 } from './select-location/components/-helpers'
+import { HeroSection } from './select-location/components/-HeroSection'
+import { HotelGrid } from './select-location/components/-HotelGrid'
+import { RatingModal } from './select-location/components/-RatingModal'
+import { SearchFilters } from './select-location/components/-SearchFilters'
+import { SelectLocationHeader } from './select-location/components/-SelectLocationHeader'
+
+import type { Id } from '../../convex/_generated/dataModel'
 import type { ComplaintFormValues } from './select-location/components/-ComplaintModal'
 import type { SortOption } from './select-location/components/-helpers'
 import type { RatingFormValues } from './select-location/components/-RatingModal'
-import type { Id } from '../../convex/_generated/dataModel'
-import {
-  useMutation,
-  usePaginatedQuery,
-  useQuery,
-} from '@/integrations/convex/hooks'
 
 type HotelCategory =
   | 'Boutique'

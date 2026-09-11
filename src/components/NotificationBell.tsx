@@ -1,8 +1,14 @@
 import { useAuth } from '@clerk/clerk-react'
 import { Link } from '@tanstack/react-router'
-import { useEffect, useRef, useState } from 'react'
 import { Bell, BellOff, Check, CheckCheck, Trash2 } from 'lucide-react'
+import { useEffect, useRef, useState } from 'react'
 import { toast } from 'sonner'
+
+import {
+  useMutation,
+  usePaginatedQuery,
+  useQuery,
+} from '@/integrations/convex/hooks'
 
 import { api } from '../../convex/_generated/api'
 import { cn } from '../lib/utils'
@@ -15,12 +21,8 @@ import {
   DropdownMenuTrigger,
 } from './ui/dropdown-menu'
 import { ScrollArea } from './ui/scroll-area'
+
 import type { Id } from '../../convex/_generated/dataModel'
-import {
-  useMutation,
-  usePaginatedQuery,
-  useQuery,
-} from '@/integrations/convex/hooks'
 
 const notificationMeta = {
   booking_payment_proof_submitted: {

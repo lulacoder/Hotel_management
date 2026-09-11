@@ -1,12 +1,15 @@
-import { m } from 'motion/react'
 import { BarChart3, Building2, Calendar, DollarSign } from 'lucide-react'
-import { AnalyticsEmptyState } from './AnalyticsEmptyState'
-import type { Locale } from '@/lib/i18n'
-import { useTheme } from '@/lib/theme'
+import { m } from 'motion/react'
+
 import {
   formatAnalyticsCurrency,
   formatAnalyticsPercent,
 } from '@/lib/adminAnalytics'
+import { useTheme } from '@/lib/theme'
+
+import { AnalyticsEmptyState } from './AnalyticsEmptyState'
+
+import type { Locale } from '@/lib/i18n'
 
 interface Row {
   hotelId: string

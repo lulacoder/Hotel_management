@@ -1,22 +1,24 @@
-import { Link, createFileRoute, useNavigate } from '@tanstack/react-router'
 import { useUser } from '@clerk/clerk-react'
+import { Link, createFileRoute, useNavigate } from '@tanstack/react-router'
 import { Calendar, Car, Star, Tag } from 'lucide-react'
 import { useState } from 'react'
 
+import { usePaginatedQuery, useQuery } from '@/integrations/convex/hooks'
+
 import { api } from '../../convex/_generated/api'
-import { useI18n } from '../lib/i18n/provider'
-import { getHotelCategoryLabel } from '../lib/hotelCategories'
-import { DEFAULT_SELECT_LOCATION_SEARCH } from '../lib/navigationSearch'
-import { Seo } from '../components/Seo'
 import { Footer } from '../components/Footer'
+import { Seo } from '../components/Seo'
+import { getHotelCategoryLabel } from '../lib/hotelCategories'
+import { useI18n } from '../lib/i18n/provider'
+import { DEFAULT_SELECT_LOCATION_SEARCH } from '../lib/navigationSearch'
 import { BookingModal } from './hotels.$hotelId/components/-BookingModal'
 import { HotelAnnouncementsPreview } from './hotels.$hotelId/components/-HotelAnnouncementsPreview'
 import { HotelDateSelection } from './hotels.$hotelId/components/-HotelDateSelection'
 import { HotelPageChrome } from './hotels.$hotelId/components/-HotelPageChrome'
 import { HotelRoomsGrid } from './hotels.$hotelId/components/-HotelRoomsGrid'
 import { useHotelBookingState } from './hotels.$hotelId/components/-useHotelBookingState'
+
 import type { Id } from '../../convex/_generated/dataModel'
-import { usePaginatedQuery, useQuery } from '@/integrations/convex/hooks'
 
 export const Route = createFileRoute('/hotels/$hotelId')({
   validateSearch: (search: Record<string, unknown>) => ({

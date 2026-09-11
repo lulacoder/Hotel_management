@@ -520,4 +520,3 @@ export default defineSchema({
     .index('by_target', ['targetUserId', 'startedAt'])
     .index('by_started_at', ['startedAt']),
 })
-

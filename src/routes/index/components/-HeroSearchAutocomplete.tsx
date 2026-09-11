@@ -1,4 +1,3 @@
-import { useEffect, useMemo, useRef, useState } from 'react'
 import {
   Building2,
   ChevronRight,
@@ -7,12 +6,14 @@ import {
   Search,
   Star,
 } from 'lucide-react'
+import { useEffect, useMemo, useRef, useState } from 'react'
 
 import { api } from '../../../../convex/_generated/api'
 import { useQuery } from '../../../integrations/convex/hooks'
-import { useI18n } from '../../../lib/i18n/provider'
 import { getHotelCategoryLabel } from '../../../lib/hotelCategories'
+import { useI18n } from '../../../lib/i18n/provider'
 import { categoryColors } from '../../select-location/components/-helpers'
+
 import type { Id } from '../../../../convex/_generated/dataModel'
 
 interface HeroSearchAutocompleteProps {

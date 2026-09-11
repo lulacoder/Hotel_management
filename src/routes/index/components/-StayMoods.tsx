@@ -1,6 +1,7 @@
 // Stay moods: asymmetric photo grid with one tall image and two stacked, captions below.
 import { Link } from '@tanstack/react-router'
 import { ArrowRight } from 'lucide-react'
+
 import { useI18n } from '../../../lib/i18n/provider'
 import { DEFAULT_SELECT_LOCATION_SEARCH } from '../../../lib/navigationSearch'
 import { staticPhotos } from '../../../lib/staticPhotos'

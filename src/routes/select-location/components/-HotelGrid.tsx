@@ -1,5 +1,3 @@
-// Grid renderer for filtered hotels with cards, metadata, and actions.
-import { useCallback } from 'react'
 import { Link } from '@tanstack/react-router'
 import {
   ArrowUpDown,
@@ -10,21 +8,24 @@ import {
   Star,
   Tag,
 } from 'lucide-react'
+// Grid renderer for filtered hotels with cards, metadata, and actions.
+import { useCallback } from 'react'
 
 import { api } from '../../../../convex/_generated/api'
-import { formatDistance } from '../../../lib/distance'
-import { getHotelCategoryLabel } from '../../../lib/hotelCategories'
-import { useI18n } from '../../../lib/i18n/provider'
-import { DEFAULT_HOTEL_DETAIL_SEARCH } from '../../../lib/navigationSearch'
-import { formatUsdAmount } from '../../../lib/currency'
 import {
   ConvexPreloader,
   useIntentPreloadTarget,
 } from '../../../integrations/convex/preload'
+import { formatUsdAmount } from '../../../lib/currency'
+import { formatDistance } from '../../../lib/distance'
+import { getHotelCategoryLabel } from '../../../lib/hotelCategories'
+import { useI18n } from '../../../lib/i18n/provider'
+import { DEFAULT_HOTEL_DETAIL_SEARCH } from '../../../lib/navigationSearch'
 import { categoryColors } from './-helpers'
-import type { RequestForQueries } from 'convex/react'
-import type { SortOption } from './-helpers'
+
 import type { Id } from '../../../../convex/_generated/dataModel'
+import type { SortOption } from './-helpers'
+import type { RequestForQueries } from 'convex/react'
 
 interface HotelGridProps {
   hotels: Array<{
@@ -296,7 +297,10 @@ export function HotelGrid({
                           {t('grid.fromPrice')}
                         </p>
                         <p className="font-semibold text-violet-400 text-base">
-                          $0.00 <span className="text-xs font-normal text-slate-400">{t('landing.perNight')}</span>
+                          $0.00{' '}
+                          <span className="text-xs font-normal text-slate-400">
+                            {t('landing.perNight')}
+                          </span>
                         </p>
                       </div>
                       <span className="text-xs text-slate-400">

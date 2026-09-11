@@ -1,5 +1,6 @@
 // Marketplace section: wide landscape photo beside a typographic list of capabilities.
 import { Link } from '@tanstack/react-router'
+
 import { useI18n } from '../../../lib/i18n/provider'
 import { DEFAULT_SELECT_LOCATION_SEARCH } from '../../../lib/navigationSearch'
 import { staticPhotos } from '../../../lib/staticPhotos'

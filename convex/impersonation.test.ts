@@ -6,6 +6,7 @@ import { describe, expect, it } from 'vitest'
 import { api, internal } from './_generated/api'
 import { getCurrentUser, getRealAdminUser, requireCustomer } from './lib/auth'
 import schema from './schema'
+
 import type { Id } from './_generated/dataModel'
 
 const modules = import.meta.glob('./**/*.ts')
@@ -73,8 +74,18 @@ function asUser(
 describe('Option B: Convex-Native Act-As Delegation', () => {
   it('allows room_admin to impersonate a customer and executes actions in target user context', async () => {
     const t = convexTest(schema, modules)
-    const adminId = await seedUser(t, 'admin_1', 'admin@example.com', 'room_admin')
-    const customerId = await seedUser(t, 'cust_1', 'customer@example.com', 'customer')
+    const adminId = await seedUser(
+      t,
+      'admin_1',
+      'admin@example.com',
+      'room_admin',
+    )
+    const customerId = await seedUser(
+      t,
+      'cust_1',
+      'customer@example.com',
+      'customer',
+    )
 
     const adminClient = asUser(t, 'admin_1', 'admin@example.com')
 
@@ -84,21 +95,30 @@ describe('Option B: Convex-Native Act-As Delegation', () => {
     expect(initialMe?.role).toBe('room_admin')
 
     // Initial impersonation state is null
-    const noSession = await adminClient.query(api.impersonation.getActiveSession, {})
+    const noSession = await adminClient.query(
+      api.impersonation.getActiveSession,
+      {},
+    )
     expect(noSession).toBeNull()
 
     // Start impersonation
-    const res = await adminClient.mutation(api.impersonation.startImpersonation, {
-      targetUserId: customerId,
-      reason: 'Investigating booking reservation issue',
-    })
+    const res = await adminClient.mutation(
+      api.impersonation.startImpersonation,
+      {
+        targetUserId: customerId,
+        reason: 'Investigating booking reservation issue',
+      },
+    )
 
     expect(res.success).toBe(true)
     expect(res.targetUserId).toBe(customerId)
     expect(res.expiresAt).toBeGreaterThan(Date.now())
 
     // Active session returns customer details
-    const activeSession = await adminClient.query(api.impersonation.getActiveSession, {})
+    const activeSession = await adminClient.query(
+      api.impersonation.getActiveSession,
+      {},
+    )
     expect(activeSession).not.toBeNull()
     expect(activeSession?.isImpersonating).toBe(true)
     expect(activeSession?.targetUserId).toBe(customerId)
@@ -113,16 +133,22 @@ describe('Option B: Convex-Native Act-As Delegation', () => {
     expect(impersonatedMe?.role).toBe('customer')
 
     // requireCustomer succeeds under impersonation
-    await t.run(async (ctx) => {
-      await requireCustomer(ctx)
-      // When run in unauthenticated context, throws UNAUTHORIZED
-    }).catch(() => {})
+    await t
+      .run(async (ctx) => {
+        await requireCustomer(ctx)
+        // When run in unauthenticated context, throws UNAUTHORIZED
+      })
+      .catch(() => {})
 
     const customerCheck = await adminClient.run(async (ctx) => {
       const user = await getCurrentUser(ctx)
       const customer = await requireCustomer(ctx)
       const realAdmin = await getRealAdminUser(ctx)
-      return { userRole: user?.role, customerId: customer._id, realAdminId: realAdmin._id }
+      return {
+        userRole: user?.role,
+        customerId: customer._id,
+        realAdminId: realAdmin._id,
+      }
     })
 
     expect(customerCheck.userRole).toBe('customer')
@@ -130,11 +156,17 @@ describe('Option B: Convex-Native Act-As Delegation', () => {
     expect(customerCheck.realAdminId).toBe(adminId) // Real admin bypass works!
 
     // Stop impersonation
-    const stopRes = await adminClient.mutation(api.impersonation.stopImpersonation, {})
+    const stopRes = await adminClient.mutation(
+      api.impersonation.stopImpersonation,
+      {},
+    )
     expect(stopRes.success).toBe(true)
 
     // Session is now ended
-    const endedSession = await adminClient.query(api.impersonation.getActiveSession, {})
+    const endedSession = await adminClient.query(
+      api.impersonation.getActiveSession,
+      {},
+    )
     expect(endedSession).toBeNull()
 
     // getMe returns admin again
@@ -145,8 +177,18 @@ describe('Option B: Convex-Native Act-As Delegation', () => {
 
   it('allows room_admin to impersonate hotel cashier and check staff assignment', async () => {
     const t = convexTest(schema, modules)
-    const adminId = await seedUser(t, 'admin_2', 'admin2@example.com', 'room_admin')
-    const cashierId = await seedUser(t, 'cashier_1', 'cashier@hotel.com', 'customer')
+    const adminId = await seedUser(
+      t,
+      'admin_2',
+      'admin2@example.com',
+      'room_admin',
+    )
+    const cashierId = await seedUser(
+      t,
+      'cashier_1',
+      'cashier@hotel.com',
+      'customer',
+    )
     const hotelId = await seedHotel(t, 'Hilton Addis')
     await assignStaff(t, cashierId, hotelId, 'hotel_cashier', adminId)
 
@@ -159,28 +201,42 @@ describe('Option B: Convex-Native Act-As Delegation', () => {
     })
 
     // Active session contains hotel staff role and hotel details
-    const session = await adminClient.query(api.impersonation.getActiveSession, {})
+    const session = await adminClient.query(
+      api.impersonation.getActiveSession,
+      {},
+    )
     expect(session?.isImpersonating).toBe(true)
     expect(session?.targetStaffRole).toBe('hotel_cashier')
     expect(session?.targetHotelId).toBe(hotelId)
     expect(session?.targetHotelName).toBe('Hilton Addis')
 
     // getMyAssignment returns cashier's assignment
-    const myAssignment = await adminClient.query(api.hotelStaff.getMyAssignment, {})
+    const myAssignment = await adminClient.query(
+      api.hotelStaff.getMyAssignment,
+      {},
+    )
     expect(myAssignment).not.toBeNull()
     expect(myAssignment?.role).toBe('hotel_cashier')
     expect(myAssignment?.hotelId).toBe(hotelId)
 
     // Stop impersonation
     await adminClient.mutation(api.impersonation.stopImpersonation, {})
-    const postAssignment = await adminClient.query(api.hotelStaff.getMyAssignment, {})
+    const postAssignment = await adminClient.query(
+      api.hotelStaff.getMyAssignment,
+      {},
+    )
     expect(postAssignment).toBeNull()
   })
 
   it('rejects room_admin attempting to impersonate another room_admin', async () => {
     const t = convexTest(schema, modules)
     await seedUser(t, 'admin_a', 'admina@example.com', 'room_admin')
-    const adminBId = await seedUser(t, 'admin_b', 'adminb@example.com', 'room_admin')
+    const adminBId = await seedUser(
+      t,
+      'admin_b',
+      'adminb@example.com',
+      'room_admin',
+    )
 
     const clientA = asUser(t, 'admin_a', 'admina@example.com')
 
@@ -194,7 +250,12 @@ describe('Option B: Convex-Native Act-As Delegation', () => {
 
   it('rejects room_admin attempting to impersonate self', async () => {
     const t = convexTest(schema, modules)
-    const adminId = await seedUser(t, 'admin_self', 'self@example.com', 'room_admin')
+    const adminId = await seedUser(
+      t,
+      'admin_self',
+      'self@example.com',
+      'room_admin',
+    )
     const client = asUser(t, 'admin_self', 'self@example.com')
 
     await expect(
@@ -208,7 +269,12 @@ describe('Option B: Convex-Native Act-As Delegation', () => {
   it('rejects customer attempting to start impersonation', async () => {
     const t = convexTest(schema, modules)
     await seedUser(t, 'cust_rogue', 'rogue@example.com', 'customer')
-    const victimId = await seedUser(t, 'cust_victim', 'victim@example.com', 'customer')
+    const victimId = await seedUser(
+      t,
+      'cust_victim',
+      'victim@example.com',
+      'customer',
+    )
 
     const customerClient = asUser(t, 'cust_rogue', 'rogue@example.com')
 
@@ -223,7 +289,12 @@ describe('Option B: Convex-Native Act-As Delegation', () => {
   it('rejects empty or whitespace reasons', async () => {
     const t = convexTest(schema, modules)
     await seedUser(t, 'admin_reason', 'reason@example.com', 'room_admin')
-    const custId = await seedUser(t, 'cust_target', 'target@example.com', 'customer')
+    const custId = await seedUser(
+      t,
+      'cust_target',
+      'target@example.com',
+      'customer',
+    )
 
     const adminClient = asUser(t, 'admin_reason', 'reason@example.com')
 
@@ -237,8 +308,18 @@ describe('Option B: Convex-Native Act-As Delegation', () => {
 
   it('cleans up expired sessions via internal cron mutation', async () => {
     const t = convexTest(schema, modules)
-    const adminId = await seedUser(t, 'admin_exp', 'adminexp@example.com', 'room_admin')
-    const custId = await seedUser(t, 'cust_exp', 'custexp@example.com', 'customer')
+    const adminId = await seedUser(
+      t,
+      'admin_exp',
+      'adminexp@example.com',
+      'room_admin',
+    )
+    const custId = await seedUser(
+      t,
+      'cust_exp',
+      'custexp@example.com',
+      'customer',
+    )
 
     const adminClient = asUser(t, 'admin_exp', 'adminexp@example.com')
 
@@ -262,7 +343,10 @@ describe('Option B: Convex-Native Act-As Delegation', () => {
     })
 
     // getActiveSession recognizes expired session as null
-    const session = await adminClient.query(api.impersonation.getActiveSession, {})
+    const session = await adminClient.query(
+      api.impersonation.getActiveSession,
+      {},
+    )
     expect(session).toBeNull()
 
     // getCurrentUser treats expired session as normal admin
@@ -289,8 +373,18 @@ describe('Option B: Convex-Native Act-As Delegation', () => {
 
   it('verifies getImpersonationState helper directly', async () => {
     const t = convexTest(schema, modules)
-    const adminId = await seedUser(t, 'admin_state', 'adminstate@example.com', 'room_admin')
-    const custId = await seedUser(t, 'cust_state', 'custstate@example.com', 'customer')
+    const adminId = await seedUser(
+      t,
+      'admin_state',
+      'adminstate@example.com',
+      'room_admin',
+    )
+    const custId = await seedUser(
+      t,
+      'cust_state',
+      'custstate@example.com',
+      'customer',
+    )
 
     const adminClient = asUser(t, 'admin_state', 'adminstate@example.com')
 
@@ -318,8 +412,18 @@ describe('Option B: Convex-Native Act-As Delegation', () => {
 
   it('evaluates canAccessHotel and canManageHotel under hotel_admin impersonation', async () => {
     const t = convexTest(schema, modules)
-    const adminId = await seedUser(t, 'admin_perm', 'adminperm@example.com', 'room_admin')
-    const staffId = await seedUser(t, 'staff_perm', 'staffperm@example.com', 'customer')
+    const adminId = await seedUser(
+      t,
+      'admin_perm',
+      'adminperm@example.com',
+      'room_admin',
+    )
+    const staffId = await seedUser(
+      t,
+      'staff_perm',
+      'staffperm@example.com',
+      'customer',
+    )
     const hotel1 = await seedHotel(t, 'Hotel Alpha')
     const hotel2 = await seedHotel(t, 'Hotel Beta')
     await assignStaff(t, staffId, hotel1, 'hotel_admin', adminId)
@@ -350,8 +454,18 @@ describe('Option B: Convex-Native Act-As Delegation', () => {
   it('allows switching targets directly and lists logs via listLogs query', async () => {
     const t = convexTest(schema, modules)
     await seedUser(t, 'admin_switch', 'adminswitch@example.com', 'room_admin')
-    const targetA = await seedUser(t, 'target_a', 'targeta@example.com', 'customer')
-    const targetB = await seedUser(t, 'target_b', 'targetb@example.com', 'customer')
+    const targetA = await seedUser(
+      t,
+      'target_a',
+      'targeta@example.com',
+      'customer',
+    )
+    const targetB = await seedUser(
+      t,
+      'target_b',
+      'targetb@example.com',
+      'customer',
+    )
 
     const adminClient = asUser(t, 'admin_switch', 'adminswitch@example.com')
 
@@ -367,12 +481,17 @@ describe('Option B: Convex-Native Act-As Delegation', () => {
       reason: 'Second session',
     })
 
-    const activeSession = await adminClient.query(api.impersonation.getActiveSession, {})
+    const activeSession = await adminClient.query(
+      api.impersonation.getActiveSession,
+      {},
+    )
     expect(activeSession?.targetUserId).toBe(targetB)
     expect(activeSession?.reason).toBe('Second session')
 
     // listLogs returns both log events
-    const logs = await adminClient.query(api.impersonation.listLogs, { limit: 10 })
+    const logs = await adminClient.query(api.impersonation.listLogs, {
+      limit: 10,
+    })
     expect(logs.length).toBe(2)
     // Most recent is active target B
     expect(logs[0].targetUserId).toBe(targetB)
@@ -403,7 +522,12 @@ describe('Option B: Convex-Native Act-As Delegation', () => {
 
   it('rejects unauthenticated callers for start, stop, and listLogs', async () => {
     const t = convexTest(schema, modules)
-    const custId = await seedUser(t, 'cust_anon', 'anon@example.com', 'customer')
+    const custId = await seedUser(
+      t,
+      'cust_anon',
+      'anon@example.com',
+      'customer',
+    )
 
     // Unauthenticated context (no withIdentity)
     await expect(
@@ -417,9 +541,9 @@ describe('Option B: Convex-Native Act-As Delegation', () => {
       t.mutation(api.impersonation.stopImpersonation, {}),
     ).rejects.toThrow('Not authenticated. Please sign in.')
 
-    await expect(
-      t.query(api.impersonation.listLogs, {}),
-    ).rejects.toThrow('Not authenticated. Please sign in.')
+    await expect(t.query(api.impersonation.listLogs, {})).rejects.toThrow(
+      'Not authenticated. Please sign in.',
+    )
 
     // getActiveSession returns null gracefully for unauthenticated caller
     const active = await t.query(api.impersonation.getActiveSession, {})
@@ -432,7 +556,10 @@ describe('Option B: Convex-Native Act-As Delegation', () => {
     const adminClient = asUser(t, 'admin_idemp', 'adminidemp@example.com')
 
     // Stop when no session has ever been created
-    const res = await adminClient.mutation(api.impersonation.stopImpersonation, {})
+    const res = await adminClient.mutation(
+      api.impersonation.stopImpersonation,
+      {},
+    )
     expect(res.success).toBe(true)
   })
 
@@ -452,8 +579,18 @@ describe('Option B: Convex-Native Act-As Delegation', () => {
 
   it('seamlessly reverts getCurrentUser and getActiveSession to admin when TTL expires without cleanup', async () => {
     const t = convexTest(schema, modules)
-    const adminId = await seedUser(t, 'admin_ttl', 'adminttl@example.com', 'room_admin')
-    const custId = await seedUser(t, 'cust_ttl', 'custttl@example.com', 'customer')
+    const adminId = await seedUser(
+      t,
+      'admin_ttl',
+      'adminttl@example.com',
+      'room_admin',
+    )
+    const custId = await seedUser(
+      t,
+      'cust_ttl',
+      'custttl@example.com',
+      'customer',
+    )
     const adminClient = asUser(t, 'admin_ttl', 'adminttl@example.com')
 
     // Start impersonation
@@ -480,7 +617,10 @@ describe('Option B: Convex-Native Act-As Delegation', () => {
     })
 
     // Even though cleanup cron has NOT run yet, queries immediately revert to admin
-    const revertedSession = await adminClient.query(api.impersonation.getActiveSession, {})
+    const revertedSession = await adminClient.query(
+      api.impersonation.getActiveSession,
+      {},
+    )
     expect(revertedSession).toBeNull()
 
     const revertedMe = await adminClient.query(api.users.getMe, {})
@@ -488,4 +628,3 @@ describe('Option B: Convex-Native Act-As Delegation', () => {
     expect(revertedMe?.role).toBe('room_admin')
   })
 })
-

@@ -6,13 +6,13 @@
  * Make sure `npx convex dev` is running in another terminal first!
  */
 
+import { ConvexHttpClient } from 'convex/browser'
+// Load environment variables from .env.local
+import * as dotenv from 'dotenv'
 import * as fs from 'node:fs'
 import * as path from 'node:path'
 import { fileURLToPath } from 'node:url'
-import { ConvexHttpClient } from 'convex/browser'
 
-// Load environment variables from .env.local
-import * as dotenv from 'dotenv'
 import { api } from '../convex/_generated/api'
 
 dotenv.config({ path: '.env.local' })

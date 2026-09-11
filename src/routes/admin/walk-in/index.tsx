@@ -1,26 +1,28 @@
 // Walk-in booking management route for eligible hotel staff/admin users.
 import { createFileRoute, useNavigate } from '@tanstack/react-router'
-import { useMemo, useState } from 'react'
 import { Calendar, CheckCircle, Search, UserRound } from 'lucide-react'
 import { m } from 'motion/react'
+import { useMemo, useState } from 'react'
+
+import { AdminSpinner } from '@/components/AdminSpinner'
+import { Button } from '@/components/ui/button'
+import { DatePicker } from '@/components/ui/date-picker'
+import { useMutation, useQuery } from '@/integrations/convex/hooks'
+import { useAdminSession } from '@/lib/adminSession'
+import { formatUsdAmount } from '@/lib/currency'
+import { getErrorMessage } from '@/lib/errors'
 
 import { api } from '../../../../convex/_generated/api'
+import { useI18n } from '../../../lib/i18n/provider'
 import {
   PACKAGES,
   getPackageByType,
   getPackageLabel,
 } from '../../../lib/packages'
-import { useI18n } from '../../../lib/i18n/provider'
 import { useTheme } from '../../../lib/theme'
+
 import type { Id } from '../../../../convex/_generated/dataModel'
 import type { PackageType } from '../../../lib/packages'
-import { DatePicker } from '@/components/ui/date-picker'
-import { useMutation, useQuery } from '@/integrations/convex/hooks'
-import { Button } from '@/components/ui/button'
-import { useAdminSession } from '@/lib/adminSession'
-import { AdminSpinner } from '@/components/AdminSpinner'
-import { formatUsdAmount } from '@/lib/currency'
-import { getErrorMessage } from '@/lib/errors'
 
 export const Route = createFileRoute('/admin/walk-in/')({
   // Register walk-in booking route for hotel cashier/admin workflows.
@@ -276,11 +278,7 @@ function WalkInBookingPage() {
             placeholder={t('admin.walkIn.searchPlaceholder')}
             className={`flex-1 px-4 py-3 rounded-xl focus:outline-none transition-all ${inputClass}`}
           />
-          <Button
-            type="button"
-            variant="secondary"
-            onClick={handleSearch}
-          >
+          <Button type="button" variant="secondary" onClick={handleSearch}>
             {t('admin.walkIn.search')}
           </Button>
         </div>

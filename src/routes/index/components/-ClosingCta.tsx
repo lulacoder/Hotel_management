@@ -1,13 +1,15 @@
 // Closing band: type-led call to action with no bordered container.
 import { Link } from '@tanstack/react-router'
 import { ArrowRight } from 'lucide-react'
+
+import { Button } from '@/components/ui/button'
+
 import { useI18n } from '../../../lib/i18n/provider'
 import {
   DEFAULT_AUTH_SEARCH,
   DEFAULT_SELECT_LOCATION_SEARCH,
 } from '../../../lib/navigationSearch'
 import { Reveal } from './-Reveal'
-import { Button } from '@/components/ui/button'
 
 export function ClosingCta() {
   const { t } = useI18n()

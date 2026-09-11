@@ -13,12 +13,11 @@ import { Button } from '../components/ui/button'
 import { ConfirmProvider } from '../components/ui/confirm-dialog'
 import { Toaster } from '../components/ui/sonner'
 import { TooltipProvider } from '../components/ui/tooltip'
-
 import ClerkProvider from '../integrations/clerk/provider'
-
 import ConvexProvider from '../integrations/convex/provider'
 import { I18nProvider, useI18n } from '../lib/i18n/provider'
 import { ThemeProvider } from '../lib/theme'
+
 import type { AppRouterContext } from '../lib/routerContext'
 
 const RootDevtools = import.meta.env.DEV

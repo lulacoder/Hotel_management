@@ -1,12 +1,6 @@
 import { ConvexError, v } from 'convex/values'
+
 import { query } from './_generated/server'
-import {
-  buildDashboardSummaryResponse,
-  buildOccupancyTrendResponse,
-  buildStatusBreakdownsResponse,
-  buildTopHotelsResponse,
-  buildTrendResponse,
-} from './lib/adminAnalyticsQueryBuilders'
 import {
   buildBookingStatusCounts,
   buildBookingTrendSeries,
@@ -21,6 +15,13 @@ import {
   countArrivalsForDate,
   countPendingPaymentBookings,
 } from './lib/adminAnalyticsMetrics'
+import {
+  buildDashboardSummaryResponse,
+  buildOccupancyTrendResponse,
+  buildStatusBreakdownsResponse,
+  buildTopHotelsResponse,
+  buildTrendResponse,
+} from './lib/adminAnalyticsQueryBuilders'
 import { resolveAnalyticsScope } from './lib/adminAnalyticsScope'
 import {
   buildDailyWindowBuckets,
@@ -29,13 +30,14 @@ import {
   getUtcDateKey,
 } from './lib/adminAnalyticsWindow'
 import { getHotelAssignment, requireUser } from './lib/auth'
+
+import type { Doc, Id } from './_generated/dataModel'
+import type { QueryCtx } from './_generated/server'
 import type {
   AnalyticsBookingRecord,
   AnalyticsHotelRecord,
   AnalyticsRoomRecord,
 } from './lib/adminAnalyticsMetrics'
-import type { QueryCtx } from './_generated/server'
-import type { Doc, Id } from './_generated/dataModel'
 
 const analyticsWindowValidator = v.union(
   v.literal('today'),

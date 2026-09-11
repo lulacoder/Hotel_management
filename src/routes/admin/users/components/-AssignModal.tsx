@@ -1,13 +1,9 @@
+import { useForm, useStore } from '@tanstack/react-form'
 import { X } from 'lucide-react'
 import { useState } from 'react'
-import { useForm, useStore } from '@tanstack/react-form'
 import { z } from 'zod'
 
-import { api } from '../../../../../convex/_generated/api'
-import { useI18n } from '../../../../lib/i18n/provider'
-import { useTheme } from '../../../../lib/theme'
-import type { Id } from '../../../../../convex/_generated/dataModel'
-import { useMutation, useQuery } from '@/integrations/convex/hooks'
+import { Button } from '@/components/ui/button'
 import {
   Select,
   SelectContent,
@@ -15,8 +11,14 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select'
-import { Button } from '@/components/ui/button'
+import { useMutation, useQuery } from '@/integrations/convex/hooks'
 import { getFirstErrorMessage } from '@/lib/forms'
+
+import { api } from '../../../../../convex/_generated/api'
+import { useI18n } from '../../../../lib/i18n/provider'
+import { useTheme } from '../../../../lib/theme'
+
+import type { Id } from '../../../../../convex/_generated/dataModel'
 
 interface AssignModalProps {
   userId: Id<'users'>
@@ -149,7 +151,9 @@ export function AssignModal({ userId, onClose }: AssignModalProps) {
                     }`}
                     onBlur={field.handleBlur}
                   >
-                    <SelectValue placeholder={t('admin.users.assignModal.chooseHotel')} />
+                    <SelectValue
+                      placeholder={t('admin.users.assignModal.chooseHotel')}
+                    />
                   </SelectTrigger>
                   <SelectContent>
                     {hotels?.map((hotel) => (
@@ -254,17 +258,10 @@ export function AssignModal({ userId, onClose }: AssignModalProps) {
           </form.Field>
 
           <div className="admin-modal-footer">
-            <Button
-              type="button"
-              variant="outline"
-              onClick={onClose}
-            >
+            <Button type="button" variant="outline" onClick={onClose}>
               {t('common.cancel')}
             </Button>
-            <Button
-              type="submit"
-              disabled={!selectedHotelId || isSubmitting}
-            >
+            <Button type="submit" disabled={!selectedHotelId || isSubmitting}>
               {isSubmitting
                 ? t('admin.users.assignModal.assigning')
                 : role === 'hotel_admin'

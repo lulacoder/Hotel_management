@@ -60,9 +60,7 @@ describe('SearchInput', () => {
       target: { value: 'Gondar' },
     })
     rerender(<SearchInput value="Hawassa" onValueChange={onValueChange} />)
-    expect(screen.getByRole<HTMLInputElement>('textbox').value).toBe(
-      'Hawassa',
-    )
+    expect(screen.getByRole<HTMLInputElement>('textbox').value).toBe('Hawassa')
     act(() => vi.advanceTimersByTime(300))
     expect(onValueChange).not.toHaveBeenCalled()
   })

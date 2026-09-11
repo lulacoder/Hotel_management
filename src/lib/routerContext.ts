@@ -1,4 +1,5 @@
 import { getClientAuthSnapshot, sanitizeRedirect } from './authRouting'
+
 import type { ClientAuthSnapshot } from './authRouting'
 
 export interface AppRouterContext {

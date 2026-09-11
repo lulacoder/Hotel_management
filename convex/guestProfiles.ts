@@ -1,6 +1,8 @@
 import { ConvexError, v } from 'convex/values'
+
 import { mutation, query } from './_generated/server'
 import { getHotelAssignment, requireUser } from './lib/auth'
+
 import type { MutationCtx, QueryCtx } from './_generated/server'
 
 const guestProfileValidator = v.object({

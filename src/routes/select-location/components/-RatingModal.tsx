@@ -1,8 +1,10 @@
+import { useForm, useStore } from '@tanstack/react-form'
 import { useNavigate } from '@tanstack/react-router'
 import { Star } from 'lucide-react'
 import { useEffect, useMemo } from 'react'
-import { useForm, useStore } from '@tanstack/react-form'
 import { z } from 'zod'
+
+import { getFirstErrorMessage } from '@/lib/forms'
 
 import { Button } from '../../../components/ui/button'
 import {
@@ -15,7 +17,6 @@ import {
 import { Label } from '../../../components/ui/label'
 import { Textarea } from '../../../components/ui/textarea'
 import { useI18n } from '../../../lib/i18n/provider'
-import { getFirstErrorMessage } from '@/lib/forms'
 
 export interface RatingFormValues {
   rating: number

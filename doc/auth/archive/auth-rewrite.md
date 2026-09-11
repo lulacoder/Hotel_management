@@ -317,57 +317,62 @@ export const create = mutation({
 ### Full list of functions to update
 
 **`convex/hotels.ts`**
-| Function | Old call | New call |
-|---|---|---|
-| `listForOutsource` | `requireUser(ctx, args.clerkUserId)` | `requireUser(ctx)` |
-| `create` | `requireAdmin(ctx, args.clerkUserId)` | `requireAdmin(ctx)` |
-| `update` | `requireHotelManagement(ctx, args.clerkUserId, args.hotelId)` | `requireHotelManagement(ctx, args.hotelId)` |
-| `softDelete` | `requireHotelManagement(ctx, args.clerkUserId, args.hotelId)` | `requireHotelManagement(ctx, args.hotelId)` |
-| `restore` | `requireHotelManagement(ctx, args.clerkUserId, args.hotelId)` | `requireHotelManagement(ctx, args.hotelId)` |
+
+| Function           | Old call                                                      | New call                                    |
+| ------------------ | ------------------------------------------------------------- | ------------------------------------------- |
+| `listForOutsource` | `requireUser(ctx, args.clerkUserId)`                          | `requireUser(ctx)`                          |
+| `create`           | `requireAdmin(ctx, args.clerkUserId)`                         | `requireAdmin(ctx)`                         |
+| `update`           | `requireHotelManagement(ctx, args.clerkUserId, args.hotelId)` | `requireHotelManagement(ctx, args.hotelId)` |
+| `softDelete`       | `requireHotelManagement(ctx, args.clerkUserId, args.hotelId)` | `requireHotelManagement(ctx, args.hotelId)` |
+| `restore`          | `requireHotelManagement(ctx, args.clerkUserId, args.hotelId)` | `requireHotelManagement(ctx, args.hotelId)` |
 
 **`convex/rooms.ts`**
-| Function | Old call | New call |
-|---|---|---|
+
+| Function                  | Old call                                         | New call                       |
+| ------------------------- | ------------------------------------------------ | ------------------------------ |
 | `getByHotelWithLiveState` | `requireHotelAccess(ctx, args.clerkUserId, ...)` | `requireHotelAccess(ctx, ...)` |
-| `create` | `requireHotelAccess(ctx, args.clerkUserId, ...)` | `requireHotelAccess(ctx, ...)` |
-| `update` | `requireHotelAccess(ctx, args.clerkUserId, ...)` | `requireHotelAccess(ctx, ...)` |
-| `updateStatus` | `requireHotelAccess(ctx, args.clerkUserId, ...)` | `requireHotelAccess(ctx, ...)` |
-| `softDelete` | `requireHotelAccess(ctx, args.clerkUserId, ...)` | `requireHotelAccess(ctx, ...)` |
-| `restore` | `requireHotelAccess(ctx, args.clerkUserId, ...)` | `requireHotelAccess(ctx, ...)` |
+| `create`                  | `requireHotelAccess(ctx, args.clerkUserId, ...)` | `requireHotelAccess(ctx, ...)` |
+| `update`                  | `requireHotelAccess(ctx, args.clerkUserId, ...)` | `requireHotelAccess(ctx, ...)` |
+| `updateStatus`            | `requireHotelAccess(ctx, args.clerkUserId, ...)` | `requireHotelAccess(ctx, ...)` |
+| `softDelete`              | `requireHotelAccess(ctx, args.clerkUserId, ...)` | `requireHotelAccess(ctx, ...)` |
+| `restore`                 | `requireHotelAccess(ctx, args.clerkUserId, ...)` | `requireHotelAccess(ctx, ...)` |
 
 **`convex/bookings.ts`**
-| Function | Old call | New call |
-|---|---|---|
-| `get` | `requireUser(ctx, args.clerkUserId)` | `requireUser(ctx)` |
-| `getByUser` | `requireUser(ctx, args.clerkUserId)` | `requireUser(ctx)` |
-| `getByHotel` | `requireHotelAccess(ctx, args.clerkUserId, ...)` / `requireUser(ctx, args.clerkUserId)` | `requireHotelAccess(ctx, ...)` / `requireUser(ctx)` |
-| `getByRoom` | `requireHotelAccess(ctx, args.clerkUserId, ...)` | `requireHotelAccess(ctx, ...)` |
-| `holdRoom` | `requireCustomer(ctx, args.clerkUserId)` | `requireCustomer(ctx)` |
-| `walkInBooking` | `requireUser(ctx, args.clerkUserId)` | `requireUser(ctx)` |
-| `confirmBooking` | `requireCustomer(ctx, args.clerkUserId)` | `requireCustomer(ctx)` |
-| `cancelBooking` | `requireUser(ctx, args.clerkUserId)` | `requireUser(ctx)` |
-| `updateStatus` | `requireUser(ctx, args.clerkUserId)` | `requireUser(ctx)` |
-| `acceptCashPayment` | `requireUser(ctx, args.clerkUserId)` | `requireUser(ctx)` |
-| `outsourceBooking` | `requireUser(ctx, args.clerkUserId)` + `requireHotelAccess(ctx, args.clerkUserId, ...)` | `requireUser(ctx)` + `requireHotelAccess(ctx, ...)` |
-| `getEnriched` | `requireUser(ctx, args.clerkUserId)` | `requireUser(ctx)` |
-| `getMyBookingsEnriched` | `requireUser(ctx, args.clerkUserId)` | `requireUser(ctx)` |
+
+| Function                | Old call                                                                                | New call                                            |
+| ----------------------- | --------------------------------------------------------------------------------------- | --------------------------------------------------- |
+| `get`                   | `requireUser(ctx, args.clerkUserId)`                                                    | `requireUser(ctx)`                                  |
+| `getByUser`             | `requireUser(ctx, args.clerkUserId)`                                                    | `requireUser(ctx)`                                  |
+| `getByHotel`            | `requireHotelAccess(ctx, args.clerkUserId, ...)` / `requireUser(ctx, args.clerkUserId)` | `requireHotelAccess(ctx, ...)` / `requireUser(ctx)` |
+| `getByRoom`             | `requireHotelAccess(ctx, args.clerkUserId, ...)`                                        | `requireHotelAccess(ctx, ...)`                      |
+| `holdRoom`              | `requireCustomer(ctx, args.clerkUserId)`                                                | `requireCustomer(ctx)`                              |
+| `walkInBooking`         | `requireUser(ctx, args.clerkUserId)`                                                    | `requireUser(ctx)`                                  |
+| `confirmBooking`        | `requireCustomer(ctx, args.clerkUserId)`                                                | `requireCustomer(ctx)`                              |
+| `cancelBooking`         | `requireUser(ctx, args.clerkUserId)`                                                    | `requireUser(ctx)`                                  |
+| `updateStatus`          | `requireUser(ctx, args.clerkUserId)`                                                    | `requireUser(ctx)`                                  |
+| `acceptCashPayment`     | `requireUser(ctx, args.clerkUserId)`                                                    | `requireUser(ctx)`                                  |
+| `outsourceBooking`      | `requireUser(ctx, args.clerkUserId)` + `requireHotelAccess(ctx, args.clerkUserId, ...)` | `requireUser(ctx)` + `requireHotelAccess(ctx, ...)` |
+| `getEnriched`           | `requireUser(ctx, args.clerkUserId)`                                                    | `requireUser(ctx)`                                  |
+| `getMyBookingsEnriched` | `requireUser(ctx, args.clerkUserId)`                                                    | `requireUser(ctx)`                                  |
 
 **`convex/ratings.ts`**
-| Function | Old call | New call |
-|---|---|---|
-| `getMyRatingForHotel` | `requireUser(ctx, args.clerkUserId)` | `requireUser(ctx)` |
-| `upsertRating` | `requireCustomer(ctx, args.clerkUserId)` | `requireCustomer(ctx)` |
-| `softDeleteRating` | `requireHotelManagement(ctx, args.clerkUserId, ...)` | `requireHotelManagement(ctx, ...)` |
-| `getHotelRatingsAdmin` | `requireHotelAccess(ctx, args.clerkUserId, ...)` | `requireHotelAccess(ctx, ...)` |
+
+| Function               | Old call                                             | New call                           |
+| ---------------------- | ---------------------------------------------------- | ---------------------------------- |
+| `getMyRatingForHotel`  | `requireUser(ctx, args.clerkUserId)`                 | `requireUser(ctx)`                 |
+| `upsertRating`         | `requireCustomer(ctx, args.clerkUserId)`             | `requireCustomer(ctx)`             |
+| `softDeleteRating`     | `requireHotelManagement(ctx, args.clerkUserId, ...)` | `requireHotelManagement(ctx, ...)` |
+| `getHotelRatingsAdmin` | `requireHotelAccess(ctx, args.clerkUserId, ...)`     | `requireHotelAccess(ctx, ...)`     |
 
 **`convex/hotelStaff.ts`**
-| Function | Old call | New call |
-|---|---|---|
-| `listAllUsers` | `requireAdmin(ctx, args.clerkUserId)` | `requireAdmin(ctx)` |
-| `getByUserId` | `requireUser(ctx, args.clerkUserId)` | `requireUser(ctx)` |
+
+| Function       | Old call                                         | New call                       |
+| -------------- | ------------------------------------------------ | ------------------------------ |
+| `listAllUsers` | `requireAdmin(ctx, args.clerkUserId)`            | `requireAdmin(ctx)`            |
+| `getByUserId`  | `requireUser(ctx, args.clerkUserId)`             | `requireUser(ctx)`             |
 | `getByHotelId` | `requireHotelAccess(ctx, args.clerkUserId, ...)` | `requireHotelAccess(ctx, ...)` |
-| `assign` | `requireAdmin(ctx, args.clerkUserId)` | `requireAdmin(ctx)` |
-| `unassign` | `requireAdmin(ctx, args.clerkUserId)` | `requireAdmin(ctx)` |
+| `assign`       | `requireAdmin(ctx, args.clerkUserId)`            | `requireAdmin(ctx)`            |
+| `unassign`     | `requireAdmin(ctx, args.clerkUserId)`            | `requireAdmin(ctx)`            |
 
 **`convex/guestProfiles.ts`**
 

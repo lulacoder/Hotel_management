@@ -12,12 +12,14 @@ import {
   useMemo,
   useState,
 } from 'react'
+
 import {
   LOCALE_STORAGE_KEY,
   enMessages,
   loadLocaleMessages,
   locales,
 } from './messages'
+
 import type { Locale, LocaleMessages, TranslationKey } from './messages'
 
 /**

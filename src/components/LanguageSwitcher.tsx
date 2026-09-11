@@ -1,5 +1,5 @@
-import { cn } from '../lib/utils'
 import { useI18n } from '../lib/i18n/provider'
+import { cn } from '../lib/utils'
 import { Button } from './ui/button'
 
 interface LanguageSwitcherProps {

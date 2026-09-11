@@ -1,5 +1,5 @@
-import { useCallback, useState } from 'react'
 import { m } from 'motion/react'
+import { useCallback, useState } from 'react'
 import {
   Area,
   AreaChart,
@@ -9,14 +9,17 @@ import {
   XAxis,
   YAxis,
 } from 'recharts'
-import { AnalyticsEmptyState } from './AnalyticsEmptyState'
-import { AnalyticsTooltip } from './AnalyticsTooltip'
-import type { Locale } from '@/lib/i18n'
-import { useTheme } from '@/lib/theme'
+
 import {
   formatAnalyticsCount,
   formatAnalyticsCurrency,
 } from '@/lib/adminAnalytics'
+import { useTheme } from '@/lib/theme'
+
+import { AnalyticsEmptyState } from './AnalyticsEmptyState'
+import { AnalyticsTooltip } from './AnalyticsTooltip'
+
+import type { Locale } from '@/lib/i18n'
 
 interface Point {
   key: string
