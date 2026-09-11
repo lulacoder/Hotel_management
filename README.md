@@ -94,15 +94,23 @@ npx convex run seed:data
 npm run seed-hotels
 ```
 
-## Linting & Formatting
+## Linting, typechecking, and formatting
 
-This project uses [eslint](https://eslint.org/) and [prettier](https://prettier.io/) for linting and formatting. Eslint is configured using [tanstack/eslint-config](https://tanstack.com/config/latest/docs/eslint). The following scripts are available:
+This project uses [Oxlint](https://oxc.rs/docs/guide/usage/linter) for linting,
+the Go-native TypeScript 7 compiler for typechecking, and
+[Prettier](https://prettier.io/) for formatting. The following scripts are
+available:
 
 ```bash
 npm run lint
+npm run lint:fix
+npm run typecheck
 npm run format
 npm run check
+npm run check:ci
 ```
+
+`npm run build` runs the TypeScript check before the Vite production build.
 
 ## Setting up Clerk
 

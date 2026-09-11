@@ -28,14 +28,20 @@ npx vitest run path/to/file.test.ts
 # Run tests matching a pattern
 npx vitest run -t "test name pattern"
 
-# Lint (uses @tanstack/eslint-config)
+# Lint with Oxlint, including type-aware rules
 npm run lint
+
+# Typecheck with the Go-native TypeScript 7 compiler
+npm run typecheck
 
 # Format (Prettier)
 npm run format
 
-# Check and fix both (recommended before commits)
+# Format, lint-fix, and typecheck (recommended before commits)
 npm run check
+
+# Read-only lint and typecheck gate
+npm run check:ci
 
 # React Doctor audit (use the latest real tool output)
 npx react-doctor@latest --verbose
@@ -50,6 +56,11 @@ npx convex dev --once
 ## Never turn off typechecking when deploying to Convex
 
 Never run `npx convex dev --notypechecking`.
+
+This repository uses stable TypeScript 7. Its Go-native compiler is invoked as
+`tsc`; do not add `@typescript/native-preview`, `tsgo`, or a TypeScript 6
+fallback. Oxlint is the only linter; do not add ESLint or ESLint compatibility
+plugins.
 
 ### Convex Codegen Rule
 
@@ -111,8 +122,6 @@ TypeScript Preferences
 - Do not leave a newly added multi-line block unexplained just because the containing function already has a purpose comment.
 - Use extra inline comments only for non-obvious logical steps or to explain why a critical line exists. Do not narrate simple setters, readable guards, or ordinary assignments.
 - Keep comments concise, in sentence case, and without a trailing period. Update them whenever behavior changes.
-
-
 
 ### Imports
 

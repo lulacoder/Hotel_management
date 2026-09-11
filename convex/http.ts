@@ -95,7 +95,7 @@ http.route({
 http.route({
   path: '/chapa/mobile-return',
   method: 'GET',
-  // eslint-disable-next-line @typescript-eslint/require-await -- httpAction requires a Promise<Response> handler.
+  // oxlint-disable-next-line typescript/require-await -- httpAction requires a Promise<Response> handler.
   handler: httpAction(async (_ctx, request) => {
     const url = new URL(request.url)
     const txRef =
