@@ -82,6 +82,110 @@ const seedBooking = async (
     return { adminId, bookingId, customerId, hotelId, roomId }
   })
 
+// Checks the indexed unpaid-state ranges and chronological booking pages
+describe('indexed booking selection', () => {
+  // Check every optional payment state rather than only pending bookings
+  it.each([undefined, 'pending', 'failed', 'paid', 'refunded'] as const)(
+    'expires a held booking only when payment status %s is unpaid',
+    async (paymentStatus) => {
+      const t = convexTest(schema, modules)
+      const { bookingId } = await seedBooking(t, {
+        status: 'held',
+        paymentStatus,
+        holdExpiresAt: Date.now() - 1000,
+      })
+      const protectedPayment =
+        paymentStatus === 'paid' || paymentStatus === 'refunded'
+
+      const count = await t.mutation(
+        internal.bookingsInternal.cleanupExpiredHolds,
+        {},
+      )
+      // Inspect the persisted state after the real cleanup mutation
+      const booking = await t.run((ctx) => ctx.db.get(bookingId))
+
+      expect(count).toBe(protectedPayment ? 0 : 1)
+      expect(booking?.status).toBe(protectedPayment ? 'held' : 'expired')
+    },
+  )
+
+  // Payment proofs must apply the same paid/refunded containment guard
+  it.each([undefined, 'pending', 'failed', 'paid', 'refunded'] as const)(
+    'expires a proof under review only when payment status %s is unpaid',
+    async (paymentStatus) => {
+      const t = convexTest(schema, modules)
+      const { bookingId } = await seedBooking(t, {
+        status: 'pending_payment',
+        paymentStatus,
+        proofReviewDeadline: Date.now() - 1000,
+      })
+      const protectedPayment =
+        paymentStatus === 'paid' || paymentStatus === 'refunded'
+
+      const count = await t.mutation(
+        internal.bookingsInternal.cleanupExpiredHolds,
+        {},
+      )
+      // Inspect the persisted state after the real cleanup mutation
+      const booking = await t.run((ctx) => ctx.db.get(bookingId))
+
+      expect(count).toBe(protectedPayment ? 0 : 1)
+      expect(booking?.status).toBe(
+        protectedPayment ? 'pending_payment' : 'expired',
+      )
+    },
+  )
+
+  // Status and payment groups must not reorder a hotel's newest bookings
+  it('keeps hotel pages chronological across status and payment groups', async () => {
+    const t = convexTest(schema, modules)
+    const { bookingId, hotelId } = await seedBooking(t, {
+      status: 'held',
+      paymentStatus: 'pending',
+    })
+    // Seed newer rows with different statuses that would sort differently in a status index
+    const newer = await t.run(async (ctx) => {
+      const original = await ctx.db.get(bookingId)
+      if (!original) throw new Error('Missing seeded booking')
+      const { _id, _creationTime, ...fields } = original
+      const confirmedId = await ctx.db.insert('bookings', {
+        ...fields,
+        status: 'confirmed',
+        paymentStatus: 'paid',
+        createdAt: original.createdAt + 1,
+      })
+      const heldId = await ctx.db.insert('bookings', {
+        ...fields,
+        paymentStatus: 'failed',
+        createdAt: original.createdAt + 2,
+      })
+      return { confirmedId, heldId }
+    })
+    const admin = asUser(t, 'admin', 'admin@example.com')
+    const page = await admin.query(api.bookings.getByHotel, {
+      hotelId,
+      paginationOpts: { numItems: 10, cursor: null },
+    })
+    // Compare visible ordering across the status and payment boundaries
+    expect(page.page.map((item) => item.booking._id)).toEqual([
+      newer.heldId,
+      newer.confirmedId,
+      bookingId,
+    ])
+
+    const heldPage = await admin.query(api.bookings.getByHotel, {
+      hotelId,
+      status: 'held',
+      paginationOpts: { numItems: 10, cursor: null },
+    })
+    // Within a status, payment states must still leave the newest row first
+    expect(heldPage.page.map((item) => item.booking._id)).toEqual([
+      newer.heldId,
+      bookingId,
+    ])
+  })
+})
+
 describe('booking payment containment', () => {
   it(
     'removes hold expiry when a customer submits bank payment proof',
@@ -236,7 +340,9 @@ describe('booking payment containment', () => {
       },
       expiryAudits: await ctx.db
         .query('auditEvents')
-        .filter((q) => q.eq(q.field('action'), 'booking_expired'))
+        .withIndex('by_action_and_timestamp', (q) =>
+          q.eq('action', 'booking_expired'),
+        )
         .collect(),
     }))
     expect(bookings.paidHeld).toMatchObject({
@@ -431,8 +537,8 @@ describe('staff paid cancellation', () => {
       async (ctx) =>
         await ctx.db
           .query('auditEvents')
-          .filter((q) =>
-            q.eq(q.field('action'), 'booking_cancelled_refund_required'),
+          .withIndex('by_action_and_timestamp', (q) =>
+            q.eq('action', 'booking_cancelled_refund_required'),
           )
           .collect(),
     )

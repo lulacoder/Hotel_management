@@ -2,7 +2,7 @@ import { Resend } from '@convex-dev/resend'
 import { v } from 'convex/values'
 
 import { components } from './_generated/api'
-import { internalMutation } from './_generated/server'
+import { env, internalMutation } from './_generated/server'
 
 type PaymentChannel = 'bank' | 'chapa'
 type PaymentAudience = 'customer' | 'staff'
@@ -30,8 +30,9 @@ const PAYMENT_CHANNEL_LABEL: Record<PaymentChannel, string> = {
   chapa: 'Chapa payment',
 }
 
-function getEnv(name: string) {
-  const value = process.env[name]
+// Reads a declared environment variable while preserving missing-value errors
+function getEnv(name: keyof typeof env) {
+  const value = env[name]
   if (!value) {
     throw new Error(`${name} is not configured`)
   }

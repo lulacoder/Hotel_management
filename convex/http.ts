@@ -1,7 +1,7 @@
 import { httpRouter } from 'convex/server'
 
 import { internal } from './_generated/api'
-import { httpAction } from './_generated/server'
+import { env, httpAction } from './_generated/server'
 import { resend } from './paymentEmails'
 
 import type {
@@ -102,7 +102,7 @@ http.route({
     const url = new URL(request.url)
     const txRef =
       url.searchParams.get('tx_ref') ?? url.searchParams.get('trx_ref')
-    const mobileReturnBaseUrl = process.env.MOBILE_APP_RETURN_URL_BASE
+    const mobileReturnBaseUrl = env.MOBILE_APP_RETURN_URL_BASE
 
     if (!txRef) {
       return new Response('Missing tx_ref', { status: 400 })

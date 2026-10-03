@@ -289,7 +289,9 @@ export const getByUser = query({
           .paginate(args.paginationOpts)
       : await ctx.db
           .query('bookings')
-          .withIndex('by_user', (q) => q.eq('userId', targetUserId))
+          .withIndex('by_user_and_created_at', (q) =>
+            q.eq('userId', targetUserId),
+          )
           .order('desc')
           .paginate(args.paginationOpts)
   },
@@ -334,31 +336,36 @@ export const getByHotel = query({
         ? args.status
           ? await ctx.db
               .query('bookings')
-              .withIndex('by_hotel_and_refund_action_required', (q) =>
-                q.eq('hotelId', args.hotelId!).eq('refundActionRequired', true),
+              .withIndex('by_hotel_refund_action_status_and_created_at', (q) =>
+                q
+                  .eq('hotelId', args.hotelId!)
+                  .eq('refundActionRequired', true)
+                  .eq('status', args.status!),
               )
-              .filter((q) => q.eq(q.field('status'), args.status!))
               .order('desc')
               .paginate(args.paginationOpts)
           : await ctx.db
               .query('bookings')
-              .withIndex('by_hotel_and_refund_action_required', (q) =>
-                q.eq('hotelId', args.hotelId!).eq('refundActionRequired', true),
+              .withIndex(
+                'by_hotel_refund_action_required_and_created_at',
+                (q) =>
+                  q
+                    .eq('hotelId', args.hotelId!)
+                    .eq('refundActionRequired', true),
               )
               .order('desc')
               .paginate(args.paginationOpts)
         : args.status
           ? await ctx.db
               .query('bookings')
-              .withIndex('by_refund_action_required', (q) =>
-                q.eq('refundActionRequired', true),
+              .withIndex('by_refund_action_status_and_created_at', (q) =>
+                q.eq('refundActionRequired', true).eq('status', args.status!),
               )
-              .filter((q) => q.eq(q.field('status'), args.status!))
               .order('desc')
               .paginate(args.paginationOpts)
           : await ctx.db
               .query('bookings')
-              .withIndex('by_refund_action_required', (q) =>
+              .withIndex('by_refund_action_required_and_created_at', (q) =>
                 q.eq('refundActionRequired', true),
               )
               .order('desc')
@@ -378,7 +385,7 @@ export const getByHotel = query({
                 .paginate(args.paginationOpts)
             : await ctx.db
                 .query('bookings')
-                .withIndex('by_hotel_and_status', (q) =>
+                .withIndex('by_hotel_status_and_created_at', (q) =>
                   q.eq('hotelId', args.hotelId!).eq('status', args.status!),
                 )
                 .order('desc')
@@ -395,14 +402,16 @@ export const getByHotel = query({
                 .paginate(args.paginationOpts)
             : await ctx.db
                 .query('bookings')
-                .withIndex('by_hotel', (q) => q.eq('hotelId', args.hotelId!))
+                .withIndex('by_hotel_and_created_at', (q) =>
+                  q.eq('hotelId', args.hotelId!),
+                )
                 .order('desc')
                 .paginate(args.paginationOpts)
         : args.status
           ? args.paymentStatus
             ? await ctx.db
                 .query('bookings')
-                .withIndex('by_status_and_payment_status', (q) =>
+                .withIndex('by_status_payment_and_created_at', (q) =>
                   q
                     .eq('status', args.status!)
                     .eq('paymentStatus', indexedPaymentStatus),
@@ -411,7 +420,9 @@ export const getByHotel = query({
                 .paginate(args.paginationOpts)
             : await ctx.db
                 .query('bookings')
-                .withIndex('by_status', (q) => q.eq('status', args.status!))
+                .withIndex('by_status_and_created_at', (q) =>
+                  q.eq('status', args.status!),
+                )
                 .order('desc')
                 .paginate(args.paginationOpts)
           : args.paymentStatus
@@ -522,7 +533,9 @@ export const getByRoom = query({
           .paginate(args.paginationOpts)
       : await ctx.db
           .query('bookings')
-          .withIndex('by_room', (q) => q.eq('roomId', args.roomId))
+          .withIndex('by_room_and_created_at', (q) =>
+            q.eq('roomId', args.roomId),
+          )
           .order('desc')
           .paginate(args.paginationOpts)
   },
@@ -988,9 +1001,10 @@ export const cancelPaidBooking = mutation({
     const now = Date.now()
     const chapaPayment = await ctx.db
       .query('chapaPayments')
-      .withIndex('by_booking', (q) => q.eq('bookingId', booking._id))
+      .withIndex('by_booking_status_and_created_at', (q) =>
+        q.eq('bookingId', booking._id).eq('status', 'paid'),
+      )
       .order('desc')
-      .filter((q) => q.eq(q.field('status'), 'paid'))
       .first()
     const refundMethod = chapaPayment ? ('chapa' as const) : ('manual' as const)
 
@@ -1815,7 +1829,9 @@ export const getEnriched = query({
       booking.userId ? ctx.db.get(booking.userId) : null,
       ctx.db
         .query('chapaPayments')
-        .withIndex('by_booking', (q) => q.eq('bookingId', booking._id))
+        .withIndex('by_booking_and_created_at', (q) =>
+          q.eq('bookingId', booking._id),
+        )
         .order('desc')
         .first(),
     ])
@@ -1914,7 +1930,7 @@ export const getMyBookingsEnriched = query({
           .paginate(args.paginationOpts)
       : await ctx.db
           .query('bookings')
-          .withIndex('by_user', (q) => q.eq('userId', user._id))
+          .withIndex('by_user_and_created_at', (q) => q.eq('userId', user._id))
           .order('desc')
           .paginate(args.paginationOpts)
 

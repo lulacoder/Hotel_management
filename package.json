@@ -48,6 +48,7 @@
     "zod": "^4.3.6"
   },
   "devDependencies": {
+    "@convex-dev/eslint-plugin": "5.0.0",
     "@edge-runtime/vm": "^5.0.0",
     "@tanstack/devtools-vite": "^0.6.0",
     "@tanstack/react-devtools": "^0.7.0",

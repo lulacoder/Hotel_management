@@ -19,7 +19,9 @@ export const getPaymentForBooking = query({
 
     return await ctx.db
       .query('chapaPayments')
-      .withIndex('by_booking', (q) => q.eq('bookingId', args.bookingId))
+      .withIndex('by_booking_and_created_at', (q) =>
+        q.eq('bookingId', args.bookingId),
+      )
       .order('desc')
       .first()
   },

@@ -123,7 +123,9 @@ describe('manual refunds', () => {
       booking: await ctx.db.get(bookingId),
       audits: await ctx.db
         .query('auditEvents')
-        .filter((q) => q.eq(q.field('action'), 'booking_refund_refunded'))
+        .withIndex('by_action_and_timestamp', (q) =>
+          q.eq('action', 'booking_refund_refunded'),
+        )
         .collect(),
     }))
     expect(result.booking).toMatchObject({

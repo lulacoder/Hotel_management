@@ -279,8 +279,9 @@ export const createPending = internalMutation({
 
     const pendingInvitations = await ctx.db
       .query('hotelStaffInvitations')
-      .withIndex('by_email', (q) => q.eq('email', email))
-      .filter((q) => q.eq(q.field('status'), 'pending'))
+      .withIndex('by_email_status_and_created_at', (q) =>
+        q.eq('email', email).eq('status', 'pending'),
+      )
       .collect()
     if (pendingInvitations.length > 0) {
       throw new ConvexError({

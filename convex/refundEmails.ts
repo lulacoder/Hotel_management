@@ -1,6 +1,6 @@
 import { v } from 'convex/values'
 
-import { internalMutation } from './_generated/server'
+import { env, internalMutation } from './_generated/server'
 import { resend } from './paymentEmails'
 
 type RefundEmailContext = {
@@ -16,8 +16,8 @@ type RefundEmailContext = {
 }
 
 // Reads a required deployment environment variable
-function getEnv(name: string) {
-  const value = process.env[name]
+function getEnv(name: keyof typeof env) {
+  const value = env[name]
   if (!value) {
     throw new Error(`${name} is not configured`)
   }

@@ -4,7 +4,7 @@ import { ConvexError, v } from 'convex/values'
 import * as crypto from 'node:crypto'
 
 import { internal } from './_generated/api'
-import { action, internalAction } from './_generated/server'
+import { env, action, internalAction } from './_generated/server'
 
 import type { Doc, Id } from './_generated/dataModel'
 
@@ -80,8 +80,8 @@ interface InitializeCheckoutResult {
 type CheckoutOrigin = 'web' | 'mobile'
 
 // Reads a required server environment variable or fails configuration early
-function getEnv(name: string) {
-  const value = process.env[name]
+function getEnv(name: keyof typeof env) {
+  const value = env[name]
   if (!value) {
     throw new Error(`${name} is not configured`)
   }

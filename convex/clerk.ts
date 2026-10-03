@@ -4,7 +4,7 @@ import { v } from 'convex/values'
 import { Webhook } from 'svix'
 
 import { internal } from './_generated/api'
-import { internalAction } from './_generated/server'
+import { env, internalAction } from './_generated/server'
 
 interface ClerkWebhookEvent {
   type: string
@@ -30,7 +30,7 @@ export const verifyAndProcessWebhook = internalAction({
   },
   returns: v.null(),
   handler: async (ctx, args) => {
-    const webhookSecret = process.env.CLERK_WEBHOOK_SECRET
+    const webhookSecret = env.CLERK_WEBHOOK_SECRET
     if (!webhookSecret) {
       throw new Error('CLERK_WEBHOOK_SECRET not set')
     }

@@ -191,7 +191,7 @@ async function listScopedRooms(
     Array.from(hotelIds).map((hotelId) =>
       ctx.db
         .query('rooms')
-        .withIndex('by_hotel', (q) => q.eq('hotelId', hotelId))
+        .withIndex('by_hotel_and_created_at', (q) => q.eq('hotelId', hotelId))
         .collect(),
     ),
   )

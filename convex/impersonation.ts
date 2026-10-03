@@ -62,8 +62,9 @@ export const startImpersonation = mutation({
     // Close any previous active logs for this admin
     const activeLogs = await ctx.db
       .query('impersonationLogs')
-      .withIndex('by_admin', (q) => q.eq('adminUserId', adminUser._id))
-      .filter((q) => q.eq(q.field('status'), 'active'))
+      .withIndex('by_admin_status_and_started_at', (q) =>
+        q.eq('adminUserId', adminUser._id).eq('status', 'active'),
+      )
       .collect()
 
     for (const log of activeLogs) {
@@ -153,8 +154,9 @@ export const stopImpersonation = mutation({
 
     const activeLogs = await ctx.db
       .query('impersonationLogs')
-      .withIndex('by_admin', (q) => q.eq('adminUserId', adminUser._id))
-      .filter((q) => q.eq(q.field('status'), 'active'))
+      .withIndex('by_admin_status_and_started_at', (q) =>
+        q.eq('adminUserId', adminUser._id).eq('status', 'active'),
+      )
       .collect()
 
     for (const log of activeLogs) {
@@ -291,11 +293,8 @@ export const cleanupExpiredSessions = internalMutation({
 
     const expiredLogs = await ctx.db
       .query('impersonationLogs')
-      .filter((q) =>
-        q.and(
-          q.eq(q.field('status'), 'active'),
-          q.lte(q.field('expiresAt'), now),
-        ),
+      .withIndex('by_status_and_expires_at', (q) =>
+        q.eq('status', 'active').lte('expiresAt', now),
       )
       .collect()
 

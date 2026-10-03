@@ -180,17 +180,27 @@ export const reserveHostedCheckout = internalMutation({
       })
     }
 
-    const activeAttempt = await ctx.db
-      .query('chapaCheckoutAttempts')
-      .withIndex('by_booking', (q) => q.eq('bookingId', args.bookingId))
-      .order('desc')
-      .filter((q) =>
-        q.or(
-          q.eq(q.field('status'), 'initializing'),
-          q.eq(q.field('status'), 'initialized'),
-        ),
-      )
-      .first()
+    // Query each eligible status and choose the newest matching provider record
+    const activeAttemptCandidates = await Promise.all(
+      (['initializing', 'initialized'] as const).map((status) =>
+        ctx.db
+          .query('chapaCheckoutAttempts')
+          .withIndex('by_booking_status_and_created_at', (q) =>
+            q.eq('bookingId', args.bookingId).eq('status', status),
+          )
+          .order('desc')
+          .first(),
+      ),
+    )
+    // Preserve newest-first selection across the independent status lookups
+    const activeAttempt =
+      activeAttemptCandidates
+        .filter((candidate) => candidate !== null)
+        .sort(
+          (a, b) =>
+            b.createdAt - a.createdAt || b._creationTime - a._creationTime,
+        )
+        .shift() ?? null
 
     if (activeAttempt?.status === 'initializing') {
       const isStale =
@@ -229,9 +239,10 @@ export const reserveHostedCheckout = internalMutation({
     // Preserve initialized payments created before checkout reservations existed.
     const existingPayment = await ctx.db
       .query('chapaPayments')
-      .withIndex('by_booking', (q) => q.eq('bookingId', args.bookingId))
+      .withIndex('by_booking_status_and_created_at', (q) =>
+        q.eq('bookingId', args.bookingId).eq('status', 'initialized'),
+      )
       .order('desc')
-      .filter((q) => q.eq(q.field('status'), 'initialized'))
       .first()
 
     if (existingPayment) {
@@ -432,7 +443,9 @@ export const getLatestByBooking = internalQuery({
   handler: async (ctx, args) => {
     return await ctx.db
       .query('chapaPayments')
-      .withIndex('by_booking', (q) => q.eq('bookingId', args.bookingId))
+      .withIndex('by_booking_and_created_at', (q) =>
+        q.eq('bookingId', args.bookingId),
+      )
       .order('desc')
       .first()
   },
@@ -583,17 +596,27 @@ export const reserveRefund = internalMutation({
       })
     }
 
-    const payment = await ctx.db
-      .query('chapaPayments')
-      .withIndex('by_booking', (q) => q.eq('bookingId', booking._id))
-      .order('desc')
-      .filter((q) =>
-        q.or(
-          q.eq(q.field('status'), 'refund_required'),
-          q.eq(q.field('status'), 'reversed'),
-        ),
-      )
-      .first()
+    // Query each eligible status and choose the newest matching provider record
+    const paymentCandidates = await Promise.all(
+      (['refund_required', 'reversed'] as const).map((status) =>
+        ctx.db
+          .query('chapaPayments')
+          .withIndex('by_booking_status_and_created_at', (q) =>
+            q.eq('bookingId', booking._id).eq('status', status),
+          )
+          .order('desc')
+          .first(),
+      ),
+    )
+    // Preserve newest-first selection across the independent status lookups
+    const payment =
+      paymentCandidates
+        .filter((candidate) => candidate !== null)
+        .sort(
+          (a, b) =>
+            b.createdAt - a.createdAt || b._creationTime - a._creationTime,
+        )
+        .shift() ?? null
 
     if (!payment) {
       throw new ConvexError({
@@ -799,8 +822,9 @@ export const listRefundsToVerify = internalQuery({
   handler: async (ctx) => {
     return await ctx.db
       .query('chapaPayments')
-      .withIndex('by_status', (q) => q.eq('status', 'refund_initiated'))
-      .filter((q) => q.neq(q.field('refundRefId'), undefined))
+      .withIndex('by_status_and_refund_ref_id', (q) =>
+        q.eq('status', 'refund_initiated').gt('refundRefId', undefined),
+      )
       .take(50)
   },
 })
@@ -823,7 +847,9 @@ export const settleDriftedRefunds = internalMutation({
     for (const booking of inFlight) {
       const attempts = await ctx.db
         .query('chapaPayments')
-        .withIndex('by_booking', (q) => q.eq('bookingId', booking._id))
+        .withIndex('by_booking_and_created_at', (q) =>
+          q.eq('bookingId', booking._id),
+        )
         .collect()
 
       const settled = attempts.find(

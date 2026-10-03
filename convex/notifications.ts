@@ -90,7 +90,7 @@ export const getMyNotifications = query({
 
     return await ctx.db
       .query('notifications')
-      .withIndex('by_user', (q) => q.eq('userId', user._id))
+      .withIndex('by_user_and_created_at', (q) => q.eq('userId', user._id))
       .order('desc')
       .paginate(args.paginationOpts)
   },
@@ -185,7 +185,7 @@ export const clearAll = mutation({
 
     const all = await ctx.db
       .query('notifications')
-      .withIndex('by_user', (q) => q.eq('userId', user._id))
+      .withIndex('by_user_and_created_at', (q) => q.eq('userId', user._id))
       .collect()
 
     await Promise.all(all.map((n) => ctx.db.delete(n._id)))

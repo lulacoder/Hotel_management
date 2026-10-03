@@ -1,3 +1,5 @@
+import { env } from './_generated/server'
+
 import type { AuthConfig } from 'convex/server'
 
 export default {
@@ -7,7 +9,7 @@ export default {
       // dev and prod deployments.  Format:
       //   dev:  https://verb-noun-00.clerk.accounts.dev
       //   prod: https://clerk.<your-domain>.com
-      domain: process.env.CLERK_JWT_ISSUER_DOMAIN!,
+      domain: env.CLERK_JWT_ISSUER_DOMAIN,
       applicationID: 'convex',
     },
   ],

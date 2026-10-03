@@ -121,7 +121,7 @@ describe('staff notification fan-out', () => {
     await t.run(async (ctx) => {
       const existing = await ctx.db
         .query('notifications')
-        .filter((q) => q.eq(q.field('userId'), adminId))
+        .withIndex('by_user_and_created_at', (q) => q.eq('userId', adminId))
         .unique()
       await ctx.db.patch(existing!._id, { isRead: true })
     })
@@ -136,7 +136,7 @@ describe('staff notification fan-out', () => {
     const adminNotifications = await t.run(async (ctx) =>
       ctx.db
         .query('notifications')
-        .filter((q) => q.eq(q.field('userId'), adminId))
+        .withIndex('by_user_and_created_at', (q) => q.eq('userId', adminId))
         .collect(),
     )
     expect(adminNotifications).toHaveLength(2)

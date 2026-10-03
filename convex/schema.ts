@@ -52,7 +52,8 @@ export default defineSchema({
     revokedAt: v.optional(v.number()),
     revokedBy: v.optional(v.id('users')),
   })
-    .index('by_email', ['email'])
+    .index('by_email_and_created_at', ['email', 'createdAt'])
+    .index('by_email_status_and_created_at', ['email', 'status', 'createdAt'])
     .index('by_hotel_and_created_at', ['hotelId', 'createdAt'])
     .index('by_status', ['status']),
 
@@ -141,7 +142,8 @@ export default defineSchema({
     createdAt: v.number(),
     updatedAt: v.number(),
   })
-    .index('by_hotel', ['hotelId'])
+    // Keep room lists chronological without sharing the status index's sort order
+    .index('by_hotel_and_created_at', ['hotelId', 'createdAt'])
     .index('by_hotel_and_status', ['hotelId', 'operationalStatus'])
     .index('by_hotel_and_room_number', ['hotelId', 'roomNumber'])
     .index('by_hotel_and_is_deleted', ['hotelId', 'isDeleted'])
@@ -191,9 +193,7 @@ export default defineSchema({
     setBy: v.id('users'),
     createdAt: v.optional(v.number()),
     updatedAt: v.number(),
-  })
-    .index('by_hotel', ['hotelId'])
-    .index('by_hotel_and_is_deleted', ['hotelId', 'isDeleted']),
+  }).index('by_hotel_and_is_deleted', ['hotelId', 'isDeleted']),
 
   // Transactional reservations prevent concurrent actions from creating
   // multiple provider checkouts for the same booking.
@@ -217,7 +217,11 @@ export default defineSchema({
     createdAt: v.number(),
     updatedAt: v.number(),
   })
-    .index('by_booking', ['bookingId'])
+    .index('by_booking_status_and_created_at', [
+      'bookingId',
+      'status',
+      'createdAt',
+    ])
     .index('by_tx_ref', ['txRef']),
 
   chapaPayments: defineTable({
@@ -260,9 +264,14 @@ export default defineSchema({
     createdAt: v.number(),
     updatedAt: v.number(),
   })
-    .index('by_booking', ['bookingId'])
+    .index('by_booking_and_created_at', ['bookingId', 'createdAt'])
+    .index('by_booking_status_and_created_at', [
+      'bookingId',
+      'status',
+      'createdAt',
+    ])
     .index('by_tx_ref', ['txRef'])
-    .index('by_status', ['status'])
+    .index('by_status_and_refund_ref_id', ['status', 'refundRefId'])
     .index('by_refund_reference', ['refundReference'])
     .index('by_refund_ref_id', ['refundRefId']),
 
@@ -346,38 +355,65 @@ export default defineSchema({
     updatedAt: v.number(),
     updatedBy: v.optional(v.id('users')),
   })
-    .index('by_room', ['roomId'])
-    .index('by_user', ['userId'])
+    .index('by_room_and_created_at', ['roomId', 'createdAt'])
+    .index('by_user_and_created_at', ['userId', 'createdAt'])
     .index('by_guest_profile', ['guestProfileId'])
     .index('by_created_at', ['createdAt'])
-    .index('by_status', ['status'])
-    .index('by_hotel', ['hotelId'])
+    .index('by_status_and_created_at', ['status', 'createdAt'])
     .index('by_hotel_and_created_at', ['hotelId', 'createdAt'])
     .index('by_hotel_and_check_in', ['hotelId', 'checkIn'])
     .index('by_hotel_and_check_out', ['hotelId', 'checkOut'])
     .index('by_room_and_status', ['roomId', 'status'])
     .index('by_room_and_check_out', ['roomId', 'checkOut'])
     .index('by_room_and_dates', ['roomId', 'checkIn', 'checkOut'])
-    .index('by_hold_expires', ['holdExpiresAt'])
-    .index('by_proof_review_deadline', ['proofReviewDeadline'])
-    .index('by_user_and_status', ['userId', 'status'])
-    .index('by_hotel_and_status', ['hotelId', 'status'])
-    .index('by_payment_status', ['paymentStatus'])
-    .index('by_refund_status', ['refundStatus'])
-    .index('by_status_and_payment_status', ['status', 'paymentStatus'])
-    .index('by_status_payment_and_check_in', [
+    .index('by_status_payment_and_hold_expires', [
       'status',
       'paymentStatus',
+      'holdExpiresAt',
+    ])
+    .index('by_status_payment_and_proof_review_deadline', [
+      'status',
+      'paymentStatus',
+      'proofReviewDeadline',
+    ])
+    .index('by_user_and_status', ['userId', 'status'])
+    .index('by_hotel_status_and_created_at', ['hotelId', 'status', 'createdAt'])
+    .index('by_payment_status', ['paymentStatus'])
+    .index('by_refund_status', ['refundStatus'])
+    .index('by_status_payment_and_created_at', [
+      'status',
+      'paymentStatus',
+      'createdAt',
+    ])
+    .index('by_status_payment_refund_action_and_check_in', [
+      'status',
+      'paymentStatus',
+      'refundActionRequired',
       'checkIn',
     ])
     .index('by_hotel_and_payment_status', ['hotelId', 'paymentStatus'])
     .index('by_hotel_and_refund_status', ['hotelId', 'refundStatus'])
-    .index('by_refund_action_required', ['refundActionRequired'])
+    .index('by_refund_action_required_and_created_at', [
+      'refundActionRequired',
+      'createdAt',
+    ])
+    .index('by_refund_action_status_and_created_at', [
+      'refundActionRequired',
+      'status',
+      'createdAt',
+    ])
     .index('by_national_id_storage', ['nationalIdStorageId'])
     .index('by_national_id_r2', ['nationalIdR2Key'])
-    .index('by_hotel_and_refund_action_required', [
+    .index('by_hotel_refund_action_required_and_created_at', [
       'hotelId',
       'refundActionRequired',
+      'createdAt',
+    ])
+    .index('by_hotel_refund_action_status_and_created_at', [
+      'hotelId',
+      'refundActionRequired',
+      'status',
+      'createdAt',
     ])
     .index('by_hotel_status_and_payment_status', [
       'hotelId',
@@ -396,8 +432,7 @@ export default defineSchema({
     createdAt: v.number(),
     updatedAt: v.number(),
   })
-    .index('by_hotel', ['hotelId'])
-    .index('by_user', ['userId'])
+    .index('by_hotel_and_created_at', ['hotelId', 'createdAt'])
     .index('by_user_and_hotel', ['userId', 'hotelId'])
     .index('by_hotel_and_is_deleted', ['hotelId', 'isDeleted']),
 
@@ -434,7 +469,8 @@ export default defineSchema({
     isRead: v.boolean(),
     createdAt: v.number(),
   })
-    .index('by_user', ['userId'])
+    // Preserve latest-first notification pagination across read states
+    .index('by_user_and_created_at', ['userId', 'createdAt'])
     .index('by_user_and_is_read', ['userId', 'isRead'])
     .index('by_created_at', ['createdAt'])
     // Lets a repeated fan-out find the alert it should refresh instead of duplicate
@@ -472,7 +508,8 @@ export default defineSchema({
   })
     .index('by_actor', ['actorId'])
     .index('by_target', ['targetType', 'targetId'])
-    .index('by_timestamp', ['timestamp']),
+    .index('by_timestamp', ['timestamp'])
+    .index('by_action_and_timestamp', ['action', 'timestamp']),
 
   announcements: defineTable({
     hotelId: v.id('hotels'),
@@ -489,7 +526,6 @@ export default defineSchema({
     updatedAt: v.number(),
     updatedBy: v.optional(v.id('users')),
   })
-    .index('by_hotel', ['hotelId'])
     .index('by_hotel_and_is_active', ['hotelId', 'isActive'])
     .index('by_hotel_and_created_at', ['hotelId', 'createdAt']),
 
@@ -518,5 +554,11 @@ export default defineSchema({
   })
     .index('by_admin', ['adminUserId', 'startedAt'])
     .index('by_target', ['targetUserId', 'startedAt'])
-    .index('by_started_at', ['startedAt']),
+    .index('by_started_at', ['startedAt'])
+    .index('by_admin_status_and_started_at', [
+      'adminUserId',
+      'status',
+      'startedAt',
+    ])
+    .index('by_status_and_expires_at', ['status', 'expiresAt']),
 })

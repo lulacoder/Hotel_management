@@ -30,6 +30,18 @@ import type { DataModel } from "./dataModel.js";
 type Env = {
   readonly CONVEX_CLOUD_URL: string;
   readonly CONVEX_SITE_URL: string;
+  readonly APP_BASE_URL: string | undefined;
+  readonly CHAPA_BRAND_NAME: string | undefined;
+  readonly CHAPA_CALLBACK_BASE_URL: string | undefined;
+  readonly CHAPA_EXPECTED_MODE: string | undefined;
+  readonly CHAPA_FIXED_ETB_PER_USD: string | undefined;
+  readonly CHAPA_SECRET_KEY: string | undefined;
+  readonly CHAPA_WEBHOOK_SECRET: string | undefined;
+  readonly CLERK_JWT_ISSUER_DOMAIN: string;
+  readonly CLERK_WEBHOOK_SECRET: string | undefined;
+  readonly MOBILE_APP_RETURN_URL_BASE: string | undefined;
+  readonly NOTIFICATION_FROM_EMAIL: string | undefined;
+  readonly WEB_APP_URL: string | undefined;
 };
 
 /**

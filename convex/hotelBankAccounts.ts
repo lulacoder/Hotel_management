@@ -238,7 +238,9 @@ export const backfillDefaultName = mutation({
 
     const accounts = await ctx.db
       .query('hotelBankAccounts')
-      .withIndex('by_hotel', (q) => q.eq('hotelId', args.hotelId))
+      .withIndex('by_hotel_and_is_deleted', (q) =>
+        q.eq('hotelId', args.hotelId),
+      )
       .collect()
 
     const now = Date.now()

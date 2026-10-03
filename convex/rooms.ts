@@ -163,7 +163,9 @@ export const getByHotel = query({
     } else {
       rooms = await ctx.db
         .query('rooms')
-        .withIndex('by_hotel', (q) => q.eq('hotelId', args.hotelId))
+        .withIndex('by_hotel_and_created_at', (q) =>
+          q.eq('hotelId', args.hotelId),
+        )
         .take(500)
     }
 
@@ -188,7 +190,9 @@ export const getByHotelWithLiveState = query({
     const rooms = args.includeDeleted
       ? await ctx.db
           .query('rooms')
-          .withIndex('by_hotel', (q) => q.eq('hotelId', args.hotelId))
+          .withIndex('by_hotel_and_created_at', (q) =>
+            q.eq('hotelId', args.hotelId),
+          )
           .take(500)
       : await ctx.db
           .query('rooms')
@@ -210,7 +214,7 @@ export const getByHotelWithLiveState = query({
         liveStatuses.map((status) =>
           ctx.db
             .query('bookings')
-            .withIndex('by_hotel_and_status', (q) =>
+            .withIndex('by_hotel_status_and_created_at', (q) =>
               q.eq('hotelId', args.hotelId).eq('status', status),
             )
             .collect(),

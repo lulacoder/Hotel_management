@@ -313,7 +313,9 @@ export const getHotelRatingsAdmin = query({
 
     const ratings = await ctx.db
       .query('hotelRatings')
-      .withIndex('by_hotel', (q) => q.eq('hotelId', args.hotelId))
+      .withIndex('by_hotel_and_created_at', (q) =>
+        q.eq('hotelId', args.hotelId),
+      )
       .order('desc')
       .take(limit)
 

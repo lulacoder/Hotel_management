@@ -12,37 +12,43 @@ export const cleanupExpiredHolds = internalMutation({
   handler: async (ctx) => {
     const now = Date.now()
 
-    const timedOutHolds = await ctx.db
-      .query('bookings')
-      // The lower bound skips bookings with no timestamp, which the index
-      // sorts below every number and which no lifecycle event may expire
-      .withIndex('by_hold_expires', (q) =>
-        q.gt('holdExpiresAt', 0).lt('holdExpiresAt', now),
-      )
-      .filter((q) =>
-        q.and(
-          q.eq(q.field('status'), 'held'),
-          q.neq(q.field('paymentStatus'), 'paid'),
-          q.neq(q.field('paymentStatus'), 'refunded'),
+    // Select only unpaid states before scanning the expiration range
+    const timedOutHolds = (
+      await Promise.all(
+        ([undefined, 'pending', 'failed'] as const).map((paymentStatus) =>
+          ctx.db
+            .query('bookings')
+            .withIndex('by_status_payment_and_hold_expires', (q) =>
+              q
+                .eq('status', 'held')
+                .eq('paymentStatus', paymentStatus)
+                .gt('holdExpiresAt', 0)
+                .lt('holdExpiresAt', now),
+            )
+            .collect(),
         ),
       )
-      .collect()
+    ).flat()
 
     // Bank transfer proofs drop their hold when they enter review, so the room
     // they still block is only reclaimable through the review deadline
-    const unreviewedProofs = await ctx.db
-      .query('bookings')
-      .withIndex('by_proof_review_deadline', (q) =>
-        q.gt('proofReviewDeadline', 0).lt('proofReviewDeadline', now),
-      )
-      .filter((q) =>
-        q.and(
-          q.eq(q.field('status'), 'pending_payment'),
-          q.neq(q.field('paymentStatus'), 'paid'),
-          q.neq(q.field('paymentStatus'), 'refunded'),
+    // Select only unpaid states before scanning the expiration range
+    const unreviewedProofs = (
+      await Promise.all(
+        ([undefined, 'pending', 'failed'] as const).map((paymentStatus) =>
+          ctx.db
+            .query('bookings')
+            .withIndex('by_status_payment_and_proof_review_deadline', (q) =>
+              q
+                .eq('status', 'pending_payment')
+                .eq('paymentStatus', paymentStatus)
+                .gt('proofReviewDeadline', 0)
+                .lt('proofReviewDeadline', now),
+            )
+            .collect(),
         ),
       )
-      .collect()
+    ).flat()
 
     const expiredCandidates = [...timedOutHolds, ...unreviewedProofs]
 
@@ -89,24 +95,37 @@ export const createPaidNoShowRefundTasks = internalMutation({
   handler: async (ctx) => {
     const now = Date.now()
     const today = getAddisDate(now)
-    const candidates = await ctx.db
-      .query('bookings')
-      .withIndex('by_status_payment_and_check_in', (q) =>
-        q
-          .eq('status', 'confirmed')
-          .eq('paymentStatus', 'paid')
-          .lte('checkIn', today),
+    // Both legacy unset flags and explicit false flags are eligible for no-show review
+    const candidates = (
+      await Promise.all(
+        ([undefined, false] as const).map((refundActionRequired) =>
+          ctx.db
+            .query('bookings')
+            .withIndex('by_status_payment_refund_action_and_check_in', (q) =>
+              q
+                .eq('status', 'confirmed')
+                .eq('paymentStatus', 'paid')
+                .eq('refundActionRequired', refundActionRequired)
+                .lte('checkIn', today),
+            )
+            .collect(),
+        ),
       )
-      .filter((q) => q.neq(q.field('refundActionRequired'), true))
-      .collect()
+    ).flat()
+    // Keep the original check-in order when merging the two eligibility ranges
+    candidates.sort(
+      (a, b) =>
+        a.checkIn.localeCompare(b.checkIn) || a._creationTime - b._creationTime,
+    )
 
     // Convert every still-confirmed paid arrival into one visible refund task
     for (const booking of candidates) {
       const chapaPayment = await ctx.db
         .query('chapaPayments')
-        .withIndex('by_booking', (q) => q.eq('bookingId', booking._id))
+        .withIndex('by_booking_status_and_created_at', (q) =>
+          q.eq('bookingId', booking._id).eq('status', 'paid'),
+        )
         .order('desc')
-        .filter((q) => q.eq(q.field('status'), 'paid'))
         .first()
       const refundMethod = chapaPayment
         ? ('chapa' as const)
