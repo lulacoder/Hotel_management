@@ -5,6 +5,7 @@ import { m } from 'motion/react'
 import { AdminSpinner } from '@/components/AdminSpinner'
 import { Button } from '@/components/ui/button'
 import { useQuery } from '@/integrations/convex/hooks'
+import { BOOKING_STATUS_LABEL_KEYS } from '@/lib/bookingStatus'
 import { useTheme } from '@/lib/theme'
 
 import { api } from '../../../../convex/_generated/api'
@@ -207,7 +208,7 @@ function ComplaintDetailPage() {
                 {booking.checkIn} - {booking.checkOut}
               </p>
               <p className={isDark ? 'text-slate-400' : 'text-slate-500'}>
-                {t(`booking.status.${booking.status}` as never)}
+                {t(BOOKING_STATUS_LABEL_KEYS[booking.status])}
               </p>
               <Link
                 to="/admin/bookings/$bookingId"

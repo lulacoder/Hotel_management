@@ -158,7 +158,7 @@ function RoomsPage() {
                   search.operationalStatus === 'out_of_order'
                     ? 'outOfOrder'
                     : search.operationalStatus
-                }` as never,
+                }`,
               ),
             })}
           </span>

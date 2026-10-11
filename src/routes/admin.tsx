@@ -42,6 +42,8 @@ import {
 import { staticAssets } from '../lib/staticAssets'
 import { useTheme } from '../lib/theme'
 
+import type { TranslationKey } from '../lib/i18n'
+
 export const Route = createFileRoute('/admin')({
   beforeLoad: ({ context, location }) => {
     const auth = context.auth.getClientSnapshot()
@@ -60,7 +62,7 @@ export const Route = createFileRoute('/admin')({
 interface AdminNavItem {
   exact?: boolean
   icon: typeof LayoutDashboard
-  key: string
+  labelKey: Extract<TranslationKey, `admin.nav.${string}`>
   to:
     | '/admin'
     | '/admin/announcements'
@@ -77,47 +79,47 @@ const ADMIN_NAV_ITEMS: Array<AdminNavItem> = [
   {
     exact: true,
     icon: LayoutDashboard,
-    key: 'dashboard',
+    labelKey: 'admin.nav.dashboard',
     to: '/admin',
   },
   {
     icon: Hotel,
-    key: 'hotels',
+    labelKey: 'admin.nav.hotels',
     to: '/admin/hotels',
   },
   {
     icon: Building2,
-    key: 'rooms',
+    labelKey: 'admin.nav.rooms',
     to: '/admin/rooms',
   },
   {
     icon: Calendar,
-    key: 'bookings',
+    labelKey: 'admin.nav.bookings',
     to: '/admin/bookings',
   },
   {
     icon: MessageSquareText,
-    key: 'complaints',
+    labelKey: 'admin.nav.complaints',
     to: '/admin/complaints',
   },
   {
     icon: UserPlus,
-    key: 'walkIn',
+    labelKey: 'admin.nav.walkIn',
     to: '/admin/walk-in',
   },
   {
     icon: Users,
-    key: 'users',
+    labelKey: 'admin.nav.users',
     to: '/admin/users',
   },
   {
     icon: MailPlus,
-    key: 'invitations',
+    labelKey: 'admin.nav.invitations',
     to: '/admin/invitations',
   },
   {
     icon: Megaphone,
-    key: 'announcements',
+    labelKey: 'admin.nav.announcements',
     to: '/admin/announcements',
   },
 ]
@@ -393,7 +395,7 @@ function AdminLayout() {
                     <item.icon
                       className={`size-5 ${isActive ? 'text-violet-400' : ''}`}
                     />
-                    {t(`admin.nav.${item.key}` as never)}
+                    {t(item.labelKey)}
                   </>
                 )}
               </Link>
@@ -497,7 +499,7 @@ function AdminLayout() {
                     <item.icon
                       className={`size-5 ${isActive ? 'text-violet-400' : ''}`}
                     />
-                    {t(`admin.nav.${item.key}` as never)}
+                    {t(item.labelKey)}
                   </>
                 )}
               </Link>

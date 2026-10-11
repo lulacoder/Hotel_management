@@ -84,7 +84,7 @@ export const findOrCreate = mutation({
     if (normalizedPhone) {
       const byPhone = await ctx.db
         .query('guestProfiles')
-        .withIndex('by_phone', (q: any) => q.eq('phone', normalizedPhone))
+        .withIndex('by_phone', (q) => q.eq('phone', normalizedPhone))
         .first()
 
       if (byPhone) {
@@ -95,7 +95,7 @@ export const findOrCreate = mutation({
     if (normalizedEmail) {
       const byEmail = await ctx.db
         .query('guestProfiles')
-        .withIndex('by_email', (q: any) => q.eq('email', normalizedEmail))
+        .withIndex('by_email', (q) => q.eq('email', normalizedEmail))
         .first()
 
       if (byEmail) {
@@ -159,7 +159,7 @@ export const search = query({
         // matches the old full collect() while staying capped.
         const bookings = await ctx.db
           .query('bookings')
-          .withIndex('by_guest_profile', (q: any) =>
+          .withIndex('by_guest_profile', (q) =>
             q.eq('guestProfileId', profile._id),
           )
           .take(1000)

@@ -593,15 +593,19 @@ export const update = mutation({
     }
 
     // Build update object
-    const updates: Record<string, unknown> = {
+    const updates: Partial<Omit<Doc<'rooms'>, '_id' | '_creationTime'>> = {
       updatedAt: Date.now(),
     }
 
     const previousValues: Record<string, unknown> = {}
     const newValues: Record<string, unknown> = {}
 
-    // Helper to track changes
-    const trackChange = (key: string, newValue: unknown, oldValue: unknown) => {
+    // Records only schema-valid room fields in the patch and its audit entry
+    const trackChange = <K extends keyof typeof updates>(
+      key: K,
+      newValue: (typeof updates)[K],
+      oldValue: (typeof updates)[K],
+    ) => {
       if (newValue !== undefined) {
         previousValues[key] = oldValue
         newValues[key] = newValue

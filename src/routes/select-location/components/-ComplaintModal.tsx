@@ -3,8 +3,10 @@ import { useNavigate } from '@tanstack/react-router'
 import { useEffect, useMemo } from 'react'
 import { z } from 'zod'
 
+import { BOOKING_STATUS_LABEL_KEYS } from '@/lib/bookingStatus'
 import { getFirstErrorMessage } from '@/lib/forms'
 
+import { isBookingStatus } from '../../../../convex/lib/bookingLifecycle'
 import {
   Dialog,
   DialogContent,
@@ -148,21 +150,9 @@ export function ComplaintModal({
     })
   }, [form])
 
-  const statusLabel = (status: string) => {
-    switch (status) {
-      case 'held':
-      case 'pending_payment':
-      case 'confirmed':
-      case 'checked_in':
-      case 'checked_out':
-      case 'cancelled':
-      case 'expired':
-      case 'outsourced':
-        return t(`booking.status.${status}` as never)
-      default:
-        return status
-    }
-  }
+  // Uses explicit message keys for booking statuses with different spellings
+  const statusLabel = (status: string) =>
+    isBookingStatus(status) ? t(BOOKING_STATUS_LABEL_KEYS[status]) : status
 
   const panelClass = isDark
     ? 'border-slate-800 bg-slate-900 text-slate-100'

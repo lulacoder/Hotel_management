@@ -37,6 +37,7 @@ import type * as lib_auth from "../lib/auth.js";
 import type * as lib_availability from "../lib/availability.js";
 import type * as lib_bookingLifecycle from "../lib/bookingLifecycle.js";
 import type * as lib_bookingTransitions from "../lib/bookingTransitions.js";
+import type * as lib_chapaValidators from "../lib/chapaValidators.js";
 import type * as lib_dates from "../lib/dates.js";
 import type * as lib_refundDeadline from "../lib/refundDeadline.js";
 import type * as lib_refunds from "../lib/refunds.js";
@@ -93,6 +94,7 @@ declare const fullApi: ApiFromModules<{
   "lib/availability": typeof lib_availability;
   "lib/bookingLifecycle": typeof lib_bookingLifecycle;
   "lib/bookingTransitions": typeof lib_bookingTransitions;
+  "lib/chapaValidators": typeof lib_chapaValidators;
   "lib/dates": typeof lib_dates;
   "lib/refundDeadline": typeof lib_refundDeadline;
   "lib/refunds": typeof lib_refunds;

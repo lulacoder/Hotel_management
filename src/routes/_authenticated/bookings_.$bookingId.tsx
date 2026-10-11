@@ -17,7 +17,10 @@ import { api } from '../../../convex/_generated/api'
 import { Button } from '../../components/ui/button'
 import { useConfirm } from '../../components/ui/confirm-dialog'
 import { useMutation, useQuery } from '../../integrations/convex/hooks'
-import { getCustomerRefundView } from '../../lib/bookingStatus'
+import {
+  BOOKING_STATUS_LABEL_KEYS,
+  getCustomerRefundView,
+} from '../../lib/bookingStatus'
 import { formatUsdAmount } from '../../lib/currency'
 import { useI18n } from '../../lib/i18n/provider'
 import {
@@ -219,7 +222,7 @@ function BookingCommandCenter() {
                         : 'text-sm text-muted-foreground'
                     }
                   >
-                    {t(`trip.timeline.${status}` as never)}
+                    {t(`trip.timeline.${status}`)}
                   </span>
                 </div>
               )
@@ -229,7 +232,7 @@ function BookingCommandCenter() {
           {['cancelled', 'expired', 'outsourced'].includes(booking.status) && (
             <div className="mt-5 flex items-center gap-2 rounded-xl border border-red-500/20 bg-red-500/10 p-3 text-red-300">
               <X className="size-4" />{' '}
-              {t(`booking.status.${booking.status}` as never)}
+              {t(BOOKING_STATUS_LABEL_KEYS[booking.status])}
             </div>
           )}
         </section>

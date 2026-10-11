@@ -56,10 +56,7 @@ import { BookingStatusBadge } from './components/-BookingStatusBadge'
 import { OutsourceModal } from './components/-OutsourceModal'
 
 import type { Id } from '../../../../convex/_generated/dataModel'
-import type {
-  BookingStatus,
-  ManualBookingTransitionStatus,
-} from '../../../../convex/lib/bookingLifecycle'
+import type { ManualBookingTransitionStatus } from '../../../../convex/lib/bookingLifecycle'
 
 export const Route = createFileRoute('/admin/bookings/')({
   validateSearch: (search: Record<string, unknown>) => ({
@@ -85,20 +82,6 @@ const itemVariants = {
   },
 }
 
-type AdminBookingListItem = {
-  booking: any
-  guestProfile?: {
-    _id: Id<'guestProfiles'>
-    name: string
-    phone?: string
-    email?: string
-  }
-  linkedUser?: {
-    _id: Id<'users'>
-    email: string
-  }
-}
-
 function BookingsPage() {
   const { t } = useI18n()
   const confirm = useConfirm()
@@ -110,8 +93,8 @@ function BookingsPage() {
   const paymentStatusFilter = search.paymentStatus
   const { hotelAssignment, profile, isRoomAdmin } = useAdminSession()
 
-  const [selectedHotel, setSelectedHotel] = useState<string>(() =>
-    isRoomAdmin ? 'all' : (hotelAssignment?.hotelId ?? 'all'),
+  const [selectedHotel, setSelectedHotel] = useState<Id<'hotels'> | 'all'>(
+    () => (isRoomAdmin ? 'all' : (hotelAssignment?.hotelId ?? 'all')),
   )
   const [selectedBookingId, setSelectedBookingId] =
     useState<Id<'bookings'> | null>(null)
@@ -132,6 +115,17 @@ function BookingsPage() {
     ? hotels
     : hotels?.filter((hotel) => hotel._id === hotelAssignment?.hotelId)
 
+  // Resolve select strings through accessible hotels before storing their IDs
+  const handleHotelSelection = (value: string) => {
+    if (value === 'all' && isRoomAdmin) {
+      setSelectedHotel('all')
+      return
+    }
+    // Recover the branded ID from a hotel the caller can select
+    const hotel = visibleHotels?.find((candidate) => candidate._id === value)
+    if (hotel) setSelectedHotel(hotel._id)
+  }
+
   useEffect(() => {
     if (!isRoomAdmin && hotelAssignment?.hotelId) {
       setSelectedHotel(hotelAssignment.hotelId)
@@ -140,7 +134,7 @@ function BookingsPage() {
 
   const effectiveHotelId = isRoomAdmin
     ? selectedHotel !== 'all'
-      ? (selectedHotel as Id<'hotels'>)
+      ? selectedHotel
       : undefined
     : hotelAssignment?.hotelId
 
@@ -157,11 +151,7 @@ function BookingsPage() {
         }
       : 'skip',
     { initialNumItems: 20 },
-  ) as {
-    results: Array<AdminBookingListItem>
-    status: 'LoadingFirstPage' | 'CanLoadMore' | 'LoadingMore' | 'Exhausted'
-    loadMore: (numItems: number) => void
-  }
+  )
   const bookings = bookingsPage.results
   const isBookingsLoading = bookingsPage.status === 'LoadingFirstPage'
 
@@ -340,7 +330,7 @@ function BookingsPage() {
         <div className="flex-1">
           <Select
             value={selectedHotel}
-            onValueChange={setSelectedHotel}
+            onValueChange={handleHotelSelection}
             disabled={!isRoomAdmin}
           >
             <SelectTrigger className="admin-select">
@@ -484,7 +474,7 @@ function BookingsPage() {
                     <div className="flex-1">
                       <div className="flex items-center gap-3 mb-2">
                         <BookingStatusBadge
-                          status={booking.status as BookingStatus}
+                          status={booking.status}
                           statusConfig={statusConfig}
                         />
                         {booking.status === 'held' && booking.holdExpiresAt && (
@@ -616,7 +606,7 @@ function BookingsPage() {
                             className="gap-2 px-4 text-emerald-400"
                           >
                             {bookingAction?.bookingId === booking._id &&
-                            bookingAction?.kind === 'cash' ? (
+                            bookingAction.kind === 'cash' ? (
                               <Loader2 className="size-4 animate-spin" />
                             ) : (
                               <CircleDollarSign className="size-4" />
@@ -646,7 +636,7 @@ function BookingsPage() {
                                 className="px-4"
                               >
                                 {bookingAction?.bookingId === booking._id &&
-                                  bookingAction?.kind === 'cancel' && (
+                                  bookingAction.kind === 'cancel' && (
                                     <Loader2 className="size-4 animate-spin" />
                                   )}
                                 {booking.paymentStatus === 'paid'
@@ -668,7 +658,7 @@ function BookingsPage() {
                                 className="px-4"
                               >
                                 {bookingAction?.bookingId === booking._id &&
-                                  bookingAction?.kind === 'status' && (
+                                  bookingAction.kind === 'status' && (
                                     <Loader2 className="size-4 animate-spin" />
                                   )}
                                 {transitionLabel[nextStatus]}
@@ -698,17 +688,17 @@ function BookingsPage() {
                     <div
                       role="status"
                       className={`mt-4 flex items-start gap-2 rounded-xl border px-3 py-2 text-sm ${
-                        actionFeedback?.tone === 'success'
+                        actionFeedback.tone === 'success'
                           ? 'border-emerald-500/25 bg-emerald-500/10 text-emerald-400'
                           : 'border-red-500/25 bg-red-500/10 text-red-400'
                       }`}
                     >
-                      {actionFeedback?.tone === 'success' ? (
+                      {actionFeedback.tone === 'success' ? (
                         <CheckCircle2 className="mt-0.5 size-4 shrink-0" />
                       ) : (
                         <XCircle className="mt-0.5 size-4 shrink-0" />
                       )}
-                      <span>{actionFeedback?.message}</span>
+                      <span>{actionFeedback.message}</span>
                     </div>
                   )}
                 </div>

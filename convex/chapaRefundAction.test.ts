@@ -118,6 +118,58 @@ afterEach(() => {
 })
 
 describe('Chapa full refunds', () => {
+  // Unreadable successful POST responses must remain locked against duplicate refunds
+  it.each([{}, { status: 'success', data: { ref_id: 123 } }])(
+    'blocks retries after a malformed refund response %j',
+    async (payload) => {
+      const t = convexTest(schema, modules)
+      const { bookingId } = await seedChapaRefund(t)
+      const admin = t.withIdentity({
+        subject: 'chapa-refund-admin',
+        email: 'admin@example.com',
+        emailVerified: true,
+      })
+      const fetchMock = vi.fn().mockResolvedValue(
+        new Response(JSON.stringify(payload), {
+          status: 200,
+          headers: { 'Content-Type': 'application/json' },
+        }),
+      )
+      vi.stubGlobal('fetch', fetchMock)
+
+      const first = await admin.action(api.chapaActions.initiateRefund, {
+        bookingId,
+      })
+      const second = await admin.action(api.chapaActions.initiateRefund, {
+        bookingId,
+      })
+      expect(first.state).toBe('verification_required')
+      expect(second.state).toBe('verification_required')
+      expect(fetchMock).toHaveBeenCalledTimes(1)
+    },
+  )
+
+  // Signed JSON still needs valid webhook routing fields before reconciliation
+  it.each([null, [], { tx_ref: 'bkg_refund_action', event: 123 }])(
+    'rejects malformed signed webhook payloads %j',
+    async (payload) => {
+      const t = convexTest(schema, modules)
+      const fetchMock = vi.fn()
+      vi.stubGlobal('fetch', fetchMock)
+      const body = JSON.stringify(payload)
+
+      const result = await t.action(internal.chapaActions.processWebhook, {
+        body,
+        xChapaSignature: signWebhook(body),
+      })
+      expect(result).toEqual({
+        body: 'Invalid webhook payload',
+        statusCode: 400,
+      })
+      expect(fetchMock).not.toHaveBeenCalled()
+    },
+  )
+
   it('stores ref_id and refunds the original ETB charge', async () => {
     const t = convexTest(schema, modules)
     const { bookingId } = await seedChapaRefund(t)
@@ -290,66 +342,72 @@ describe('Chapa full refunds', () => {
     expect(payment).toMatchObject({ status: 'refund_required' })
   })
 
-  it('tells the guest and staff when the polling cron confirms a refund', async () => {
-    const t = convexTest(schema, modules)
-    const { bookingId, guestId } = await seedChapaRefund(t)
-    const admin = t.withIdentity({
-      subject: 'chapa-refund-admin',
-      email: 'admin@example.com',
-      emailVerified: true,
-    })
-    // Accept the refund without a terminal status so only the cron can settle it
-    vi.stubGlobal(
-      'fetch',
-      vi.fn().mockResolvedValue(
-        new Response(
-          JSON.stringify({
-            status: 'success',
-            data: { ref_id: 'refund-ref-id', status: 'processing' },
-          }),
-          { status: 200, headers: { 'Content-Type': 'application/json' } },
+  // Both documented amount formats must settle the same stored refund
+  it.each(['14000.00', 14000])(
+    'tells the guest and staff after polling verifies amount %s',
+    async (amount) => {
+      const t = convexTest(schema, modules)
+      const { bookingId, guestId } = await seedChapaRefund(t)
+      const admin = t.withIdentity({
+        subject: 'chapa-refund-admin',
+        email: 'admin@example.com',
+        emailVerified: true,
+      })
+      // Accept the refund without a terminal status so only the cron can settle it
+      vi.stubGlobal(
+        'fetch',
+        vi.fn().mockResolvedValue(
+          new Response(
+            JSON.stringify({
+              status: 'success',
+              data: { ref_id: 'refund-ref-id', status: 'processing' },
+            }),
+            { status: 200, headers: { 'Content-Type': 'application/json' } },
+          ),
         ),
-      ),
-    )
-    await admin.action(api.chapaActions.initiateRefund, { bookingId })
+      )
+      await admin.action(api.chapaActions.initiateRefund, { bookingId })
 
-    vi.stubGlobal(
-      'fetch',
-      vi.fn().mockResolvedValue(
-        new Response(
-          JSON.stringify({
-            status: 'success',
-            data: {
-              ref_id: 'refund-ref-id',
-              status: 'refunded',
-              amount: '14000.00',
-              currency: 'ETB',
-            },
-          }),
-          { status: 200, headers: { 'Content-Type': 'application/json' } },
+      vi.stubGlobal(
+        'fetch',
+        vi.fn().mockResolvedValue(
+          new Response(
+            JSON.stringify({
+              status: 'success',
+              data: {
+                ref_id: 'refund-ref-id',
+                status: 'refunded',
+                amount,
+                currency: 'ETB',
+              },
+            }),
+            { status: 200, headers: { 'Content-Type': 'application/json' } },
+          ),
         ),
-      ),
-    )
-    const verified = await t.action(internal.chapaActions.verifyPendingRefunds)
-    expect(verified).toBe(1)
+      )
+      const verified = await t.action(
+        internal.chapaActions.verifyPendingRefunds,
+      )
+      expect(verified).toBe(1)
 
-    const { booking, guestTypes } = await t.run(async (ctx) => {
-      const notifications = await ctx.db.query('notifications').collect()
-      return {
-        booking: await ctx.db.get(bookingId),
-        guestTypes: notifications
-          .filter((entry) => entry.userId === guestId)
-          .map((entry) => entry.type),
-      }
-    })
+      const { booking, guestTypes } = await t.run(async (ctx) => {
+        const notifications = await ctx.db.query('notifications').collect()
+        return {
+          booking: await ctx.db.get(bookingId),
+          guestTypes: notifications
+            .filter((entry) => entry.userId === guestId)
+            .map((entry) => entry.type),
+        }
+      })
 
-    expect(booking).toMatchObject({
-      refundStatus: 'refunded',
-      paymentStatus: 'refunded',
-      refundActionRequired: false,
-    })
-    expect(guestTypes).toContain('booking_refunded')
-  })
+      expect(booking).toMatchObject({
+        refundStatus: 'refunded',
+        paymentStatus: 'refunded',
+        refundActionRequired: false,
+      })
+      expect(guestTypes).toContain('booking_refunded')
+    },
+  )
 
   it('flags staff when the polling cron finds a reversal', async () => {
     const t = convexTest(schema, modules)

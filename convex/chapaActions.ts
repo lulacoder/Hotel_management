@@ -1,59 +1,32 @@
 'use node'
 
+import { parse, validate } from 'convex-helpers/validators'
 import { ConvexError, v } from 'convex/values'
 import * as crypto from 'node:crypto'
 
 import { internal } from './_generated/api'
 import { env, action, internalAction } from './_generated/server'
+import {
+  chapaInitializeResponseValidator,
+  chapaRefundResponseValidator,
+  chapaRefundVerifyResponseValidator,
+  chapaVerifyResponseValidator,
+  chapaWebhookValidator,
+  initializeCheckoutResultValidator,
+} from './lib/chapaValidators'
 
 import type { Doc, Id } from './_generated/dataModel'
+import type { ActionCtx } from './_generated/server'
+import type {
+  ChapaInitializeResponse,
+  ChapaRefundResponse,
+  ChapaVerifyResponse,
+  InitializeCheckoutResult,
+} from './lib/chapaValidators'
 
 const CHAPA_API_BASE = 'https://api.chapa.co/v1'
 
 type ReconcileSource = 'webhook' | 'callback'
-
-interface ChapaInitializeResponse {
-  message: unknown
-  status: string
-  data?: {
-    checkout_url?: string
-  }
-}
-
-interface ChapaRefundResponse {
-  message?: unknown
-  status?: string
-  data?: {
-    ref_id?: string
-    reference?: string
-    status?: string
-  }
-}
-
-interface ChapaRefundVerifyResponse extends ChapaRefundResponse {
-  data?: ChapaRefundResponse['data'] & {
-    amount?: string
-    currency?: string
-  }
-}
-
-interface ChapaVerifyResponse {
-  message: string
-  status: string
-  data?: {
-    amount?: string
-    currency?: string
-    email?: string | null
-    first_name?: string | null
-    last_name?: string | null
-    method?: string | null
-    mode?: string | null
-    payment_method?: string | null
-    reference?: string | null
-    status?: string | null
-    tx_ref?: string | null
-  }
-}
 
 interface VerifiedTransaction {
   amountMinor: number | null
@@ -70,13 +43,6 @@ interface ReconcileResult {
   statusCode: number
 }
 
-interface InitializeCheckoutResult {
-  success: boolean
-  checkoutUrl?: string
-  error?: string
-  txRef?: string
-}
-
 type CheckoutOrigin = 'web' | 'mobile'
 
 // Reads a required server environment variable or fails configuration early
@@ -89,8 +55,8 @@ function getEnv(name: keyof typeof env) {
 }
 
 // Converts a provider decimal amount into integer minor units
-function parseMinorAmount(amount: string | null | undefined) {
-  if (!amount) {
+function parseMinorAmount(amount: string | number | null | undefined) {
+  if (amount === null || amount === undefined || amount === '') {
     return null
   }
 
@@ -132,9 +98,7 @@ function extractChapaErrorMessage(
   }
 
   if (message && typeof message === 'object') {
-    const record = message as Record<string, unknown>
-
-    for (const value of Object.values(record)) {
+    for (const value of Object.values(message)) {
       if (typeof value === 'string' && value.trim()) {
         return value
       }
@@ -258,9 +222,10 @@ async function verifyTransactionWithChapa(txRef: string) {
 
     let data: ChapaVerifyResponse
     try {
-      data = (await response.json()) as ChapaVerifyResponse
+      // Validate provider fields before using them to reconcile a payment
+      data = parse(chapaVerifyResponseValidator, await response.json())
     } catch (error) {
-      console.error('Chapa verify returned non-JSON payload', error)
+      console.error('Chapa verify returned an invalid response', error)
       return null
     }
 
@@ -327,7 +292,7 @@ function getStatusFromProvider(status: string | undefined) {
 // Moves the booking off its in-flight refund state once the payment row records
 // a settled refund, otherwise a completed refund keeps reading as processing
 async function propagateRefundOutcome(
-  ctx: any,
+  ctx: ActionCtx,
   args: {
     booking: Doc<'bookings'> | null
     payment: Doc<'chapaPayments'> | null
@@ -359,7 +324,7 @@ async function propagateRefundOutcome(
 
 // Reconciles one provider event against its stored payment and booking
 async function reconcileTransaction(
-  ctx: any,
+  ctx: ActionCtx,
   args: {
     event?: string
     payload: unknown
@@ -643,6 +608,7 @@ export const initiateRefund = action({
 
     let response: Response
     let data: ChapaRefundResponse
+    let refundPayload: unknown
 
     try {
       // Address the refund by Chapa's own payment reference, which is what the
@@ -660,7 +626,9 @@ export const initiateRefund = action({
           signal: AbortSignal.timeout(30_000),
         },
       )
-      data = (await response.json()) as ChapaRefundResponse
+      // Preserve the provider payload for audit while validating consumed fields
+      refundPayload = await response.json()
+      data = parse(chapaRefundResponseValidator, refundPayload)
     } catch (error) {
       const message =
         error instanceof Error
@@ -743,7 +711,7 @@ export const initiateRefund = action({
         txRef: reservation.txRef,
         refundRefId: verificationRef,
         status: providerStatus,
-        payload: data,
+        payload: refundPayload,
       })
     }
 
@@ -787,7 +755,9 @@ export const verifyPendingRefunds = internalAction({
             signal: AbortSignal.timeout(30_000),
           },
         )
-        const data = (await response.json()) as ChapaRefundVerifyResponse
+        // Preserve the provider payload for audit while validating refund outcomes
+        const refundPayload: unknown = await response.json()
+        const data = parse(chapaRefundVerifyResponseValidator, refundPayload)
         const status = normalizeRefundStatus(data.data?.status ?? data.status)
         const amountMinor = parseMinorAmount(data.data?.amount)
 
@@ -805,7 +775,7 @@ export const verifyPendingRefunds = internalAction({
           txRef: payment.txRef,
           refundRefId: payment.refundRefId,
           status,
-          payload: data,
+          payload: refundPayload,
         })
 
         // Only a settled result counts, otherwise a refund Chapa leaves
@@ -831,12 +801,7 @@ export const initializeHostedCheckout = action({
     bookingId: v.id('bookings'),
     origin: v.optional(v.union(v.literal('web'), v.literal('mobile'))),
   },
-  returns: v.object({
-    success: v.boolean(),
-    checkoutUrl: v.optional(v.string()),
-    error: v.optional(v.string()),
-    txRef: v.optional(v.string()),
-  }),
+  returns: initializeCheckoutResultValidator,
   handler: async (ctx, args): Promise<InitializeCheckoutResult> => {
     const identity = await ctx.auth.getUserIdentity()
     if (!identity) {
@@ -934,7 +899,8 @@ export const initializeHostedCheckout = action({
         signal: AbortSignal.timeout(30_000),
       })
 
-      data = (await response.json()) as ChapaInitializeResponse
+      // Reject malformed checkout URLs before finalizing the reservation
+      data = parse(chapaInitializeResponseValidator, await response.json())
     } catch (error) {
       // Release transport and response failures because no checkout URL reached the customer
       await ctx.runMutation(internal.chapaInternal.failHostedCheckout, {
@@ -1011,10 +977,10 @@ export const processWebhook = internalAction({
       }
     }
 
-    let payload: Record<string, unknown>
+    let payload: unknown
 
     try {
-      payload = JSON.parse(args.body) as Record<string, unknown>
+      payload = JSON.parse(args.body)
     } catch {
       return {
         body: 'Invalid JSON',
@@ -1022,12 +988,14 @@ export const processWebhook = internalAction({
       }
     }
 
-    const txRef =
-      typeof payload.tx_ref === 'string'
-        ? payload.tx_ref
-        : typeof payload.trx_ref === 'string'
-          ? payload.trx_ref
-          : null
+    // Keep complete signed payloads for audit and validate the routing fields
+    if (
+      !validate(chapaWebhookValidator, payload, { allowUnknownFields: true })
+    ) {
+      return { body: 'Invalid webhook payload', statusCode: 400 }
+    }
+
+    const txRef = payload.tx_ref ?? payload.trx_ref
 
     if (!txRef) {
       return {
@@ -1037,7 +1005,7 @@ export const processWebhook = internalAction({
     }
 
     return await reconcileTransaction(ctx, {
-      event: typeof payload.event === 'string' ? payload.event : undefined,
+      event: payload.event,
       payload,
       source: 'webhook',
       txRef,
