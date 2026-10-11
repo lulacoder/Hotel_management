@@ -403,7 +403,7 @@ function HotelDetailPage() {
                 search.operationalStatus === 'out_of_order'
                   ? 'outOfOrder'
                   : search.operationalStatus
-              }` as never,
+              }`,
             ),
           })}
         </div>

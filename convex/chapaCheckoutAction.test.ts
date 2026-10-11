@@ -79,6 +79,44 @@ describe('Chapa checkout initialization failures', () => {
     vi.unstubAllGlobals()
   })
 
+  // Invalid provider fields must not create a payment or retain the checkout lock
+  it.each([null, { status: 'success', data: { checkout_url: 123 } }])(
+    'releases the reservation after a malformed checkout response %j',
+    async (payload) => {
+      const t = convexTest(schema, modules)
+      const { bookingId } = await seedHeldBooking(t)
+      const customer = t.withIdentity({
+        subject: 'checkout-customer',
+        email: 'customer@example.com',
+        emailVerified: true,
+      })
+      vi.stubGlobal(
+        'fetch',
+        vi.fn().mockResolvedValue(
+          new Response(JSON.stringify(payload), {
+            status: 200,
+            headers: { 'Content-Type': 'application/json' },
+          }),
+        ),
+      )
+
+      const result = await customer.action(
+        api.chapaActions.initializeHostedCheckout,
+        { bookingId },
+      )
+      expect(result).toMatchObject({ success: false })
+
+      // Reject the malformed URL without creating a canonical payment row
+      const { payments, attempts } = await t.run(async (ctx) => ({
+        payments: await ctx.db.query('chapaPayments').collect(),
+        attempts: await ctx.db.query('chapaCheckoutAttempts').collect(),
+      }))
+      expect(payments).toHaveLength(0)
+      expect(attempts).toHaveLength(1)
+      expect(attempts[0]).toMatchObject({ status: 'failed' })
+    },
+  )
+
   it('releases the reservation when the provider request throws', async () => {
     const t = convexTest(schema, modules)
     const { bookingId } = await seedHeldBooking(t)
@@ -99,7 +137,7 @@ describe('Chapa checkout initialization failures', () => {
     )
 
     expect(result.success).toBe(false)
-    expect(result.checkoutUrl).toBeUndefined()
+    expect(result).not.toHaveProperty('checkoutUrl')
 
     const attempts = await t.run((ctx) =>
       ctx.db.query('chapaCheckoutAttempts').collect(),

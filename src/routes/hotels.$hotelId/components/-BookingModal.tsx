@@ -338,8 +338,8 @@ export function BookingModal({
     try {
       const result = await initializeChapaCheckout({ bookingId })
 
-      if (!result.success || !result.checkoutUrl) {
-        setError(result.error || t('bookingModal.chapaError'))
+      if (!result.success) {
+        setError(result.error)
         return
       }
 

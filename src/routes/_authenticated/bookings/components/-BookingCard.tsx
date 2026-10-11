@@ -28,35 +28,18 @@ import {
   formatTime,
 } from './-helpers'
 
+import type { api } from '../../../../../convex/_generated/api'
 import type { Id } from '../../../../../convex/_generated/dataModel'
-import type { PackageType } from '../../../../lib/packages'
+import type { FunctionReturnType } from 'convex/server'
 
-interface BookingCardProps {
-  booking: {
-    _id: Id<'bookings'>
-    checkIn: string
-    checkOut: string
-    pricePerNight: number
-    totalPrice: number
-    status: string
-    paymentStatus?: string | undefined
-    refundStatus?: string | undefined
-    refundMethod?: 'chapa' | 'manual' | undefined
-    holdExpiresAt?: number | undefined
-    packageType?: PackageType | undefined
-    packageAddOn?: number | undefined
-  }
-  room: {
-    _id: Id<'rooms'>
-    roomNumber: string
-    type: string
-  }
-  hotel: {
-    _id: Id<'hotels'>
-    name: string
-    address: string
-    city: string
-  }
+export type CustomerBooking = FunctionReturnType<
+  typeof api.bookings.getMyBookingsEnriched
+>['page'][number]
+
+interface BookingCardProps extends Pick<
+  CustomerBooking,
+  'booking' | 'room' | 'hotel'
+> {
   cancellingId: string | null
   onCancel: (bookingId: Id<'bookings'>) => void
 }

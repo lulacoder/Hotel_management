@@ -58,7 +58,9 @@ export function OutsourceModal({
   const { t } = useI18n()
   const { theme } = useTheme()
   const isDark = theme === 'dark'
-  const [destinationHotelId, setDestinationHotelId] = useState<string>('')
+  const [destinationHotelId, setDestinationHotelId] = useState<
+    Id<'hotels'> | ''
+  >('')
   const [isSubmitting, setIsSubmitting] = useState(false)
   const [isSuccess, setIsSuccess] = useState(false)
   const [errorMessage, setErrorMessage] = useState<string | null>(null)
@@ -68,6 +70,15 @@ export function OutsourceModal({
   })
 
   const outsourceBooking = useMutation(api.bookings.outsourceBooking)
+
+  // Resolve selection strings through the hotels allowed to receive this booking
+  const handleDestinationSelection = (value: string) => {
+    // Preserve the ID type supplied by the destination query
+    const hotel = destinationHotels?.find(
+      (candidate) => candidate._id === value,
+    )
+    if (hotel) setDestinationHotelId(hotel._id)
+  }
 
   const amountPaid = useMemo(
     () =>
@@ -91,7 +102,7 @@ export function OutsourceModal({
     try {
       await outsourceBooking({
         bookingId: bookingDetail.booking._id,
-        destinationHotelId: destinationHotelId as Id<'hotels'>,
+        destinationHotelId,
       })
 
       setIsSuccess(true)
@@ -199,7 +210,7 @@ export function OutsourceModal({
             </label>
             <Select
               value={destinationHotelId}
-              onValueChange={setDestinationHotelId}
+              onValueChange={handleDestinationSelection}
               disabled={isSubmitting || isSuccess}
             >
               <SelectTrigger className="admin-select">

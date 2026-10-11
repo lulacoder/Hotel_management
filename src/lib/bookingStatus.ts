@@ -11,11 +11,26 @@ import { useMemo } from 'react'
 
 import { useI18n } from './i18n/provider'
 
+import type { Doc } from '../../convex/_generated/dataModel'
 import type {
   BookingStatus,
   ManualBookingTransitionStatus,
 } from '../../convex/lib/bookingLifecycle'
+import type { TranslationKey } from './i18n'
 import type { LucideIcon } from 'lucide-react'
+
+export const BOOKING_STATUS_LABEL_KEYS = {
+  held: 'booking.status.held',
+  pending_payment: 'booking.status.pendingPayment',
+  confirmed: 'booking.status.confirmed',
+  checked_in: 'booking.status.checkedIn',
+  checked_out: 'booking.status.checkedOut',
+  cancelled: 'booking.status.cancelled',
+  expired: 'booking.status.expired',
+  outsourced: 'booking.status.outsourced',
+} as const satisfies Record<BookingStatus, TranslationKey>
+
+export type BookingRefundStatus = NonNullable<Doc<'bookings'>['refundStatus']>
 
 export const REFUND_STATUS_LABEL_KEYS = {
   required: 'admin.bookings.refundRequired',
@@ -23,16 +38,14 @@ export const REFUND_STATUS_LABEL_KEYS = {
   refunded: 'admin.bookings.refundCompleted',
   reversed: 'admin.bookings.refundReversed',
   verification_required: 'admin.bookings.refundVerificationRequired',
-} as const
+} as const satisfies Record<BookingRefundStatus, TranslationKey>
 
-export type BookingRefundStatus = keyof typeof REFUND_STATUS_LABEL_KEYS
-
-// Resolves a stored refund status to its message key, ignoring unknown values
+// Resolves a validated booking refund status to its message key
 export function getRefundStatusLabelKey(
-  refundStatus: string | undefined,
+  refundStatus: BookingRefundStatus | undefined,
 ): (typeof REFUND_STATUS_LABEL_KEYS)[BookingRefundStatus] | undefined {
   if (refundStatus === undefined) return undefined
-  return REFUND_STATUS_LABEL_KEYS[refundStatus as BookingRefundStatus]
+  return REFUND_STATUS_LABEL_KEYS[refundStatus]
 }
 
 // Collapses the internal refund states into the statuses a guest cares
@@ -43,17 +56,17 @@ const CUSTOMER_REFUND_VIEW = {
   verification_required: 'pending',
   refunded: 'refunded',
   reversed: 'reversed',
-} as const
+} as const satisfies Record<BookingRefundStatus, string>
 
 export type CustomerRefundView =
   (typeof CUSTOMER_REFUND_VIEW)[BookingRefundStatus]
 
-// Resolves a stored refund status to the guest-facing view, ignoring unknowns
+// Resolves a validated booking refund status to its guest-facing view
 export function getCustomerRefundView(
-  refundStatus: string | undefined,
+  refundStatus: BookingRefundStatus | undefined,
 ): CustomerRefundView | undefined {
   if (refundStatus === undefined) return undefined
-  return CUSTOMER_REFUND_VIEW[refundStatus as BookingRefundStatus]
+  return CUSTOMER_REFUND_VIEW[refundStatus]
 }
 
 export interface BookingStatusDisplay {

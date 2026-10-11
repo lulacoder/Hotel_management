@@ -2,35 +2,10 @@
 import { BookingCard } from './-BookingCard'
 
 import type { Id } from '../../../../../convex/_generated/dataModel'
-import type { PackageType } from '../../../../lib/packages'
+import type { CustomerBooking } from './-BookingCard'
 
 interface BookingsListProps {
-  bookings: Array<{
-    booking: {
-      _id: Id<'bookings'>
-      checkIn: string
-      checkOut: string
-      pricePerNight: number
-      totalPrice: number
-      status: string
-      paymentStatus?: string | undefined
-      refundStatus?: string | undefined
-      holdExpiresAt?: number | undefined
-      packageType?: PackageType | undefined
-      packageAddOn?: number | undefined
-    }
-    room: {
-      _id: Id<'rooms'>
-      roomNumber: string
-      type: string
-    }
-    hotel: {
-      _id: Id<'hotels'>
-      name: string
-      address: string
-      city: string
-    }
-  }>
+  bookings: Array<CustomerBooking>
   cancellingId: string | null
   onCancel: (bookingId: Id<'bookings'>) => void
 }

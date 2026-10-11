@@ -3,6 +3,7 @@ import { AlertTriangle, MessageSquareText } from 'lucide-react'
 
 import { AdminSpinner } from '@/components/AdminSpinner'
 import { useQuery } from '@/integrations/convex/hooks'
+import { BOOKING_STATUS_LABEL_KEYS } from '@/lib/bookingStatus'
 
 import { api } from '../../../../convex/_generated/api'
 import { useAdminSession } from '../../../lib/adminSession'
@@ -170,7 +171,7 @@ function AdminComplaintsPage() {
                             isDark ? 'text-slate-400' : 'text-slate-500'
                           }
                         >
-                          {t(`booking.status.${booking.status}` as never)}
+                          {t(BOOKING_STATUS_LABEL_KEYS[booking.status])}
                         </p>
                       </div>
                     ) : (
