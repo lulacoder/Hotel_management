@@ -9,51 +9,40 @@
 // Additionally, you should also exclude this file from your linter and/or formatter to prevent it from being checked or modified.
 
 import { Route as rootRouteImport } from './routes/__root'
-import { Route as SignUpRouteImport } from './routes/sign-up'
-import { Route as SignInRouteImport } from './routes/sign-in'
-import { Route as SelectLocationRouteImport } from './routes/select-location'
-import { Route as PostLoginRouteImport } from './routes/post-login'
-import { Route as AdminRouteImport } from './routes/admin'
-import { Route as AuthenticatedRouteImport } from './routes/_authenticated'
 import { Route as IndexRouteImport } from './routes/index'
-import { Route as AdminIndexRouteImport } from './routes/admin/index'
-import { Route as StaffInvitationsInvitationIdRouteImport } from './routes/staff-invitations/$invitationId'
-import { Route as SignUpSplatRouteImport } from './routes/sign-up.$'
-import { Route as SignInSplatRouteImport } from './routes/sign-in.$'
-import { Route as HotelsHotelIdRouteImport } from './routes/hotels.$hotelId'
-import { Route as AuthenticatedBookingsRouteImport } from './routes/_authenticated/bookings'
+import { Route as AuthenticatedRouteImport } from './routes/_authenticated'
+import { Route as AdminRouteImport } from './routes/admin'
+import { Route as PostLoginRouteImport } from './routes/post-login'
+import { Route as SelectLocationRouteImport } from './routes/select-location'
+import { Route as SignInRouteImport } from './routes/sign-in'
+import { Route as SignUpRouteImport } from './routes/sign-up'
 import { Route as AuthenticatedAnnouncementsRouteImport } from './routes/_authenticated/announcements'
-import { Route as AdminWalkInIndexRouteImport } from './routes/admin/walk-in/index'
-import { Route as AdminUsersIndexRouteImport } from './routes/admin/users/index'
-import { Route as AdminRoomsIndexRouteImport } from './routes/admin/rooms/index'
-import { Route as AdminInvitationsIndexRouteImport } from './routes/admin/invitations/index'
-import { Route as AdminHotelsIndexRouteImport } from './routes/admin/hotels/index'
-import { Route as AdminComplaintsIndexRouteImport } from './routes/admin/complaints/index'
-import { Route as AdminBookingsIndexRouteImport } from './routes/admin/bookings/index'
-import { Route as AdminAnnouncementsIndexRouteImport } from './routes/admin/announcements/index'
-import { Route as AdminHotelsHotelIdRouteImport } from './routes/admin/hotels/$hotelId'
-import { Route as AdminComplaintsComplaintIdRouteImport } from './routes/admin/complaints/$complaintId'
-import { Route as AdminBookingsBookingIdRouteImport } from './routes/admin/bookings/$bookingId'
+import { Route as AuthenticatedBookingsRouteImport } from './routes/_authenticated/bookings'
+import { Route as AdminIndexRouteImport } from './routes/admin/index'
+import { Route as HotelsHotelIdRouteImport } from './routes/hotels.$hotelId'
+import { Route as SignInSplatRouteImport } from './routes/sign-in.$'
+import { Route as SignUpSplatRouteImport } from './routes/sign-up.$'
+import { Route as StaffInvitationsInvitationIdRouteImport } from './routes/staff-invitations/$invitationId'
 import { Route as AuthenticatedBookingsBookingIdRouteImport } from './routes/_authenticated/bookings_.$bookingId'
+import { Route as AdminAnnouncementsIndexRouteImport } from './routes/admin/announcements/index'
+import { Route as AdminBookingsIndexRouteImport } from './routes/admin/bookings/index'
+import { Route as AdminBookingsBookingIdRouteImport } from './routes/admin/bookings/$bookingId'
+import { Route as AdminComplaintsIndexRouteImport } from './routes/admin/complaints/index'
+import { Route as AdminComplaintsComplaintIdRouteImport } from './routes/admin/complaints/$complaintId'
+import { Route as AdminHotelsIndexRouteImport } from './routes/admin/hotels/index'
+import { Route as AdminHotelsHotelIdRouteImport } from './routes/admin/hotels/$hotelId'
+import { Route as AdminInvitationsIndexRouteImport } from './routes/admin/invitations/index'
+import { Route as AdminRoomsIndexRouteImport } from './routes/admin/rooms/index'
+import { Route as AdminUsersIndexRouteImport } from './routes/admin/users/index'
+import { Route as AdminWalkInIndexRouteImport } from './routes/admin/walk-in/index'
 
-const SignUpRoute = SignUpRouteImport.update({
-  id: '/sign-up',
-  path: '/sign-up',
+const IndexRoute = IndexRouteImport.update({
+  id: '/',
+  path: '/',
   getParentRoute: () => rootRouteImport,
 } as any)
-const SignInRoute = SignInRouteImport.update({
-  id: '/sign-in',
-  path: '/sign-in',
-  getParentRoute: () => rootRouteImport,
-} as any)
-const SelectLocationRoute = SelectLocationRouteImport.update({
-  id: '/select-location',
-  path: '/select-location',
-  getParentRoute: () => rootRouteImport,
-} as any)
-const PostLoginRoute = PostLoginRouteImport.update({
-  id: '/post-login',
-  path: '/post-login',
+const AuthenticatedRoute = AuthenticatedRouteImport.update({
+  id: '/_authenticated',
   getParentRoute: () => rootRouteImport,
 } as any)
 const AdminRoute = AdminRouteImport.update({
@@ -61,45 +50,25 @@ const AdminRoute = AdminRouteImport.update({
   path: '/admin',
   getParentRoute: () => rootRouteImport,
 } as any)
-const AuthenticatedRoute = AuthenticatedRouteImport.update({
-  id: '/_authenticated',
+const PostLoginRoute = PostLoginRouteImport.update({
+  id: '/post-login',
+  path: '/post-login',
   getParentRoute: () => rootRouteImport,
 } as any)
-const IndexRoute = IndexRouteImport.update({
-  id: '/',
-  path: '/',
+const SelectLocationRoute = SelectLocationRouteImport.update({
+  id: '/select-location',
+  path: '/select-location',
   getParentRoute: () => rootRouteImport,
 } as any)
-const AdminIndexRoute = AdminIndexRouteImport.update({
-  id: '/',
-  path: '/',
-  getParentRoute: () => AdminRoute,
-} as any).lazy(() => import('./routes/admin/index.lazy').then((d) => d.Route))
-const StaffInvitationsInvitationIdRoute =
-  StaffInvitationsInvitationIdRouteImport.update({
-    id: '/staff-invitations/$invitationId',
-    path: '/staff-invitations/$invitationId',
-    getParentRoute: () => rootRouteImport,
-  } as any)
-const SignUpSplatRoute = SignUpSplatRouteImport.update({
-  id: '/$',
-  path: '/$',
-  getParentRoute: () => SignUpRoute,
-} as any)
-const SignInSplatRoute = SignInSplatRouteImport.update({
-  id: '/$',
-  path: '/$',
-  getParentRoute: () => SignInRoute,
-} as any)
-const HotelsHotelIdRoute = HotelsHotelIdRouteImport.update({
-  id: '/hotels/$hotelId',
-  path: '/hotels/$hotelId',
+const SignInRoute = SignInRouteImport.update({
+  id: '/sign-in',
+  path: '/sign-in',
   getParentRoute: () => rootRouteImport,
 } as any)
-const AuthenticatedBookingsRoute = AuthenticatedBookingsRouteImport.update({
-  id: '/bookings',
-  path: '/bookings',
-  getParentRoute: () => AuthenticatedRoute,
+const SignUpRoute = SignUpRouteImport.update({
+  id: '/sign-up',
+  path: '/sign-up',
+  getParentRoute: () => rootRouteImport,
 } as any)
 const AuthenticatedAnnouncementsRoute =
   AuthenticatedAnnouncementsRouteImport.update({
@@ -107,34 +76,46 @@ const AuthenticatedAnnouncementsRoute =
     path: '/announcements',
     getParentRoute: () => AuthenticatedRoute,
   } as any)
-const AdminWalkInIndexRoute = AdminWalkInIndexRouteImport.update({
-  id: '/walk-in/',
-  path: '/walk-in/',
-  getParentRoute: () => AdminRoute,
+const AuthenticatedBookingsRoute = AuthenticatedBookingsRouteImport.update({
+  id: '/bookings',
+  path: '/bookings',
+  getParentRoute: () => AuthenticatedRoute,
 } as any)
-const AdminUsersIndexRoute = AdminUsersIndexRouteImport.update({
-  id: '/users/',
-  path: '/users/',
+const AdminIndexRoute = AdminIndexRouteImport.update({
+  id: '/',
+  path: '/',
   getParentRoute: () => AdminRoute,
+} as any).lazy(() => import('./routes/admin/index.lazy').then((d) => d.Route))
+const HotelsHotelIdRoute = HotelsHotelIdRouteImport.update({
+  id: '/hotels/$hotelId',
+  path: '/hotels/$hotelId',
+  getParentRoute: () => rootRouteImport,
 } as any)
-const AdminRoomsIndexRoute = AdminRoomsIndexRouteImport.update({
-  id: '/rooms/',
-  path: '/rooms/',
-  getParentRoute: () => AdminRoute,
+const SignInSplatRoute = SignInSplatRouteImport.update({
+  id: '/$',
+  path: '/$',
+  getParentRoute: () => SignInRoute,
 } as any)
-const AdminInvitationsIndexRoute = AdminInvitationsIndexRouteImport.update({
-  id: '/invitations/',
-  path: '/invitations/',
-  getParentRoute: () => AdminRoute,
+const SignUpSplatRoute = SignUpSplatRouteImport.update({
+  id: '/$',
+  path: '/$',
+  getParentRoute: () => SignUpRoute,
 } as any)
-const AdminHotelsIndexRoute = AdminHotelsIndexRouteImport.update({
-  id: '/hotels/',
-  path: '/hotels/',
-  getParentRoute: () => AdminRoute,
-} as any)
-const AdminComplaintsIndexRoute = AdminComplaintsIndexRouteImport.update({
-  id: '/complaints/',
-  path: '/complaints/',
+const StaffInvitationsInvitationIdRoute =
+  StaffInvitationsInvitationIdRouteImport.update({
+    id: '/staff-invitations/$invitationId',
+    path: '/staff-invitations/$invitationId',
+    getParentRoute: () => rootRouteImport,
+  } as any)
+const AuthenticatedBookingsBookingIdRoute =
+  AuthenticatedBookingsBookingIdRouteImport.update({
+    id: '/bookings_/$bookingId',
+    path: '/bookings/$bookingId',
+    getParentRoute: () => AuthenticatedRoute,
+  } as any)
+const AdminAnnouncementsIndexRoute = AdminAnnouncementsIndexRouteImport.update({
+  id: '/announcements/',
+  path: '/announcements/',
   getParentRoute: () => AdminRoute,
 } as any)
 const AdminBookingsIndexRoute = AdminBookingsIndexRouteImport.update({
@@ -142,14 +123,14 @@ const AdminBookingsIndexRoute = AdminBookingsIndexRouteImport.update({
   path: '/bookings/',
   getParentRoute: () => AdminRoute,
 } as any)
-const AdminAnnouncementsIndexRoute = AdminAnnouncementsIndexRouteImport.update({
-  id: '/announcements/',
-  path: '/announcements/',
+const AdminBookingsBookingIdRoute = AdminBookingsBookingIdRouteImport.update({
+  id: '/bookings/$bookingId',
+  path: '/bookings/$bookingId',
   getParentRoute: () => AdminRoute,
 } as any)
-const AdminHotelsHotelIdRoute = AdminHotelsHotelIdRouteImport.update({
-  id: '/hotels/$hotelId',
-  path: '/hotels/$hotelId',
+const AdminComplaintsIndexRoute = AdminComplaintsIndexRouteImport.update({
+  id: '/complaints/',
+  path: '/complaints/',
   getParentRoute: () => AdminRoute,
 } as any)
 const AdminComplaintsComplaintIdRoute =
@@ -158,17 +139,36 @@ const AdminComplaintsComplaintIdRoute =
     path: '/complaints/$complaintId',
     getParentRoute: () => AdminRoute,
   } as any)
-const AdminBookingsBookingIdRoute = AdminBookingsBookingIdRouteImport.update({
-  id: '/bookings/$bookingId',
-  path: '/bookings/$bookingId',
+const AdminHotelsIndexRoute = AdminHotelsIndexRouteImport.update({
+  id: '/hotels/',
+  path: '/hotels/',
   getParentRoute: () => AdminRoute,
 } as any)
-const AuthenticatedBookingsBookingIdRoute =
-  AuthenticatedBookingsBookingIdRouteImport.update({
-    id: '/bookings_/$bookingId',
-    path: '/bookings/$bookingId',
-    getParentRoute: () => AuthenticatedRoute,
-  } as any)
+const AdminHotelsHotelIdRoute = AdminHotelsHotelIdRouteImport.update({
+  id: '/hotels/$hotelId',
+  path: '/hotels/$hotelId',
+  getParentRoute: () => AdminRoute,
+} as any)
+const AdminInvitationsIndexRoute = AdminInvitationsIndexRouteImport.update({
+  id: '/invitations/',
+  path: '/invitations/',
+  getParentRoute: () => AdminRoute,
+} as any)
+const AdminRoomsIndexRoute = AdminRoomsIndexRouteImport.update({
+  id: '/rooms/',
+  path: '/rooms/',
+  getParentRoute: () => AdminRoute,
+} as any)
+const AdminUsersIndexRoute = AdminUsersIndexRouteImport.update({
+  id: '/users/',
+  path: '/users/',
+  getParentRoute: () => AdminRoute,
+} as any)
+const AdminWalkInIndexRoute = AdminWalkInIndexRouteImport.update({
+  id: '/walk-in/',
+  path: '/walk-in/',
+  getParentRoute: () => AdminRoute,
+} as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
@@ -350,39 +350,11 @@ export interface RootRouteChildren {
 
 declare module '@tanstack/react-router' {
   interface FileRoutesByPath {
-    '/sign-up': {
-      id: '/sign-up'
-      path: '/sign-up'
-      fullPath: '/sign-up'
-      preLoaderRoute: typeof SignUpRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/sign-in': {
-      id: '/sign-in'
-      path: '/sign-in'
-      fullPath: '/sign-in'
-      preLoaderRoute: typeof SignInRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/select-location': {
-      id: '/select-location'
-      path: '/select-location'
-      fullPath: '/select-location'
-      preLoaderRoute: typeof SelectLocationRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/post-login': {
-      id: '/post-login'
-      path: '/post-login'
-      fullPath: '/post-login'
-      preLoaderRoute: typeof PostLoginRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/admin': {
-      id: '/admin'
-      path: '/admin'
-      fullPath: '/admin'
-      preLoaderRoute: typeof AdminRouteImport
+    '/': {
+      id: '/'
+      path: '/'
+      fullPath: '/'
+      preLoaderRoute: typeof IndexRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/_authenticated': {
@@ -392,54 +364,40 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedRouteImport
       parentRoute: typeof rootRouteImport
     }
-    '/': {
-      id: '/'
-      path: '/'
-      fullPath: '/'
-      preLoaderRoute: typeof IndexRouteImport
+    '/admin': {
+      id: '/admin'
+      path: '/admin'
+      fullPath: '/admin'
+      preLoaderRoute: typeof AdminRouteImport
       parentRoute: typeof rootRouteImport
     }
-    '/admin/': {
-      id: '/admin/'
-      path: '/'
-      fullPath: '/admin/'
-      preLoaderRoute: typeof AdminIndexRouteImport
-      parentRoute: typeof AdminRoute
-    }
-    '/staff-invitations/$invitationId': {
-      id: '/staff-invitations/$invitationId'
-      path: '/staff-invitations/$invitationId'
-      fullPath: '/staff-invitations/$invitationId'
-      preLoaderRoute: typeof StaffInvitationsInvitationIdRouteImport
+    '/post-login': {
+      id: '/post-login'
+      path: '/post-login'
+      fullPath: '/post-login'
+      preLoaderRoute: typeof PostLoginRouteImport
       parentRoute: typeof rootRouteImport
     }
-    '/sign-up/$': {
-      id: '/sign-up/$'
-      path: '/$'
-      fullPath: '/sign-up/$'
-      preLoaderRoute: typeof SignUpSplatRouteImport
-      parentRoute: typeof SignUpRoute
-    }
-    '/sign-in/$': {
-      id: '/sign-in/$'
-      path: '/$'
-      fullPath: '/sign-in/$'
-      preLoaderRoute: typeof SignInSplatRouteImport
-      parentRoute: typeof SignInRoute
-    }
-    '/hotels/$hotelId': {
-      id: '/hotels/$hotelId'
-      path: '/hotels/$hotelId'
-      fullPath: '/hotels/$hotelId'
-      preLoaderRoute: typeof HotelsHotelIdRouteImport
+    '/select-location': {
+      id: '/select-location'
+      path: '/select-location'
+      fullPath: '/select-location'
+      preLoaderRoute: typeof SelectLocationRouteImport
       parentRoute: typeof rootRouteImport
     }
-    '/_authenticated/bookings': {
-      id: '/_authenticated/bookings'
-      path: '/bookings'
-      fullPath: '/bookings'
-      preLoaderRoute: typeof AuthenticatedBookingsRouteImport
-      parentRoute: typeof AuthenticatedRoute
+    '/sign-in': {
+      id: '/sign-in'
+      path: '/sign-in'
+      fullPath: '/sign-in'
+      preLoaderRoute: typeof SignInRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/sign-up': {
+      id: '/sign-up'
+      path: '/sign-up'
+      fullPath: '/sign-up'
+      preLoaderRoute: typeof SignUpRouteImport
+      parentRoute: typeof rootRouteImport
     }
     '/_authenticated/announcements': {
       id: '/_authenticated/announcements'
@@ -448,46 +406,60 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedAnnouncementsRouteImport
       parentRoute: typeof AuthenticatedRoute
     }
-    '/admin/walk-in/': {
-      id: '/admin/walk-in/'
-      path: '/walk-in'
-      fullPath: '/admin/walk-in/'
-      preLoaderRoute: typeof AdminWalkInIndexRouteImport
+    '/_authenticated/bookings': {
+      id: '/_authenticated/bookings'
+      path: '/bookings'
+      fullPath: '/bookings'
+      preLoaderRoute: typeof AuthenticatedBookingsRouteImport
+      parentRoute: typeof AuthenticatedRoute
+    }
+    '/admin/': {
+      id: '/admin/'
+      path: '/'
+      fullPath: '/admin/'
+      preLoaderRoute: typeof AdminIndexRouteImport
       parentRoute: typeof AdminRoute
     }
-    '/admin/users/': {
-      id: '/admin/users/'
-      path: '/users'
-      fullPath: '/admin/users/'
-      preLoaderRoute: typeof AdminUsersIndexRouteImport
-      parentRoute: typeof AdminRoute
+    '/hotels/$hotelId': {
+      id: '/hotels/$hotelId'
+      path: '/hotels/$hotelId'
+      fullPath: '/hotels/$hotelId'
+      preLoaderRoute: typeof HotelsHotelIdRouteImport
+      parentRoute: typeof rootRouteImport
     }
-    '/admin/rooms/': {
-      id: '/admin/rooms/'
-      path: '/rooms'
-      fullPath: '/admin/rooms/'
-      preLoaderRoute: typeof AdminRoomsIndexRouteImport
-      parentRoute: typeof AdminRoute
+    '/sign-in/$': {
+      id: '/sign-in/$'
+      path: '/$'
+      fullPath: '/sign-in/$'
+      preLoaderRoute: typeof SignInSplatRouteImport
+      parentRoute: typeof SignInRoute
     }
-    '/admin/invitations/': {
-      id: '/admin/invitations/'
-      path: '/invitations'
-      fullPath: '/admin/invitations/'
-      preLoaderRoute: typeof AdminInvitationsIndexRouteImport
-      parentRoute: typeof AdminRoute
+    '/sign-up/$': {
+      id: '/sign-up/$'
+      path: '/$'
+      fullPath: '/sign-up/$'
+      preLoaderRoute: typeof SignUpSplatRouteImport
+      parentRoute: typeof SignUpRoute
     }
-    '/admin/hotels/': {
-      id: '/admin/hotels/'
-      path: '/hotels'
-      fullPath: '/admin/hotels/'
-      preLoaderRoute: typeof AdminHotelsIndexRouteImport
-      parentRoute: typeof AdminRoute
+    '/staff-invitations/$invitationId': {
+      id: '/staff-invitations/$invitationId'
+      path: '/staff-invitations/$invitationId'
+      fullPath: '/staff-invitations/$invitationId'
+      preLoaderRoute: typeof StaffInvitationsInvitationIdRouteImport
+      parentRoute: typeof rootRouteImport
     }
-    '/admin/complaints/': {
-      id: '/admin/complaints/'
-      path: '/complaints'
-      fullPath: '/admin/complaints/'
-      preLoaderRoute: typeof AdminComplaintsIndexRouteImport
+    '/_authenticated/bookings_/$bookingId': {
+      id: '/_authenticated/bookings_/$bookingId'
+      path: '/bookings/$bookingId'
+      fullPath: '/bookings/$bookingId'
+      preLoaderRoute: typeof AuthenticatedBookingsBookingIdRouteImport
+      parentRoute: typeof AuthenticatedRoute
+    }
+    '/admin/announcements/': {
+      id: '/admin/announcements/'
+      path: '/announcements'
+      fullPath: '/admin/announcements/'
+      preLoaderRoute: typeof AdminAnnouncementsIndexRouteImport
       parentRoute: typeof AdminRoute
     }
     '/admin/bookings/': {
@@ -497,18 +469,18 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AdminBookingsIndexRouteImport
       parentRoute: typeof AdminRoute
     }
-    '/admin/announcements/': {
-      id: '/admin/announcements/'
-      path: '/announcements'
-      fullPath: '/admin/announcements/'
-      preLoaderRoute: typeof AdminAnnouncementsIndexRouteImport
+    '/admin/bookings/$bookingId': {
+      id: '/admin/bookings/$bookingId'
+      path: '/bookings/$bookingId'
+      fullPath: '/admin/bookings/$bookingId'
+      preLoaderRoute: typeof AdminBookingsBookingIdRouteImport
       parentRoute: typeof AdminRoute
     }
-    '/admin/hotels/$hotelId': {
-      id: '/admin/hotels/$hotelId'
-      path: '/hotels/$hotelId'
-      fullPath: '/admin/hotels/$hotelId'
-      preLoaderRoute: typeof AdminHotelsHotelIdRouteImport
+    '/admin/complaints/': {
+      id: '/admin/complaints/'
+      path: '/complaints'
+      fullPath: '/admin/complaints/'
+      preLoaderRoute: typeof AdminComplaintsIndexRouteImport
       parentRoute: typeof AdminRoute
     }
     '/admin/complaints/$complaintId': {
@@ -518,19 +490,47 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AdminComplaintsComplaintIdRouteImport
       parentRoute: typeof AdminRoute
     }
-    '/admin/bookings/$bookingId': {
-      id: '/admin/bookings/$bookingId'
-      path: '/bookings/$bookingId'
-      fullPath: '/admin/bookings/$bookingId'
-      preLoaderRoute: typeof AdminBookingsBookingIdRouteImport
+    '/admin/hotels/': {
+      id: '/admin/hotels/'
+      path: '/hotels'
+      fullPath: '/admin/hotels/'
+      preLoaderRoute: typeof AdminHotelsIndexRouteImport
       parentRoute: typeof AdminRoute
     }
-    '/_authenticated/bookings_/$bookingId': {
-      id: '/_authenticated/bookings_/$bookingId'
-      path: '/bookings/$bookingId'
-      fullPath: '/bookings/$bookingId'
-      preLoaderRoute: typeof AuthenticatedBookingsBookingIdRouteImport
-      parentRoute: typeof AuthenticatedRoute
+    '/admin/hotels/$hotelId': {
+      id: '/admin/hotels/$hotelId'
+      path: '/hotels/$hotelId'
+      fullPath: '/admin/hotels/$hotelId'
+      preLoaderRoute: typeof AdminHotelsHotelIdRouteImport
+      parentRoute: typeof AdminRoute
+    }
+    '/admin/invitations/': {
+      id: '/admin/invitations/'
+      path: '/invitations'
+      fullPath: '/admin/invitations/'
+      preLoaderRoute: typeof AdminInvitationsIndexRouteImport
+      parentRoute: typeof AdminRoute
+    }
+    '/admin/rooms/': {
+      id: '/admin/rooms/'
+      path: '/rooms'
+      fullPath: '/admin/rooms/'
+      preLoaderRoute: typeof AdminRoomsIndexRouteImport
+      parentRoute: typeof AdminRoute
+    }
+    '/admin/users/': {
+      id: '/admin/users/'
+      path: '/users'
+      fullPath: '/admin/users/'
+      preLoaderRoute: typeof AdminUsersIndexRouteImport
+      parentRoute: typeof AdminRoute
+    }
+    '/admin/walk-in/': {
+      id: '/admin/walk-in/'
+      path: '/walk-in'
+      fullPath: '/admin/walk-in/'
+      preLoaderRoute: typeof AdminWalkInIndexRouteImport
+      parentRoute: typeof AdminRoute
     }
   }
 }
